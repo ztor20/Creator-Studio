@@ -59,7 +59,8 @@
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D310 商品側：發布前預覽的粉絲視角商品頁（前台 shop-item 鏡像，只給 js/fan-product-page.js 用） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310 商品側：按「開始販售」後的「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- D317：頁首兩段進度條（商品內容／預覽與發布），做法對齊 create-event 第 8 步 -->
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- D317：頁首進度條；2026-10-21 起三段（商品設定／上架設定／預覽與發布） -->
+<link rel="stylesheet" href="ds-components/form-steps.css?v=r2.2"><!-- 2026-10-21 三步驟：同一張表單依步驟顯示節（data-form-step） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 2026-10-12 使用者：中間內容欄最大寬度稍微縮小——有本頁大綱時 1140 → 1100（逐規格表＋320 預覽欄的下限約 1100，見 shared.css .wizard__body--mid 註解） */
@@ -134,15 +135,16 @@
           <span class="wizard__top-sub" id="cp-subtitle" data-i18n="cp.subtitle">Physical item</span>
         </div>
       </div>
-      <!-- D317（2026-09-23）：兩步驟進度條——商品內容／預覽與發布，做法對齊 create-event 第 8 步
-           （.progress-stepper--anystep：兩段都能點，點擊處理器見下方 stepperLabels.forEach）。
+      <!-- D317（2026-09-23）進度條，做法對齊 create-event 第 8 步；2026-10-21 起三段——商品設定／上架設定／預覽與發布
+           （.progress-stepper--anystep：三段都能點，點擊處理器見下方 stepperLabels.forEach）。
            編輯態／嵌入態沒有「預覽與發布」這一步（見下方 editMode／embed 分支），這欄留空。 -->
       <div class="wizard__progress" id="cp-progress">
-        <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="cp-stepper" style="--steps:2;--at:1;--progress:0%">
+        <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="cp-stepper" style="--steps:3;--at:1;--progress:0%">
           <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
           <div class="progress-stepper__labels">
             <span class="progress-stepper__label progress-stepper__label--current" data-step="1"><span data-i18n="cp.step.details">Details</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="2"><span data-i18n="cp.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="2"><span data-i18n="cp.step.listing">Listing</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="3"><span data-i18n="cp.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
           </div>
         </div>
       </div>
@@ -157,12 +159,15 @@
   </header>
 
   <div class="wizard__body wizard__body--form wizard__body--mid preview-split preview-split--phone">
-    <div class="preview-split__form">
+    <!-- 2026-10-21 三步驟：.form-steps＋data-at＝目前顯示第幾步（ds-components/form-steps.css）；每個節標 data-form-step。
+         第一步「商品設定」＝可被繼承的商品本身設定；第二步「上架設定」＝上架、開賣、折扣、優惠碼；第三步「預覽與發布」＝下方 [data-cp-stage] 全頁畫面。
+         編輯態／嵌入態不分步：移除 data-at，全部顯示（見檔尾 editMode／embed 分支）。 -->
+    <div class="preview-split__form form-steps" data-at="1" data-cp-form>
 
     <!-- Media Vault 交棒（2026-07-29）：從庫房的「做成 NFC 商品」過來時，網址帶
          ?vaultkey=<代號>。這裡把那把鑰匙顯示出來——否則「已附帶鑰匙」只是分享
          抽屜單方面的說法，這一頁根本不知道有這回事。 -->
-    <div class="info-banner mb-16" id="cp-vaultkey" hidden>
+    <div class="info-banner mb-16" id="cp-vaultkey" data-form-step="1" hidden>
       <i data-lucide="key" class="ztor-icon info-banner__icon"></i>
       <span>
         <strong data-i18n="cp.vaultkey.title">This product carries a vault key</strong> ·
@@ -182,7 +187,7 @@
 
 
     <!-- §4 ② 商品資訊（實體/數位）-->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital">
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical digital">
       <!-- 類型切換鈕（2026-08-10 使用者指示，做法對齊建立活動）：類型在閘門選定，
            流程裡只留這一顆把閘門叫回來重選。位置＝第一個 section 的標題列右端。 -->
       <div class="form-section__head form-section__head--actions">
@@ -324,7 +329,7 @@
     </section>
 
     <!-- §4 ① 素材（Show it off）-->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital">
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical digital">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.media.title">Show it off</h3>
         <p class="form-section__sub" data-i18n="cp.media.sub">Buyers can't touch it. Your photos do that job.</p>
@@ -382,7 +387,7 @@
     </section>
 
     <!-- §4.2 F11 內容檔案（數位）：下載檔，依 F2 數位次分類切換上傳格 · spec 5.1.5.2 §4.2 F11 / v4.3 -->
-    <section class="form-section form-section--outlined" data-cp-show="digital" hidden>
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="digital" hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.cfile.title">Content file</h3>
         <p class="form-section__sub" data-i18n="cp.cfile.sub">The file buyers download — the upload format follows your sub-category.</p>
@@ -439,7 +444,7 @@
     </section>
 
     <!-- §4.1③ 商品規格 Variations（僅實體）：規格模式 + 多規格選項建構器。逐規格表移到獨立區塊 · spec 5.1.5.2 §4.1③ -->
-    <section class="form-section form-section--outlined" data-cp-show="physical">
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.var.title">Variations</h3>
         <p class="form-section__sub" data-i18n="cp.var.sub">Same item in different sizes or colors — each with its own price and stock.</p>
@@ -457,7 +462,7 @@
 
     <!-- §4.1③ 價格（單一規格獨立區塊；多規格時價格在逐規格表內）· spec 5.1.5.2 §4.1③ 路線A。
          定價瘦身（spec 5.1.5.2 F3.2 · D144）：只留「定價（現金）＋成本價」；原價（特價時填）與 POPCORN 定價單位已移除（覆寫上游 eShop BRD）。特價改由下方「折扣設定 → 排程特價」承擔。 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital" data-when-var="single">
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical digital" data-when-var="single">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.price.title">Price</h3>
       </div>
@@ -481,63 +486,8 @@
       </div>
     </section>
 
-    <!-- §4.4 F13 折扣設定（單一規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：開啟折扣 → 折扣價 ↔ 折扣%（雙向連動，以定價為基準、最後編輯為準）＋（可選）限時折扣起訖日。多規格版在逐規格表下方（只用折扣%，見該區）。取代已移除的「原價」機制；限時折扣關＝常態折扣、開＝只在檔期內套用。 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital" data-when-var="single">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
-      </div>
-      <div class="control-group">
-        <div class="control-row">
-        <div>
-          <div class="control-row__main" data-i18n="cp.discount.enable">Enable discount</div>
-          <div class="control-row__sub" data-i18n="cp.discount.enable-sub">Sell this product at a set discount price</div>
-        </div>
-        <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-discount-toggle"></div>
-      </div>
-        <div class="control-group__body" data-cp-discount-fields hidden>
-        <div class="form-grid">
-          <div class="field" style="margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.sale.price">Discount price</span> <span class="field__req">*</span></div>
-            <span class="amount-field amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-              <input class="input amount-field__input" placeholder="0.00" id="cp-sale-price" inputmode="decimal">
-            </span>
-          </div>
-          <div class="field" style="margin-bottom:0">
-            <div class="field__label" data-i18n="cp.sale.percent">Discount %</div>
-            <span class="amount-field amount-field--suffix amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
-              <input class="input amount-field__input" placeholder="0" id="cp-sale-percent" inputmode="decimal">
-            </span>
-          </div>
-        </div>
-        <div class="field__hint" data-i18n="cp.sale.linkhint" style="margin-top:6px">Enter either — the other updates from your list price.</div>
-        <div class="control-group" style="margin-top:12px">
-          <div class="control-row">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
-            <div class="control-row__sub" data-i18n="cp.discount.limited-sub">Apply the discount only during a set period</div>
-          </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-sale-toggle"></div>
-        </div>
-        <div class="form-grid control-group__body" data-cp-sale-fields hidden>
-          <div class="field" style="margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.sale.start">Discount start date</span> <span class="field__req">*</span></div>
-            <input class="input" type="date" id="cp-sale-start">
-          </div>
-          <div class="field" style="margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.sale.end">Discount end date</span> <span class="field__req">*</span></div>
-            <input class="input" type="date" id="cp-sale-end">
-            <div class="field__hint" data-i18n="cp.sale.pending">Time zone &amp; exact timing pending spec.</div>
-          </div>
-        </div>
-        </div>
-      </div>
-      </div>
-    </section>
-
     <!-- §4.1③⑤ 庫存（庫存版本 Edition 置頂，控制下方/表格欄位；單一規格在此填在庫，多規格改由表格）· spec 5.1.5.2 §4.1③⑤ / §4.2 / D064 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital">
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical digital">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.stock.title">Stock</h3>
       </div>
@@ -601,7 +551,7 @@
     </section>
 
     <!-- §4.1③ 逐規格表（僅實體+多規格；獨立區塊，欄位隨庫存版本變化）· spec 5.1.5.2 §4.1③ 路線B -->
-    <section class="form-section form-section--outlined" data-cp-show="physical" data-when-var="multiple" hidden>
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical" data-when-var="multiple" hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.var.table.title">Pricing per variation</h3>
         <p class="form-section__sub" data-i18n="cp.var.table.sub">Each variation has its own price and stock — Limited edition adds a cap column.</p>
@@ -624,78 +574,8 @@
       <div class="field__hint" id="cp-var-empty" data-i18n="cp.var.empty">Add an option above to generate the variation table.</div>
     </section>
 
-    <!-- §4.4 F13 折扣設定（多規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：多規格無單一售價，折扣改「折扣 %」套用所有規格；置於逐規格表下方，緊貼真正的價格。限時折扣同單一規格。 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical" data-when-var="multiple" hidden>
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
-      </div>
-      <div class="control-group">
-        <div class="control-row">
-        <div>
-          <div class="control-row__main" data-i18n="cp.discount.enable">Enable discount</div>
-          <div class="control-row__sub" data-i18n="cp.discount.enable-pct-sub">Take a percentage off every variation's price</div>
-        </div>
-        <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-vdiscount-toggle"></div>
-      </div>
-        <div class="control-group__body" data-cp-vdiscount-fields hidden>
-        <div class="field" style="max-width:220px;margin-bottom:0">
-          <div class="field__label"><span data-i18n="cp.sale.percent">Discount %</span> <span class="field__req">*</span></div>
-          <span class="amount-field amount-field--suffix amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
-            <input class="input amount-field__input" placeholder="0" id="cp-vsale-percent" inputmode="decimal">
-          </span>
-        </div>
-        <div class="field__hint" data-i18n="cp.sale.pct-allhint" style="margin-top:6px">Applied to every variation — fans pay the discounted price.</div>
-        <div class="control-group" style="margin-top:12px">
-          <div class="control-row">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
-            <div class="control-row__sub" data-i18n="cp.discount.limited-sub">Apply the discount only during a set period</div>
-          </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-vsale-toggle"></div>
-        </div>
-        <div class="form-grid control-group__body" data-cp-vsale-fields hidden>
-          <div class="field" style="margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.sale.start">Discount start date</span> <span class="field__req">*</span></div>
-            <input class="input" type="date" id="cp-vsale-start">
-          </div>
-          <div class="field" style="margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.sale.end">Discount end date</span> <span class="field__req">*</span></div>
-            <input class="input" type="date" id="cp-vsale-end">
-            <div class="field__hint" data-i18n="cp.sale.pending">Time zone &amp; exact timing pending spec.</div>
-          </div>
-        </div>
-        </div>
-      </div>
-      </div>
-    </section>
-
-    <!-- §4.4 F13 優惠碼總開關（D458，2026-10-20；spec 5.1.5.2 §4.4 F13「可與優惠碼疊加」唯一定義處）：
-         取代 2026-09 起放在折扣群組內的「可與優惠碼疊加」純開關（原「關閉＝折扣與優惠碼擇一」）。
-         關閉（預設）＝這個商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、
-         或建立新碼（選碼＝把本商品加進該碼的特定商品範圍，資料在優惠碼端）。與排程特價開不開無關（D458 決定 4），
-         所以獨立成段、不再收進折扣群組；單一規格與多選項共用這一段（一個商品只有一個總開關）。
-         按「開始販售」時才 commit：新碼與選取結果隨商品儲存一併建立綁定（D458 推導 9／11）。 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital" data-cp-codes-section>
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
-      </div>
-      <div class="control-group">
-        <div class="control-row">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.stack">Use discount codes</div>
-            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</div>
-          </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-codes-toggle"></div>
-        </div>
-        <div class="control-group__body" data-cp-codes-body hidden>
-          <div data-cp-codes-host></div>
-        </div>
-      </div>
-    </section>
-
     <!-- §4.1 ⑥ 取貨方式 Delivery method（僅實體）· spec 5.1.5.2 §4.1⑥ / D064 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical">
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.delivery.title">Delivery method</h3>
         <p class="form-section__sub" data-i18n="cp.delivery.sub">Ship it to buyers, or let them collect on site with a QR code.</p>
@@ -796,7 +676,7 @@
 
     <!-- §4.5 共用商品設定（兩型）· spec 5.1.5.2 §4.5 / D064。
          2026-07-21 使用者裁示：原本「購買限制與標籤」一個 section，拆成「購買限制」與「商品標籤」兩個。 -->
-    <section class="form-section form-section--outlined">
+    <section class="form-section form-section--outlined" data-form-step="1">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.limits.title">Buyer limits</h3>
       </div>
@@ -820,7 +700,7 @@
     </section>
 
     <!-- §4.5 商品標籤（2026-07-21 由「購買限制與標籤」拆出成獨立 section）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section form-section--outlined" data-form-step="1">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.tags">Product tags</h3>
         <p class="form-section__sub" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</p>
@@ -845,7 +725,7 @@
     </section>
 
     <!-- §4.5 電影關聯（獨立小節，可多部、選填、可搜尋；spec 5.1.5.2 §4.5 F12 / D140）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section form-section--outlined" data-form-step="1">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.films">Linked movies</h3>
         <p class="form-section__sub" data-i18n="cp.films.sub">Tag released movies this product relates to.</p>
@@ -863,7 +743,7 @@
          主決定沒成立就整層不出現——「不上架」＝草稿，沒有下架時間、沒有顯示開關，也沒有開賣這回事。
          列標題不重寫 section 標題已經說過的字（上架設定裡不再有一列叫「上架」）。
          三個時間欄一律選填、不預設值；唯一校驗仍是「停售 > 開賣」（ListingState.validateSaleWindow）。 -->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital">
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
       </div>
@@ -917,7 +797,7 @@
       </div>
     </section>
 
-    <section class="form-section form-section--outlined" data-cp-show="physical digital" data-cp-sale-section hidden>
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-cp-sale-section hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
         <!-- D332：開賣與停售只管單售、不影響之後含本商品的組合包；要連組合包一起停用下架（5.1.5.2 §4.6） -->
@@ -960,8 +840,134 @@
       </div>
     </section>
 
+    <!-- 2026-10-21 三步驟（第二步「上架設定」）：折扣設定（單一／多選項）與優惠碼從第一步的定價旁搬到上架與開賣之後，順序＝上架設定→開賣設定→折扣設定→優惠碼 -->
+    <!-- §4.4 F13 折扣設定（單一規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：開啟折扣 → 折扣價 ↔ 折扣%（雙向連動，以定價為基準、最後編輯為準）＋（可選）限時折扣起訖日。多規格版在逐規格表下方（只用折扣%，見該區）。取代已移除的「原價」機制；限時折扣關＝常態折扣、開＝只在檔期內套用。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-when-var="single">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
+      </div>
+      <div class="control-group">
+        <div class="control-row">
+        <div>
+          <div class="control-row__main" data-i18n="cp.discount.enable">Enable discount</div>
+          <div class="control-row__sub" data-i18n="cp.discount.enable-sub">Sell this product at a set discount price</div>
+        </div>
+        <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-discount-toggle"></div>
+      </div>
+        <div class="control-group__body" data-cp-discount-fields hidden>
+        <div class="form-grid">
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.sale.price">Discount price</span> <span class="field__req">*</span></div>
+            <span class="amount-field amount-field--readonly">
+              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="input amount-field__input" placeholder="0.00" id="cp-sale-price" inputmode="decimal">
+            </span>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label" data-i18n="cp.sale.percent">Discount %</div>
+            <span class="amount-field amount-field--suffix amount-field--readonly">
+              <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+              <input class="input amount-field__input" placeholder="0" id="cp-sale-percent" inputmode="decimal">
+            </span>
+          </div>
+        </div>
+        <div class="field__hint" data-i18n="cp.sale.linkhint" style="margin-top:6px">Enter either — the other updates from your list price.</div>
+        <div class="control-group" style="margin-top:12px">
+          <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
+            <div class="control-row__sub" data-i18n="cp.discount.limited-sub">Apply the discount only during a set period</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-sale-toggle"></div>
+        </div>
+        <div class="form-grid control-group__body" data-cp-sale-fields hidden>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.sale.start">Discount start date</span> <span class="field__req">*</span></div>
+            <input class="input" type="date" id="cp-sale-start">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.sale.end">Discount end date</span> <span class="field__req">*</span></div>
+            <input class="input" type="date" id="cp-sale-end">
+            <div class="field__hint" data-i18n="cp.sale.pending">Time zone &amp; exact timing pending spec.</div>
+          </div>
+        </div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- §4.4 F13 折扣設定（多規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：多規格無單一售價，折扣改「折扣 %」套用所有規格；置於逐規格表下方，緊貼真正的價格。限時折扣同單一規格。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical" data-when-var="multiple" hidden>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
+      </div>
+      <div class="control-group">
+        <div class="control-row">
+        <div>
+          <div class="control-row__main" data-i18n="cp.discount.enable">Enable discount</div>
+          <div class="control-row__sub" data-i18n="cp.discount.enable-pct-sub">Take a percentage off every variation's price</div>
+        </div>
+        <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-vdiscount-toggle"></div>
+      </div>
+        <div class="control-group__body" data-cp-vdiscount-fields hidden>
+        <div class="field" style="max-width:220px;margin-bottom:0">
+          <div class="field__label"><span data-i18n="cp.sale.percent">Discount %</span> <span class="field__req">*</span></div>
+          <span class="amount-field amount-field--suffix amount-field--readonly">
+            <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+            <input class="input amount-field__input" placeholder="0" id="cp-vsale-percent" inputmode="decimal">
+          </span>
+        </div>
+        <div class="field__hint" data-i18n="cp.sale.pct-allhint" style="margin-top:6px">Applied to every variation — fans pay the discounted price.</div>
+        <div class="control-group" style="margin-top:12px">
+          <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
+            <div class="control-row__sub" data-i18n="cp.discount.limited-sub">Apply the discount only during a set period</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-vsale-toggle"></div>
+        </div>
+        <div class="form-grid control-group__body" data-cp-vsale-fields hidden>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.sale.start">Discount start date</span> <span class="field__req">*</span></div>
+            <input class="input" type="date" id="cp-vsale-start">
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.sale.end">Discount end date</span> <span class="field__req">*</span></div>
+            <input class="input" type="date" id="cp-vsale-end">
+            <div class="field__hint" data-i18n="cp.sale.pending">Time zone &amp; exact timing pending spec.</div>
+          </div>
+        </div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- §4.4 F13 優惠碼總開關（D458，2026-10-20；spec 5.1.5.2 §4.4 F13「可與優惠碼疊加」唯一定義處）：
+         取代 2026-09 起放在折扣群組內的「可與優惠碼疊加」純開關（原「關閉＝折扣與優惠碼擇一」）。
+         關閉（預設）＝這個商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、
+         或建立新碼（選碼＝把本商品加進該碼的特定商品範圍，資料在優惠碼端）。與排程特價開不開無關（D458 決定 4），
+         所以獨立成段、不再收進折扣群組；單一規格與多選項共用這一段（一個商品只有一個總開關）。
+         按「開始販售」時才 commit：新碼與選取結果隨商品儲存一併建立綁定（D458 推導 9／11）。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-cp-codes-section>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
+      </div>
+      <div class="control-group">
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.discount.stack">Use discount codes</div>
+            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-codes-toggle"></div>
+        </div>
+        <div class="control-group__body" data-cp-codes-body hidden>
+          <div data-cp-codes-host></div>
+        </div>
+      </div>
+    </section>
+
     <!-- §4.6 結帳與保障（共用）-->
-    <div class="form-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
+    <div class="form-footnote" data-form-step="2" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
     </div><!-- /.preview-split__form -->
 
     <!-- §5.2.5 即時預覽：表單旁 sticky 常駐欄（取代舊右側滑出面板；使用者裁示 2026-06-24）-->
@@ -1037,8 +1043,13 @@
     <div class="wizard__bottom-actions">
       <!-- ✝ 2026-09-18 撤除編輯態「刪除」鈕 #cp-delete 與其 window.confirm（D284「發布過即不可刪除」，§7.14「封存與不可刪除」）：
            發布過的商品只能在已下架後於細節頁「封存」；草稿可刪但入口在電子商店清單、必須確認。本頁不再有任何刪除。 -->
+      <!-- 2026-10-21 三步驟（D464）：第一步＝「下一步」（不擋：第一步沒填完也能進第二步）；第二步＝「上一步」＋「下一步」（#cp-primary，
+           就緒檢查擋進第三步「預覽與發布」）。主按鈕一律只寫「下一步」（使用者裁決）。就緒 tooltip 掛在兩顆「下一步」外層，
+           每一步只列該步的必填項（使用者裁決「就緒檢查分步顯示」）；第三步的發布前檢核列全部。顯隱由 renderFootSteps() 管。 -->
+      <button class="btn btn--outline" type="button" data-cp-prev hidden data-i18n="wiz.back">Back</button>
       <div class="readiness__anchor" id="cp-ready-anchor" tabindex="0" aria-describedby="readiness__pop">
-        <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
+        <button class="btn btn--primary" type="button" data-cp-next data-i18n="wiz.next">Next</button>
+        <button class="btn btn--primary" id="cp-primary" disabled hidden data-i18n="wiz.next">Next</button>
         <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
         <div class="readiness__pop" id="readiness__pop" role="tooltip">
           <div class="readiness">
@@ -1456,8 +1467,17 @@
     const checks = buildChecks();
     /* 待補項(pending)不擋上架，只列出；gating 只看非 pending 項 */
     const remaining = checks.filter(c => !c.pending).filter(c => !c.done()).length;
+    /* 2026-10-21 D464 使用者裁決「就緒檢查分步顯示」：分步時 tooltip 只列目前這一步的必填項（項目→節→節所在的步驟）；
+       擋關照舊看全部（remaining）。編輯態／嵌入態不分步，照舊列全部。 */
+    let stepN = 0;
+    try { stepN = (cpForm && cpForm.hasAttribute('data-at') && cpStep < 3) ? cpStep : 0; } catch (e) { stepN = 0; }
+    const inStep = c => { if (!stepN) return true; const t = cpSectionOf(c.step).target; return (t ? cpStepOf(t) : 1) === stepN; };
+    const shown = checks.filter(inStep);
+    const remainHere = shown.filter(c => !c.pending).filter(c => !c.done()).length;
+    const remainOther = remaining - remainHere;
     listEl.innerHTML = '';
-    checks.forEach(c => {
+    listEl.hidden = !shown.length;
+    shown.forEach(c => {
       const done = c.done();
       const li = document.createElement('li');
       li.className = 'readiness__item' + (done ? ' readiness__item--done' : '');
@@ -1469,7 +1489,18 @@
     const verb = VERB[state.type];
     /* Cheat Codes（devtools）的 Skip validation：開啟時略過就緒 gating，強制可上架 */
     const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
-    if (ready) {
+    if (stepN && remainHere === 0 && !(stepN === 2 && remainOther > 0)) {
+      /* 這一步的必填都齊了（第一步：可以往下；第二步：其他步驟也齊了＝可以進預覽） */
+      bannerEl.textContent = stepN === 1 ? T('cp.ready.banner.stepdone', 'This step is done') : T('cp.ready.banner.ready', 'Ready to sell!');
+      bannerEl.classList.add('readiness__banner--ready');
+    } else if (stepN === 2 && remainHere === 0 && !skip) {
+      /* 第二步自己齊了、第一步還有缺：主鈕停用，說一句是哪一步沒完成（不把第一步的項目搬過來列） */
+      bannerEl.textContent = T('cp.ready.banner.prev', '{step}: {n} required items left').replace('{step}', T('cp.step.details', 'Product settings')).replace('{n}', remainOther);
+      bannerEl.classList.remove('readiness__banner--ready');
+    } else if (stepN && !skip) {
+      bannerEl.textContent = T('cp.ready.banner.step', '{n} required items left in this step').replace('{n}', remainHere);
+      bannerEl.classList.remove('readiness__banner--ready');
+    } else if (ready) {
       bannerEl.textContent = T('cp.ready.banner.ready', 'Ready to sell!');
       bannerEl.classList.add('readiness__banner--ready');
     } else if (skip) {
@@ -1483,39 +1514,48 @@
        hover 主動作再跳出一張「還差幾項」的卡只會誤導）*/
     if (editMode) { primary.disabled = false; popEl.hidden = true; anchorEl.removeAttribute('tabindex'); }
     else { primary.disabled = !(ready || skip); popEl.hidden = false; anchorEl.setAttribute('tabindex', '0'); }
-    readyTitle.textContent = T('cp.ready.title', 'Ready to sell?');
+    readyTitle.textContent = stepN ? T('cp.ready.title.step', 'Required in this step') : T('cp.ready.title', 'Ready to sell?');
     if (window.ztorIcons) window.ztorIcons.applyIcons(listEl);
   }
 
-  /* D317（2026-09-23）：頁首兩段進度條——第 1 段「商品內容」、第 2 段「預覽與發布」，做法
-     對齊 create-event 第 8 步（.progress-stepper--segmented/--anystep，見 progress-stepper.css）。
-     編輯態／嵌入態沒有這一步（見檔尾 editMode／embed 分支，那裡把 #cp-progress 藏起來），
+  /* D317（2026-09-23）頁首進度條，做法對齊 create-event 第 8 步（.progress-stepper--segmented/--anystep，見 progress-stepper.css）；
+     2026-10-21 起三段：商品設定／上架設定／預覽與發布。各段「已完成」＝就緒檢查（buildChecks／skipValidation）裡落在該步的項目全過，不另訂規則。
+     編輯態／嵌入態不分步（見檔尾 editMode／embed 分支，那裡把 #cp-progress 藏起來），
      這裡仍會照跑，只是沒有元素可寫、renderStepper 提早 return。 */
-  function cpDetailsReady() {
-    /* 就緒狀態＝Ready to sell? 同一組計算（buildChecks／skipValidation），不另訂規則。 */
-    const checks = buildChecks();
-    const remaining = checks.filter(c => !c.pending).filter(c => !c.done()).length;
-    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
-    return remaining === 0 || skip;
-  }
   const cpProgressEl = document.getElementById('cp-progress');
   const stepperEl = document.getElementById('cp-stepper');
   const stepperLabels = stepperEl ? Array.from(stepperEl.querySelectorAll('.progress-stepper__label')) : [];
+  /* 2026-10-21 三步驟：cpStep 1＝商品設定、2＝上架設定（同一張表單，.form-steps[data-at] 切顯示）、3＝預覽與發布（全頁畫面）。 */
   let cpStep = 1;
+  const cpForm = document.querySelector('[data-cp-form]');
+  const cpVisited = { 1: true };   /* 到過的表單步驟——沒到過的步驟不標「已完成」（第二步沒有就緒項，不這樣會一開頁就打勾） */
+  /* 節點 → 屬於第幾步（讀最近的 [data-form-step]，沒標＝第一步） */
+  function cpStepOf(el) {
+    const s = el && el.closest ? el.closest('[data-form-step]') : null;
+    return s ? Number(s.getAttribute('data-form-step')) || 1 : 1;
+  }
+  /* 第 n 步（表單步驟）的就緒項是否全過：就緒檢查 buildChecks 不另訂規則，每項經 cpSectionOf 對到節、節所在步驟就是它的步驟 */
+  function cpStepReady(n) {
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    if (skip) return true;
+    return buildChecks().filter(c => !c.pending).every(c => {
+      const t = cpSectionOf(c.step).target;
+      return (t ? cpStepOf(t) : 1) !== n || c.done();
+    });
+  }
   function renderStepper() {
     if (!stepperEl) return;
     stepperEl.style.setProperty('--at', String(cpStep));
-    stepperEl.style.setProperty('--progress', ((cpStep - 1) / 2 * 100) + '%');
-    const detailsDone = cpDetailsReady();
+    stepperEl.style.setProperty('--progress', ((cpStep - 1) / 3 * 100) + '%');
     stepperLabels.forEach(l => {
       const n = Number(l.dataset.step);
       l.classList.toggle('progress-stepper__label--current', n === cpStep);
       l.classList.toggle('progress-stepper__label--done', n < cpStep);
       const box = l.querySelector('[data-step-state]');
       if (!box) return;
-      /* 第 2 段目前沒有「已完成」——側欄按「開始販售」直接離站（doPublishNew），
-         走不到「第 2 段打勾」那個畫面，狀態小字只服務第 1 段。 */
-      const done = n === 1 ? detailsDone : false;
+      /* 第 3 段目前沒有「已完成」——側欄按「開始販售」直接離站（doPublishNew），
+         走不到「第 3 段打勾」那個畫面，狀態小字只服務前兩段。 */
+      const done = n < 3 ? (!!cpVisited[n] && cpStepReady(n)) : false;
       box.innerHTML = done
         ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(T('wiz.step.done', 'Done'))
         : esc(T('wiz.step.todo', 'Not done'));
@@ -1876,7 +1916,8 @@
     stage = window.ztorPublishStage.mount(stageHost, buildStageOpts());
     if (stageSheet) stageSheet.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: 'instant' });
-    cpStep = 2;
+    cpStep = 3;
+    cpRememberStep();
     renderStepper();
     return true;
   }
@@ -1891,9 +1932,9 @@
     stageBody.classList.remove('wizard__body--stage');
     stageBody.classList.add('wizard__body--mid');
     document.querySelector('[data-cp-footer]')?.classList.remove('hidden');
-    cpStep = 1;
-    renderStepper();
+    /* 2026-10-21 三步驟：從檢核項／預覽「編輯」回來＝跳到該節所在的步驟；「返回表單」＝回第二步（上一步） */
     const dest = step ? cpSectionOf(step) : null;
+    cpGoStep(dest && dest.target ? cpStepOf(dest.target) : 2, { keepScroll: true });
     if (dest && dest.target) {
       const top = document.querySelector('.wizard__top');
       dest.target.style.scrollMarginTop = 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-16))';
@@ -1906,6 +1947,43 @@
   }
   /* Skip validation 切換時側欄檢核跟著重算（表單側的 refresh() 也會帶一次，見 refresh） */
   document.addEventListener('ztor:devstate-changed', () => { if (stage) stage.syncChecks(); });
+
+  /* 2026-10-21 三步驟：表單兩步之間切換（同一張表單，.form-steps[data-at]）。不清任何欄位；換步捲回頂端，
+     keepScroll＝由呼叫端自己決定捲動（exitStage 要捲到檢核項的節或還原位置）。本頁大綱只列目前這一步的節
+     （元件濾掉不佔版面的節），data-at 不在元件監看的 hidden／class 之內，所以這裡主動 refresh 一次。 */
+  const cpPrev = document.querySelector('[data-cp-prev]');
+  const cpNext = document.querySelector('[data-cp-next]');
+  function renderFootSteps() {
+    const stepped = !!(cpForm && cpForm.hasAttribute('data-at'));
+    if (cpPrev) cpPrev.hidden = !stepped || cpStep !== 2;
+    if (cpNext) cpNext.hidden = !stepped || cpStep !== 1;
+    primary.hidden = stepped && cpStep === 1;
+    renderReadiness();   /* tooltip 換成這一步的必填項 */
+  }
+  /* 2026-10-21 D464 使用者裁決「從草稿回來時，停在上次離開的那一步」：每次換步記下目前步驟（與型別），
+     帶 ?draft 進來（原型沒有草稿清單，以 ?draft=1 模擬「從草稿回來」）時還原。原型的草稿本身沒有存欄位值。 */
+  const CP_DRAFT_KEY = 'ztor.cp.draft-step';
+  function cpRememberStep() {
+    if (!cpForm || !cpForm.hasAttribute('data-at')) return;
+    try { localStorage.setItem(CP_DRAFT_KEY, JSON.stringify({ step: cpStep, type: state.type })); } catch (e) {}
+  }
+  function cpGoStep(n, opts) {
+    if (!cpForm || !cpForm.hasAttribute('data-at')) return;
+    cpStep = n;
+    cpVisited[n] = true;
+    cpRememberStep();
+    cpForm.setAttribute('data-at', String(n));
+    renderFootSteps();
+    renderStepper();
+    if (cpOutline) cpOutline.refresh();
+    if (!(opts && opts.keepScroll)) {
+      if (stageSheet) stageSheet.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+  if (cpNext) cpNext.addEventListener('click', () => cpGoStep(2));
+  document.querySelector('[data-wizard-savedraft]')?.addEventListener('click', cpRememberStep);
+  if (cpPrev) cpPrev.addEventListener('click', () => cpGoStep(1));
 
   primary.addEventListener('click', () => {
     if (primary.disabled) return;
@@ -1922,12 +2000,18 @@
      同一條路）；第 2 段＝與主鈕同一條路（primary.click() 直接觸發上面那個 handler，驗證擋關、
      embed／editMode 分支照舊）；點目前所在段不做事。表單頁沒有 stepper（editMode／embed）
      時 stepperLabels 是空陣列，這段不會綁到任何東西。 */
+  /* 2026-10-21 三步驟：第 1、2 段＝表單的兩步（從第 3 段點回來先卸載全頁畫面）；第 3 段＝與主鈕同一條路（primary.click()，
+     就緒檢查擋關照舊——沿用現行規則，只擋進預覽與發布，表單兩步之間不擋）。 */
   stepperLabels.forEach(l => {
     l.addEventListener('click', () => {
       const n = Number(l.dataset.step);
       if (n === cpStep) return;
-      if (n === 1 && cpStep === 2) { exitStage(); return; }
-      if (n === 2 && cpStep === 1) { primary.click(); return; }
+      if (n < 3) {
+        if (cpStep === 3) { exitStage(); }
+        cpGoStep(n);
+        return;
+      }
+      primary.click();
     });
   });
 
@@ -2148,13 +2232,14 @@
     applyVisibility();
     /* 編輯態主動作固定為 Save changes，不隨類型改寫。
        D317（2026-09-23）：一般建立流程按下這顆鈕只是進「預覽與發布」全頁畫面，真正上架在
-       第 2 步側欄的「開始販售」——兩個按鈕以前同名易誤會，這顆改叫「下一步：預覽」；
+       第 2 步側欄的「開始販售」——兩個按鈕以前同名易誤會，這顆改叫「下一步」（D464）；
        嵌入態（?embed，在 create-bundle 彈窗內）不經過這個兩步驟、按下直接把商品回傳母頁，
        維持原文案 PRIMARY[t]（開始販售）不受影響。 */
     if (!editMode) {
-      const primaryKey = embed ? PRIMARY[t] : 'cp.next-preview';
+      /* 2026-10-21 D464 使用者裁決：步驟 1、2 的主按鈕一律只寫「下一步」（原「下一步：預覽」） */
+      const primaryKey = embed ? PRIMARY[t] : 'wiz.next';
       primary.setAttribute('data-i18n', primaryKey);
-      primary.textContent = T(primaryKey, embed ? 'Start selling' : 'Next: Preview');
+      primary.textContent = T(primaryKey, embed ? 'Start selling' : 'Next');
     }
     refresh();
   }
@@ -2168,7 +2253,7 @@
      編輯既有商品（?id=／?edit）、嵌入在組合流程裡（?embed=1）、外部帶入型別（?type=）。 */
   (function () {
     const q = new URLSearchParams(location.search);
-    if (q.get('id') || q.get('edit') != null || q.get('embed') != null || q.get('type')) enterWizard();
+    if (q.get('id') || q.get('edit') != null || q.get('embed') != null || q.get('type') || q.get('draft') != null) enterWizard();
   })();
 
   /* ---- segmented 切換（多規格 / 庫存版本 / 取貨方式）---- */
@@ -2822,9 +2907,23 @@
      都沒有「預覽與發布」這第 2 步，頁首那欄留空（.wizard__top-bar 是三欄 grid，中欄本來就
      容許空，見 shared.css .wizard__progress）。 */
   if ((editMode || embed) && cpProgressEl) cpProgressEl.hidden = true;
+  /* 2026-10-21 三步驟只服務一般建立流程：編輯態／嵌入態不分步，所有節一起顯示、底部只留主動作 */
+  if ((editMode || embed) && cpForm) { cpForm.removeAttribute('data-at'); renderFootSteps(); if (cpOutline) cpOutline.refresh(); }
 
   updateEditionHint();
-  setType(initType);
+  /* 從草稿回來（?draft）：型別沒帶就用上次記下的；步驟在 setType 之後還原（見下） */
+  const cpDraft = (function () {
+    if (params.get('draft') == null || editMode || embed) return null;
+    try { return JSON.parse(localStorage.getItem(CP_DRAFT_KEY) || 'null'); } catch (e) { return null; }
+  })();
+  setType(params.get('type') ? initType : ((cpDraft && ['physical', 'digital'].includes(cpDraft.type)) ? cpDraft.type : initType));
+  if (cpDraft) {
+    enterWizard();
+    const n = Number(cpDraft.step) || 1;
+    for (let i = 2; i <= Math.min(n, 2); i++) cpVisited[i] = true;
+    if (n >= 2) cpGoStep(2);
+    if (n >= 3 && !primary.disabled) primary.click();   /* 上次停在預覽：就緒照舊擋，沒過就停在第二步 */
+  }
 })();
 </script>
 <script src="js/icons.js?v=r2.2"></script>

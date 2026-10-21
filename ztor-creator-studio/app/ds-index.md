@@ -404,7 +404,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 178 支；主 class 前 5 個）
+## 元件（ds-components/，共 179 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -469,6 +469,7 @@
 - `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊與標題列讀數（2026-10-12，建立組合包改版；使
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--dense, .form-section__actions, .form-section--outlined, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
+- `form-steps.css` — .form-steps ｜ form-steps.css · 同一張表單分步顯示（2026-10-21，建立商品／建立組合包
 - `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom

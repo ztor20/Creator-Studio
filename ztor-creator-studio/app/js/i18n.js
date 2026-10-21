@@ -5215,6 +5215,7 @@
     'wiz.saving':           { en: 'Saving…',                          zh: '儲存中…' },
     'wiz.back':             { en: 'Back',                             zh: '上一步' },
     'wiz.continue':         { en: 'Continue',                         zh: '下一步' },
+    'wiz.next':             { en: 'Next',                             zh: '下一步' },   // 2026-10-21 D464：建立商品／建立組合包步驟 1、2 的主按鈕一律只寫「下一步」
     /* 返回離開確認彈窗 */
     'wiz.leave.title.edited': { en: 'Save before you leave?',         zh: '要先儲存再離開嗎？' },
     'wiz.leave.body.edited':  { en: 'You have edits on this page.',   zh: '這一頁有你做的編輯。' },
@@ -5917,8 +5918,13 @@
     /* D317（2026-09-23）：表單／預覽拆成兩步驟——頁首進度條的兩段步驟名，
        與表單主鈕新文案「下一步：預覽」（原本按下去就直接進全頁預覽，字卻寫「開始販售」，
        跟第 2 步側欄真正上架的同一顆字重名；拆開後這顆只負責「往下走」）。 */
-    'cp.step.details':      { en: 'Details',                          zh: '內容' },   // 頁面標題已是「新增商品」，步驟名不再重述「商品」（鐵律 12；規格文件稱「商品內容」）
+    'cp.step.details':      { en: 'Product settings',                 zh: '商品設定' },   // 2026-10-21 三步驟（D464）：第一步名稱「商品設定」（原「內容」）
+    'cp.step.listing':      { en: 'Listing & sales',                  zh: '上架與販售' },   // 2026-10-21 D464 使用者裁決：第二步改名「上架與販售」（避開節名「上架設定」）
     'cp.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
+    'cp.ready.title.step':  { en: 'Required in this step',            zh: '這一步的必填項目' },   // 2026-10-21 D464：就緒檢查分步顯示
+    'cp.ready.banner.step': { en: '{n} required items left in this step', zh: '這一步還有 {n} 項必填' },
+    'cp.ready.banner.stepdone': { en: 'This step is done',            zh: '這一步都填好了' },
+    'cp.ready.banner.prev': { en: '{step}: {n} required items left',  zh: '「{step}」還有 {n} 項必填' },
     'cp.next-preview':      { en: 'Next: Preview',                    zh: '下一步：預覽' },
     /* §4.5 編輯態（標題／主動作／刪除）*/
     'cp.h1.edit':           { en: 'Edit product',                     zh: '編輯商品' },
@@ -6225,8 +6231,10 @@
     'cb.limit.hint':        { en: 'Leave empty for unlimited',        zh: '留空即不限量' },
     'cb.create':            { en: 'Create bundle',                    zh: '建立組合' },
     /* 2026-09-23 兩步驟（D310 組合側，比照建立商品 D317）：頁首進度條＋表單主鈕＋第 2 步全頁畫面的返回鈕與發布前檢核 */
-    'cb.step.details':      { en: 'Details',                          zh: '內容' },   // 頁面標題已是「建立組合」，步驟名不再重述「組合」（鐵律 12）
+    'cb.step.details':      { en: 'Bundle settings',                  zh: '組合包設定' },   // 2026-10-21 三步驟（D464）：使用者指定第一步名稱「組合包設定」（原「內容」）
+    'cb.step.listing':      { en: 'Listing & sales',                  zh: '上架與販售' },   // 2026-10-21 D464 使用者裁決
     'cb.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
+    'cb.why.step1':         { en: '{step} isn’t finished',            zh: '「{step}」還沒填完' },   // 2026-10-21 D464：第二步自己齊了、第一步還有缺時的停用理由
     'cb.next-preview':      { en: 'Next: Preview',                    zh: '下一步：預覽' },
     'cb.stage.back':        { en: 'Back to form',                     zh: '返回表單' },
     'cb.qc.members':        { en: 'At least 1 item or ticket',        zh: '至少 1 項內容物' },
@@ -6816,7 +6824,10 @@
     'cb.sec.media':             { en: 'Photos & videos', zh: '圖片與影片' },
     'ce.bd.sec.media':          { en: 'Bundle images', zh: '組合包圖片' },   // 2026-10-12 活動的組合包編輯器（分段版型）；e-shop 建立組合包仍用上面的「展示」
     'cb.sec.members':           { en: 'What’s in it', zh: '組合物' },
-    'cb.sec.price':             { en: 'Pricing & discounts', zh: '定價與優惠' },   /* 2026-10-12 使用者：價格卡標題改「定價與優惠」 */
+    'cb.sec.price':             { en: 'Pricing', zh: '定價' },   /* 2026-10-12 使用者：價格卡標題改「定價與優惠」；2026-10-21 三步驟起優惠拆到第二步，這張只剩「定價」 */
+    'cb.sec.offers':            { en: 'Discounts', zh: '優惠' },   /* 2026-10-21 三步驟：第二步的限時折扣＋使用優惠碼 */
+    'cb.sec.limit':             { en: 'Purchase limit', zh: '限購' },   /* 2026-10-21 三步驟：原「購買條件與限購」拆開，限購留第一步 */
+    'cb.sec.buy':               { en: 'Purchase conditions', zh: '購買條件' },   /* 2026-10-21 三步驟：購買條件移到第二步 */
     'cb.sec.qty':               { en: 'Quantity', zh: '數量' },
     'cb.sec.listing':           { en: 'Listing & sale', zh: '上架與開賣' },
     'cb.mt.name':               { en: 'Name', zh: '名稱' },
