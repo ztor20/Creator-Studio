@@ -1,0 +1,26 @@
+/* ============================================================
+   form-steps.css · 同一張表單分步顯示（2026-10-21，建立商品／建立組合包改三步驟）
+   ------------------------------------------------------------
+   長表單拆成幾步、但不拆成幾個頁面：所有節仍在同一個表單容器裡（欄位值、即時預覽、
+   本頁大綱、就緒檢查都照舊讀同一份 DOM），容器標「現在第幾步」，不是這一步的節收起來。
+
+   anatomy
+     .form-steps[data-at="N"]          表單容器（建立商品、建立組合包＝.preview-split__form）；N＝目前顯示第幾步
+       > [data-form-step="N"]          直屬子節點標自己屬於第幾步（節、橫幅、頁尾小字都可以）
+       > 沒標 data-form-step 的子節點   每一步都顯示
+
+   規則
+     · 只用 display:none 收起，不碰 hidden 屬性——頁面原本就用 hidden 管「實體／數位」「單一／多選項」等分支顯隱，
+       兩套互不干擾：一個節要出現，必須同時「分支要顯示」且「屬於目前這一步」。
+     · 本頁大綱（section-outline.js）濾掉不佔版面的節，所以大綱自動只列目前這一步的節；
+       切步驟時消費頁要呼叫一次 outline.refresh()（data-at 不是元件監看的 hidden／class）。
+     · 沒設 data-at（編輯態、嵌入態不分步）＝全部顯示。
+     · 步驟條（progress-stepper）、上一步／下一步按鈕與擋關由消費頁負責，本元件只管顯隱。
+
+   消費：create-product.html、create-bundle.html
+   ============================================================ */
+.form-steps[data-at="1"] > [data-form-step]:not([data-form-step="1"]),
+.form-steps[data-at="2"] > [data-form-step]:not([data-form-step="2"]),
+.form-steps[data-at="3"] > [data-form-step]:not([data-form-step="3"]) {
+  display: none;
+}

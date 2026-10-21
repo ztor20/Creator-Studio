@@ -949,6 +949,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Section outline | 🟡 molecule | ✓ App | 長表單的本頁大綱（2026-10-12，lab-section-nav 選定 C 款）：直排細字清單，目前節亮起＋左側細線（scroll-spy），點擊平滑捲到該節；每列前有狀態圓（必填未填＝橘色空心圈／已完成＝實心打勾／選填＝灰點），頂部「必填 N／M」＋進度條，sticky。`--gutter` 變體放進頁面左側空白欄、視窗 <1400px 隱藏。與 `.section-nav`（分頁內側欄、無狀態）、`.section-tabs`（頂端橫排、無狀態）的分工：只有本支帶「必填完成度」。詳見 §4.233 | [section-outline.css](./ds-components/section-outline.css) |
 | Limit set | 🟡 molecule | ✓ App | 限購（2026-10-12 D398 promote；2026-10-16 D427 起只剩「每人總限購數量」一欄，每次交易限購數量／限購次數退場）：一欄＋一句輔助說明、只換單位（件／組／張）；組合包變體 `.limit-set--bundle` 為「限購」標題＋一句額度說明（獨立計算，D456 起不繼承成員、沒有跟隨成員開關）＋細框裡一列（左名稱與說明、右輸入框）。markup 一律由 `js/purchase-limits.js` 產生。詳見 §4.234 | [limit-set.css](./ds-components/limit-set.css) |
 | Rules group | 🟡 molecule | ✓ App | 購買條件群組（2026-10-21，UI-CHANGES 二百八十二；使用者反饋「購買條件與限購太零散」）：把原本兩個獨立線框（購買條件、限購）、各自的標題與調整入口，整併成**一個**細框（同價格階梯 `--border-soft`／`--radius-md`）：條件那一列（左＝名稱＋來源說明、右＝讀數＋跟隨開關同一排，關掉跟隨或純商品條件清單時編輯內容接在列下 `__body`）→ 限購那一列（左＝名稱＋兩句說明、右＝輸入框）→ 底部一句彙總「目前生效：購買條件「…」、限購「…」」。節標題只出現一次；三處（建立組合、組合細節、建立活動組合包彈窗）同一套 markup。詳見 §4.240 | [rules-group.css](./ds-components/rules-group.css) |
+| Form steps | 🟢 atom | ✓ App | 同一張表單分步顯示（2026-10-21，建立商品／建立組合包改三步驟）：所有節留在同一個表單容器，容器 `.form-steps[data-at="N"]` 標目前第幾步、直屬子節點 `[data-form-step]` 標自己屬於第幾步，不是這一步的收起（`display:none`，不碰 `hidden`）。步驟條、上一步／下一步與擋關由消費頁負責。詳見 §4.241 | [form-steps.css](./ds-components/form-steps.css) |
 | Price ladder | 🟡 molecule | ✓ App | 價格階梯（2026-10-12 D402）：原價 → 組合折扣 → 限時折扣 → 使用優惠碼（D458 起原「可與優惠碼疊加」改為優惠碼總開關，開啟後接放選擇欄的面板列）→ 粉絲實付，排成一條由上往下的列；開關列右邊放開關、打開後展開面板列；「看怎麼算」展開逐項明細；價格不是單一值時主價格下加區間小字。詳見 §4.235 | [price-ladder.css](./ds-components/price-ladder.css) |
 | Member table | 🟡 molecule | ✓ App | 組合物表（2026-10-12 D402）：商品與活動票券成員同一張表，五欄（展開｜名稱｜原價・剩餘｜每組數量｜移除），票券列可展開、展開入口兩處同步。詳見 §4.236 | [member-table.css](./ds-components/member-table.css) |
 | Form ask | 🟡 molecule | ✓ App | 問句式設定塊（問句→說明→二選一→選了才出現的內容）＋標題列讀數 `.form-tally`（分類標 `.form-cat` 已撤除）（2026-10-12 D402）。詳見 §4.237 | [form-ask.css](./ds-components/form-ask.css) |
@@ -7627,6 +7628,32 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Dependencies** — Switch、Input、Field（`.field__error`／`.field__hint`）；內容來自 Limit set 的 `blockHTML` 與 `ticket-bundle.js`。
 
-**Consumers** — `create-bundle.html`（「購買條件與限購」卡，唯讀）、`bundle-detail.html`（組合設定分頁，可編輯）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗第 5 段，`layout:'split'`）。
+**Consumers** — `create-bundle.html`（2026-10-21 三步驟起拆成兩張卡：第一步「限購」卡只有限購列＋彙總句〔`syncSum` 傳 `buy=null`〕；第二步「購買條件」卡只有條件列＋「照預設帶入」附註，都唯讀）、`bundle-detail.html`（組合設定分頁，可編輯）、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗第 5 段，`layout:'split'`）。
 
 **CSS** — [`rules-group.css`](./ds-components/rules-group.css)
+
+---
+
+### 4.241 Form steps（同一張表單分步顯示）
+
+**Purpose** — 長表單拆成幾步、但不拆成幾個頁面（2026-10-21，使用者：建立商品與建立組合包從「內容／預覽與發布」兩步改成「設定／上架設定／預覽與發布」三步）。所有節仍在同一個表單容器裡，欄位值、右欄即時預覽、本頁大綱、就緒檢查都照舊讀同一份 DOM；容器標「現在第幾步」，不是這一步的節收起來。只管顯隱，不訂產品規則。
+
+**`_layer`** · atom ｜ **source tier** · App ｜ **surface 層** · 不畫任何視覺，只作用在表單容器的直屬子節點
+
+**Anatomy**
+- `.form-steps[data-at="N"]` — 表單容器（建立商品、建立組合包＝`.preview-split__form`）；N＝目前顯示第幾步（1–3）
+  - `> [data-form-step="N"]` — 直屬子節點標自己屬於第幾步（節、橫幅、頁尾小字都可以）
+  - `> 沒標 data-form-step 的子節點` — 每一步都顯示
+- 沒設 `data-at`＝不分步、全部顯示（建立商品的編輯態、嵌入態）
+
+**Behavior** — 只用 `display:none` 收起，不碰 `hidden` 屬性：頁面原本用 `hidden` 管「實體／數位」「單一／多選項」等分支，兩套互不干擾——節要出現，必須「分支要顯示」且「屬於目前這一步」。本頁大綱（Section outline §4.233）濾掉不佔版面的節，所以大綱自動只列目前這一步的節、「必填 N／M」也只算這一步；`data-at` 不在大綱監看的 `hidden`／`class` 之內，切步驟時消費頁要呼叫一次 `outline.refresh()`。步驟條（Progress stepper `--segmented --anystep`，`--steps:3`）、上一步／下一步按鈕、擋關、回跳（發布前檢核項 → 該節所在步驟）都在消費頁。
+
+**States** — 第 1 步／第 2 步／第 3 步（第 3 步在兩個消費頁是全頁「預覽與發布」，表單欄整個收起，不用到 `data-at="3"`）／不分步。
+
+**Token usage** — 無（純顯隱）。
+
+**Dependencies** — 搭配 Progress stepper、Section outline、Preview column；元件本身不依賴任何元件。
+
+**Consumers** — `create-product.html`（商品設定／上架設定）、`create-bundle.html`（組合包設定／上架設定）。
+
+**CSS** — [`form-steps.css`](./ds-components/form-steps.css)

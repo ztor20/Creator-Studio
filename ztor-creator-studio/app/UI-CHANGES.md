@@ -13,6 +13,36 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-21（二百八十六）· D464 待確認事項定案：第二步改名「上架與販售」、主按鈕一律「下一步」、就緒檢查分步、草稿停在上次的步驟（A spec-derived，D464＋使用者裁決）
+
+**標籤**：release2.4
+
+規格 D464 定案三步驟，待確認事項由使用者裁決：步驟 1 沒填完也能進步驟 2、只在進步驟 3 時擋（維持）；就緒檢查分步顯示，每一步只顯示該步的必填項、步驟 3 列全部；步驟 2 改名「上架與販售」（Listing & sales），節名「上架設定」不變；從草稿回來停在上次離開的那一步；步驟 1、2 的主按鈕一律只寫「下一步」（Next）；組合包步驟 1 維持「組合包設定」。
+
+**A spec-derived**
+
+- `create-product.html`：就緒 tooltip 的外層（`.readiness__anchor`）改包住兩顆「下一步」（第一步 `[data-cp-next]`、第二步 `#cp-primary`），`renderReadiness()` 分步時只列該步的就緒項，標題「這一步的必填項目」，底部一句依情況：這一步還有 N 項必填／這一步都填好了／「商品設定」還有 N 項必填（第二步自己齊了、第一步還有缺，主鈕停用時說明原因）；擋關照舊看全部。主按鈕文字 `cp.next-preview`／`cp.next.listing` → `wiz.next`。從草稿回來：每次換步把步驟與型別記在 `localStorage` 的 `ztor.cp.draft-step`，帶 `?draft=1` 進來時還原（上次在預覽且就緒未過＝停在第二步）。
+- `create-bundle.html`：擋關條件改成帶步驟的清單 `gateList()`（`gateWhy()` 仍回第一個缺項、擋進第三步），footer 停用理由改用 `gateWhyStep(目前步驟)`：只講這一步的第一個缺項；第一步也顯示（「下一步」不擋，只提示）；第二步自己齊了、第一步有缺時說「「組合包設定」還沒填完」。主按鈕文字 → `wiz.next`。草稿步驟記在 `localStorage` 的 `ztor.cb.draft-step`，`?draft=1` 還原。
+- `js/i18n.js`：`cp.step.listing`／`cb.step.listing` → 上架與販售／Listing & sales；`cp.step.details`／`cb.step.details` 英文改 Product settings／Bundle settings（D464 推導）；新增 `wiz.next`、`cp.ready.title.step`、`cp.ready.banner.step`／`stepdone`／`prev`、`cb.why.step1`；`cp.next.listing`／`cb.next.listing` 移除（不再使用）。
+
+**不變**：擋關條件與項目、節的分配、購買條件與限購的行為（D463 另由別的 session 實作）。
+
+## 2026-10-21（二百八十五）· 建立商品與建立組合包改三步驟：設定／上架設定／預覽與發布（A spec-derived，使用者裁決；D464）
+
+**標籤**：release2.4
+
+使用者 2026-10-21：「建立商品和組合包，現在是『內容』、『預覽與發布』兩個步驟，需要拆成三步：1. 第一步是商品或組合包的設定 2. 第二步是上架設定，關於上架與販售的設定 3. 第三步是預覽與發布。因此第一步的設定，以邏輯上來說，都是可以被繼承參數欄位」；分法照推薦；同日更正「購買條件應該不繼承」→ 購買條件放第二步。
+
+**A spec-derived**
+
+- `create-product.html`：步驟條三段（商品設定／上架設定／預覽與發布）。第一步＝商品資訊、展示、內容檔案（僅數位）、商品選項、定價（多選項為各選項組合價格與庫存）、庫存、取貨方式、購買限制、商品標籤、電影關聯；第二步＝上架設定、開賣設定、折扣設定（單一／多選項兩節）、優惠碼——兩個折扣節與優惠碼節在 DOM 上搬到開賣設定之後。底部：第一步只有「下一步：上架設定」，第二步「上一步」＋原主動作（就緒 tooltip 照舊）。檢核項回跳先切到該節所在步驟（`cpGoStep`／`cpStepOf`），「返回表單」回第二步。編輯態／嵌入態不分步。
+- `create-bundle.html`：步驟條三段（組合包設定／上架設定／預覽與發布）。第一步＝組合資訊、圖片與影片、組合物、定價（原價合計＋組合折扣＋粉絲實付）、數量、限購、電影關聯；第二步＝上架與開賣、購買條件、優惠（限時折扣＋使用優惠碼，第二條價格階梯）。原「購買條件與限購」拆成「限購」（第一步，`[data-cb-limits-sec]`）與「購買條件」（第二步，`[data-cb-buy-sec]`），原「定價與優惠」改名「定價」並拆出「優惠」（`data-st-section="offers"`）。`CB_STEP` 加 `offers`／`limits`；底部第一步＝取消＋「下一步：上架設定」、第二步＝停用理由＋「上一步」＋「下一步：預覽」。
+- 兩頁共通：本頁大綱只列目前這一步的節（換步主動 `refresh()`）；右欄預覽兩步都在；<1400px 隱藏規則不變；就緒檢查／`gateWhy()` 只擋進第三步，表單兩步之間不擋（沿用現行規則）。
+- 新元件 `ds-components/form-steps.css`（Form steps，§4.241）：`.form-steps[data-at]` ＋ 子節點 `[data-form-step]`，只用 `display:none`、不碰 `hidden`；`design-system.md`／`design-system.html` 條目、demo、TOC；Rules group §4.240 消費說明補建立組合拆成兩張卡。
+- `js/i18n.js`：`cp.step.details`／`cb.step.details` 中文改「商品設定」「組合包設定」，新增 `cp.step.listing`／`cb.step.listing`（上架設定）、`cp.next.listing`／`cb.next.listing`、`cb.sec.offers`（優惠）、`cb.sec.limit`（限購）、`cb.sec.buy`（購買條件）；`cb.sec.price` 改「定價」。
+
+**不變**：所有欄位、規則與擋關條件（D342／D400／D455／D456／D458、就緒檢查項目）；共用 `progress-stepper.css` 不動（本來就支援 `--steps:3`），建立活動等其他步驟條頁面不受影響。
+
 ## 2026-10-21（二百八十四）· D462 單張門票的提前入場整組移除，只留場次層（B 反饋，上游 D462 決定）
 
 **標籤**：release2.4、最終版
