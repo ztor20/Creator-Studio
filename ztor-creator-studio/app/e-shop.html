@@ -2418,7 +2418,7 @@
     /* 零成交可刪除（§7.14「零成交可刪除」「拍賣的刪除」· D307，2026-09-22）：已下架或已封存且零成交才走到這裡（入口由 syncRowActions 決定）。
        單售仍在任何組合包裡（不論上架／下架／封存）→ 擋下、列出組合包、只有「知道了」（沿用 relist 擋下那一組殼與文案鍵）；
        否則確認（標題帶品名、內文講不可復原、主鈕紅框 btn--destructive，同草稿刪除）→ ProductsStore.remove 標記並記進工作階段、
-       列離開清單、篩選與計數重算。組合包與拍賣沒有擋下清單：刪組合包不影響成員，拍賣沒有成員。 */
+       列離開清單、篩選與計數重算。組合包與拍賣沒有擋下清單：刪組合包時成員狀態不變、鎖給它的庫存回到成員的未鎖定量，拍賣沒有成員。 */
     function askDelete(row) {
       const L = LS(), S = PS(), m = rowModel(row);
       if (!L || !S || !m || !m.store || !L.canDelete || !L.canDelete(m.entity)) return;
@@ -2437,9 +2437,10 @@
       }
       askConfirm({
         title: T('e-shop.remove.title', 'Delete “{n}”?').replace('{n}', name),
-        body: T(isBundle ? 'e-shop.remove.bundle-body' : 'e-shop.remove.body', isBundle ? 'Members keep their status and stock. This cannot be undone.' : 'It disappears from every list and filter. This cannot be undone.'),
+        body: T(isBundle ? 'e-shop.remove.bundle-body' : 'e-shop.remove.body', isBundle ? 'Stock locked to this bundle goes back to each member’s unlocked stock. This cannot be undone.' : 'It disappears from every list and filter. This cannot be undone.'),
         okKey: 'e-shop.delete.confirm', okFallback: 'Delete', destructive: true,
-        onConfirm: () => { S.remove(m.entity); row.remove(); applyFilter(); updateStatusCounts(); }
+        /* 刪除不寫操作紀錄（D467、D468：單售、組合包、拍賣一律不寫） */
+        onConfirm: () => { S.remove(m.entity, { name: name }); row.remove(); applyFilter(); updateStatusCounts(); }
       });
     }
     document.addEventListener('click', e => {

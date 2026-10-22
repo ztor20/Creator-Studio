@@ -268,6 +268,8 @@
           nameKey: 'od.item1.name', name: 'Pirate Queen zine vol. 02',
           catKey: 'e-shop.cat.books', qty: 1, unit: '$24.00', amt: 24, mode: 'ship',
           productId: 'zine', opts: {},
+          /* D465（2026-10-21）：訂單品項記下賣出時從哪一格賣的——zine 有鎖給單售，這件從單售鎖定賣出 */
+          lockFrom: { kind: 'single' },
           snap: {
             price: '$24.00', variant: '',
             desc: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
@@ -278,6 +280,7 @@
           nameKey: 'od.item2.name', name: 'Kowloon After Dark tee (M)',
           catKey: 'e-shop.cat.apparel', qty: 1, unit: '$32.00', amt: 32, mode: 'ship',
           productId: 'tee', opts: { size: 'M' },
+          lockFrom: { kind: 'free' },   /* D465：tee 沒鎖單售＝從未鎖定賣出 */
           snap: {
             price: '$32.00', variant: 'M',
             desc: 'Soft-washed cotton tee with a 九龍夜行 print. Unisex fit.',
@@ -791,7 +794,9 @@
           /* 出貨型品項作廢：沒有領取單位可失效，改在品項自己身上記 voided（見檔頭
              「作廢明細」節）。at 為作廢時間。 */
           /* 2026-10-16 示範資料補齊（D431：撤銷原因選填）：這一筆示範「沒填原因」——撤銷紀錄只寫時間與執行者（原為「重複下單…」） */
-          voided: true, voidedAt: '2026-06-10', voidedBy: 'admin'
+          voided: true, voidedAt: '2026-06-10', voidedBy: 'admin',
+          /* D465 決定 8：從單售鎖定賣出、撤銷後退回原本那個鎖定（還在就退回，即使被調低過） */
+          lockFrom: { kind: 'single' }
         }
       ],
       amounts: { goods: '$56.00', shipping: '$5.00', platform: '−$8.40', payment: '−$1.34', net: '$51.26' },
@@ -1464,7 +1469,9 @@
       var it = {
         nameKey: '', name: tx.tier, catKey: 'od.cat.ticket', qty: tx.qty, unit: fmt(tx.gross / tx.qty), amt: tx.gross,
         mode: 'ticket', feeLeaf: 'events.onsite', feePct: 10, thumb: (tier && tier.img) || kv,
-        event: { id: ev.id, name: ev.name }, solo: !!tx.solo
+        event: { id: ev.id, name: ev.name }, solo: !!tx.solo,
+        /* D465：賣出時的那一格——這張門票有鎖給單售就是單售鎖定，否則未鎖定 */
+        lockFrom: { kind: (window.ztorEvents && window.ztorEvents.tierSingleLock && tier && window.ztorEvents.tierSingleLock(tier) !== null) ? 'single' : 'free', tierId: tx.tierId }
       };
       for (var k in voidMeta) it[k] = voidMeta[k];
       items.push(it);
@@ -1493,7 +1500,9 @@
         nameKey: '', name: b.name, catKey: 'bundle', qty: tx.qty, unit: fmt(tx.gross / tx.qty), amt: tx.gross, mode: 'bundle',
         feeLeaf: 'events.onsite', feePct: 10, thumb: kv, event: { id: ev.id, name: ev.name },
         snap: { price: fmt(tx.gross / tx.qty), variant: '', desc: '', manage: 'event-detail.html?id=' + encodeURIComponent(ev.id) + '#tiers' },
-        members: members, redeemed: bundleIn
+        members: members, redeemed: bundleIn,
+        /* D465：組合包有鎖定套數＝從它的鎖定格賣出，否則從未鎖定 */
+        lockFrom: { kind: Number(b.lockSets) > 0 ? 'bundle' : 'free', bundleId: b.id, bundleName: b.name }
       };
       for (var k2 in voidMeta) bit[k2] = voidMeta[k2];
       items.push(bit);
@@ -1618,6 +1627,38 @@
 
   var CANCELLED_BADGE = { key: 'orders.status.cancelled', text: 'Cancelled', cls: 'badge--error' };
 
+  /* ── 撤銷退回原本賣出的那個鎖定（D465 決定 8、補充二，2026-10-21；主規格 §7.14）──────────────
+     品項 lockFrom＝賣出時從哪一格賣的：{ kind: 'single' | 'bundle' | 'free', bundleId?, bundleName?, tierId? }。
+     returnTarget(item, order) 回撤銷時量要退回哪一格：那個鎖定現在還在（即使被調低過）就退回它；
+     它已被刪除或改成不鎖定、或原本就從未鎖定賣出，就退回未鎖定（gone:true 表示原鎖定已不在）。
+     原型只示意，不真的改庫存數字（庫存回補由後端執行）。 */
+  function returnTarget(item, order) {
+    var lf = item && item.lockFrom;
+    if (!lf || lf.kind === 'free') return { kind: 'free', gone: false };
+    var LS = window.ListingState, ES = window.ztorEvents;
+    var evId = (item.event && item.event.id) || (order && order.event && order.event.id) || null;
+    var ev = (evId && ES && ES.get) ? ES.get(evId) : null;
+    var alive = false;
+    if (lf.kind === 'single') {
+      if (ev) {
+        var tier = (ev.tiers || []).filter(function (t) { return t.id === lf.tierId; })[0];
+        alive = !!(tier && ES.tierSingleLock(tier) !== null);
+      } else {
+        var p = (item.productId && window.ztorGetProduct) ? window.ztorGetProduct(item.productId) : null;
+        alive = !!(p && LS && LS.lockOf(p, 'single') !== null);
+      }
+    } else if (lf.kind === 'bundle') {
+      if (ev) {
+        var b = (ev.bundles || []).filter(function (x) { return x.id === lf.bundleId; })[0];
+        alive = !!(b && Number(b.lockSets) > 0);
+      } else {
+        var pb = (lf.bundleId && window.ztorGetBundle) ? window.ztorGetBundle(lf.bundleId) : null;
+        alive = !!(pb && Number(pb.lockSets) > 0);
+      }
+    }
+    return alive ? { kind: lf.kind, bundleName: lf.bundleName || '', gone: false } : { kind: 'free', gone: true, was: lf.kind };
+  }
+
   window.ztorOrders = {
     list: function () { return allOrders(); },
     get: function (id) {
@@ -1642,6 +1683,7 @@
     voidItem: voidItem,
     wholeVoidState: wholeVoidState,                    /* D414：整單撤銷可用條件 */
     voidWholeOrder: voidWholeOrder,
+    returnTarget: returnTarget,                        /* D465：撤銷退回原本賣出的那個鎖定 */
     isCancelled: isCancelled,
     platformLines: platformLines,
     payFee: ticketPayFee,                              /* D418：門票／活動組合包訂單的支付費（活動詳情交易明細共用同一支） */

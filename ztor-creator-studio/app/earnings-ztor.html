@@ -445,7 +445,7 @@
                 <span class="payout-bank-card__title">First Commercial Bank · •••3417</span>
                 <span class="payout-bank-card__meta"><span data-i18n="earnings.name.holder">Gary Lin</span> · USD · available</span>
               </span>
-              <span class="btn btn--primary btn--sm" style="align-self:flex-start"><span data-i18n="btn.request-payout">Request payout</span> · $8,940</span>
+              <span class="btn btn--primary btn--sm" style="align-self:flex-start"><span data-i18n="btn.request-payout">Request payout</span> · <span data-currency-money="8940">$8,940</span></span><!-- D466：CTA 金額用創作者幣別（js/currency.js） -->
             </a>
             <a class="payout-bank-card" href="#request-payout" data-payout-open data-bank-title="Wise transfer · USD → EUR" data-bank-meta="Gary Lin · EUR · verified">
               <span class="payout-bank-card__top">
@@ -914,6 +914,8 @@
 </div>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- D466：幣別符號表（js/currency.js 委派 ztorEvents.SYMBOL） -->
+<script src="js/currency.js?v=r2.2"></script><!-- D466：申請提款 CTA 金額用創作者幣別 -->
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
@@ -1168,6 +1170,8 @@
 
     function cacheModalRefs() {
       modal = host.querySelector('[data-payout-modal]');
+      /* D466：彈窗是延後載入的，掛進來後補畫一次創作者幣別（前綴、餘額說明句、摘要） */
+      if (modal && window.ztorCurrency) window.ztorCurrency.paint(modal);
       if (!modal) throw new Error('Payout modal partial did not include data-payout-modal');
       views = modal.querySelectorAll('[data-payout-view]');
       selectedTitle = modal.querySelector('[data-payout-selected-title]');
@@ -1238,9 +1242,12 @@
       const raw = amountInput.value.replace(/[^\d.]/g, '');
       const num = Number(raw || 0);
       const display = num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-      amountSummary.textContent = display;
+      /* D466：摘要的申請金額也用創作者幣別（js/currency.js） */
+      amountSummary.textContent = window.ztorCurrency ? window.ztorCurrency.money(window.ztorCurrency.CREATOR, num) : display;
       const label = (window.i18nT && window.i18nT('btn.request-payout')) || 'Request payout';
-      submitButton.textContent = label + ' · ' + display.replace('.00', '');
+      /* D466（2026-10-22，spec 5.1.8.1 §4.5）：CTA 上的金額以創作者幣別顯示、不寫死 $（js/currency.js）；彈窗其他金額未在本次範圍（ASSUMPTIONS UIA-288） */
+      const C = window.ztorCurrency;
+      submitButton.textContent = label + ' · ' + (C ? C.money(C.CREATOR, num) : display.replace('.00', ''));
     }
 
     function openModal(view) {

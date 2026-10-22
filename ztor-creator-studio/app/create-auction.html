@@ -295,9 +295,10 @@
         </div>
         <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on');this.setAttribute('aria-checked', this.classList.contains('switch--on'))"></div>
       </div>
+      <!-- D466（2026-10-22）：實體的運送方式＝本節的出貨設定，出貨時限標 ＊ 並列入就緒檢查（spec 5.1.5.10 F6 v1.16）；得標者付運費開關有預設值、不列 -->
       <div class="field" style="margin-top:12px;margin-bottom:0">
-        <div class="field__label" data-i18n="cp.auc.shipby">Ship by</div>
-        <select class="select" style="max-width:240px">
+        <div class="field__label"><span data-i18n="cp.auc.shipby">Ship by</span> <span class="field__req">*</span></div>
+        <select class="select" id="ca-shipby" style="max-width:240px">
           <option data-i18n="cp.auc.shipby.3">Within 3 days of end</option>
           <option selected data-i18n="cp.auc.shipby.5">Within 5 days of end</option>
           <option data-i18n="cp.auc.shipby.7">Within 7 days of end</option>
@@ -523,12 +524,14 @@
 <script>
 /* 建立拍賣流程互動 · spec 5.1.5.10 §4-5
    種類切換（實體／數位／活動，只影響分類與 F6 交付）、競標設定、競標資格、
-   即時預覽綁定、就緒檢查（7 項）、上傳格模擬、商品標籤 */
+   即時預覽綁定、就緒檢查（7 項＋D466 三項條件式）、上傳格模擬、商品標籤 */
 (function () {
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const assets = {};
   const state = { kind: 'physical' };
+  let listingMode = 'now';    // 上架設定 none／now／schedule（D285；說明見下方「上架設定／開拍設定」段）
+  let startMode = 'follow';   // 開賣設定 follow／schedule
   let editMode = false;   // 編輯態（?edit）：主動作改 Save changes、不擋開拍（spec §4 共用操作）；無刪除（D284）
 
   const fName = document.getElementById('ca-f-name');
@@ -538,8 +541,18 @@
   const len = el => (el ? el.value.trim().length : 0);
 
   /* ---- 就緒檢查（必填 7 項＋提示 1 項，spec 5.1.5.10 v1.15 就緒檢查卡）：2026-10-20 D455 B5——附圖維持選填，
-     就緒卡列為提示項（hint: true）：照樣打勾、字尾標「選填」，不計入「還差 N 項」、不擋送出、不算進本頁大綱的必填 ---- */
+     就緒卡列為提示項（hint: true）：照樣打勾、字尾標「選填」，不計入「還差 N 項」、不擋送出、不算進本頁大綱的必填 ----
+     D466（2026-10-22，spec v1.16）：再加三項條件式必填，只在條件成立時出現〔推導〕——定時上架的上架時間、定時開拍的開拍時間、
+     實體種類的運送方式（出貨時限）。數位與活動不列運送方式。上架設定為「不上架」時開賣設定整段不出現，開拍時間也不列。 */
+  const v = id => { const el = document.getElementById(id); return !!(el && String(el.value || '').trim()); };
   function buildChecks() {
+    const cond = [];
+    if (listingMode === 'schedule') cond.push({ k: T('ca.chk.listat', 'Listing time'), done: () => v('ca-listing-time'), at: '#ca-listing-time' });
+    if (listingMode !== 'none' && startMode === 'schedule') cond.push({ k: T('ca.chk.startat', 'Start time'), done: () => v('ca-start-time'), at: '#ca-start-time' });
+    if (state.kind === 'physical') cond.push({ k: T('ca.chk.ship', 'Shipping'), done: () => v('ca-shipby'), at: '#ca-shipby' });
+    return cond.length ? base().slice(0, 7).concat(cond, base().slice(7)) : base();
+  }
+  function base() {
     return [
       { k: T('ca.chk.hero', 'Hero image'),        done: () => !!assets['a-hero'], at: '[data-ca-asset="a-hero"]' },
       { k: T('ca.chk.name', 'Item name'),         done: () => has(fName), at: '#ca-f-name' },
@@ -553,9 +566,10 @@
   }
 
   /* ---- 本頁大綱（左側空白欄的區段導覽，2026-10-12，UI-CHANGES 一百七十七；元件 partials/section-outline.js，比照 create-product）----
-     「必填」「已完成」不另訂規則：直接讀上面的就緒檢查 buildChecks()（7 項，Ready to start auction?）——每個檢查項的 at 是它所在的欄位，
+     「必填」「已完成」不另訂規則：直接讀上面的就緒檢查 buildChecks()（7 項＋D466 三項條件式，Ready to start auction?）——每個檢查項的 at 是它所在的欄位，
      closest('.form-section') 就是它所在的那一節；節裡有檢查項＝必填、全過＝已完成、沒有檢查項＝選填
-     （拍賣種類有預設值、運送／交付／標籤沒有檢查項）。節標題讀 .form-section__title；拍賣種類那節沒有標題，用 ca.outline.kind。
+     （拍賣種類有預設值、數位與活動的交付／標籤沒有檢查項；D466 起實體的「運送」節有出貨時限一項＝必填）。
+     D466 的上架時間與開拍時間兩項落在右欄（aside），不在大綱的節裡，照舊只出現在就緒卡。節標題讀 .form-section__title；拍賣種類那節沒有標題，用 ca.outline.kind。
      上架設定與開拍設定在右側預覽欄（aside），不在 .preview-split__form 內，所以不列入大綱。 */
   var caOutline = null;
   function caOutlineStatus(vis) {
@@ -770,8 +784,7 @@
      結標時間＝開拍時間＋競標時長（F4 時長卡），由 ListingState.auctionSaleEnd 算、唯讀；
      跟著上架一起開拍時開拍時間＝實際上架時間（定時上架就是那個時間；立刻上架要到送出才知道，欄位顯示「上架後起算」）。
      開合與選中狀態由 partials/radio-list.js 統一處理。 */
-  let listingMode = 'now';
-  let startMode = 'follow';
+  /* listingMode／startMode 宣告移到檔頭 state 旁（D466：就緒檢查 buildChecks 要讀，本頁大綱掛載時就會呼叫它） */
   const saleEndEl = document.getElementById('ca-sale-end');
   function currentDuration() {
     const on = document.querySelector('#ca-duration .selection-card--active');
@@ -810,7 +823,7 @@
     renderSaleEnd();
   }
   const caLm = document.getElementById('ca-listing-mode');
-  if (caLm) caLm.addEventListener('radio-list:change', e => { listingMode = e.detail.item.dataset.caListing; syncListingRows(); });
+  if (caLm) caLm.addEventListener('radio-list:change', e => { listingMode = e.detail.item.dataset.caListing; syncListingRows(); refresh(); });
   syncListingRows();
 
   const caSm = document.getElementById('ca-start-mode');
@@ -819,9 +832,11 @@
     if (f) f.hidden = startMode !== 'schedule';
     renderSaleEnd();
   }
-  if (caSm) caSm.addEventListener('radio-list:change', e => { startMode = e.detail.item.dataset.caStart; syncStartMode(); });
+  if (caSm) caSm.addEventListener('radio-list:change', e => { startMode = e.detail.item.dataset.caStart; syncStartMode(); refresh(); });
   syncStartMode();
-  ['ca-start-time', 'ca-listing-time'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', renderSaleEnd); });
+  ['ca-start-time', 'ca-listing-time'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { renderSaleEnd(); refresh(); }); });
+  const shipBy = document.getElementById('ca-shipby');
+  if (shipBy) shipBy.addEventListener('change', refresh);
   if (durGrid) durGrid.addEventListener('click', renderSaleEnd);
   document.addEventListener('i18n:applied', renderSaleEnd);
 

@@ -2852,7 +2852,7 @@
     const d = val(t);
     /* 名稱不再是這一格的欄位（2026-08-08：票種獨立成一步，名稱與撞名都歸票種那邊管），
        這裡只驗這一格自己的數字。e.name 保留成空字串，讓 tierValid 與提示邏輯不用改。 */
-    const e = { name: "", price: "", qty: "", ntype: "" };   // 墓碑 2026-10-05（D353）：desc（門票簡介字數）退場
+    const e = { name: "", price: "", qty: "", ntype: "", lock: "" };   // 墓碑 2026-10-05（D353）：desc（門票簡介字數）退場；D465 加 lock
     /* 墓碑 2026-09-23（D315）：`excpct`（例外平台費的費率欄，D311 決定三）連同它的
        0–100 驗證退場——平台費率只在 Admin 的費率設定頁設，門票彈窗沒有可填的費率。 */
     /* 手動新增又選了「新建票種」時，票種名稱是必填——沒有名字的票種在清單上讀不出是什麼 */
@@ -2866,8 +2866,29 @@
     if (!priceOk) e.price = T("ce.tier.err.price", "Price must be a whole number, 0 or more.");
     else if (!t.fix && overMax(d.price)) e.price = dT("d.price.err.max");   // D390：票價上限 9,999,999
     if (!isInt(d.qty) || Number(d.qty) < 1) e.qty = T("ce.tier.err.qty", "Quantity must be a whole number, 1 or more.");
+    /* D465 決定 4（5.1.6.1 F22「鎖給單售」）：選填整數，空白或 0＝不鎖定；鎖給單售加各組合包鎖定不得大於張數
+       （建立時已售與保留都是 0）。組合包鎖定讀第 5 步的組合包（events-store tierLocked，同一套吸收算法）。 */
+    const lk = String(d.lock == null ? "" : d.lock).trim();
+    if (lk !== "") {
+      if (!isInt(lk)) e.lock = T("ce.tier.err.lock", "Enter a whole number, or leave blank to not lock.");
+      else if (isInt(d.qty) && Number(lk) + bundleLockedOn(t) > Number(d.qty)) {
+        const bl = bundleLockedOn(t);
+        e.lock = (bl > 0
+          ? T("ce.tier.err.lock-over-bd", "Can't exceed {n} — the quantity minus {b} locked by bundles.").replace("{b}", bl)
+          : T("ce.tier.err.lock-over", "Can't exceed the quantity ({n}).")).replace("{n}", Math.max(0, Number(d.qty) - bl));
+      }
+    }
     return e;
   }
+  /* 第 5 步組合包鎖在這張門票上的張數（D446 吸收算法，events-store tierLocked）：用已存的門票張數與組合包鎖定套數算 */
+  function bundleLockedOn(t) {
+    const S = window.ztorEvents;
+    if (!S || !S.tierLocked || typeof bundleEd === "undefined" || !bundleEd || !bundleEd.getBundles) return 0;
+    const evLike = { tiers: tiers.map(x => ({ id: x.id, qty: Number(val(x).qty) || 0, sold: 0 })), bundles: bundleEd.getBundles() };
+    const me = evLike.tiers.find(x => x.id === t.id);
+    return me ? S.tierLocked(evLike, me) : 0;
+  }
+  const lockHintText = () => T("ce.tier.lock.hint", "Blank = not locked — single sales and ticket bundles share this ticket's quantity.");
   /* 欄位一多就不再逐個列名（2026-09-22 D311 起）：有任何一格有訊息就是不過。 */
   const tierErrCount = t => { const e = tierErrors(t); return Object.keys(e).filter(k => e[k]).length; };
   const tierValid = t => tierErrCount(t) === 0;
@@ -2875,6 +2896,8 @@
   function commitTier(t) {                              // 把草稿寫回卡片本身
     const d = drafts[t.id];
     t.price = String(Number(d.price)); t.qty = String(Number(d.qty));
+    /* D465：鎖給單售——空白或 0＝不鎖定（存空字串），正整數＝鎖定這麼多張只給單售 */
+    t.lockSingle = (Number(d.lock) > 0) ? String(Math.floor(Number(d.lock))) : "";
     t.tag = d.tag || ""; t.addons = (d.addons || []).slice();
     /* 墓碑 2026-09-23（D316）：票不再帶 `fee`（加在票價之上、由粉絲負擔的手續費）。 */
     t.tname = (d.tname || "").trim();
@@ -3264,7 +3287,7 @@
       if (!card) return;
       const errs = tierErrors(t);
       const d = drafts[t.id];
-      ["price", "qty", "ntype"].forEach(k => {
+      ["price", "qty", "ntype", "lock"].forEach(k => {
         const hint  = card.querySelector('[data-tier-hint="' + k + '"]');
         const wrap  = card.querySelector('[data-tier-wrap="' + k + '"]');
         const input = card.querySelector('[data-tier-f="' + k + '"]');
@@ -3278,6 +3301,7 @@
            不能寫死票種那一版——切到獨立票之後說明會與欄位標籤互相矛盾。 */
         else if (k === "ntype") hint.textContent = newTypeHintText(t);
         else if (k === "price") hint.textContent = priceHowText(t);   // 票價列常駐說明（粉絲實付；bookyay 另附港幣原值）
+        else if (k === "lock") hint.textContent = lockHintText();     // D465 鎖給單售的常駐說明
         else hint.textContent = "";
         if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
       });
@@ -3528,6 +3552,12 @@
                    '<input class="input" type="number" min="1" step="1" data-tier-f="qty" value="' + esc(qv) + '" placeholder="' + esc(T("ce.tier.qty.ph", "e.g., 200")) + '"' + (bky ? " disabled" : "") + '>' +
                    (bky ? "" : '<button type="button" class="tier-card__clear" data-tier-clear="qty" aria-label="' + esc(T("ce.tier.clear", "Clear")) + '"><i data-lucide="x" class="ztor-icon"></i></button>') +
                  '</span>' }) +
+      /* D465 決定 4（5.1.6.1 F22「鎖給單售」）：選填，空白或 0＝不鎖定；bookyay 帶入的門票也能設（ztor 內部分配，不在整組唯讀範圍，決定 7） */
+      calcRowHTML({ k: T("ce.tier.lock", "Locked for single sale"), how: lockHintText(), hintFor: "lock",
+        v: '<span class="tier-card__control" data-tier-wrap="lock" data-empty="' + (String(d.lock == null ? "" : d.lock).length ? "false" : "true") + '">' +
+                   '<input class="input" type="number" min="0" step="1" data-tier-f="lock" value="' + esc(d.lock == null ? "" : d.lock) + '" placeholder="' + esc(T("ce.tier.lock.ph", "Not locked")) + '">' +
+                   '<button type="button" class="tier-card__clear" data-tier-clear="lock" aria-label="' + esc(T("ce.tier.clear", "Clear")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
+                 '</span>' }) +
       '</div>';
     return tierSecHTML("d.tm.sec.price",
       '<div class="calc-list calc-list--framed' + " calc-list--form" + '">' + rows + '</div>' + qty,
@@ -3657,6 +3687,7 @@
     /* 門票名稱預設就填好自動生成的那個名字（2026-08-09 使用者指示），不再只放 placeholder——
        它是這張票真正的名字，讓人一打開就看得到、要改再改，而不是猜留空會變成什麼。 */
     drafts[t.id] = { price: t.price, qty: t.qty,
+                     lock: t.lockSingle == null ? "" : String(t.lockSingle),   // D465 鎖給單售（空白＝不鎖定）
                      addons: (t.addons || []).slice(),
                      img: (t.img || "").trim(),
                      hidden: !!t.hidden,           // D328 顯示開關（false＝顯示）
@@ -4852,7 +4883,8 @@
           id: t.id,
           name: tierLabelWithSession(t),
           price: t.price,
-          qty: val(t).qty || 0,
+          /* D465 決定 4：組合包從這張門票「還沒鎖走的量」取——步驟 4 鎖給單售的部分組合包拿不到 */
+          qty: Math.max(0, (Number(val(t).qty) || 0) - (Number(val(t).lock != null ? val(t).lock : t.lockSingle) || 0)),
           group: { id: t.sess || "", name: (multi() && ss) ? sessionLabel(ss, i) : "" },
           kind: ty ? { id: ty.id, name: ty.name || ticketNames(t)[0] } : null,
           /* D342：門票自己的購買條件與限購（D460 起沒有活動層預設）——票務商品預設取最嚴；bookyay 鎖定的早鳥不能被組合包改 */

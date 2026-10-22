@@ -10,6 +10,8 @@
                      每格不得大於該組合當下沒被鎖定的量（含本組合已鎖的），各格合計不得超過該成員的已鎖定量；
                      少分配＝只限總數、選項組合不拘
      · 數字一律問 window.ListingState（bundleMemberLock／bundleAllocOf／freeQty／variantFree…），這裡不另算
+     · D465（2026-10-21）：「未鎖定」欄＝ListingState.freeQty＝未鎖定可賣（在庫 − 各管道鎖定 − 未鎖定格的保留）；
+       組合包有被保留的套數（bundle.holdSets）時，已鎖定格寫成「可賣/配額」（例 8/10 件），保留留在這一格、不移出
 
    消費者（markup 屬性前綴 prefix 不同，其餘一致）：
      · create-bundle.html            prefix 'cb'   建立組合的「數量」卡
@@ -120,6 +122,10 @@
       var per = LS.memberPer(m);
       setQty(row.querySelector('[' + at('stock') + ']'), stock);
       setQty(row.querySelector('[' + at('free') + ']'), free);
+      /* D465：未鎖定格有保留時寫「可賣/配額」（例 44/50），與活動詳情、已鎖定格同一種寫法 */
+      var freeEl = row.querySelector('[' + at('free') + ']'), hf = (p && !multi && LS.holdOf) ? LS.holdOf(p, 'free') : 0;
+      if (freeEl && hf > 0 && free !== Infinity) { freeEl.textContent = free + '/' + LS.unlockedQty(p); freeEl.title = Tfb(T, 'stock.hold.title', '{n} reserved — awaiting payment').replace('{n}', hf); }
+      else if (freeEl) freeEl.removeAttribute('title');
       var cell = row.querySelector('[' + at('lockcell') + ']');
       if (cell) {
         if (locked === null) {
@@ -128,7 +134,10 @@
           var al0 = multi ? LS.bundleAllocOf(b, m, p) : null;
           if (al0 && al0.over) anyBad = true;
           var sub = !multi ? '' : (al0.over ? Tfb(T, 'bd.lock.over', 'Exceeds locked qty') : (al0.assigned ? Tfb(T, 'bd.lock.assigned', '{n} pcs pinned').replace('{n}', al0.assigned) : ''));
-          cell.innerHTML = '<span class="lockset__lockval"><span class="lockset__lockval-row"><span>' + locked
+          /* D465：鎖定量是還沒賣掉的配額、含這個組合包被保留的量；有保留時寫「可賣/配額」 */
+          var heldN = (Number(b.holdSets) || 0) * per;
+          var lockTxt = heldN > 0 ? (Math.max(0, locked - heldN) + '/' + locked) : String(locked);
+          cell.innerHTML = '<span class="lockset__lockval"><span class="lockset__lockval-row"><span' + (heldN > 0 ? ' title="' + esc(Tfb(T, 'stock.hold.title', '{n} reserved — awaiting payment').replace('{n}', heldN)) + '"' : '') + '>' + lockTxt
             + (per > 1 ? '<span class="lockset__per">' + Tfb(T, 'bd.lock.per', '{n} per set').replace('{n}', per) + '</span>' : '')
             + '</span><span data-i18n="stock.unit-pcs">' + Tfb(T, 'stock.unit-pcs', 'pcs') + '</span></span>'
             + (multi ? '<span class="lockset__sub lockset__lockval-sub' + (al0.over ? ' is-over' : '') + '">' + esc(sub) + '</span>' : '')

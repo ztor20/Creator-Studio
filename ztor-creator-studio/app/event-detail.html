@@ -2092,6 +2092,13 @@
               <span class="calc-list__how field__hint" id="ed-tm-qty-hint"></span></span>
             <span class="kv__v"><input class="input" id="ed-tm-qty" type="number" min="0" step="1"></span>
           </div>
+          <!-- 鎖給單售（D465 決定 4，5.1.6.3 §2.6、5.1.6.2 F9）：屬庫存，上架中也能改（比照張數，D435）；空白或 0＝不鎖定。
+               防呆：鎖給單售＋各組合包鎖定 ≤ 張數 − 已售 − 未鎖定格的保留；調低不得低於它正被保留的量。說明與紅字由 syncTmStock() 寫。 -->
+          <div class="kv">
+            <span class="kv__k"><label for="ed-tm-lock"><span data-i18n="ed.tix.col.lock">Locked for single sale</span></label>
+              <span class="calc-list__how field__hint" id="ed-tm-lock-hint"></span></span>
+            <span class="kv__v"><input class="input" id="ed-tm-lock" type="number" min="0" step="1" data-i18n-placeholder="ed.tix.lock.none" placeholder="Not locked"></span>
+          </div>
         </div>
         <!-- 庫存設為 0（D447，2026-10-19，S100）：營運動作，檢視與編輯模式都能按、立即生效、不算進「儲存 N 項變更」。
              張數改成已售＋保留＋其他組合包已鎖定；bookyay 帶入的門票張數鎖定、停用並說明；庫存已是 0 時停用；新門票（還沒存過）不出現。
@@ -5293,6 +5300,9 @@
           /* 墓碑 2026-09-23（D316）：卡面的「手續費」事實列隨欄位退場。 */
           fact(T('ee.tix.qty', 'Quantity'), fmtNum(Number(t.qty) || 0)) +
           fact(T('ed.tix.col.sold', 'Sold'), fmtNum(sold)) +
+          /* D465：鎖給單售（可賣/配額）與保留中；沒鎖單售、也沒有保留時不加列 */
+          (window.ztorEvents.tierSingleLock(t) !== null ? fact(T('ed.tix.col.lock', 'Locked for single sale'), quotaHTML(window.ztorEvents.tierSingleLock(t), window.ztorEvents.tierHoldSingle(t))) : '') +
+          (window.ztorEvents.tierHeld(ev, t) ? fact(T('ed.tix.col.reserved', 'Reserved'), fmtNum(window.ztorEvents.tierHeld(ev, t))) : '') +
           /* 墓碑 2026-10-21（D462）：卡面的「提前入場」事實列隨門票層提前入場退場。 */
         '</dl>' +
         (removed ? '<div class="staged-remove__keep staged-remove__bar">' + stagedRemoveKeep(t) + '</div>' : '') +
@@ -5430,11 +5440,14 @@
   }[why] || '');
   function setTierStockZeroNow(t) {
     if (tierZeroBlock(t)) return 'blocked';
-    const S = window.ztorEvents, q = S.tierZeroQty(ev, t);
-    t.qty = q;
+    /* D465 決定 6：鎖給單售縮成只剩它的保留；張數＝已售＋各組合包鎖定＋單售剩下的保留＋未鎖定格的保留（ztorEvents.applyTierZero） */
+    const S = window.ztorEvents;
+    S.applyTierZero(ev, t);
+    const q = t.qty;
     const saved = (ev.tiers || []).find(x => x.id === t.id);
     if (saved) {
       saved.qty = q;
+      if (saved !== t) saved.lockSingle = t.lockSingle;
       S.saveEdits(ev.id, { tiers: ev.tiers });
       if (edBaseline) { edBaseline.tiers = tiersCanon(ev.tiers); syncDirty(); }
     }
@@ -5460,6 +5473,10 @@
     if (!/^\d+$/.test(String(tmEl('ed-tm-price').value).trim())) e.push('price');
     /* 墓碑（2026-10-15，D424 決定 9）：新門票草稿「隱藏最後一張可賣」的套用檢查（'show'）退場 */
     if (tmNeedsSess() && !tmEl('ed-tm-sess').value) e.push('sess');   // D381：獨立票要選所屬場次
+    /* D465：張數下限＝已售＋鎖給單售＋各組合包鎖定＋未鎖定格的保留；鎖給單售的上下限（tmStockBounds） */
+    const sb = tmStockBounds();
+    if (sb.qtyBad) e.push('qty');
+    if (sb.lockBad) e.push('lock');
     /* D389：這張票自己的一組購買條件，期間超出活動上架區間（或限時購買結束晚於活動停售）——擋存，紅字在條件卡上 */
     if (!evIsBky() && !stageRO() && tmRulesOwn && Object.keys(PC.periodErrs(tmRulesOwn, pcTimes(), pcT)).length) e.push('period');
     /* D417（最終版）：bookyay 門票自加的限時折扣同樣檢查期間與「不得高於一般折扣價」 */
@@ -5471,6 +5488,47 @@
     /* 墓碑 2026-09-23（D315）：例外費率的 0–100 檢核（`excpct`）隨欄位退場。 */
     return e;
   }
+  /* ── 門票彈窗的張數與鎖給單售（D465，2026-10-21）──────────────────────────────
+     讀彈窗兩格的草稿值，照 events-store 的公式算界線（主規格 §7.14「門票的庫存池與單售鎖定」）：
+       張數下限   ＝已售＋鎖給單售＋各組合包鎖定＋未鎖定格的保留
+       鎖給單售   上限＝張數 − 已售 − 各組合包鎖定 − 未鎖定格的保留；下限＝它正被保留的量（0／空白＝改成不鎖定，不擋）
+     各組合包鎖定用不受張數夾住的值（qty 放大）——調低張數時才看得出組合包鎖走多少。 */
+  function tmStockBounds() {
+    const S = window.ztorEvents;
+    const t = tmTier || {};
+    const sold = Number(t.sold) || 0;
+    const qRaw = String(tmEl('ed-tm-qty').value).trim(), lRaw = String(tmEl('ed-tm-lock') ? tmEl('ed-tm-lock').value : '').trim();
+    const qty = Number(qRaw) || 0, lock = lRaw === '' ? 0 : Math.floor(Number(lRaw)) || 0;
+    const bl = S.tierLocked(ev, Object.assign({}, t, { qty: 1e9, lockSingle: '' }));
+    const hf = S.tierHoldFree(t), hs = Number(t.holdSingle) || 0;
+    const minQty = sold + lock + bl + hf;
+    const maxLock = Math.max(0, qty - sold - bl - hf);
+    const lockBad = lRaw !== '' && (!/^\d+$/.test(lRaw) || lock > maxLock || (lock > 0 && lock < hs));
+    return { sold, bl, hf, hs, lock, minQty, maxLock, lockBad, lockUnder: lock > 0 && lock < hs,
+             qtyBad: !isBkyTier(t) && qRaw !== '' && qty < minQty && !(lock > maxLock) };
+  }
+  function syncTmStock() {
+    if (!tmTier) return;
+    const b = tmStockBounds();
+    const qh = tmEl('ed-tm-qty-hint'), lh = tmEl('ed-tm-lock-hint');
+    if (qh) qh.textContent = (b.minQty > 0 && !isBkyTier(tmTier))
+      ? ((b.minQty > b.sold)
+          ? T('ed.tm.qty.min', 'At least {n} — {s} sold, {l} locked, {h} reserved in unlocked stock.').replace('{n}', fmtNum(b.minQty)).replace('{s}', fmtNum(b.sold)).replace('{l}', fmtNum(b.lock + b.bl)).replace('{h}', fmtNum(b.hf))
+          : T('event-detail.edit.caphint', 'At least {n} — that many tickets are already sold.').replace('{n}', b.sold))
+      : '';
+    if (lh) {
+      lh.textContent = b.lockUnder
+        ? T('ed.tm.lock.under', "Can't go below the {n} reserved in this lock — those orders are awaiting payment.").replace('{n}', fmtNum(b.hs))
+        : (b.lockBad
+          ? T('ed.tm.lock.over', 'Up to {n} — single-sale and bundle locks together can’t exceed quantity minus sold and reserved.').replace('{n}', fmtNum(b.maxLock))
+          : T('ed.tm.lock.hint', 'Blank = not locked — single sales and ticket bundles share what’s unlocked. Up to {n}.').replace('{n}', fmtNum(b.maxLock)));
+      lh.classList.toggle('text-error', !!b.lockBad);
+    }
+    tmEl('ed-tm-qty').setAttribute('aria-invalid', b.qtyBad ? 'true' : 'false');
+    if (tmEl('ed-tm-lock')) tmEl('ed-tm-lock').setAttribute('aria-invalid', b.lockBad ? 'true' : 'false');
+  }
+  tmEl('ed-tm-qty')?.addEventListener('input', () => { syncTmStock(); syncTmFoot(); });
+  tmEl('ed-tm-lock')?.addEventListener('input', () => { syncTmStock(); syncTmFoot(); });
   let tmTried = false;
   function syncTmFoot() {
     const el = tmEl('ed-tm-foot-note');
@@ -5795,8 +5853,9 @@
     syncTmZero();   // D447：庫存讀數與「庫存設為 0」的停用
     const sold = Number(t.sold) || 0;
     tmEl('ed-tm-qty').min = sold;
-    tmEl('ed-tm-qty-hint').textContent = sold > 0
-      ? T('event-detail.edit.caphint', 'At least {n} — that many tickets are already sold.').replace('{n}', sold) : '';
+    /* D465：鎖給單售（沒鎖＝空白）＋張數下限與鎖定上下限的說明（syncTmStock） */
+    if (tmEl('ed-tm-lock')) { const lk0 = window.ztorEvents.tierSingleLock(t); tmEl('ed-tm-lock').value = lk0 === null ? '' : lk0; tmEl('ed-tm-lock').readOnly = false; }
+    syncTmStock();
     const del = tmEl('ed-tm-delete');
     del.disabled = sold > 0;
     del.title = sold > 0 ? T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold)) : '';
@@ -5830,7 +5889,7 @@
        圖片不能換、沒有儲存與刪除；頁尾一句說明為什麼。 */
     const ro = tmRO();   // 2026-10-10：未按編輯＝只能看，同已結束／已取消
     if (ro) {
-      ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty'].forEach(id => { tmEl(id).readOnly = true; });
+      ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty', 'ed-tm-lock'].forEach(id => { if (tmEl(id)) tmEl(id).readOnly = true; });
       /* D422：隱藏／顯示是營運動作——檢視模式仍可按（syncTmShow 只在已結束／已取消時停用），這裡不鎖 */
       tmEl('ed-tm-save').hidden = true;
       del.hidden = true;
@@ -5853,7 +5912,7 @@
       const rk = stageRO() ? 'ed.tm.ro' : stockOnly ? 'ed.tm.ro.stock' : 'ed.tm.ro.view';
       roNote.setAttribute('data-i18n', rk);
       roNote.textContent = T(rk, stageRO() ? 'This event has ended or is archived — tickets are view-only.'
-        : stockOnly ? "This event is listed — only the quantity can change. Unlist the event to edit anything else."
+        : stockOnly ? "This event is listed — only the quantity and single-sale lock can change. Unlist the event to edit anything else."
         : 'Select Edit to change this ticket.');
       roNote.hidden = !(ro || stockOnly);
     }
@@ -5910,6 +5969,9 @@
     if (!tmTier || b.disabled) return;
     if (setTierStockZeroNow(tmTier) !== 'ok') return;
     tmEl('ed-tm-qty').value = tmTier.qty;
+    /* D465 決定 6：鎖給單售欄跟著縮到只剩它的保留（applyTierZero 已改 lockSingle），再重算兩格的界線與說明 */
+    if (tmEl('ed-tm-lock')) { const lk = window.ztorEvents.tierSingleLock(tmTier); tmEl('ed-tm-lock').value = lk === null ? '' : lk; }
+    syncTmStock();
     syncTmZero(); syncTmCalc(); syncTmFoot();
     refreshTix();
   });
@@ -5935,6 +5997,18 @@
       .map(x => x.b.name + ' (' + x.curs.join(', ') + ')');
     const sold = Number(tmTier.sold) || 0;
     tmTier.qty = Math.max(sold, Number(tmEl('ed-tm-qty').value) || 0);
+    /* D465：鎖給單售——空白或 0＝不鎖定（它還在保留的量改記到未鎖定格，D465 補充二）；正整數＝鎖定配額 */
+    if (tmEl('ed-tm-lock')) {
+      const lv = Math.floor(Number(String(tmEl('ed-tm-lock').value).trim())) || 0;
+      if (lv > 0) tmTier.lockSingle = lv;
+      else {
+        if (window.ztorEvents.tierSingleLock(tmTier) !== null && Number(tmTier.holdSingle) > 0) {
+          tmTier.holdFree = window.ztorEvents.tierHoldFree(tmTier) + Number(tmTier.holdSingle);
+          tmTier.holdSingle = 0;
+        }
+        delete tmTier.lockSingle;
+      }
+    }
     /* 墓碑 2026-09-23（D316）：儲存時不再寫回 `fee`（粉絲加價的手續費）。 */
     tmTier.hidden = !tmShown; // D328：關＝隱藏（D422：已存在的門票按鈕當下已寫回，這裡寫同一個值；新門票跟著套用寫入）
     tmTier.img = (tmImg || '').trim();   // D384：空字串＝沿用活動主視覺
@@ -5993,6 +6067,13 @@
   let tixView = 'cards';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  /* D465：某一格有保留時寫「可賣/配額」（50/60，主規格 §7.14「保留」呈現參考），title 帶保留數；沒保留只寫配額 */
+  function quotaHTML(quota, hold) {
+    const h = Number(hold) || 0;
+    if (!(h > 0)) return fmtNum(quota);
+    return '<span title="' + esc(T('stock.hold.title', '{n} reserved — awaiting payment').replace('{n}', h)) + '">' + fmtNum(Math.max(0, quota - h)) +
+      '<span class="text-sub">/' + fmtNum(quota) + '</span></span>';
+  }
   function renderEdTierTable() {
     const box = document.getElementById('ed-tier-table');
     if (!box) return;
@@ -6015,9 +6096,14 @@
         esc(T('ed.tix.zero', 'Set stock to 0')) + '</button>';
     };
     const rowHTML = (t, removed) => {
-      const sold = Number(t.sold) || 0, resv = Number(t.reserved) || 0;
-      /* D447：庫存＝張數 − 已售 − 保留 − 其他組合包已鎖定（算法沿用 D446，events-store tierStock） */
-      const stock = window.ztorEvents.tierStock(ev, t);
+      const S = window.ztorEvents;
+      const sold = Number(t.sold) || 0, resv = S.tierHeld(ev, t);
+      /* D465（取代 D447 舊公式）：庫存＝單售此刻還能賣的張數——有鎖單售＝鎖給單售 − 它的保留，沒鎖＝未鎖定 − 未鎖定格的保留；
+         保留中＝各格保留加總；鎖給單售寫「可賣/配額」（例 50/60），未鎖定格有保留時同樣寫「可賣/配額」 */
+      const stock = S.tierStock(ev, t);
+      const lk = S.tierSingleLock(t), unl = S.tierUnlocked(ev, t), uh = S.tierHoldFree(t);
+      const lockCell = lk === null ? '<span class="ztor-table__sub">' + esc(T('ed.tix.lock.none', 'Not locked')) + '</span>' : quotaHTML(lk, S.tierHoldSingle(t));
+      const unlCell = quotaHTML(unl, uh);
       return '<tr' + (removed ? ' class="staged-remove" data-ed-tier-removed="' + esc(t.id) + '"' : '') + '>' +
         '<td><span class="ed-tixrow__name">' +
           (tierImgOf(t) ? '<img class="ed-tixrow__thumb" src="' + esc(tierImgOf(t)) + '" alt="">' : '') +   // D384
@@ -6029,6 +6115,8 @@
           (soloSessText(t) ? ' · ' + esc(soloSessText(t)) : '') + '</span></span>' +
           '</span></td>' +
         '<td>' + fmtNum(stock) + '</td>' +
+        '<td>' + lockCell + '</td>' +
+        '<td>' + unlCell + '</td>' +
         '<td>' + (resv ? fmtNum(resv) : '0') + '</td>' +
         '<td>' + fmtNum(sold) + '</td>' +
         /* 基準幣別符號（D306）：票價以該票種的基準幣別顯示。
@@ -6043,7 +6131,7 @@
     };
     const rows = tixOrdered().map(t => rowHTML(t, false)).join('') + stagedRemoved().map(t => rowHTML(t, true)).join('');
     box.innerHTML = '<table class="ztor-table"><thead><tr>' +
-      th('name') + th('stock') + th('reserved') + th('sold') + th('price') + th('status') +
+      th('name') + th('stock') + th('lock') + th('unlocked') + th('reserved') + th('sold') + th('price') + th('status') +
       '<th></th></tr></thead><tbody>' + rows + '</tbody></table>';
     regateFeat();
   }
@@ -6617,8 +6705,10 @@
   function tierMeterHTML(list, withProgress, thumbFn) {
     return list.map(t => {
       const qty = Number(t.qty) || 0, sold = Number(t.sold) || 0;
-      const p = qty ? Math.round(sold / qty * 100) : 0;
-      const left = Math.max(0, qty - sold);
+      /* D465 決定 11（5.1.6.3 §2.6）：售出進度的分子＝已售＋保留中（各格保留加總，ztorEvents.tierHeld） */
+      const held = window.ztorEvents.tierHeld ? window.ztorEvents.tierHeld(ev, t) : 0;
+      const p = qty ? Math.round((sold + held) / qty * 100) : 0;
+      const left = Math.max(0, qty - sold - held);
       /* 逼近售罄才把數字轉成品牌色：那是這張卡上唯一需要立刻做決定的訊號
          （要不要加場、要不要開放下一批）。門檻 80% 屬呈現判斷，非產品規則。 */
       const hot = withProgress && p >= 80;
@@ -6626,7 +6716,7 @@
          無圖版維持原本的一行到底——它沒有第四欄可以放。 */
       const leftTxt = withProgress
         ? T('event-detail.sales.left', 'left {n}').replace('{n}', fmtNum(left)) +
-          (t.reserved ? ' · ' + T('event-detail.sales.held', '{n} held').replace('{n}', t.reserved) : '')
+          (held ? ' · ' + T('event-detail.sales.held', '{n} held').replace('{n}', held) : '')
         : '';
       const num = withProgress
         ? '<b>' + fmtNum(sold) + '</b> / ' + fmtNum(qty) + (thumbFn ? '' : ' · ' + leftTxt)
@@ -6700,7 +6790,9 @@
     const bds = ev.bundles || [];
     const bundleHTML = bds.map(b => {
         const cap = Number(b.cap) || 0, bsold = Number(b.sold) || 0;
-        const pct = cap ? Math.round(bsold / cap * 100) : 0;
+        /* D465 決定 11：進度分子＝已售＋保留（被保留的套數），剩餘也扣保留 */
+        const bheld = window.ztorEvents.bundleHoldSets ? window.ztorEvents.bundleHoldSets(b) : 0;
+        const pct = cap ? Math.round((bsold + bheld) / cap * 100) : 0;
         /* tickets 形狀＝{ tierIds, qty }（2026-09-21 D296，相容讀取走 ztorEvents.bundleTickets）：
            量表列副標寫「VIP／Floor 任選 ×2」（一種「VIP ×2」，1 張不寫 ×1）。 */
         const tk = window.ztorEvents.bundleTickets(b);
@@ -6724,7 +6816,7 @@
             '<span class="stock-bar"><span class="stock-bar__fill" style="width:' + pct + '%"></span></span>' +
           '</span>' +
           '<span class="meter-list__left">' +
-            (cap ? esc(T('event-detail.sales.left', 'left {n}').replace('{n}', fmtNum(Math.max(0, cap - bsold)))) : '') +
+            (cap ? esc(T('event-detail.sales.left', 'left {n}').replace('{n}', fmtNum(Math.max(0, cap - bsold - bheld))) + (bheld ? ' · ' + T('event-detail.sales.held', '{n} held').replace('{n}', bheld) : '')) : '') +
           '</span>' +
         '</div>';
     }).join('');
@@ -7320,7 +7412,7 @@
   }
   /* ── 組合包庫存設為 0（D447 決定三，2026-10-19；S100）─────────────────────────────────
      組合包的庫存＝組合實際可售量。「庫存設為 0」＝把這個組合包切成「限量」，總量上限（cap，bundle-detail 的 Total Quantity）
-     改成剛好等於已售套數，剩餘 0、不能再買；不新增欄位。恢復＝到組合商品細節頁把總量調高或改回不限量。
+     改成剛好等於已售套數＋這個組合包被保留的套數（D465 補充三，ztorEvents.bundleZeroCap），剩餘 0、不能再買；不新增欄位。恢復＝到組合商品細節頁把總量調高或改回不限量。
      營運動作〔同隱藏／顯示〕：檢視與編輯模式都能按、立即生效、不算進「儲存 N 項變更」。含 bookyay 門票、由創作者自建的組合包照樣可按。
      不能按：已結束／已取消（唯讀）、已經是限量且剩餘 0；草稿活動不畫。 */
   function bdZeroBlock(b) {

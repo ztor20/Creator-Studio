@@ -487,7 +487,7 @@
            兩段各自對應 §2.8「執行結果」的領取單位／庫存回補，只是不是每種型態都適用。
            D431（2026-10-16）：撤銷一律不寄 email，原本的「寄送訂單已取消信」兩條（單品／整單）退場。 -->
       <div class="field__hint" data-od-void-effect="codes" data-i18n="od.void.effect.codes">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
-      <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back on the shelf; a bundle restocks each of its members.</div>
+      <div class="field__hint mt-8" data-od-void-effect="stock" data-i18n="od.void.effect.stock">Stock goes back to the lock it was sold from, or to unlocked stock if that lock is gone.</div>
       <!-- D434（2026-10-16）撤銷含 bookyay 門票的組合包品項時多一條；D446（2026-10-19）改為跟 bookyay 一起成功或一起不撤（手動作廢退場）。
            原型不模擬 bookyay 撤銷失敗，送出一律成功（ASSUMPTIONS UIA-273）。 -->
       <div class="field__hint mt-8" data-od-void-effect="bky" hidden data-i18n="od.void.effect.bky">The tickets in this bundle are voided in bookyay at the same time. If any of them can't be voided there, nothing is voided.</div>
@@ -796,9 +796,26 @@
       : T(it.voidedBy === 'creator' ? 'od.void.record.creator' : 'od.void.record.admin', it.voidedBy === 'creator' ? 'Creator' : 'Admin');
     var line = T('od.void.record', 'Voided {date} · {who}').replace('{date}', esc(at || '—')).replace('{who}', who);
     if (it.voidWhole) line += ' · ' + T('od.void.record.whole', 'Whole-order void');   /* D414：整單撤銷標註 */
+    /* D465 決定 8：撤銷的量退回原本賣出的那個鎖定（示意；原鎖定已不在才回未鎖定） */
+    if (it.lockFrom && it.mode !== 'digital') line += ' · ' + esc(lockBackText(S.returnTarget(it, order)));
     if (it.voidReason) line += ' · ' + esc(it.voidReason);
     return '<div class="data-list__meta">' + line + '</div>';
   };
+  /* D465（2026-10-21）：品項賣出時的那一格（訂單品項記下 lockFrom）與撤銷時退回哪一格，兩句共用 */
+  function lockFromText(lf) {
+    if (!lf) return '';
+    if (lf.kind === 'single') return T('od.lock.from.single', 'Sold from: single-sale lock');
+    if (lf.kind === 'bundle') return T('od.lock.from.bundle', 'Sold from: bundle lock{name}').replace('{name}', lf.bundleName ? T('od.lock.name', ' ({name})').replace('{name}', lf.bundleName) : '');
+    return T('od.lock.from.free', 'Sold from: unlocked stock');
+  }
+  function lockBackText(rt) {
+    if (!rt) return '';
+    if (rt.gone) return T('od.lock.back.gone', 'Returned to unlocked stock (the lock it was sold from is gone)');
+    if (rt.kind === 'single') return T('od.lock.back.single', 'Returned to the single-sale lock');
+    if (rt.kind === 'bundle') return T('od.lock.back.bundle', 'Returned to the bundle lock{name}').replace('{name}', rt.bundleName ? T('od.lock.name', ' ({name})').replace('{name}', rt.bundleName) : '');
+    return T('od.lock.back.free', 'Returned to unlocked stock');
+  }
+  window.odLockBackText = lockBackText;
   var voidBtnHtml = function (it, i) {
     var st = S.voidState(it, order);
     /* D411：門票品項（直接買票）在活動詳情撤銷，本頁不放撤銷鈕；入口在 §2.3.4 門票資料 */
@@ -928,6 +945,8 @@
               (it.solo ? ' <span class="badge badge--neutral badge--inline"><span data-i18n="od.tk.solo">Standalone ticket</span></span>' : '') + '</div>' +
             '<div class="data-list__meta" data-i18n="' + esc(catI18nKey) + '">—</div>' +
             (it.event ? '<div class="data-list__meta"><a class="card__link" href="event-detail.html?id=' + encodeURIComponent(it.event.id) + '">' + esc(it.event.name) + '</a></div>' : '') +
+            /* D465：賣出時從哪一格賣的（訂單品項記下的 lockFrom；撤銷時據此退回原鎖定） */
+            (it.lockFrom && it.mode !== 'digital' && !(S.voidState(it, order) === 'voided') ? '<div class="data-list__meta">' + esc(lockFromText(it.lockFrom)) + '</div>' : '') +
             voidRecordHtml(it) +
           '</div>' +
         '</div>' +
@@ -1420,7 +1439,7 @@
         '</div></div></div>').join('');
       if (window.applyI18n) window.applyI18n(wholeListEl);
       if (codesEffect) codesEffect.hidden = !order.items.some(hasUnitsOf);
-      if (stockEffect) stockEffect.hidden = order.items.every(it => it.mode === 'digital');
+      if (stockEffect) { stockEffect.hidden = order.items.every(it => it.mode === 'digital'); setText(stockEffect, 'od.void.effect.stock', 'Stock goes back to the lock it was sold from, or to unlocked stock if that lock is gone.'); }
       /* D434：整單裡有 bookyay 活動的組合包品項時，同樣告知 ztor 會通知 bookyay 作廢那張票 */
       if (bkyEffect) bkyEffect.hidden = !(order.event && order.event.bky && order.items.some(it => it.mode === 'bundle'));
       if (reasonEl) reasonEl.value = '';
@@ -1446,7 +1465,18 @@
       const hasUnits = (item.mode === 'pickup' && item.units && item.units.length) ||
         (item.mode === 'bundle' && agg.total > 0);
       if (codesEffect) codesEffect.hidden = !hasUnits;
-      if (stockEffect) stockEffect.hidden = item.mode === 'digital';
+      if (stockEffect) {
+        stockEffect.hidden = item.mode === 'digital';
+        /* D465 決定 8：效果預告寫出退回哪一格——原本賣出的那個鎖定還在就退回它（即使被調低過），不在才回未鎖定 */
+        if (item.lockFrom && window.odLockBackText) {
+          stockEffect.removeAttribute('data-i18n');
+          const rt = S.returnTarget(item, order);
+          stockEffect.textContent = rt.gone ? T('od.void.effect.gone', 'Stock goes back to unlocked stock — the lock it was sold from has been removed or set to unlocked.')
+            : rt.kind === 'single' ? T('od.void.effect.single', 'Stock goes back to the single-sale lock it was sold from, and that lock’s quota goes up.')
+            : rt.kind === 'bundle' ? T('od.void.effect.bundle', 'Stock goes back to the bundle lock it was sold from{name}, and that lock’s quota goes up.').replace('{name}', rt.bundleName ? '（' + rt.bundleName + '）' : '')
+            : T('od.void.effect.free', 'Stock goes back to unlocked stock, where it was sold from.');
+        } else setText(stockEffect, 'od.void.effect.stock', 'Stock goes back to the lock it was sold from, or to unlocked stock if that lock is gone.');
+      }
       /* D434：bookyay 匯入活動的組合包品項（成員含 bookyay 門票）——撤銷後由 ztor 通知 bookyay 作廢那張票 */
       if (bkyEffect) bkyEffect.hidden = !(item.mode === 'bundle' && order.event && order.event.bky);
       if (reasonEl) reasonEl.value = '';

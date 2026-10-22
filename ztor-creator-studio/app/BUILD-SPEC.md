@@ -550,6 +550,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **create-auction 的接法（同上）**：`sections` 同為 `.preview-split__form > .form-section`（拍賣種類、展示、故事、真實性證明、競標設定、競標資格、運送或交付〔依種類〕、標籤）；`status` 讀就緒檢查 `buildChecks()`，8 個檢查項各新增 `at`（欄位選擇器），經 `closest('.form-section')` 對到節；節裡有檢查項＝必填。拍賣種類那節沒有標題，以 `title` 選項回退 `ca.outline.kind`。右欄的預覽、上架設定、開拍設定不在表單欄，不列入。`refresh()` 末尾叫 `caOutline.refresh()`。
 - **兩頁差異**：內容欄是 `.wizard__body--narrow` 的 1000px（建立商品 1140），兩頁各設 `.preview-split__form { --section-outline-body: 1000px }`；其餘版面、降級（<1400px 隱藏）與建立商品相同。1440 寬導覽 184px。這兩頁在 1366 寬左側仍有約 135px，放得下 120px 最小寬，但元件斷點統一 1400，未為窄內容欄另開門檻（UIA-246 第 6 條）。
 - **三步驟（2026-10-21 · UI-CHANGES 二百八十五、ASSUMPTIONS UIA-286）**：建立商品、建立組合包由兩步改三步（設定／上架設定／預覽與發布）。前兩步是同一張表單：`.preview-split__form` 加 `.form-steps[data-at]`（`ds-components/form-steps.css`，design-system §4.241），每個直屬節標 `data-form-step="1|2"`，不是目前這一步的 `display:none`；頁面原本的 `hidden` 分支顯隱不受影響。大綱元件本來就濾掉不佔版面的節，所以每一步只列該步的節、「必填 N／M」只算該步；`data-at` 不在元件監看範圍，`cpGoStep()`／`cbGoStep()` 換步時主動 `refresh()`。檢核項回跳：`cpSectionOf`／`cbSectionOf` 的 target → `closest('[data-form-step]')` 推出步驟 → 先換步再捲到節。步驟條 `--steps:3`、`--progress=(step−1)/3`；第 1、2 段「已完成」＝該步的就緒項全過且到過。底部按鈕（D464 裁決後）：步驟 1、2 的主按鈕一律「下一步」（`wiz.next`）；商品第一步只有「下一步」、第二步「上一步」＋「下一步」（`#cp-primary`），就緒 tooltip 的外層包住兩顆「下一步」、分步時只列該步的就緒項（`renderReadiness()` 依 `cpStepOf` 過濾）；組合包第一步「取消」＋「下一步」、第二步「上一步」＋「下一步」，停用理由由 `gateWhyStep(步驟)` 只講該步的缺項（擋關條件清單 `gateList()` 每項帶步驟）。步驟 2 名稱「上架與販售」。草稿：換步時把步驟記在 localStorage（`ztor.cp.draft-step`／`ztor.cb.draft-step`），`?draft=1` 進來時還原。組合包節的分配：第一步 info／media／content／price（原價合計＋組合折扣）／qty／limits／films，第二步 listing／rules（購買條件）／offers（限時折扣＋使用優惠碼，第二條 `.price-ladder`）。商品編輯態／嵌入態移除 `data-at`、不分步。
+- **D466 的大綱變化（2026-10-22 · UI-CHANGES 二百八十八）**：大綱判準不變（讀就緒檢查）。建立商品的詳細規格本來就在就緒檢查內，改成只數填齊的列後「商品資訊」節要有一筆完整規格才算完成。建立拍賣 `buildChecks()` 拆成 `base()`（7 必填＋附圖提示）加條件項，條件項插在附圖前；實體的出貨時限 `at: '#ca-shipby'` 讓「運送」節變必填；上架與開拍時間的 `at` 在右欄 aside，不在 `.preview-split__form` 內，所以只出現在就緒卡。`listingMode`／`startMode` 宣告提到檔頭，避免大綱掛載時呼叫 `buildChecks()` 踩到暫時性死區。
 - **可延伸**：`product-detail.html` 編輯態同為長表單，尚未接；接法＝連 CSS、載 partial（先於頁面腳本）、給 `sections`／`status`／`labels`。
 
 ## 4i. 限購三種上限與組合包的購買條件（2026-10-12 · D398、D400；UI-CHANGES 一百八十、ASSUMPTIONS UIA-247）
@@ -561,6 +562,10 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **活動門票**：`purchase-conds.js` 的「限購」條件卡每欄加 `hintHTML(f,'tix')`；create-event、event-detail 先載 `purchase-limits.js` 再載 `purchase-conds.js`。
 - **未改接**：建立活動第 6 步的 `js/bundle-editor.js` 仍走 D342 合併區塊（ASSUMPTIONS UIA-247 第 9 項）。（2026-10-12 已改接，UI-CHANGES 一百八十八。）
 - **2026-10-16 D427 收斂成一種（UI-CHANGES 二百四十五、ASSUMPTIONS UIA-266）**：本節的「三欄」「三種上限」一律改讀「每人總限購一欄」——`KEYS=['person']`，`order`（每次交易限購）、`times`（限購次數）與 `KEYS_BKY`、`fieldsHTML`／`blockHTML` 的 `keys` 選項退場；`norm()` 只取 `person`，舊資料的 order／times 忽略。資料形狀改 `limit: { person } | null`；`js/ticket-bundle.js` 的限購分支與 `js/purchase-conds.js` 的限購條件卡同樣只剩 person。商品就緒檢查改「限購上限」（開了就要填）。版面沒變，`.limit-set` 的樣式本來就逐欄套用。
+- **2026-10-22 D467（UI-CHANGES 二百九十、ASSUMPTIONS UIA-289）**：
+  - 舊資料換算集中在 `js/purchase-conds.js` 的 `legacyConds({ rules, def, limits, sale })`，組合詳情（`bdUSeed`）與建立活動組合包彈窗（`js/bundle-editor.js` `legacyToConds`，讀種子時做）共用，不各寫一份。
+  - 組合包排程特價＝購買條件的「限時折扣」，只存一份：組合詳情以價格階梯的排程特價欄為存放處，最終版由它導出 `discTime`（`bdSaleToConds`），購買條件改 `discTime` 時寫回同一組欄位（`bdSaleFromConds`）；建立組合最終版存檔時把 `discTime` 寫成 `discount`、`conds` 不另存。價格階梯的「限時折扣」兩列掛 `data-feat-off="S105"`，最終版只在購買條件出現一次。
+  - release2.4 建立組合步驟 2 的購買條件改為可編輯，沿用組合詳情 release2.4 的同一組元件：含門票＝`TB.rulesHTML(group)` 拿掉 `readonly`，事件委派掛在 `[data-tb-host="cb-rules"]`，只在結構變了（跟隨、限制與否、條件種類）才重畫；純商品＝`[data-cb-conds-wrap]` 掛 `purchase-conds.js` 條件清單（`types: buyTime/buyTier`，同組合詳情 `condsCtx`）。
 
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 

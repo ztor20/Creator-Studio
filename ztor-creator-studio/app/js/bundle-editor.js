@@ -350,8 +350,10 @@
                       每格 ≤ 該組合當下沒被鎖定的量、各商品合計 ≤ 鎖定套數 × 每套用量；規則見 js/lock-alloc.js、D266／D268）
              sched    上架、下架、開賣、停售四格的跟隨／另設（null＝跟隨活動；js/ticket-bundle.js）
              rules    購買條件與限購（null＝跟隨所含門票）——2026-10-12 起只剩購買條件
-             limits   限購（2026-10-12，UI-CHANGES 一百八十八；js/purchase-limits.js）：null＝不限、{ person }＝自己設的上限（D456） */
-        media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, codes: [], codesNew: [], alloc: {}, itemAlloc: {}, sched: {}, rules: null, limits: null,
+             limits   限購（2026-10-12，UI-CHANGES 一百八十八；js/purchase-limits.js）：null＝不限、{ person }＝自己設的上限（D456）
+             conds    D463（2026-10-21，最終版 S105）：組合包自己的七種購買條件 { conds: {…} }（js/purchase-conds.js），預設空；
+                      不跟隨所含門票。「限購」條件同步寫回 limits（以組計）；release2.4 不用這格 */
+        media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, codes: [], codesNew: [], alloc: {}, itemAlloc: {}, sched: {}, rules: null, limits: null, conds: { conds: {} },
       };
       if (seed) {
         /* price 刻意不從 seed 收：舊種子資料還帶著寫死的價格，收進來會蓋掉算出來的值。 */
@@ -381,14 +383,30 @@
         ['media', 'films'].forEach(function (k) { b[k] = Array.isArray(seed[k]) ? seed[k].slice() : []; });
         ['alloc', 'itemAlloc', 'sched'].forEach(function (k) { b[k] = seed[k] ? JSON.parse(JSON.stringify(seed[k])) : {}; });
         b.rules = seed.rules ? JSON.parse(JSON.stringify(seed.rules)) : null;
+        b.conds = (seed.conds && seed.conds.conds) ? JSON.parse(JSON.stringify(seed.conds)) : { conds: {} };   /* D463（最終版） */
         /* 2026-10-12（UI-CHANGES 一百八十八）：限購 b.limits（null＝不限、物件＝自己設的上限，D456）。舊資料（D342）沒有 limits、
            限購寫在 rules（cap:'cap'）→ 相容讀成自己設的上限（同 bundle-detail 的讀法）；之後存檔只認 limits，rules 只剩購買條件。 */
         var PLs = window.ztorPurchaseLimits;
         b.limits = seed.limits !== undefined
           ? (seed.limits ? JSON.parse(JSON.stringify(PLs ? PLs.norm(seed.limits) : seed.limits)) : null)
           : (PLs ? PLs.fromRules(seed.rules) : null);
+        legacyToConds(b, seed);
       }
       return b;
+    }
+
+    /* 舊 rules／limits → conds（D463 決定 5〔推導〕，最終版用；2026-10-22 補，同 bundle-detail 的 bdUSeed）：
+       種子還沒有自己的條件（conds 空）時，把舊資料推導成組合包自己的條件——rules 另設的分級／限時間照抄，rules 為 null（跟隨所含門票）
+       改讀當下由所含門票推導的預設（tbCtx(b).def：取最嚴）；限購 limits 轉成「限購」條件。換算本體是 js/purchase-conds.js 的 legacyConds。
+       資料層的轉換、不看版本：release2.4 不讀 conds（照舊讀 rules／limits），所以兩個版本都安全。示範資料目前沒有舊值，轉換照樣寫好。 */
+    function legacyToConds(b, seed) {
+      var PC = window.ztorPurchaseConds;
+      if (!PC || !PC.legacyConds) return;
+      if (seed.conds && seed.conds.conds && Object.keys(seed.conds.conds).length) return;   /* 已有自己的條件：以它為準 */
+      var hasTix = tixIds(b).length > 0, c = hasTix ? tbCtx(b) : null;
+      var o = PC.legacyConds({ rules: b.rules, def: c && c.def, limits: b.limits });   /* rules 另設的照抄；null 才讀所含門票的推導值 */
+      if (!b.conds || !b.conds.conds) b.conds = { conds: {} };
+      Object.keys(o).forEach(function (k) { if (!b.conds.conds[k]) b.conds.conds[k] = o[k]; });
     }
 
     var get = function (id) { return BUNDLES.filter(function (b) { return b.id === id; })[0]; };
@@ -1016,9 +1034,33 @@
        墓碑 2026-10-20（D456）：limitMembers／productLimit（成員清單，只為算成員交集）與跟隨成員開關退場。
        墓碑 2026-10-16（D429）：bookyay 套票自動建立的組合包（srcFix）照 purchase-limits 的 locked 畫鎖定徽章（pl.lock.bky）退場。 */
     function plApi() { return (SPLIT && getTickets && window.ztorPurchaseLimits) || null; }
+    /* ── D463（2026-10-21，最終版 S105）：組合包自己的七種購買條件（js/purchase-conds.js，同一般商品與門票）──
+       不跟隨所含門票、不沿用成員，建立時就能設、預設沒有條件；限購是其中一種（以組計），寫回 b.limits。
+       節內只放一個掛載點，條件清單由 PC.mount 自己畫與接事件（卡片重畫後在 mountUConds 重新掛）。 */
+    function pcApi() { return (SPLIT && getTickets && window.ztorPurchaseConds) || null; }
+    function uniOn() { var PC = pcApi(); return !!(PC && PC.uniOn()); }
+    function uSyncLimits(b) {
+      var PL = window.ztorPurchaseLimits, cap = b.conds && b.conds.conds && b.conds.conds.cap;
+      var n = cap && PL ? PL.posInt(cap.person) : null;
+      b.limits = n ? { person: String(n) } : null;
+    }
+    function uErrCount(b) {
+      var PC = pcApi(); if (!PC || !uniOn()) return 0;
+      var c = tbCtx(b);
+      return PC.errCount(b.conds, c ? c.et : null);
+    }
+    function mountUConds(card, b) {
+      var PC = pcApi(), host = card && card.querySelector('[data-bd-uconds]');
+      if (!PC || !host || !uniOn()) return;
+      if (!b.conds || !b.conds.conds) b.conds = { conds: {} };
+      if (host._pc) { host._pc.refresh(); host._pc.check(); return; }
+      host._pc = PC.mount(host, { rules: b.conds, scope: 'bundle', times: function () { var c = tbCtx(b); return c ? c.et : null; },
+        ctx: { capUnit: 'set', emptyKey: 'pc.empty.set', featOn: featOnS, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); } },
+        onChange: function (r) { b.conds = r; uSyncLimits(b); syncSplit(card, b); onChange(BUNDLES); } });
+    }
     function limitsErrCount(b) {
       var PL = plApi();
-      if (!PL) return 0;
+      if (!PL || uniOn()) return 0;   /* D463（最終版）：限購的錯算在購買條件（uErrCount） */
       return Object.keys(PL.errors(b.limits, T)).length;
     }
     function limitsHTML(b) {
@@ -1044,7 +1086,7 @@
     }
     function tbErrCount(b) {
       var c = tbCtx(b);
-      return (c ? c.TB.errorCount(b, c, T) : 0) + limitsErrCount(b);   /* 2026-10-12：限購的擋存一起算（UIA-247 第 4 條） */
+      return (c ? c.TB.errorCount(b, c, T) : 0) + limitsErrCount(b) + uErrCount(b);   /* 2026-10-12：限購的擋存一起算（UIA-247 第 4 條）；D463：最終版購買條件的錯 */
     }
     /* 限時折扣（排程特價 F7）：開了就要 1–99 的 % 與起訖日（結束不早於開始）。 */
     function saleBad(b) {
@@ -2322,6 +2364,13 @@
     function secRulesSplitHTML(b) {
       var c = tbCtx(b);
       if (!c) return '';
+      if (uniOn()) return '<section class="bd-sec bd-sec--stack" data-bd-sec="rules" data-feat="S105">' +   /* D463（最終版）：自己的七種條件 */
+        '<div class="bd-sec__head">' +
+          '<h3 class="bd-sec__title">' + esc(T('pc.title')) + '</h3>' +
+          '<p class="bd-sec__sub">' + esc(T('pc.sub.set')) + '</p>' +
+        '</div>' +
+        '<div data-bd-uconds></div>' +
+      '</section>';
       /* 2026-10-21（UI-CHANGES 二百八十二）：購買條件與限購整併成一個群組 .rules-group（ds-components/rules-group.css，同 create-bundle、bundle-detail）：
          條件列（讀數與跟隨開關同一排）→ 限購列（輸入框在右）→ 底部一句彙總；原本兩個獨立線框、各自的標題與調整入口退場。
          版本閘先問再畫（D366 做法）：S63（含門票的購買條件）不在版本內就不畫條件列、節標題只剩「限購」（S94）。 */
@@ -2620,7 +2669,8 @@
       syncValloc(card, b);   /* 2026-10-21：多選項商品的逐選項分配 */
       /* 購買條件的預設跟著允許票種與每組張數變（限購換算成組）：焦點不在這一段時整段重畫 */
       var rulesSec = card.querySelector('[data-bd-sec="rules"]');
-      if (rulesSec && !(document.activeElement && rulesSec.contains(document.activeElement))) {
+      if (rulesSec && uniOn()) mountUConds(card, b);   /* D463（最終版）：條件不跟成員變，不重畫，只重算讀數與紅字 */
+      else if (rulesSec && !(document.activeElement && rulesSec.contains(document.activeElement))) {
         var tmpR = document.createElement('div'); tmpR.innerHTML = secRulesSplitHTML(b);
         if (tmpR.firstChild) rulesSec.innerHTML = tmpR.firstChild.innerHTML;   /* 留著 section 節點本身：分節分頁的 scrollspy 綁的是它 */
       }
@@ -2643,7 +2693,7 @@
     var SNAP_KEYS = ['name', 'desc', 'discount', 'discountOn', 'avail', 'cap', 'lockSets', 'lockAsk', 'perks', 'scope', 'cover', 'nameTouched',
                      'shown', 'saleOn', 'stack', 'codes'];
     /* D342：物件型欄位整份深拷貝（取消要還原到打開那一刻，不能跟著工作中的物件一起變） */
-    var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'itemAlloc', 'sched', 'rules', 'limits', 'codesNew'];   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
+    var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'itemAlloc', 'sched', 'rules', 'limits', 'conds', 'codesNew'];   /* conds：D463 購買條件（最終版） */   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
     function snapOf(b) {
       var o = {};
       SNAP_KEYS.forEach(function (k) { o[k] = Array.isArray(b[k]) ? b[k].slice() : b[k]; });
@@ -3098,6 +3148,7 @@
         }
         var c = tbCtx(bb); if (c) c.TB.syncErrors(card, bb, c, T);
         limitsSync(card, bb);   /* 2026-10-12（UI-CHANGES 一百八十八）：限購的就地紅字 */
+        mountUConds(card, bb);   /* D463（最終版）：購買條件清單掛進新節點 */
         syncValloc(card, bb);   /* 2026-10-21：多選項商品的逐選項分配（每次重畫都是新節點，清單殼在這裡填） */
       });
 
