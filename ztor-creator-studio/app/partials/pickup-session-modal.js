@@ -461,7 +461,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
        members: () => [{ name, product }],   // 目前的商品成員（product＝products-store 記錄，取貨方式經 ztorDelivery 讀）
        value: 'khh' | null,                   // 組合包自己的場次；null＝繼承
        onChange: function (key|null) {},      // 開關或選單改了
-       onCreate: function (done) {}           // 選單底部「建立取貨場次」：頁面開彈窗，建好呼叫 done(session)
+       onCreate: function (done) {},          // 選單底部「建立取貨場次」：頁面開彈窗，建好呼叫 done(session)
+       confirm: function (chg, proceed, revert) {}   // 選填（D472）：有效場次要變之前先問；組合詳情給、建立組合包不給
      });
      api.refresh()   // 成員變了就重畫成員列
      api.get()       // 目前的值（開關關＝null）
@@ -544,7 +545,24 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       }).join('');
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     }
-    function flip() { on = !on; refresh(); if (opts.onChange) opts.onChange(get()); }
+    /* D472（2026-10-22 使用者裁決）：換場次、自設↔沿用互換會改到組合包的「有效場次」時，頁面給了 opts.confirm 就先問——
+         opts.confirm({ from, to, fromName, toName }, proceed, revert)   from／to＝場次代號，null＝沿用各成員自己的場次
+       確認＝proceed() 才寫入（onChange）；取消＝revert() 把開關與選單退回原樣。建立組合包不給 confirm（尚無已售件，D472〔推導〕）。
+       開關開著但還沒選場次＝有效值仍是 null，不算換場次、不問。 */
+    var quiet = false;
+    function eff(o, v) { return o && v && v !== '__new' ? v : null; }
+    function commit(was) {
+      var from = eff(was.on, was.val), to = eff(on, sel.value);
+      var done = function () { last = sel.value; refresh(); if (opts.onChange) opts.onChange(get()); };
+      if (!opts.confirm || from === to) { done(); return; }
+      refresh();   /* 先讓畫面停在新選擇上，彈窗問完再決定 */
+      opts.confirm({ from: from, to: to, fromName: sessionName(from), toName: sessionName(to) }, done, function () {
+        on = was.on; last = was.val;
+        if (sel.value !== was.val) { sel.value = was.val; quiet = true; sel.dispatchEvent(new Event('change', { bubbles: true })); quiet = false; }
+        refresh();
+      });
+    }
+    function flip() { var was = { on: on, val: sel.value }; on = !on; commit(was); }
     tgl.addEventListener('click', flip);
     tgl.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     /* 頁面沒有載 zselect（組合包兩頁的下拉是原生的）時，「建立取貨場次」改成選單最後一個選項——選到它就開彈窗、選單退回原值 */
@@ -556,8 +574,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       sel.appendChild(act);
     }
     sel.addEventListener('change', function () {
+      if (quiet) return;   /* 取消確認時的退回，不是使用者改的 */
       if (sel.value === '__new') { sel.value = last; if (info) info.paint(); create(); return; }
-      last = sel.value; refresh(); if (opts.onChange) opts.onChange(get());
+      commit({ on: on, val: last });
     });
     sel.addEventListener('zselect:action', function (e) { if (e.detail && e.detail.action === 'new-session') create(); });
     document.addEventListener('i18n:applied', refresh);

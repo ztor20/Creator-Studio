@@ -3684,6 +3684,14 @@
     'bd.pickup.own':        { en: 'Use the bundle’s own pickup session', zh: '改用組合包自己的場次' },
     'bd.pickup.own.sub':    { en: 'Every member’s pickup units go to this session.', zh: '這個組合包的成員領取單位都在這一場領。' },
     'bd.pickup.own.label':  { en: 'Bundle pickup session', zh: '組合包的場次' },
+    /* D472（2026-10-22）：換綁取貨場次前的確認彈窗（商品細節與組合詳情共用標題）。{n}＝商品或組合包名稱，{k}＝尚未核銷的件數，{from}／{to}＝場次名稱 */
+    'pk.rebind.title':      { en: 'Change the pickup session for “{n}”?', zh: '變更「{n}」的取貨場次？' },
+    'pk.rebind.body':       { en: '{k} unredeemed items of this product will move from “{from}” to “{to}”. Redeemed items stay redeemed.', zh: '這個商品尚未核銷的 {k} 件會從「{from}」改屬「{to}」；已核銷的件維持已核銷。' },
+    'pk.unbind.body':       { en: '{k} unredeemed items of this product will leave “{from}” and go back to “Pickup session not yet set”. Redeemed items stay redeemed.', zh: '這個商品尚未核銷的 {k} 件會離開「{from}」，回到「取貨場次待設定」；已核銷的件維持已核銷。' },
+    'pk.rebind.ok':         { en: 'Change session', zh: '變更場次' },
+    'pk.unbind.ok':         { en: 'Unlink session', zh: '取消綁定' },
+    'bd.pickup.rebind.to':  { en: '{k} unredeemed items across this bundle’s members will move to “{to}”. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會改屬「{to}」；已核銷的件維持已核銷。' },
+    'bd.pickup.rebind.back': { en: '{k} unredeemed items across this bundle’s members will go back to each member’s own pickup session. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會回到各成員自己的取貨場次；已核銷的件維持已核銷。' },
     /* ✝ 墓碑 · 'bd.pickup.member-meta'（2026-10-22 D470 退役）：組合詳情成員列改寫成員勾的取貨方式（cp.delivery.shipping／cp.delivery.qr）與場次。 */
     'bd.kpi.sold':          { en: 'Bundles sold',            zh: '已售組數' },
     'bd.sales.empty':       { en: 'No sales yet. Revenue appears here once fans buy this bundle.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },

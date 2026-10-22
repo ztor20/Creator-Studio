@@ -1358,6 +1358,7 @@
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · S69：需求資料與算法（window.ztorDemand；須在 apparel-taxonomy 之後） -->
 <script src="js/demand-board.js?v=r2.2"></script><!-- D360 · S69：ztorDemandView（需求看板與本頁彈窗共用的 renderer）；本頁沒有 [data-demand-board]，頁面接線段不會跑 -->
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁取貨場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與建立商品、組合包、活動門票共用；D427 起只剩每人總限購） -->
@@ -2040,7 +2041,8 @@
       set: function (v) {
         state.ship = !!v.ship; state.qr = !!v.qr; writeDelivery(); paintDelivery();
         var sel = document.getElementById('pd-pickup-session');
-        if (sel && sel.value !== (v.session || '')) { sel.value = v.session || ''; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        /* pdSessionQuiet：快照還原（取消編輯）不是換綁，不跳 D472 確認 */
+        if (sel && sel.value !== (v.session || '')) { sel.value = v.session || ''; window.pdSessionQuiet = true; sel.dispatchEvent(new Event('change', { bubbles: true })); window.pdSessionQuiet = false; }
       },
       valid: function () { syncDeliveryErr(true); return state.cat === 'digital' || state.ship || state.qr; },
       text: function () {
@@ -2632,7 +2634,8 @@
       /* 確認彈窗：同 e-shop 的三種內容之二（封存／擋下），殼在 </body> 前 */
       /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
       const getDialog = () => document.querySelector('[data-pd-confirm-dialog]');
-      let pending = null;
+      let pending = null, pendingCancel = null;
+      /* opts.onCancel（選填，D472）：取消鈕、遮罩、×、Esc 關掉時呼叫——取貨場次換綁取消要把選單退回原值 */
       function askConfirm(opts) {
         const dialog = getDialog();
         if (!dialog) { opts.onConfirm(); return; }
@@ -2655,16 +2658,18 @@
         /* 擋下（純告知）只留一顆主鈕 */
         const cancelBtn = dialog.querySelector('.leave-dialog__actions [data-pd-confirm-cancel]');
         if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
-        pending = opts.onConfirm;
+        pending = opts.onConfirm; pendingCancel = opts.onCancel || null;
         dialog.setAttribute('data-open', '');
         if (ok) ok.focus();
       }
-      const closeConfirm = () => { pending = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
+      window.pdAskConfirm = askConfirm;   /* D472：§2.11 取貨場次換綁確認（取貨場次選單的腳本在本段之後，呼叫時才取用） */
+      const closeConfirm = () => { pending = null; pendingCancel = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
+      const cancelConfirm = () => { const fn = pendingCancel; closeConfirm(); if (fn) fn(); };
       document.addEventListener('click', e => {
         if (e.target.closest('[data-pd-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
-        if (e.target.closest('[data-pd-confirm-cancel]')) closeConfirm();
+        if (e.target.closest('[data-pd-confirm-cancel]')) cancelConfirm();
       });
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && (pending || pendingCancel)) cancelConfirm(); });
 
       const commit = () => { if (S && S.commit) S.commit(product); };
       /* 下架一律先確認（§7.14「下架確認與組合包連動」· D288 裁決一）；仍在上架中組合包裡＝列出組合包、確認＝一同下架（裁決二）。
@@ -2990,9 +2995,40 @@
     if (sel && window.pdProduct && window.ztorDelivery) sel.value = window.ztorDelivery.of(window.pdProduct).session || '';
     var info = (sel && window.ZTOR_PARTIALS.bindPickupSessionInfo)
       ? window.ZTOR_PARTIALS.bindPickupSessionInfo(sel, document.querySelector('[data-pd-session-info]')) : null;
-    if (sel) sel.addEventListener('change', function () {
+    /* D472（2026-10-22 使用者裁決，5.1.5.1 §2.11）：已綁定場次 A 時改選 B（含剛從彈窗建好的新場次）或改成「尚未關聯」＝一步換綁／取消綁定，
+       先跳確認（借頁尾既有的 leave-dialog 確認彈窗 window.pdAskConfirm）：寫出這個商品尚未核銷的件數（ztorOrders.pendingPickupUnits，示範訂單；沒有就 0、照樣問）。
+       確認才寫回商品記錄；取消把選單退回 A。原本沒綁場次（A 是空的）＝第一次綁，不問。快照還原（pdSessionQuiet）不問。 */
+    var committedSession = sel ? sel.value : '';
+    function sessionLabel(v) {
+      var o = sel && Array.prototype.filter.call(sel.options, function (x) { return x.value === v; })[0];
+      return o ? o.textContent.trim() : v;
+    }
+    function writeSession() {
+      committedSession = sel.value;
       if (window.pdProduct) window.pdProduct.pickupSession = sel.value || null;
       if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview();
+    }
+    if (sel) sel.addEventListener('change', function () {
+      if (window.pdSessionQuiet) { writeSession(); return; }
+      var from = committedSession, to = sel.value;
+      var ask = window.pdAskConfirm;
+      if (!from || from === to || !ask) { writeSession(); return; }
+      var T = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb; };
+      var p = window.pdProduct || {};
+      var k = (window.ztorOrders && window.ztorOrders.pendingPickupUnits && p.id) ? window.ztorOrders.pendingPickupUnits({ productId: p.id }) : 0;
+      var body = to
+        ? T('pk.rebind.body', '{k} unredeemed items of this product will move from “{from}” to “{to}”. Redeemed items stay redeemed.').replace('{to}', sessionLabel(to))
+        : T('pk.unbind.body', '{k} unredeemed items of this product will leave “{from}” and go back to “Pickup session not yet set”. Redeemed items stay redeemed.');
+      ask({
+        title: T('pk.rebind.title', 'Change the pickup session for “{n}”?').replace('{n}', p.name || ((document.getElementById('pd-title') || {}).textContent || '').trim()),
+        body: body.replace('{k}', String(k)).replace('{from}', sessionLabel(from)),
+        okKey: to ? 'pk.rebind.ok' : 'pk.unbind.ok', okFallback: to ? 'Change session' : 'Unlink session',
+        onConfirm: writeSession,
+        onCancel: function () {
+          sel.value = from;
+          window.pdSessionQuiet = true; sel.dispatchEvent(new Event('change', { bubbles: true })); window.pdSessionQuiet = false;
+        }
+      });
     });
     if (sel && pickup) sel.addEventListener('zselect:action', function (e) {
       if (e.detail && e.detail.action === 'new-session') {
