@@ -22,6 +22,8 @@
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2"><!-- D319：從預覽與在地化存完回本頁的提示 -->
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2"><!-- D471：組合包自己的取貨場次資訊（partials/pickup-session-modal.js mountBundlePickup） -->
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2"><!-- D471：共用「建立取貨場次」彈窗（.pks-step） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
@@ -431,9 +433,9 @@
         <section class="form-section form-section--outlined" data-bd-pickup hidden>
           <div class="form-section__head">
             <h3 class="form-section__title" data-i18n="bd.pickup.title">Pickup &amp; redemption</h3>
-            <p class="form-section__sub" data-bd-pickup-sub data-i18n="bd.pickup.sub">After checkout, members with on-site QR pickup expand into their own pickup units — the bundle itself issues no pickup code. Each unit is tagged &ldquo;from bundle {name}&rdquo;, and its pickup session follows that member&rsquo;s own setting.</p>
+            <p class="form-section__sub" data-i18n="bd.pickup.sub">Bundles have no delivery method of their own — each member follows its own settings.</p>
           </div>
-          <div class="data-list" data-bd-pickup-list></div>
+          <div data-bd-pickup-list></div>
         </section>
 
             </div>
@@ -786,6 +788,7 @@
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
+<script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 create-bundle 共用） -->
 <script src="partials/bundle-relist.js?v=r2.2"></script><!-- 組合包上架的成員閘門（D289／D298），與電子商店清單共用 -->
@@ -1116,35 +1119,33 @@
     };
 
     /* ── §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品才顯示這一區；規則本體在
-       5.1.5.4-建立組合流程.md §4 F9，本頁不重定義。成員的取貨方式問 window.ztorGetProduct(id).delivery，
-       取貨場次目前無獨立欄位可讀時只呈現取貨方式（場次沿用該成員商品自己的設定，見規格）。 */
+       5.1.5.4-建立組合流程.md §4 F9，本頁不重定義。D470：組合包沒有自己的取貨方式，照各成員的設定——成員列寫出
+       該成員勾的取貨方式（window.ztorDelivery 讀勾選集合）與場次。D471（2026-10-22 使用者裁決，修訂 D470）：場次預設繼承
+       （各成員沿用自己商品的場次），也可改用組合包自己的一個場次（寫回組合記錄的 pickupSession；null＝繼承）。
+       畫面與互動是 partials/pickup-session-modal.js 的 mountBundlePickup（建立組合包同一支）；開關與選單跟著設定分頁的兩段式編輯。 */
+    let bdPickupApi = null;
     function renderBdPickup() {
       const sec = document.querySelector('[data-bd-pickup]');
-      const list = document.querySelector('[data-bd-pickup-list]');
-      if (!sec || !list) return;
-      const items = (bundle && bundle.memberItems) || [];
-      const qrMembers = items.filter(item => {
-        const p = window.ztorGetProduct && window.ztorGetProduct(item.id);
-        return !!(p && p.delivery === 'qr');
+      const host = document.querySelector('[data-bd-pickup-list]');
+      if (!sec || !host) return;
+      const DL = window.ztorDelivery;
+      const members = () => ((bundle && bundle.memberItems) || []).map(item => ({ name: item.name, product: window.ztorGetProduct ? window.ztorGetProduct(item.id) : null }))
+        .filter(m => m.product && m.product.cat !== 'digital');
+      sec.hidden = !(DL && members().some(m => DL.of(m.product).qr));
+      if (sec.hidden) return;
+      if (bdPickupApi) { bdPickupApi.refresh(); return; }
+      if (!window.ZTOR_PARTIALS || !window.ZTOR_PARTIALS.mountBundlePickup) return;
+      const rec = (window.ProductsStore && window.ProductsStore.getBundle && bundle) ? window.ProductsStore.getBundle(bundle.id) : null;
+      bdPickupApi = window.ZTOR_PARTIALS.mountBundlePickup(host, {
+        members: members,
+        value: (rec && rec.pickupSession) || (bundle && bundle.pickupSession) || null,
+        onChange: key => { if (rec) rec.pickupSession = key; if (bundle) bundle.pickupSession = key; },
+        onCreate: done => {
+          const ph = document.querySelector('[data-pickup-modal-host]');
+          const api = ph && window.ZTOR_PARTIALS.createPickupSession ? window.ZTOR_PARTIALS.createPickupSession(ph, { onCreate: done }) : null;
+          if (api) api.openBlank();
+        }
       });
-      sec.hidden = qrMembers.length === 0;
-      if (!qrMembers.length) return;
-      const sub = sec.querySelector('[data-bd-pickup-sub]');
-      if (sub) {
-        sub.removeAttribute('data-i18n');
-        sub.textContent = T('bd.pickup.sub', 'After checkout, members with on-site QR pickup expand into their own pickup units — the bundle itself issues no pickup code.').replace('{name}', bundle.name);
-      }
-      list.innerHTML = qrMembers.map(item => {
-        const p = window.ztorGetProduct(item.id);
-        const sessionKey = p && p.pickupSession;
-        const sessionText = sessionKey ? T('cp.delivery.session.' + sessionKey, '') : '';
-        return '<div class="data-list__row"><div class="data-list__row-main">'
-          + '<div class="data-list__icon"><i data-lucide="qr-code" class="ztor-icon"></i></div>'
-          + '<div class="data-list__body"><div class="data-list__title">' + esc(item.name)
-          + ' <span class="text-sub">' + esc(T('bd.pickup.member-meta', 'On-site QR pickup')) + (sessionText ? ' · ' + esc(sessionText) : '') + '</span></div></div>'
-          + '</div></div>';
-      }).join('');
-      if (window.ztorIcons) window.ztorIcons.applyIcons(list);
     }
     renderBdPickup();
     document.addEventListener('ztor:lang-changed', renderBdPickup);
@@ -3247,5 +3248,7 @@
     </div>
   </div>
 </div>
+<!-- D471：共用「建立取貨場次」彈窗＋組合包的取貨場次區（mountBundlePickup） -->
+<div data-pickup-modal-host></div>
 </body>
 </html>

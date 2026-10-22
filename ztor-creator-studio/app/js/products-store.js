@@ -53,10 +53,16 @@
 //   deleted    bool            已刪除（2026-09-22 · D307，§7.14「封存與刪除」）：零成交且已下架或已封存的販售管道（單售／組合包／拍賣）
 //              可刪；ProductsStore.remove(entity) 標上、自 store 拿掉、記進工作階段（sessionStorage 同一把 key 的 `__deleted` 清單），
 //              重新整理後 purgeDeleted() 再拿掉一次、e-shop 對應列由 pruneDeletedRows() 移除；cheat code Reset（forgetSession）一併還原
-//   delivery   'ship'（預設，可省略）| 'qr'   交付方式；'qr'＝現場 QR 領取（取貨場次欄位）
+//   delivery   ['ship'] | ['qr'] | ['ship','qr']   取貨方式勾選集合（D470，2026-10-22；至少一種，僅實體；新建預設 ['ship']）
+//              舊值相容（D470 連帶規則第 12 條〔推導〕）：單值 'qr'→['qr']、'ship'／省略→['ship']；載入時由 normDelivery() 原樣轉入，
+//              頁面一律經 window.ztorDelivery 讀
+//   pickupSession  'tpe' | 'khh' | null   現場 QR 領取所屬的取貨場次（場次代號同 partials/pickup-session-modal.js 的 KNOWN）。
+//              單售商品同時只屬於一個場次（D339，D471 保留；D470 一度改成多值，已由 D471 撤回）；null＝還沒加入任何場次
 //   currency   'TWD'（nick 商品）| 省略＝USD   價格幣別（priceText／product-detail 的 money() 讀它）
 //   variants[i].locks  { single: n|null, bundles: { <bundleId>: n|null } }   逐選項組合鎖定（D255／D258）；
 //              有它時商品層 pool.locks 由 seedListing() 加總得出（見該函式）
+//   組合（BUNDLE_SEED）的 pickupSession（選填，D471 2026-10-22 新增）：組合包自己的取貨場次代號（tpe／khh）。
+//              沒寫／null＝繼承——各成員沿用自己商品的場次；設了＝這個組合包的成員領取單位都屬於這一場（組合包本身仍不產生領取碼，D240）
 //   組合（BUNDLE_SEED）另有（2026-09-11 使用者裁示的價格模型，見 BUNDLE_SEED 上方註解）：
 //              discountPct number|null（常態折扣 %；售價＝成員合計 ×(1−%)）、discount { percent, limited, stack } | null（限時折扣）、
 //              description、membersKey（e-shop 列的成員說明 i18n key，選填）；films／projects／sales／draft 同上、
@@ -158,7 +164,9 @@
       sub: 'Hand-numbered acetate LP — limited run of 50, signed. Collect on-site at the signing session.',
       cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
       status: 'live', price: '120.00', cost: '38.00', stock: '29', cap: '50', sold: '21', threshold: '5',
-      delivery: 'qr',   /* 現場 QR 領取示範：簽名場次現場領取的限量收藏品（唯一一筆 QR 領取商品）*/
+      /* 現場 QR 領取示範：簽名場次現場領取的限量收藏品。刻意保留舊的單值寫法 delivery 'qr'，
+         示範 D470 舊資料原樣轉入：載入後＝只勾現場 QR 領取、取貨場次 tpe */
+      delivery: 'qr', pickupSession: 'tpe',
       catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品',
       /* 詳細規格／取貨與退貨說明（2026-09-23 · D319 補），同 zine 的形狀與理由；取貨與退貨說明改寫成
          配合現場 QR 領取＋限量手燒版一次性不可退換的脈絡，不是照抄物流版的既定文案。 */
@@ -330,7 +338,8 @@
       sub: 'Woven fabric wristband — collect at the signing session. Three sizes.',
       cat: 'physical', subKey: 'collectible', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '10.00', cost: '2.50', stock: '60', threshold: '5',
-      delivery: 'qr',
+      /* D470 新形狀示範：物流配送與現場 QR 領取兩種都勾（場次仍只有一個，D471） */
+      delivery: ['ship', 'qr'], pickupSession: 'khh',
       catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品',
       options: [{ name: 'Size / 尺寸', values: ['S', 'M', 'L'] }],
       variants: [
@@ -702,6 +711,38 @@
   });
   var DATASETS = { default: P_DEFAULT, nick: P_NICK /* userB 未列＝沿用 default */ };
   function active() { return DATASETS[persona()] || DATASETS.default; }
+
+  /* ── 取貨方式資料形狀（D470，2026-10-22；D471 修訂）──────────────────
+     delivery 由單值（'ship'｜'qr'）改成勾選集合；pickupSession 維持單值（單售商品只屬於一個場次，D339／D471）。
+     舊值原樣轉入（D470 連帶規則第 12 條〔推導〕）：'qr'→['qr']、'ship'／沒寫→['ship']。
+     只轉實體商品（數位沒有取貨方式）；可重複呼叫（已是新形狀就不動）。別名 id 指到同一個物件，轉一次就好。 */
+  var DELIVERY_KEYS = ['ship', 'qr'];
+  function normDelivery(p) {
+    if (!p || p.cat === 'digital') return p;
+    var d = p.delivery;
+    var list = Array.isArray(d) ? d.filter(function (k) { return DELIVERY_KEYS.indexOf(k) >= 0; })
+      : (d === 'qr' ? ['qr'] : ['ship']);
+    p.delivery = DELIVERY_KEYS.filter(function (k) { return list.indexOf(k) >= 0; });   /* 固定順序：物流在前 */
+    if (p.pickupSession === undefined) p.pickupSession = null;
+    return p;
+  }
+  [P_DEFAULT, P_NICK].forEach(function (set) { Object.keys(set).forEach(function (id) { normDelivery(set[id]); }); });
+  /* 頁面讀取口：of(p) → { ship, qr, session }；label(p, T) → 「物流配送」「現場 QR 領取」或兩者並列（給清單與摘要列） */
+  window.ztorDelivery = {
+    normalize: normDelivery,
+    of: function (p) {
+      normDelivery(p);
+      var d = (p && Array.isArray(p.delivery)) ? p.delivery : [];
+      return { ship: d.indexOf('ship') >= 0, qr: d.indexOf('qr') >= 0, session: (p && p.pickupSession) || null };
+    },
+    label: function (p, T) {
+      T = T || function (k, fb) { return fb; };
+      var o = window.ztorDelivery.of(p), parts = [];
+      if (o.ship) parts.push(T('cp.delivery.shipping', 'Shipping'));
+      if (o.qr) parts.push(T('cp.delivery.qr', 'QR code pickup'));
+      return parts.join(T('cp.delivery.join', ' · '));
+    }
+  };
 
   /* ── 組合包與拍賣（2026-07-25）──────────────────────────────────
      e-shop 的「組合」與「競標」兩個分頁，列是寫死在 e-shop.html 的，persona 切換時原本不會跟著換。
@@ -1249,6 +1290,9 @@
     /* 隱藏＋非公開連結（沿用 e-shop 既有第二列「Vinyl + poster set」）；無折扣 */
     'vinyl-poster-set': {
       id: 'vinyl-poster-set', persona: 'default', name: '黑膠＋海報典藏組', img: 'vinyl-poster-set.webp',
+      /* D471 示範：組合包改用自己的取貨場次（高雄見面會）——這一組賣出的成員領取單位都屬於高雄場；
+         對照 signing-set 沒設＝繼承，成員各自沿用自己的場次（黑膠台北、手環高雄） */
+      pickupSession: 'khh',
       description: '編號黑膠與簽名海報，只給持連結的人。',
       membersKey: 'e-shop.b2.members',
       members: [{ productId: 'acetate' }, { productId: 'poster' }],

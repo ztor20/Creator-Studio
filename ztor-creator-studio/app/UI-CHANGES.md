@@ -13,6 +13,36 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-22（二百九十二）· 取貨方式改勾選並移到建立商品步驟 2、單售商品維持單一取貨場次、組合包可另設自己的取貨場次（A spec-derived · D470、D471）
+
+**標籤**：release2.4
+
+使用者裁決 D470（取貨方式可勾選多種、移到步驟 2「上架與販售」）與 D471（修訂 D470：單售商品仍只屬於一個取貨場次、買家下單不選場次，組合包預設沿用成員的場次、可另設自己的場次）；使用者已說不進 release2.3。
+
+- `create-product.html`：步驟 1 的「取貨方式」整區拿掉，換成「物流資料」（重量常駐，出貨分類／尺寸／寄件地收進「顯示更多」）；重量的＊與說明跟著步驟 2 的物流配送勾選。步驟 2 在開賣設定之後、購買條件（最終版）／折扣設定（release2.4）之前新增「取貨方式」：物流配送、現場 QR 領取兩個勾選列（新建預設勾物流配送），勾了現場 QR 領取才出現取貨場次（單選既有場次，或下拉底部「建立取貨場次」開共用彈窗）；「取貨與退貨說明」跟著移到這一步。就緒檢查加「取貨方式至少一種」「勾了物流配送要有重量」兩項，列在步驟 2、進入步驟 3 時擋；重量項點了跳回步驟 1 的欄位（就緒項新增 `listStep`）。本頁大綱與 `CP_STEP`（新增 `ship`）同步。數位商品沒有取貨方式。預覽兩種都勾時寫「物流配送或現場 QR 領取」。
+- `product-detail.html`：取貨方式由二選一 segmented 改勾選；物流資料不論勾哪種都在同一節編輯；取貨場次維持單選（D339 保留）並讀寫商品記錄；都沒勾時儲存停在編輯態、就地紅字；取消勾選不擋已有訂單（待確認，原型不實作）。設定總覽列出勾了哪幾種與場次。
+- `ds-components/control-row.css`：新增 `.control-row--check`（右側是勾選框的列，整列是 `<label>`；同組連續勾選列之間分隔線；檢視態不可點），`design-system.html`／`.md` 同步 demo 與條目。
+- `partials/pickup-session-modal.js`：彈窗的商品來源改成「取貨方式勾了現場 QR 領取」的單售商品（只勾物流配送的不列）；D339「已綁定」標示與停用照舊。新增 `mountBundlePickup`（組合包取貨與核銷區，建立組合包與組合詳情共用）：成員列寫出每個成員勾的取貨方式與場次；開關列「改用組合包自己的場次」（掛 `data-feat="S34.1"`，只在最終版）開了才出現場次下拉與場次資訊。
+- `create-bundle.html`：步驟 1 成員之後新增「取貨與核銷」節（成員含現場 QR 領取商品才出現），存檔帶 `pickupSession`（null＝沿用成員）。
+- `bundle-detail.html`：§2.6 說明改「組合包沒有自己的取貨方式，照各成員的設定」，改用 `mountBundlePickup`；自設場次跟著設定分頁的兩段式編輯寫回組合記錄。
+- `js/products-store.js`：商品 `delivery` 改勾選集合（`['ship']`／`['qr']`／兩者），舊單值原樣轉入（`window.ztorDelivery`）；`pickupSession` 維持單值；組合包新增選填 `pickupSession`（示範：黑膠＋海報典藏組設高雄場、簽名會限定組沿用成員）。
+- `js/orders-store.js`：新增 `sessionOf(item)`（領取單位所屬的場次），`order-detail.html` 品項取貨狀態寫出所屬取貨場次並連到該場詳情，待設定時連取貨管理。
+- `product-localization.html`：預覽的交付說明讀新的勾選集合。`pickup.html`、`pickup-detail.html`：補連 `fact-list.css`（共用彈窗檔裡的組合包取貨區含 `.fact-list`）。
+- `js/devtools.js`：FEAT_TIER 後備補 `S34.1: 'tbd'`。`js/i18n.js`：新增 `cp.ship.*`、`cp.delivery.qr.sub`／`err`／`join`、`cp.qc.delivery`、`cp.pv.both`、`bd.pickup.own*`，改寫 `cp.delivery.sub`、`bd.pickup.sub`；`bd.pickup.member-meta`、`od.item.pickup.goto` 立墓碑。
+- 文件：ASSUMPTIONS 新增 UIA-291；BUILD-SPEC、requirements-map、feature-scope-map（S34.1 備註、D470＋D471 說明段）同步。
+
+## 2026-10-22（二百九十一）· release2.4 建立組合包步驟 1 的限購建立時就能設（A spec-derived · D469）
+
+**標籤**：release2.4
+
+使用者裁決「商品可以設定限購，被放到組合包中，組合包可以自己設定限購。全部以這個邏輯去改」（D469）；使用者已說不進 release2.3。
+
+- `create-bundle.html`：release2.4 步驟 1「限購」欄位由停用改為可編輯（`PLc.blockHTML` 拿掉 `disabled`），沿用組合詳情 release2.4 的同一個元件與擋存（`js/purchase-limits.js`：0、小數、非數字就地紅字「請填 1 以上的整數」，進入步驟 3 時擋下）；移除附註「照預設帶入，建立後可到組合包細節頁調整」與它的顯示切換；存檔帶上填的上限，清空＝不限（`null`，不留空殼）。
+- 規則不變（D456）：預設不限、不帶入成員限購、可比成員寬或嚴、額度獨立計算；沒有跟隨成員或覆寫。
+- 最終版不變：步驟 1 的限購節照舊收起，限購是步驟 2 購買條件裡的一項。
+- `js/i18n.js`：`cb.rules.later` 退場（墓碑）；`js/ticket-bundle.js` 一行註解同步。
+- 文件：ASSUMPTIONS 新增 UIA-290、UIA-278 第 2 條標已裁決；BUILD-SPEC、requirements-map、feature-scope-map（S94 備註）同步。
+
 ## 2026-10-22（二百九十）· 刪除一律不寫紀錄、刪除組合包鎖定退回、排程特價＝限時折扣、release2.4 建立組合包可設購買條件（A spec-derived · D467、D468）
 
 **標籤**：release2.4

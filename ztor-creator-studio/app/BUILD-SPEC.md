@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-22 · D470＋D471 取貨方式勾選與組合包取貨場次（UI-CHANGES 二百九十二、ASSUMPTIONS UIA-291）**：新增 `.control-row--check`（`control-row.css`：右側勾選框的列，整列是 `<label>`、主副文字用 `<span>` 設 block、同組連續勾選列之間 `--border` 分隔線、檢視態 `pointer-events:none`），首個消費 `create-product.html` 步驟 2 與 `product-detail.html` 取貨方式。組合包取貨與核銷區是純 JS 組裝（`partials/pickup-session-modal.js` `mountBundlePickup`）：`.data-list` 成員列＋`.control-group`（開關列＋揭示區裡的場次下拉與 `.fact-list`），不新增 CSS；開關列掛 `data-feat="S34.1"`，版本判斷在重畫時讀 `ztorDevState.featOn`（devtools 在頁尾才載入，`load` 後再畫一次）。就緒項新增 `listStep`（列在第幾步）覆寫「依所在節判斷步驟」。
+>
 > **2026-10-21 · D462 單張門票提前入場移除的呈現（UI-CHANGES 二百八十四、ASSUMPTIONS UIA-285）**：沒有新元件，全部是刪除與收窄。單張門票彈窗在建立流程與活動詳情都只剩三個區塊（價格與數量／購買條件／上架與顯示，基本區沒有標題列），票卡事實列不再有「提前入場」；提前入場只在場次層（`sessDoorsHTML`，開關＋時間＋早到處理二選一）。`scanner.html` 結果卡只讀所屬場次的提前入場時間與早到處理（兩列），示範票的 `early` 為 `{ open, policy }`。
 >
 > **2026-10-21 · 票務組合包「數量鎖定」逐選項分配與「購買條件與限購」整併（UI-CHANGES 二百八十一、二百八十二，ASSUMPTIONS UIA-283、UIA-284；5.1.5.4 §4 F2／F4、D266／D268、D342／D398／D456）**：新元件 Rules group（`ds-components/rules-group.css`，§4.240）——購買條件與限購兩個獨立線框整併成一個細框（條件列、限購列、底部一句彙總），三處（`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js` 的 `layout:'split'`）同一套 markup，產生器在 `js/ticket-bundle.js`（`rulesHTML({ group:true })`／`rgRowHTML`／`buyLine`）與 `js/purchase-limits.js`（`blockHTML({ group:true })`／`syncSum`）。新共用 JS 元件 `js/lock-alloc.js`（`ZtorLockAlloc.render`／`refresh`）：指定鎖定項目清單（含多選項商品逐選項分配）三處共用，建立活動組合包彈窗新增這一段（`b.itemAlloc`，只在鎖定套數＞0 且成員含多選項商品時出現）。`ListingState.bundleAllocOf` 單格上限改算「庫存 − 別的管道已鎖」。沒有產品規則變動。
@@ -566,6 +568,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
   - 舊資料換算集中在 `js/purchase-conds.js` 的 `legacyConds({ rules, def, limits, sale })`，組合詳情（`bdUSeed`）與建立活動組合包彈窗（`js/bundle-editor.js` `legacyToConds`，讀種子時做）共用，不各寫一份。
   - 組合包排程特價＝購買條件的「限時折扣」，只存一份：組合詳情以價格階梯的排程特價欄為存放處，最終版由它導出 `discTime`（`bdSaleToConds`），購買條件改 `discTime` 時寫回同一組欄位（`bdSaleFromConds`）；建立組合最終版存檔時把 `discTime` 寫成 `discount`、`conds` 不另存。價格階梯的「限時折扣」兩列掛 `data-feat-off="S105"`，最終版只在購買條件出現一次。
   - release2.4 建立組合步驟 2 的購買條件改為可編輯，沿用組合詳情 release2.4 的同一組元件：含門票＝`TB.rulesHTML(group)` 拿掉 `readonly`，事件委派掛在 `[data-tb-host="cb-rules"]`，只在結構變了（跟隨、限制與否、條件種類）才重畫；純商品＝`[data-cb-conds-wrap]` 掛 `purchase-conds.js` 條件清單（`types: buyTime/buyTier`，同組合詳情 `condsCtx`）。
+- **2026-10-22 D469（UI-CHANGES 二百九十一、ASSUMPTIONS UIA-290）**：release2.4 建立組合步驟 1 的限購改為可編輯——`renderCbRules()` 呼叫 `PLc.blockHTML(..., { group: true, idPrefix: 'cb-pl' })` 拿掉 `disabled`，輸入走既有 `[data-pl-host="cb"]` input 委派、擋存走 `cbRulesErr()`／`gateWhy()`（限購的錯算步驟 1），沒有新元件；`[data-cb-rules-later]` 附註與 `cb.rules.later` 字串退場；存檔 `limits` 只存正整數上限，否則 `null`。最終版（S105）限購節照舊收起。
 
 ## 4e. 商店預覽＝粉絲端創作者頁的手機鏡像，放在頁內右欄（2026-09-11）
 
