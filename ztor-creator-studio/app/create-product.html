@@ -40,6 +40,8 @@
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購（js/purchase-limits.js）；D427 起只剩每人總限購 -->
+<link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D463（最終版 S105）：購買條件清單（js/purchase-conds.js） -->
+<link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- D463：條件卡內的 .rule-row（同建立組合、組合包細節） -->
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- 2026-09-04：折扣區的 .stack--tight 一直沒有這支 CSS，gap 是 0（使用者回報「要有間距」）-->
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -272,7 +274,8 @@
       </div>
       <!-- §4.1② 詳細規格 Specifications（僅實體；併入商品資訊）· spec 5.1.5.2 §4.1② / v3.0 -->
       <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
-        <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
+        <!-- D466（2026-10-22）：實體商品至少一筆詳細規格，欄位標 ＊（spec 5.1.5.2 F2 v6.51）；一筆＝上段已選的系統屬性，或下段名稱與值都填齊的自訂規格 -->
+        <div class="field__label"><span data-i18n="cp.spec.title">Specifications</span> <span class="field__req">*</span></div>
         <div class="field__hint" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
         <!-- 上段 · 系統屬性（D360 · S70）：選了服飾配件大類才出現，項目與值取 ztorApparel；整件商品設一次、選項組合共用。
              下段 · 自訂規格：維持自由填寫（#spec-rows）；沒有上段時下段不加小標，外觀同改版前。 -->
@@ -676,7 +679,8 @@
 
     <!-- §4.5 共用商品設定（兩型）· spec 5.1.5.2 §4.5 / D064。
          2026-07-21 使用者裁示：原本「購買限制與標籤」一個 section，拆成「購買限制」與「商品標籤」兩個。 -->
-    <section class="form-section form-section--outlined" data-form-step="1">
+    <!-- D463（2026-10-21）：最終版（S105）限購併進第二步「購買條件」的七種條件之一，這一節只留在 release2.4（data-feat-off） -->
+    <section class="form-section form-section--outlined" data-form-step="1" data-feat-off="S105">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.limits.title">Buyer limits</h3>
       </div>
@@ -842,7 +846,18 @@
 
     <!-- 2026-10-21 三步驟（第二步「上架設定」）：折扣設定（單一／多選項）與優惠碼從第一步的定價旁搬到上架與開賣之後，順序＝上架設定→開賣設定→折扣設定→優惠碼 -->
     <!-- §4.4 F13 折扣設定（單一規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：開啟折扣 → 折扣價 ↔ 折扣%（雙向連動，以定價為基準、最後編輯為準）＋（可選）限時折扣起訖日。多規格版在逐規格表下方（只用折扣%，見該區）。取代已移除的「原價」機制；限時折扣關＝常態折扣、開＝只在檔期內套用。 -->
-    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-when-var="single">
+    <!-- D463（2026-10-21，5.1.5.2 F14）：購買條件——與單張門票、組合包同一份七種條件（js/purchase-conds.js），限購（F9）與折扣（F13 排程特價）併進來。
+         只在最終版（S105 ⚪）；release2.4 照舊用第一步的限購與下面兩節折扣設定（data-feat-off="S105"）。新建時是空的＝任何人都買得到、照定價賣。
+         折扣類條件填固定價（同門票 D367）；商品原本「折扣價／折扣 % 二擇一、多選項只收 %」怎麼併〔產品待確認，F14〕，原型先用固定價、讀數回推 %。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-feat="S105" data-cp-conds-sec>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="pc.title">Purchase conditions</h3>
+        <p class="form-section__sub" data-i18n="pc.sub.item">Limits and discounts are set here too.</p>
+      </div>
+      <div data-cp-conds-host></div>
+    </section>
+
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-when-var="single" data-feat-off="S105">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
       </div>
@@ -897,7 +912,7 @@
     </section>
 
     <!-- §4.4 F13 折扣設定（多規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：多規格無單一售價，折扣改「折扣 %」套用所有規格；置於逐規格表下方，緊貼真正的價格。限時折扣同單一規格。 -->
-    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical" data-when-var="multiple" hidden>
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical" data-when-var="multiple" data-feat-off="S105" hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
       </div>
@@ -1071,6 +1086,7 @@
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/section-outline.js?v=r2.2"></script>
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與商品細節、組合包、活動門票共用；D427 起只剩每人總限購） -->
+<script src="js/purchase-conds.js?v=r2.2"></script><!-- D463（最終版 S105）：七種購買條件（與門票、組合包同一份） -->
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料（商品端選碼寫回碼的特定商品範圍） -->
 <script src="js/code-picker.js?v=r2.2"></script>
 <script>
@@ -1104,8 +1120,35 @@
   const limitOk = () => !!PL && PL.KEYS.some(k => PL.posInt(limitVals()[k]) != null);
   const has = el => el && el.value.trim() !== '';
   const len = el => (el ? el.value.trim().length : 0);
-  /* 「詳細規格」就緒＝自訂規格列數 ＋ 已選的系統屬性數（D360 · S70：上段系統屬性也算填了規格；各屬性必填與否〔產品待確認〕） */
-  const specCount = () => document.getElementById('spec-rows').children.length + apparelAttrCount();
+  /* 購買條件（D463，5.1.5.2 F14；最終版 S105）：七種條件同門票與組合包（js/purchase-conds.js），新建是空的。
+     限購＝其中的「限購」條件（單位件，加了就要填，D428）；折扣類填固定價、讀數回推 %（多選項以各選項組合的價格算區間）。
+     release2.4（沒有 S105）照舊用第一步的限購開關與第二步的折扣設定。 */
+  const PCc = window.ztorPurchaseConds;
+  const cpUni = () => !!PCc && PCc.uniOn();
+  const cpConds = { conds: {} };
+  const cpCondsAny = () => Object.keys(cpConds.conds).length > 0;
+  const cpCondsOk = () => !PCc || PCc.errCount(cpConds) === 0;
+  const cpCondBases = () => isMulti()
+    ? activeCombos().map(k => numVal((varData[k] || {}).price)).filter(v => v > 0)
+    : [numVal(fPrice && fPrice.value)];
+  const cpCondsHost = document.querySelector('[data-cp-conds-host]');
+  const cpCondsApi = (PCc && cpCondsHost) ? PCc.mount(cpCondsHost, {
+    rules: cpConds, scope: 'item',
+    ctx: { capUnit: 'item', emptyKey: 'pc.empty.item', pctReadout: c => PCc.pctText(c, cpCondBases()),
+           featOn: id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); } },
+    onChange: () => refresh()
+  }) : null;
+  document.addEventListener('ztor:devstate-changed', () => { if (cpCondsApi) cpCondsApi.render(); try { refresh(); } catch (_) { /* 頁面還在初始化 */ } });
+  /* 預覽用的折後價（最終版）：先看「折扣」，沒有再看「限時折扣」（期間內才生效，原型不比時間）；粉絲分級類不進預覽（看的人分級不定） */
+  const cpUniSale = () => {
+    const c = cpConds.conds, x = c.disc || c.discTime;
+    const v = x ? numVal(x.price) : 0;
+    return v > 0 ? v : null;
+  };
+  /* 「詳細規格」就緒＝名稱與值都填齊的自訂規格列數 ＋ 已選的系統屬性數（D360 · S70：上段系統屬性也算填了規格；各屬性必填與否〔產品待確認〕）。
+     D466（2026-10-22）定案為必填、至少一筆；〔推導〕填到一半的自訂規格不算（原本只數列數，空白列也算一筆） */
+  const specRowDone = row => { const i = row.querySelectorAll('input'); return !!(i[0] && i[0].value.trim() && i[1] && i[1].value.trim()); };
+  const specCount = () => Array.from(document.querySelectorAll('#spec-rows .spec-row')).filter(specRowDone).length + apparelAttrCount();
 
   /* ---- 多規格（Variations）模型 ---- */
   /* 2026-09-04（D249）：顏色選項的值多帶一個色號。值本身仍是字串（組合鍵、逐選項組合表、
@@ -1421,7 +1464,7 @@
   /* D310 商品側：每一項多帶 id／labelKey／step——全頁畫面的「發布前檢核」要可點跳回表單的對應區段
      （step 是本頁區段代號，見 CP_STEP 與 cpSectionOf），項目與擋關條件本身不變（spec §4.6 就緒檢查）。
      tooltip（renderReadiness）照舊只讀 k。 */
-  const CP_STEP = { info: 1, media: 2, variations: 3, price: 4, stock: 5, specs: 6, delivery: 7, limits: 8, file: 9, returns: 10 };
+  const CP_STEP = { info: 1, media: 2, variations: 3, price: 4, stock: 5, specs: 6, delivery: 7, limits: 8, file: 9, returns: 10, conds: 11 };   /* 11＝D463 購買條件（最終版 S105，第二步） */
   function buildChecks() {
     if (state.type === 'physical') {
       const a = [
@@ -1435,9 +1478,10 @@
         a.push({ id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price', done: () => has(fPrice) });
         if (state.edition === 'limited') a.push({ id: 'cap', labelKey: 'cp.qc.cap', step: CP_STEP.stock, k: 'Total quantity ≥ stock', done: () => capOk() });
       }
-      a.push({ id: 'specs', labelKey: 'cp.qc.specs', step: CP_STEP.specs, k: 'Specifications', done: () => specCount() >= 1 });
+      a.push({ id: 'specs', labelKey: 'cp.qc.specs', step: CP_STEP.specs, k: 'Specifications', done: () => specCount() >= 1 });   /* D466：硬性必填（進第三步時擋），所在的「商品資訊」節在本頁大綱裡跟著算必填 */
       if (state.delivery === 'shipping') a.push({ id: 'weight', labelKey: 'cp.qc.weight', step: CP_STEP.delivery, k: 'Shipping weight', done: () => shippingOk() });
-      if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
+      if (!cpUni() && state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
+      if (cpUni() && cpCondsAny()) a.push({ id: 'conds', labelKey: 'pc.qc', step: CP_STEP.conds, k: 'Purchase conditions', done: () => cpCondsOk() });   /* D463（S105）：限購併進購買條件，加了就要填完整 */
       return a;
     }
     /* 2026-10-20（spec 5.1.5.2 §4.6 v6.41，D455 A1）：數位就緒檢查只留封面——原本第一項「Item file」
@@ -1449,7 +1493,8 @@
       { id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price',                done: () => has(fPrice) },
     ];
     if (state.edition === 'limited') a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity & copies', done: () => digitalCapOk() });
-    if (state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
+    if (!cpUni() && state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
+    if (cpUni() && cpCondsAny()) a.push({ id: 'conds', labelKey: 'pc.qc', step: CP_STEP.conds, k: 'Purchase conditions', done: () => cpCondsOk() });   /* D463（S105） */
     return a;
   }
 
@@ -1730,6 +1775,11 @@
   }
   /* 折扣（F13）：開著才算。單一選項由特價價格／定價推出 %（兩欄雙向連動，以特價價格為準）；多選項只有折扣 %。 */
   function stageDiscountPct() {
+    if (cpUni()) {   /* D463（S105）：折扣來自購買條件的固定價，換回 % 給前台預覽（多選項以最低價的組合算） */
+      const sale = cpUniSale(), bs = cpCondBases().filter(v => v > 0);
+      const base = bs.length ? Math.min.apply(null, bs) : 0;
+      return (sale && base > 0 && sale < base) ? (1 - sale / base) * 100 : 0;
+    }
     if (isMulti()) return switchOn('cp-vdiscount-toggle') ? numVal((document.getElementById('cp-vsale-percent') || {}).value) : 0;
     if (!switchOn('cp-discount-toggle')) return 0;
     const list = numVal(fPrice && fPrice.value);
@@ -1868,6 +1918,7 @@
       case CP_STEP.delivery: return { target: sec(q('#cp-delivery')) };
       case CP_STEP.returns: { const r = q('#cp-delivery-returns'); return { target: r ? (r.closest('.field') || r) : null, focus: r }; }
       case CP_STEP.limits: return { target: sec(q('#cp-limit-toggle')) };
+      case CP_STEP.conds: return { target: q('[data-cp-conds-sec]') };
       case CP_STEP.file: return { target: sec(q('#cp-cfile-single')) };
     }
     return { target: null };
@@ -2098,9 +2149,9 @@
     if (!pvWas) return;
     const on = (document.getElementById('cp-discount-toggle') || {}).getAttribute
       && document.getElementById('cp-discount-toggle').getAttribute('aria-checked') === 'true';
-    const sale = (document.getElementById('cp-sale-price') || {}).value;
+    const sale = cpUni() ? (cpUniSale() == null ? '' : String(cpUniSale())) : (document.getElementById('cp-sale-price') || {}).value;   /* D463（S105）：折後價改讀購買條件 */
     const list = fPrice && fPrice.value.trim();
-    if (on && sale && String(sale).trim() && list) {
+    if ((on || cpUni()) && sale && String(sale).trim() && list) {
       pvPrice.textContent = '$' + String(sale).replace(/^\$/, '');
       pvPrice.classList.remove('is-empty');
       pvWas.textContent = '$' + String(list).replace(/^\$/, '');
@@ -2133,7 +2184,7 @@
 
   /* 全頁畫面開著時，側欄檢核跟著表單狀態重算（只重畫側欄、不重畫預覽；i18n:applied 也走這裡，
      而 publish-stage 每次畫預覽都會 applyI18n——所以這裡只能 syncChecks，不能 refresh，否則會互相觸發） */
-  function refresh() { renderReadiness(); renderStepper(); renderPreview(); if (stage) stage.syncChecks(); if (cpOutline) cpOutline.refresh(); }
+  function refresh() { if (cpCondsApi) cpCondsApi.refresh(); renderReadiness(); renderStepper(); renderPreview(); if (stage) stage.syncChecks(); if (cpOutline) cpOutline.refresh(); }
 
   /* ---- 本頁大綱（左側空白欄的區段導覽，2026-10-12；元件 partials/section-outline.js）----
      「必填」與「已完成」不另訂規則：直接讀上面的就緒檢查（buildChecks）——每個就緒項用 cpSectionOf(step)

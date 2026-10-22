@@ -22,6 +22,17 @@
      periodWins(rules) / periodErrs(rules, et, T) / syncPeriod(host, rules, et, T)
                                               期間檢查（D342／D363；D389 起活動詳情同用）：有時間窗的條件須落在活動上架區間內、
                                               限時購買的結束不晚於活動停售；回傳 / 寫入 [data-rule-tl-err] 紅字。建立流程與活動詳情共用
+     UNI_FEAT / uniOn()                       D463（2026-10-21）：商品與組合包共用七種條件只在最終版（S105 ⚪）；uniOn()＝目前版本有沒有 S105
+     legacyConds({ rules, def, limits, sale })
+                                              D463 決定 5〔推導〕舊組合包資料 → 自己的條件（回傳只含推導出的那幾種，呼叫端不覆蓋已有的）：
+                                              rules（D342 另設的購買條件；null＝跟隨所含門票→改讀 def＝TB.defaults 推導值）→ buyTier／buyTime；
+                                              limits（{ person }）→ cap；sale（舊排程特價 { pct, from, to, base }，base＝組合包售價）→ discTime
+                                              （2026-10-22 使用者裁決：組合包的排程特價就是「限時折扣」條件）。bundle-detail 與 bundle-editor 共用
+     summary(rules, unit) / errCount(rules, et, Tr)
+                                              一行讀數（設定總覽、彙總句）／擋存錯誤數（限購沒填＋限時折扣價過高＋期間超出）
+     ctx.capUnit                              限購卡的單位（item＝商品、set＝組合包；缺＝tix 門票），欄名與輔助說明讀 pl.<unit>.*
+     release(host)                            收掉一份（清空、取消換語言重畫與事件）
+     paint(host, rules, scope, locked, ctx)   唯讀畫一份（檢視態）；畫過的 host（含 mount）在 i18n:applied 換了語言時自己重畫
      mount(host, opts)                        活動詳情用：畫進 host、自己接新增／移除／輸入，改動呼叫 opts.onChange；
                                               回傳 { render, refresh, rules, check }，refresh() 只重算價格讀數（例如票價改了）；
                                               opts.times() 給了活動時間時，check() 做期間檢查並回傳錯誤數（D389：按儲存 >0 就擋）
@@ -102,6 +113,11 @@
   const meta = k => TYPES.filter(c => c.k === k)[0] || {};
   /* D461（2026-10-20）：門票的限時購買與限購只在最終版（S104 ⚪）；只由門票的呼叫端經 ctx.typeFeat 掛上，組合包不受影響 */
   const TIX_FEAT = { buyTime: "S104", cap: "S104" };
+  /* D463（2026-10-21）：一般商品與組合包（純商品、含票券）用同一份七種條件，組合包不沿用成員、新建預設沒有條件。
+     只在最終版（S105 ⚪）：商品頁與組合包頁的「購買條件」新區塊掛 data-feat="S105"，舊的限購／折扣設定／跟隨所含門票掛 data-feat-off="S105"。
+     uniOn()＝目前版本有沒有 S105（呼叫端據以決定畫新區塊或舊畫法）。 */
+  const UNI_FEAT = "S105";
+  const uniOn = () => { const d = window.ztorDevState; return !d || !d.featOn || !!d.featOn(UNI_FEAT); };
   /* 一種條件實際掛的 feat：種類本身的（S82）優先，其次呼叫端給的 typeFeat；bookyay 帶入的條件（c.bky）不掛 typeFeat */
   const featFor = (k, c, ctx) => meta(k).feat || (ctx && ctx.typeFeat && !(c && c.bky) ? (ctx.typeFeat[k] || "") : "");
   const name = k => t("d.cond." + k);
@@ -171,11 +187,13 @@
       /* D398（2026-10-12）：上限附一句輔助說明，句子與商品（件）、組合包（組）同一套，
          住在 js/purchase-limits.js＋i18n.js 的 pl.tix.*（這裡只借 hintHTML，條件卡外框不變）
          D427（2026-10-16）：限購只留每人總限購數量——每次交易限購與限購次數兩格退場（bookyay 帶入的卡也只畫這一格，D427 決定三） */
+      /* ctx.capUnit（D463，2026-10-21）：商品＝item（件）、組合包＝set（組）；缺＝tix（門票，原行為）。欄名與輔助說明改讀 pl.<unit>.* */
+      const cu = ctx.capUnit || "tix";
       if (k === "cap") return ["person"].map(f =>
-        ruleField(t("d.rule.cap." + f),
+        ruleField(cu === "tix" ? t("d.rule.cap." + f) : T("pl." + cu + "." + f, t("d.rule.cap." + f)),
           '<input class="input" type="number" min="1" step="1" data-rule-f="cap.' + f + '" value="' + esc(c[f]) +
             '" placeholder="' + (l ? "" : esc(t("d.rule.cap." + f + ".ph"))) + '"' + dis(l) + '>' +
-          (window.ztorPurchaseLimits ? window.ztorPurchaseLimits.hintHTML(f, "tix") : "") +
+          (window.ztorPurchaseLimits ? window.ztorPurchaseLimits.hintHTML(f, cu) : "") +
           /* D428（2026-10-16）：開了限購就要填每人總限購數量——空白就地紅字、擋存（同商品端）。
              掛 data-cond-warn，與限時折扣價那一行走同一套同步（syncWarn）；bookyay 帶入鎖定的卡值已帶入，不畫 */
           (l ? "" : '<p class="field__error" data-cond-warn="cap" hidden></p>'), l)).join("");
@@ -255,6 +273,27 @@
     return /^\d+$/.test(v) && Number(v) >= 1 ? "" : "pl.err.int";
   }
   const capBad = conds => !!capErrKey(conds);
+  /* 一行讀數（D463，2026-10-21）：設定總覽、群組底部彙總句用。照種類固定順序、每種一段，以「 · 」串；沒有條件回 pc.none。
+     unit＝限購的單位（item／set／tix），讀 pl.<unit>.person.v；價格前面加 $。 */
+  function summary(rules, unit) {
+    const c = norm(rules).conds || {};
+    const money = v => (v === "" || v == null) ? "" : " $" + v;
+    const rng = x => (x && (x.from || x.to)) ? " " + String(x.from || "…").replace("T", " ") + " – " + String(x.to || "…").replace("T", " ") : "";
+    const tierOf = x => x && x.tier ? " " + T("ce.rule.tier." + x.tier, x.tier) : "";
+    const parts = TYPES.map(m => m.k).filter(k => c[k]).map(k => {
+      const x = c[k];
+      if (k === "cap") return name(k) + (x.person ? " " + T("pl." + (unit || "tix") + ".person.v", "{n}").replace("{n}", x.person) : "");
+      if (k === "buyTime") return name(k) + rng(x);
+      if (k === "buyTier") return name(k) + tierOf(x);
+      return name(k) + money(x.price) + ((k === "discTime" || k === "discBoth") ? rng(x) : "") + ((k === "discTier" || k === "discBoth") ? tierOf(x) : "");
+    });
+    return parts.length ? parts.join(" · ") : T("pc.none", "None");
+  }
+  /* 擋存錯誤數（D463）：限購沒填（D428）＋限時折扣價高於一般折扣價（D390 決定二十五）＋期間超出（給了 et 才比，D342／D363） */
+  function errCount(rules, et, Tr) {
+    const c = norm(rules).conds || {};
+    return (capBad(c) ? 1 : 0) + (discTimeBad(c) ? 1 : 0) + (et ? Object.keys(periodErrs(rules, et, Tr)).length : 0);
+  }
   /* 條件卡的就地紅字：限時折扣價高於一般折扣價（D390 決定二十五）＋限購沒填（D428）；回傳錯誤數 */
   function syncWarn(host, conds) {
     const bad = discTimeBad(conds);
@@ -311,6 +350,30 @@
              tr(k)（選填：期間紅字的取字函式；組合包用它把「活動上架區間」換成「組合包的上架區間」） }
      ctx 另可帶 types（只開放哪幾種條件）、emptyKey（沒有條件時那一句的 i18n key）——D400：純商品組合包的購買條件
      opts.locked＋ctx.addOnly／addFeat／noEmpty（D417，2026-10-15）：整組鎖定的一份（bookyay 門票），只開放 addOnly 那幾種自加 */
+  /* 換語言重畫（2026-10-21，D463 落地時補）：條件清單的字是畫進 HTML 的，頁面腳本常在 i18n.js 套上語言之前就先畫了一次
+     （<html lang> 還是預設值），之後套語言也不會自己換字。每個畫過的 host 記下當時的語言，i18n:applied 時語言不同就重畫。 */
+  const LIVE = new Set();
+  function track(host, redraw) { host._pcLang = lang(); host._pcRedraw = redraw; LIVE.add(host); }
+  document.addEventListener("i18n:applied", () => {
+    LIVE.forEach(h => {
+      if (!h.isConnected) { LIVE.delete(h); return; }
+      if (h._pcLang !== lang() && h._pcRedraw) h._pcRedraw();
+    });
+  });
+  /* 收掉一份（版本切到沒有這塊時）：清空並取消換語言重畫，免得之後套語言又把它畫回來 */
+  function release(host) {
+    if (!host) return;
+    LIVE.delete(host); host._pcRedraw = null; host.innerHTML = "";
+    host.onclick = host.oninput = host.onchange = null;
+  }
+  /* 唯讀畫一份（檢視態用）：畫完補圖示、版本閘，並登記換語言重畫 */
+  function paint(host, rules, scope, locked, ctx) {
+    if (!host) return;
+    host.innerHTML = html(rules, scope, locked, ctx);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+    const d = window.ztorDevState; if (d && d.regate) d.regate();
+    track(host, () => paint(host, rules, scope, locked, ctx));
+  }
   function mount(host, opts) {
     if (!host) return null;
     const st = { rules: norm(opts.rules), scope: opts.scope, ctx: opts.ctx || {} };
@@ -324,6 +387,7 @@
       syncWarn(host, st.rules.conds);
       check();
       const d = window.ztorDevState; if (d && d.regate) d.regate();
+      track(host, render);
     }
     host.onclick = e => {
       const add = e.target.closest("[data-cond-add]");
@@ -374,12 +438,38 @@
     return { render: render, refresh: refresh, rules: () => st.rules, check: check };
   }
 
+  /* ── 舊組合包資料 → 自己的條件（D463 決定 5〔推導〕；2026-10-22 使用者裁決：排程特價＝限時折扣）────────────────
+     時間欄一律收成 datetime-local（'YYYY-MM-DDTHH:MM'）；只有日期的（排程特價的起訖日）起日補 00:00、迄日補 23:59。
+     限時折扣換成固定價（D367）：期間內價格＝售價 ×（1 − %）；拿不到售價時留 pct（condPrice 讀得懂舊資料的 pct）。 */
+  function legacyConds(o) {
+    o = o || {};
+    const out = {};
+    const at = (v, hm) => { const m = /^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?/.exec(String(v || "").trim()); return m ? m[1] + "T" + (m[2] || hm) : ""; };
+    const r = o.rules, d = o.def;
+    const has = part => !!(r && r.on && (r.cond === part || r.cond === "both"));
+    const src = r ? { tier: has("tier") ? r.tier : null, timed: has("time"), from: r.from, to: r.to }
+      : (d ? { tier: d.tier, timed: d.timed, from: d.from, to: d.to } : {});
+    if (src.tier) out.buyTier = { tier: src.tier };
+    if (src.timed) out.buyTime = { from: at(src.from, "00:00"), to: at(src.to, "23:59") };
+    const PLx = window.ztorPurchaseLimits;
+    const lim = o.limits ? (PLx && PLx.norm ? PLx.norm(o.limits) : o.limits) : null;
+    if (lim && lim.person) out.cap = { person: String(lim.person) };
+    const sl = o.sale;
+    if (sl && sl.pct !== "" && sl.pct != null && isFinite(Number(sl.pct))) {
+      const pct = Math.min(100, Math.max(0, Number(sl.pct))), base = Number(sl.base);
+      out.discTime = { price: base > 0 ? String(Math.round(base * (1 - pct / 100) * 100) / 100) : "", from: at(sl.from, "00:00"), to: at(sl.to, "23:59") };
+      if (!(base > 0)) out.discTime.pct = String(pct);
+    }
+    return out;
+  }
+
   window.ztorPurchaseConds = {
     TYPES: TYPES, FIELDS: FIELDS, FAN_TIERS: FAN_TIERS, STRINGS: STRINGS, TIX_FEAT: TIX_FEAT, featFor: featFor,
+    UNI_FEAT: UNI_FEAT, uniOn: uniOn, summary: summary, errCount: errCount,
     t: t, isDiscK: isDiscK, fields: fields, norm: norm,
     condPrice: condPrice, pctOf: pctOf, pctText: pctText,
-    html: html, syncWarn: syncWarn, discTimeBad: discTimeBad, capErrKey: capErrKey, capBad: capBad, mount: mount,
-    periodWins: periodWins, periodErrs: periodErrs, syncPeriod: syncPeriod
+    html: html, paint: paint, release: release, syncWarn: syncWarn, discTimeBad: discTimeBad, capErrKey: capErrKey, capBad: capBad, mount: mount,
+    periodWins: periodWins, periodErrs: periodErrs, syncPeriod: syncPeriod, legacyConds: legacyConds
   };
   /* 「新增條件」選單打開時量下方空間（2026-10-12 使用者回報被遮住）：觸發鈕常坐在彈窗內文（overflow:auto）的底部，
      往下展開會被切掉。找最近的捲動容器（沒有就用視窗），下方放不下、上方放得下就掛 dropdown--up 往上開。 */

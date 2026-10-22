@@ -2,7 +2,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 /* Single source of truth for the request-payout modal markup.
    Loaded as a <script> on earnings.html (always available, file:// safe).
    UI chrome is bound via data-i18n / data-i18n-aria-label; bank names and
-   amounts are sample DATA and stay literal (set at runtime from data-* attrs). */
+   amounts are sample DATA and stay literal (set at runtime from data-* attrs).
+   D466（2026-10-22）：金額一律用創作者幣別——前綴 data-currency-symbol、餘額說明 data-currency-hint（{sym}）、
+   手續費與預估入帳 data-currency-money，由 js/currency.js 填；宿主頁掛進彈窗後呼叫 ztorCurrency.paint(modal)，
+   申請金額與 CTA 由宿主頁的 updateAmount() 寫。 */
 window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
 <!-- Request payout popup · spec §5.1.8.1 -->
 <div class="payout-modal" data-payout-modal hidden>
@@ -54,17 +57,17 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
         <div class="field mt-24">
           <div class="field__label" data-i18n="payout.amount-label">Payout amount</div>
           <span class="amount-field amount-field--hero">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <span class="amount-field__unit"><span class="amount-field__sym" data-currency-symbol></span></span>
             <input class="input amount-field__input" type="text" inputmode="decimal" value="8,940" data-payout-amount>
           </span>
-          <div class="field__hint" data-i18n="payout.amount-hint">Available balance: $8,940.00 · Minimum payout: $50.00</div>
+          <div class="field__hint" data-currency-hint="payout.amount-hint">Available balance: 8,940.00 · Minimum payout: 50.00</div>
         </div>
 
         <div class="payout-summary" aria-label="Payout summary" data-i18n-aria-label="payout.summary">
           <div class="payout-summary__row"><span data-i18n="payout.summary.to">Transfer to</span><strong data-payout-summary-bank>First Commercial Bank · •••3417</strong></div>
-          <div class="payout-summary__row"><span data-i18n="payout.summary.amount">Request amount</span><strong data-payout-summary-amount>$8,940.00</strong></div>
-          <div class="payout-summary__row"><span data-i18n="payout.summary.fee">Transfer fee</span><strong>$2.50</strong></div>
-          <div class="payout-summary__row"><span data-i18n="payout.summary.deposit">Estimated deposit</span><strong>$8,937.50</strong></div>
+          <div class="payout-summary__row"><span data-i18n="payout.summary.amount">Request amount</span><strong data-payout-summary-amount>8,940</strong></div>
+          <div class="payout-summary__row"><span data-i18n="payout.summary.fee">Transfer fee</span><strong data-currency-money="2.50">2.50</strong></div>
+          <div class="payout-summary__row"><span data-i18n="payout.summary.deposit">Estimated deposit</span><strong data-currency-money="8937.50">8,937.50</strong></div>
           <div class="payout-summary__row"><span data-i18n="payout.summary.fx">FX rate</span><strong>1.00</strong></div>
           <div class="payout-summary__row"><span data-i18n="payout.summary.eta">ETA</span><strong>Nov 27 · T+3</strong></div>
           <div class="payout-summary__row"><span data-i18n="payout.summary.settled">Settled sources</span><strong>12 settled events</strong></div>
@@ -81,7 +84,7 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
       </div>
       <div class="payout-dialog__foot">
         <button class="btn btn--ghost" type="button" data-payout-close data-i18n="payout.cancel">Cancel</button>
-        <button class="btn btn--primary" type="button" data-payout-submit disabled>Request payout · $8,940</button>
+        <button class="btn btn--primary" type="button" data-payout-submit disabled>Request payout</button>
       </div>
     </div>
 

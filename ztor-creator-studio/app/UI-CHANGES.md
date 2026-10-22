@@ -13,6 +13,62 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-22（二百九十）· 刪除一律不寫紀錄、刪除組合包鎖定退回、排程特價＝限時折扣、release2.4 建立組合包可設購買條件（A spec-derived · D467、D468）
+
+**標籤**：release2.4
+
+使用者四項裁決（D467）加上「刪除單售與拍賣也不要紀錄」（D468）；使用者已說不進 release2.3。
+
+- `js/products-store.js`：刪除的操作紀錄 `logDeletion`／`deletionLog`（含 `__deletionLog` 寫入）整組退場（墓碑）；`remove()` 照舊刪除。刪除商品、組合包、拍賣後都沒有任何紀錄。
+- `bundle-detail.html`：活動組合包刪除時自己寫紀錄那段退場；刪除確認文案改成「鎖定的庫存會回到成員的未鎖定量」（成員鎖定本來就由組合包記錄導出，刪掉即退回、總量不變）。最終版：排程特價轉成購買條件的「限時折扣」條件，價格階梯那兩列收起（`data-feat-off="S105"`）；兩處同一份資料，改條件會寫回排程特價欄；設定總覽「折扣設定」那列不再重講限時折扣。release2.4 不變。
+- `e-shop.html`：組合包刪除確認文案同上。
+- `create-bundle.html`：最終版價格階梯的「限時折扣」兩列收起，在購買條件設，存檔寫成組合包的排程特價（`conds` 不另存一份）。release2.4 步驟 2「購買條件」建立時就能設：含門票＝跟隨所含門票開關（關掉後可調、只能收窄、擋關照舊），純商品＝條件清單（預設不限）；原本的唯讀讀數與「照預設帶入，建立後可到組合包細節頁調整」附註退場，存檔帶上另設的 `rules`。
+- `js/purchase-conds.js`：新增 `legacyConds()`，舊 rules／limits／排程特價換成組合包自己的條件，組合詳情與建立活動組合包彈窗共用。
+- `js/bundle-editor.js`：讀種子時把舊 rules／limits 轉進 `conds`（種子已有自己的條件就不轉）。
+- `js/i18n.js`：`e-shop.remove.bundle-body` 中英改寫。
+- 文件：ASSUMPTIONS 新增 UIA-289，UIA-287 第 3 條、UIA-288 第 5–7 條標已裁決；BUILD-SPEC §4i、requirements-map、feature-scope-map（S63、S105 備註）同步。
+
+## 2026-10-22（二百八十九）· 申請提款彈窗內金額全部用創作者幣別（A spec-derived · D466／D316）
+
+**標籤**：release2.4
+
+使用者裁決「設定頁金額跟創作者幣別」，D316 本來就要求全部跟著，所以 UIA-288 第 4 條納入本次範圍。
+
+- `partials/payout-request-modal.js`：金額前綴改 `data-currency-symbol`；餘額說明句改 `data-currency-hint`（模板用 `{sym}`）；手續費與預估入帳改 `data-currency-money`；靜態的寫死 `$` 全部拿掉。
+- `earnings.html`、`earnings-ztor.html`、`earnings-overview.html`：彈窗延後掛進來後呼叫 `ztorCurrency.paint(modal)`；`updateAmount()` 的摘要申請金額改用創作者幣別（CTA 上一則已改）。
+- `js/currency.js`：`data-currency-hint` 多代入 `{sym}`（創作者幣別符號）。
+- `js/i18n.js`：`payout.amount-hint` 中英改用 `{sym}`。
+
+## 2026-10-22（二百八十八）· D466 詳細規格必填、拍賣就緒檢查三項條件式、提款金額用創作者幣別（A spec-derived · D466；刪除紀錄部分已由 D468 取消）
+
+**標籤**：release2.4
+
+D466（使用者 2026-10-22）四項裁決落地；使用者已說不進 release2.3。
+
+- `create-product.html`：實體「詳細規格」欄位加 ＊；就緒檢查的詳細規格改成只數「名稱與值都填齊」的自訂規格加上已選的系統屬性（原本空白列也算一筆）；沒有一筆就不能進步驟 3（沿用 D464 分步就緒），所在「商品資訊」節在本頁大綱跟著變必填。數位不受影響。
+- `product-detail.html`：編輯時不能把詳細規格刪到一筆都不剩——刪最後一筆時不刪、欄位底下就地提示（新 key `pd.spec.keep-one`），清空文字後按儲存同樣擋下；進編輯時本來就是 0 筆的舊資料不擋（UIA-288 第 2 條）。`window.pdApparel` 補 `count()`，新增 `window.pdSpecs`。
+- `create-auction.html`：實體「出貨時限」加 ＊（`#ca-shipby`）；就緒檢查加三項條件式必填：定時上架的上架時間、定時開拍的開拍時間、實體的運送方式（新 key `ca.chk.listat`／`ca.chk.startat`／`ca.chk.ship`），只在條件成立時列出；切換上架／開拍方式與填時間都即時重算。本頁大綱的實體「運送」節變必填；上架與開拍時間在右欄，不進大綱。`listingMode`／`startMode` 宣告移到檔頭。
+- `settings.html`：最低提款金額的前綴、合規區年度提款額度與月結算量改用創作者幣別（TWD 顯示 NT$）。
+- `earnings.html`、`earnings-ztor.html`、`earnings-overview.html`：申請提款 CTA（銀行卡上的按鈕與彈窗送出鈕）的金額改用創作者幣別；三頁補載 `js/events-store.js`＋`js/currency.js`。彈窗其他金額不在本次範圍（UIA-288 第 4 條）。
+- `js/currency.js`：新增兩個掛勾 `[data-currency-symbol]`（創作者幣別符號）、`[data-currency-money="n"]`（n 以創作者幣別顯示）。
+- `js/products-store.js`：刪除的操作紀錄 `logDeletion()`／`deletionLog()`；`remove(entity, ctx)` 先寫紀錄再刪。內容：操作者（Admin 代管記 Admin）、時間、名稱、類型、代號（含 SKU）、刪除當下狀態、所屬販售管道；組合包另記成員清單與鎖定套數，活動組合包另記所屬活動。記在工作階段，沒有檢視頁（UIA-288 第 5 條）。
+- `bundle-detail.html`、`e-shop.html`：刪除時傳名稱；活動組合包不經 `remove`，在頁面自己寫紀錄。刪除組合包時成員庫存的現行行為不變（D466 與 D465 牴觸，待裁決）。
+- `js/i18n.js`：上述新 key 中英都補。
+
+## 2026-10-21（二百八十七）· D463 購買條件統一＋D465 庫存池與保留（A spec、B 反饋、D infra）
+
+**標籤**：D463 只在最終版；D465 全版本
+
+D463（使用者 2026-10-21）：一般商品與票務組合包共用同一份七種購買條件，組合包不沿用單品與成員，建立時就能設、新建時沒有條件。新功能點 S105（⚪ TBD，只在最終版）：建立商品第二步與商品細節新增「購買條件」節；建立組合包第二步、組合包細節、建立活動第 5 步組合包彈窗改成同一份條件；舊的限購、折扣節掛 `data-feat-off="S105"`。舊資料第一次打開時轉成條件卡（推導，見 ASSUMPTIONS UIA-287）。
+
+D465（使用者 2026-10-21）：每格（單售鎖定、各組合包鎖定、未鎖定）配額含保留，可賣＝配額減保留；撤銷退回原本賣出的那個鎖定；上限與張數下限扣保留。商品庫存卡五格加「可賣/配額」；活動詳情票務分頁加「鎖給單售」「未鎖定」兩欄、保留中改為各格加總、庫存設為 0 照新算法；建立活動步驟 4 單張門票可設鎖給單售並有防呆；組合包總量與鎖定套數下限扣保留；訂單品項記「賣出自」並在撤銷時寫出退回哪一格。共用公式（listing-state、events-store、lock-alloc、tix-tier-table）改成新模型，示範資料補出 100／60／10 的例子。
+
+**驗收後補修（B 反饋）**：門票彈窗「庫存設為 0」同步縮鎖給單售；組合庫存分頁與成員清單的未鎖定寫成「可賣/配額」並扣本組合包自己的鎖定（`lock-alloc.js` 共用）；bd-vip-tee 種子販售上限 50 改 13；上架中且含已發布票券的組合包，購買條件改唯讀卡（依 5.1.5.9 §2.3、D436）；訂單鎖定來源的括號由語言決定（新 key `od.lock.name`）；`ed.stockonly.body` 改成新張數下限說法。
+
+**B 反饋**：條件清單換語言自己重畫（原本畫出來會中英混雜，對所有消費頁生效）。
+
+**D infra**：`js/devtools.js` FEAT_TIER 後備表補 `S105: 'tbd'`；`design-system.md`／`design-system.html` 條件清單條目補記新消費頁。
+
 ## 2026-10-21（二百八十六）· D464 待確認事項定案：第二步改名「上架與販售」、主按鈕一律「下一步」、就緒檢查分步、草稿停在上次的步驟（A spec-derived，D464＋使用者裁決）
 
 **標籤**：release2.4

@@ -156,10 +156,10 @@ table.map td:nth-child(2){width:22%}
 </ul>
 
 <h2 id="st-flow"><span class="n"></span>操作流程</h2>
-<p>創作者先看四個數字掌握現況，再決定補貨、確認到貨、調整鎖定量，或查紀錄。</p>
-<div class="dg" role="img" aria-label="商品庫存分頁流程圖，由左往右：進商品庫存分頁看四個數字，再選要做什麼；補貨進補貨流程，到貨了就在補貨中的單按到貨確認、數量入庫，調整鎖定就逐選項組合填單售的鎖定量並儲存，查紀錄就看庫存歷史紀錄">
+<p>創作者先看五個數字掌握現況，再決定補貨、確認到貨、調整鎖定量，或查紀錄。</p>
+<div class="dg" role="img" aria-label="商品庫存分頁流程圖，由左往右：進商品庫存分頁看五個數字，再選要做什麼；補貨進補貨流程，到貨了就在補貨中的單按到貨確認、數量入庫，調整鎖定就逐選項組合填單售的鎖定量並儲存，查紀錄就看庫存歷史紀錄">
 <div class="dg-hg" style="--dg-c:3">
-  <div class="dg-node" style="grid-row:1/5;grid-column:1"><span class="s">1</span>看四個數字<small>在庫、單售可售、鎖給組合、補貨中</small></div>
+  <div class="dg-node" style="grid-row:1/5;grid-column:1"><span class="s">1</span>看五個數字<small>在庫、單售可售、鎖給組合、補貨中、保留中</small></div>
   <span class="dg-a" style="grid-row:1/5;grid-column:2"></span>
   <div class="dg-node q" style="grid-row:1/5;grid-column:3"><span class="s">2</span>要做什麼？</div>
   <span class="dg-a" data-t="補貨" style="grid-row:1;grid-column:4"></span>
@@ -174,7 +174,7 @@ table.map td:nth-child(2){width:22%}
 </div>
 <p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是這個選擇的終點。圓圈數字對應下方步驟清單的編號。</p>
 <ol class="plain">
-  <li>看四個數字：見<a href="#st-numbers">庫存現況</a></li>
+  <li>看五個數字：見<a href="#st-numbers">庫存現況</a></li>
   <li>要做什麼？
     <ul class="plain">
       <li>補貨：按批次補貨或某一列的補貨，進<a href="eshop-restock.html">補貨</a>，見<a href="#st-manage">庫存管理</a></li>
@@ -187,21 +187,22 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：5.1.5.1 §2.10、§3 第 3 項。</p>
 
 <h2 id="st-fields"><span class="n"></span>功能與欄位</h2>
-<p>分頁由上往下四塊：<a href="#st-numbers">庫存現況</a>看四個數字；<a href="#st-pending">補貨中</a>處理已下單還沒到的貨；<a href="#st-manage">庫存管理</a>逐選項組合補貨與鎖定；<a href="#st-history">庫存歷史紀錄</a>查每一次補貨與鎖定變動。</p>
+<p>分頁由上往下四塊：<a href="#st-numbers">庫存現況</a>看五個數字；<a href="#st-pending">補貨中</a>處理已下單還沒到的貨；<a href="#st-manage">庫存管理</a>逐選項組合補貨與鎖定；<a href="#st-history">庫存歷史紀錄</a>查每一次補貨與鎖定變動。</p>
 
 <h3 id="st-numbers">庫存現況</h3>
-<p>四個數字把庫存的去向講完，創作者一眼知道還剩多少、單售能賣多少、組合包鎖走多少、還有多少在路上。</p>
+<p>五個數字把庫存的去向講完，創作者一眼知道還剩多少、單售能賣多少、組合包鎖走多少、還有多少在路上、多少被下單還沒付款的人先扣住。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">數字</th><th>內容</th></tr></thead>
   <tbody>
     <tr><td>在庫</td><td>這件商品此刻的在庫數；限量商品同時帶上限</td></tr>
-    <tr><td>單售可售</td><td>單售此刻能賣的量＝鎖給單售的量＋沒有被鎖定的量</td></tr>
-    <tr><td>鎖給組合</td><td>各組合包從這件商品鎖走的量的總和</td></tr>
+    <tr><td>單售可售</td><td>單售此刻能賣的量：<br>有鎖給單售時＝鎖給單售的量 − 這一格的保留<br>沒鎖時＝沒有被鎖定的量 − 這一格的保留<br>有鎖的單售賣完就售罄，不吃沒有被鎖定的量</td></tr>
+    <tr><td>鎖給組合</td><td>各組合包從這件商品鎖走、還沒賣掉的量的總和</td></tr>
     <tr><td>補貨中</td><td>計時補貨已送出、還沒確認到貨的量</td></tr>
+    <tr><td>保留中</td><td>粉絲已下單、還沒付款而先扣住的量，單售、各組合包與沒有被鎖定的量裡的保留加總，見<a href="eshop-sales.html#stock-reserve">保留</a></td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
-  <li>沒有被鎖定的量不另成一格，它是單售可售的一部分；逐選項組合的數字在<a href="#st-manage">庫存管理</a>每一列看</li>
+  <li>沒有被鎖定的量不另成一格；逐選項組合的數字在<a href="#st-manage">庫存管理</a>每一列看</li>
   <li>所有販售管道都設了鎖定時，沒有被鎖定的量留在庫存池、沒有任何販售管道賣得到，要提醒創作者重新分配，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a></li>
   <li>庫存狀態在每次售出、撤銷、補貨與手動調整後重算，狀態的意思見<a href="common-status.html#stock">狀態語言</a>：
     <ul class="plain">
@@ -230,9 +231,9 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>庫存版本</td><td>—</td><td>不限量或限量，建立後不能改，只顯示，見<a href="eshop-create-physical.html">實體商品</a>的建立規則</td></tr>
-    <tr><td>上限</td><td>限量商品<br>多選項時逐選項組合</td><td>可以改，但不能低於已售數</td></tr>
+    <tr><td>上限</td><td>限量商品<br>多選項時逐選項組合</td><td>可以改，但不能低於已售＋各鎖定配額＋未鎖定格的<a href="eshop-sales.html#stock-reserve">保留</a><br>各鎖定配額指單售鎖定與各組合包鎖定，已含它們自己的保留</td></tr>
     <tr><td>目前在庫</td><td>每一列</td><td>這個選項組合此刻的在庫數</td></tr>
-    <tr><td>鎖給單售的量</td><td>每一列<br>選填</td><td>留空或填 0＝不鎖定，跟其他沒鎖定的販售管道共用這個選項組合沒有被鎖定的量<br>填了不能大於這個選項組合當下沒有被鎖定的量，表單直接擋下<br>每次儲存都寫進<a href="#st-history">庫存歷史紀錄</a></td></tr>
+    <tr><td>鎖給單售的量</td><td>每一列<br>選填</td><td>留空或填 0＝不鎖定，跟其他沒鎖定的販售管道共用這個選項組合沒有被鎖定的量<br>鎖給單售的量是還沒賣掉的配額，賣一件少一件，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a><br>填了不能大於這個選項組合當下的未鎖定可賣（未鎖定 − 未鎖定這一格的保留），表單直接擋下<br>每次儲存都寫進<a href="#st-history">庫存歷史紀錄</a></td></tr>
     <tr><td>沒有被鎖定的量</td><td>每一列</td><td>唯讀，＝目前在庫 − 這個選項組合各販售管道的鎖定量之和</td></tr>
     <tr><td>批次鎖定</td><td>—</td><td>一次設定多個選項組合的鎖給單售的量，規則同上</td></tr>
     <tr><td>批次補貨</td><td>—</td><td>一次替多個選項組合補貨，進<a href="eshop-restock.html">補貨</a></td></tr>
@@ -267,14 +268,14 @@ table.map td:nth-child(2){width:22%}
   <li>補貨那些筆的資料來自<a href="eshop-restock.html">補貨</a>流程</li>
   <li>鎖定變動那些筆，在本頁的鎖給單售的量每次儲存時逐選項組合寫入</li>
 </ul>
-<p class="note">依據：5.1.5.1 §2.10、§3 第 3 項；主規格 §7.2、§7.14「庫存規則：共用池與鎖定」「多選項商品：鎖定逐選項組合」；D137、D255、D258、D260、D266、D455。</p>
+<p class="note">依據：5.1.5.1 §2.10、§3 第 3 項；主規格 §7.2、§7.14「保留」「庫存規則：共用池與鎖定」「多選項商品：鎖定逐選項組合」；D137、D255、D258、D260、D266、D455、D465。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.1-商品細節頁.md</code>（v1.61）§2.10、§3 第 3 項、第 4 段「頁面狀態」；<code>0-設計規格書.md</code> §7.2、§7.14</li>
-    <li>決策：D137、D241、D255、D258、D260、D266、D288、D455</li>
+    <li>規格：<code>5.1.5.1-商品細節頁.md</code>（v1.61；§2.10 保留中與單售可售對照 v1.69；§2.10 上限的下限對照 v1.71）§2.10、§3 第 3 項、第 4 段「頁面狀態」；<code>0-設計規格書.md</code> §7.2、§7.14</li>
+    <li>決策：D137、D241、D255、D258、D260、D266、D288、D455、D465</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -285,7 +286,7 @@ table.map td:nth-child(2){width:22%}
     <li>手動調整在庫數的入口在哪裡</li>
     <li>庫存與補貨的其他待確認，列在<a href="eshop-sales.html">電子商店販售流程</a>與<a href="eshop-restock.html">補貨</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D455：單獨下架只下架那一個選項組合、其他照賣，定案；對照 5.1.5.1 v1.59；來源版本對照到 v1.61）；2026-10-19（新頁，對照 5.1.5.1 v1.58）</p>
+  <p class="k">最近同步：2026-10-21（D465 補充三：限量的上限不能低於已售＋各鎖定配額＋未鎖定格的保留，比照門票張數下限；對照 5.1.5.1 v1.71）；2026-10-21（D465 驗收修正：鎖給單售的上限改寫成未鎖定可賣）；2026-10-21（D465：庫存現況加「保留中」成為五個數字；單售可售改成有鎖時只算鎖給單售的可賣、沒鎖時算沒有被鎖定的可賣，兩者都扣掉該格保留；對照 5.1.5.1 v1.69）；2026-10-20（D455：單獨下架只下架那一個選項組合、其他照賣，定案；對照 5.1.5.1 v1.59；來源版本對照到 v1.61）；2026-10-19（新頁，對照 5.1.5.1 v1.58）</p>
 </details>
 </div>
 </body>

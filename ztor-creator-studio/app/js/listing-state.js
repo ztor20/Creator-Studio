@@ -40,7 +40,8 @@
 //     拍賣無庫存池、無鎖定量：推導一律 qty＝Infinity，soldout／low 不會出現。
 //   單售商品另有庫存池：
 //     pool = { total: number | 'unlimited',
-//              locks: { single: number|null, bundles: { [bundleId]: number|null } } }
+//              locks: { single: number|null, bundles: { [bundleId]: number|null } },
+//              holds: { single: n, free: n, bundles: { [bundleId]: n } } }   保留（D465，見 holds() 註解）
 //     鎖定量兩態（2026-09-11 使用者裁決，對齊規格 5.1.5.4 F4／5.1.5.1 §2.10「0 或不填＝不鎖定」）：
 //       null／欄位不存在／0 ＝ 這個管道沒鎖定，與其他未鎖定管道共用沒有被鎖定的庫存量
 //       正數               ＝ 這個管道處於鎖定模式，只能賣這麼多
@@ -107,6 +108,44 @@
     return { total: p.total, single: lockVal(locks.single), bundles: locks.bundles || {} };
   }
 
+  /* ── 保留（D465，主規格 §7.14「保留」，2026-10-21）──────────────────────
+     粉絲下單、還沒付款的量叫保留；保留留在下單的那一格、算在該格配額裡（不移出），該格可賣＝配額 − 該格保留。
+     資料：pool.holds = { single: n, free: n, bundles: { <bundleId>: n } }（缺＝0）
+       single   單售鎖定格的保留（單售有鎖定時，單售的單記這裡）
+       free     未鎖定格的保留（單售沒鎖、或沒鎖定的組合包的單記這裡）
+       bundles  各組合包鎖定格的保留（件數＝套數 × 每套用量；組合包層另記 bundle.holdSets）
+     付款成功：該格保留與配額各減、已售加；到期或付款失敗：該格保留減、配額不變（量回到該格可賣）。
+     多選項商品的保留原型不示範（逐選項組合的保留粒度規格未寫，維持 0）。 */
+  function holds(product) {
+    var h = (product && product.pool && product.pool.holds) || {};
+    return { single: num(h.single), free: num(h.free), bundles: h.bundles || {} };
+  }
+  /** 某一格的保留：'single'＝單售鎖定格（單售沒鎖時回 0，那筆量記在未鎖定格）、'free'＝未鎖定格、{bundle:id}＝該組合包鎖定格。 */
+  function holdOf(product, channel) {
+    var h = holds(product);
+    if (channel === 'free') return h.free;
+    if (channel === 'single' || channel === undefined || channel === null) return lockOf(product, 'single') === null ? 0 : h.single;
+    var bid = (typeof channel === 'string') ? channel : channel.bundle;
+    return lockOf(product, { bundle: bid }) === null ? 0 : num(h.bundles[bid]);
+  }
+  /** 保留中＝各格保留加總（D465 決定 11）。 */
+  function holdTotal(product) {
+    var h = holds(product), sum = h.free + (lockOf(product, 'single') === null ? 0 : h.single), k;
+    for (k in h.bundles) if (Object.prototype.hasOwnProperty.call(h.bundles, k) && lockOf(product, { bundle: k }) !== null) sum += num(h.bundles[k]);
+    return sum;
+  }
+  /** 未鎖定（配額，不扣保留）＝目前在庫 − 各管道鎖定（鎖定量已含自己的保留，不再另扣）。不限量回 Infinity。 */
+  function unlockedQty(product) {
+    if (isMulti(product)) return Math.max(0, variantsFree(product.variants) - multiUnassigned(product));
+    var p = pool(product);
+    if (p.total === 'unlimited' || p.total === INF) return INF;
+    return Math.max(0, num(p.total) - lockedTotal(product));
+  }
+  /** 限量上限（Total Quantity）的下限＝已售＋各鎖定配額＋未鎖定格的保留（D465 補充三，5.1.5.1 §2.10）。 */
+  function capMin(product) {
+    return num(product && product.sold) + lockedTotal(product) + holds(product).free;
+  }
+
   /* ── 庫存池 ──────────────────────────────────────────────────────────── */
 
   /** 池裡所有管道的鎖定量合計（沒鎖定的管道不計）。 */
@@ -144,11 +183,13 @@
     }
     return sum;
   }
+  /* D465（2026-10-21）：回「未鎖定可賣」＝未鎖定 − 未鎖定格的保留。規格其他處把「沒有被鎖定的庫存量」當成
+     還能賣或還能再鎖的量時一律讀作未鎖定可賣，所以既有消費者（鎖定上限、組合包可售、單售可售）沿用這支即可；
+     要看不扣保留的未鎖定配額用 unlockedQty。 */
   function freeQty(product) {
-    if (isMulti(product)) return Math.max(0, variantsFree(product.variants) - multiUnassigned(product));
-    var p = pool(product);
-    if (p.total === 'unlimited' || p.total === INF) return INF;
-    return Math.max(0, num(p.total) - lockedTotal(product));
+    var u = unlockedQty(product);
+    if (u === INF || isMulti(product)) return u;
+    return Math.max(0, u - holds(product).free);
   }
 
   /**
@@ -178,7 +219,8 @@
       return Math.max(0, variantsChannelQty(product.variants, channel) - multiUnassigned(product, bid));
     }
     var locked = lockOf(product, channel);
-    return locked === null ? freeQty(product) : locked;
+    /* D465：有鎖定的管道可賣＝鎖定配額 − 該格保留；沒鎖定＝未鎖定可賣（freeQty 已扣未鎖定格的保留） */
+    return locked === null ? freeQty(product) : Math.max(0, locked - holdOf(product, channel));
   }
 
   /* ── 逐選項組合的鎖定（2026-09-09 使用者裁決；規格未定義粒度，見 ASSUMPTIONS UIA-146）──
@@ -288,7 +330,8 @@
       /* 成員是多選項商品時，這個組合拿得到的量＝各選項組合在本組合可售量之和
          （D258：組合包的鎖定逐選項組合設定；買家挑哪一個組合出貨仍是產品待確認）。 */
       /* 鎖定套數 N（2026-09-11）：有鎖定時組合可售量就是 N，不再逐成員取最小——成員身上的組合鎖定是由 N 導出的 */
-      if (sets !== null) { if (sets < min) min = sets; continue; }
+      /* D465：鎖定套數是還沒賣掉的配額、含這個組合包被保留的套數；可售＝N − 保留套數 */
+      if (sets !== null) { var avail = Math.max(0, sets - num(bundle && bundle.holdSets)); if (avail < min) min = avail; continue; }
       var q = channelQty(p, { bundle: bundle.id });
       var s = (q === INF) ? INF : Math.floor(q / per);
       if (s < min) min = s;
@@ -715,8 +758,11 @@
     var free = freeQty(product);
     var mine = lockOf(product, channel) || 0;
     var max = (free === INF) ? INF : free + mine;
+    /* D465 補充二：調低某個鎖定不得低於它正被保留的量（填 0／留空＝改成不鎖定，保留改記到未鎖定，不擋） */
+    var min = holdOf(product, channel);
     var w = num(wanted);
-    return { ok: w >= 0 && w <= max, max: max };
+    var off = (wanted === null || wanted === undefined || wanted === '' || w === 0);
+    return { ok: w >= 0 && w <= max && (off || w >= min), max: max, min: min, belowHold: !off && w < min };
   }
 
   /**
@@ -897,6 +943,10 @@
     STATUS_ORDER: ['archived', 'draft', 'unlisted', 'hidden', 'ended', 'soldout', 'coming', 'low', 'live'],
     badgeClass: badgeClass,
     freeQty: freeQty,
+    unlockedQty: unlockedQty,
+    holdOf: holdOf,
+    holdTotal: holdTotal,
+    capMin: capMin,
     lockedTotal: lockedTotal,
     lockOf: lockOf,
     hasLock: hasLock,

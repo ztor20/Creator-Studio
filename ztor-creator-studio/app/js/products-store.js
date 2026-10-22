@@ -377,7 +377,9 @@
       name: '九龍夜行 刺繡布章', img: 'patch-set.webp',
       sub: 'Iron-on embroidered patch, 7 cm. Wave mark on black twill.',
       cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
-      status: 'live', price: '9.00', cost: '2.50', stock: '80', threshold: '8',
+      /* 2026-10-21 D465 示範（使用者例子）：在庫 100、鎖給單售 60、單售被下單 10 件還沒付款（保留留在單售鎖定格）
+         → 單售可售 50/60、保留中 10、未鎖定 40（原 stock 80 改 100，鎖定與保留見 LISTING_SEED.patch） */
+      status: 'live', price: '9.00', cost: '2.50', stock: '100', threshold: '8',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     },
     /* 實體 · 杯墊組（2026-09-18 · D288）：定時下架已到期（LISTING_SEED.coaster.unlistAt 在過去）——示範「定時下架到期的自動下架
@@ -823,7 +825,9 @@
       });
     });
   }
-  function removeEntity(e) {
+  /* 墓碑 2026-10-22（D467、D468）：刪除的操作紀錄（logDeletion／deletionLog、operatorOf、nameOf，與工作階段 `__deletionLog` 的寫入）整組退場——
+     使用者裁決所有刪除（單售商品、組合包、拍賣）一律不寫紀錄；刪除行為本身照舊（remove 標記、拿掉、記進 `__deleted`）。 */
+  function removeEntity(e, ctx) {
     if (!e || !e.id) return e;
     var L = ls();
     if (L && L.remove) L.remove(e); else { e.deleted = true; e.listed = false; }
@@ -1060,7 +1064,9 @@
     mug:      { archived: true },
     /* patch（2026-09-18 D288 改）：上架中、仍在上架中的 roadie-set 裡——按下架時列出組合包、確認＝一同下架。
        原 D284 示範把它設成已下架（listed:false）並讓 roadie-set 維持上架，D288 的不變式（上架中的組合包成員一律上架中）不允許那個組合。 */
-    patch:    {},
+    /* D465 保留示範（2026-10-21，主規格 §7.14「保留」的使用者例子）：holds＝各格保留——單售鎖定格 10 件下單未付款
+       → 單售可售 50/60、保留中 10、未鎖定 40（roadie-set 沒鎖定，與未鎖定共用） */
+    patch:    { locks: { single: 60 }, holds: { single: 10, free: 0, bundles: {} } },
     /* 定時下架已到期（D288）：coaster 在 2026-09-15 依排程下架，上架中的 backstage-set 由載入時的自動連動一併下架 */
     coaster:  { unlistAt: '2026-09-15T23:59:00' }
   };
@@ -1514,6 +1520,12 @@
       locks: {
         single: (s.locks && s.locks.single !== undefined) ? s.locks.single : null,
         bundles: (s.locks && s.locks.bundles) ? s.locks.bundles : {}
+      },
+      /* 保留（D465）：各格下單未付款的量，留在該格配額裡（ListingState.holds 註解） */
+      holds: {
+        single: (s.holds && s.holds.single) || 0,
+        free: (s.holds && s.holds.free) || 0,
+        bundles: (s.holds && s.holds.bundles) ? s.holds.bundles : {}
       }
     };
     /* 逐選項組合鎖定（D255／D258，2026-09-11）：多選項商品的鎖定住在 variants[i].locks，商品層的 pool.locks

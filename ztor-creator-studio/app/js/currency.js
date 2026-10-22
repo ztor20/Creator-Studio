@@ -11,6 +11,7 @@
      · admin-platform-promotions.html  滿額折扣門檻金額＝平台基準幣別
      · creators.html          建立 creator 的幣別下拉（CODES＋label）——創作者幣別唯一的設定入口
      · creator-detail.html    該 creator 的幣別唯讀顯示（forCreator）
+     · earnings.html／earnings-ztor.html／earnings-overview.html  申請提款 CTA 的金額（D466，2026-10-22）
 
    ── 兩個常數 ────────────────────────────────────────────────
    · CREATOR＝這位創作者的幣別。一位創作者只有一個，建立帳號時設定，之後創作者與
@@ -111,10 +112,13 @@
       ' · ' + T('currency.fx.asof', 'Rate as of {t}').replace('{t}', AS_OF);
   }
 
-  /* 三個掛勾，宿主頁只擺空節點、字由這裡填，四頁因此永遠是同一份事實：
+  /* 掛勾，宿主頁只擺空節點、字由這裡填，各頁因此永遠是同一份事實：
        [data-currency-readout]      創作者幣別的讀數（值可傳幣別代碼，預設＝創作者幣別）
        [data-currency-base-symbol]  平台基準幣別的符號，掛在 Admin 金額欄的前綴上
-       [data-currency-fx-for="id"]  該輸入框的金額換算成創作者幣別＋匯率時點，跟著輸入即時更新 */
+       [data-currency-fx-for="id"]  該輸入框的金額換算成創作者幣別＋匯率時點，跟著輸入即時更新
+       [data-currency-symbol]       創作者幣別的符號，掛在創作者金額輸入框的前綴上（D466：設定頁最低提款金額）
+       [data-currency-money="n"]    數字 n 以創作者幣別顯示（符號＋千分位；D466：設定頁合規用量上限、申請提款 CTA 的金額）。
+                                    數字本身不換算——寫在頁面上的就是創作者幣別的金額（示範值，ASSUMPTIONS UIA-288） */
   function fxOutText(amount) {
     return '≈ ' + money(creatorCurrency(), toCreator(amount)) +
       ' · ' + T('currency.fx.asof', 'Rate as of {t}').replace('{t}', AS_OF);
@@ -127,6 +131,12 @@
     });
     root.querySelectorAll('[data-currency-base-symbol]').forEach(function (el) {
       el.textContent = symbol(BASE);
+    });
+    root.querySelectorAll('[data-currency-symbol]').forEach(function (el) {
+      el.textContent = symbol(creatorCurrency());
+    });
+    root.querySelectorAll('[data-currency-money]').forEach(function (el) {
+      el.textContent = money(creatorCurrency(), el.getAttribute('data-currency-money'));
     });
     root.querySelectorAll('[data-currency-fx-for]').forEach(function (el) {
       var src = document.getElementById(el.getAttribute('data-currency-fx-for'));
@@ -143,7 +153,8 @@
        「最低提款金額」說明這一格在用，見 ASSUMPTIONS UIA-173。 */
     root.querySelectorAll('[data-currency-hint]').forEach(function (el) {
       var key = el.getAttribute('data-currency-hint');
-      el.textContent = T(key, el.textContent).replace('{cur}', creatorCurrency());
+      /* {sym}（D466，2026-10-22）：創作者幣別符號，申請提款彈窗的餘額說明句在用 */
+      el.textContent = T(key, el.textContent).replace(/\{cur\}/g, creatorCurrency()).replace(/\{sym\}/g, symbol(creatorCurrency()));
     });
   }
 

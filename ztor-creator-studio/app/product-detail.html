@@ -45,6 +45,8 @@
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購（js/purchase-limits.js）；D427 起只剩每人總限購 -->
+<link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D463（最終版 S105）：購買條件清單（js/purchase-conds.js） -->
+<link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- D463：條件卡內的 .rule-row -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -240,11 +242,17 @@
            分配長條（stock-split）與一句話狀態退場。僅實體（分頁按鈕掛 data-pd-cat）。 -->
       <div class="detail-cards" data-pd-cat="physical">
         <div class="bento" data-pd-stock-kpi>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.onhand">On hand</div><div class="kpi__value"><span data-pd-kpi-onhand>0</span><span class="stat__of" data-pd-kpi-cap hidden></span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.sellable">Sellable (single)</div><div class="kpi__value"><span data-pd-kpi-sellable>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.bundle">Locked for bundles</div><div class="kpi__value"><span data-pd-kpi-bundle>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
-          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="stock.kpi.incoming">Restocking</div><div class="kpi__value"><span data-pd-kpi-incoming>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+          <!-- D465（2026-10-21，5.1.5.1 §2.10 決定 9、10）：第五個數字「保留中」＝各格保留加總；單售可售有鎖時＝鎖給單售 − 它的保留，
+               寫成「可賣/配額」（例 50/60），沒鎖時＝未鎖定 − 未鎖定格的保留。「未鎖定」不單獨成一格（單售沒鎖時它就是單售可售），
+               有鎖時寫在單售可售底下的小字與庫存表的「未鎖定」欄。五格排成 4／4／4＋6／6。 -->
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="stock.kpi.onhand">On hand</div><div class="kpi__value"><span data-pd-kpi-onhand>0</span><span class="stat__of" data-pd-kpi-cap hidden></span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="stock.kpi.sellable">Sellable (single)</div><div class="kpi__value"><span data-pd-kpi-sellable>0</span><span class="stat__of" data-pd-kpi-sellable-of hidden></span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div><div class="kpi__meta" data-pd-kpi-sellable-meta></div></div>
+          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="stock.kpi.held">Reserved</div><div class="kpi__value"><span data-pd-kpi-held>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div><div class="kpi__meta" data-i18n="stock.kpi.held-meta">Ordered, awaiting payment</div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="stock.kpi.bundle">Locked for bundles</div><div class="kpi__value"><span data-pd-kpi-bundle>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="stock.kpi.incoming">Restocking</div><div class="kpi__value"><span data-pd-kpi-incoming>0</span><span class="kpi__unit" data-i18n="stock.unit">pcs</span></div></div>
         </div>
+        <!-- 撤銷退回原鎖定（D465 決定 8、補充二）示意：本頁不另開欄位，只說明撤銷的量回到哪一格 -->
+        <p class="field__hint" data-i18n="stock.revoke-hint">Voided items go back to the lock they were sold from — even if that lock was lowered since. Only if it was removed or set to unlocked do they go back to unlocked stock.</p>
 
         <!-- 補貨中：計時補貨送出後、還沒按到貨確認的單（5.1.5.6 §4）。沒有就整張不出現。 -->
         <section class="form-section form-section--outlined" data-pd-pending hidden>
@@ -569,6 +577,8 @@
             </div>
             <div id="pd-spec-rows"></div>
             <button class="btn btn--outline" id="pd-add-spec" type="button" style="width:100%;justify-content:center;margin-top:var(--sp-8)" data-i18n="cp.spec.add">＋ Add spec</button>
+            <!-- D466（2026-10-22）〔推導〕：編輯時至少保留一筆詳細規格——刪到一筆都不剩時就地擋下（刪除鈕與儲存都擋），提示寫在本欄底下 -->
+            <p class="field__error" data-pd-spec-err hidden data-i18n="pd.spec.keep-one">Keep at least one specification.</p>
           </div>
 
           <!-- 尺寸指南（2026-09-22 使用者裁決；建立商品 5.1.5.2 §4.1 F2／D211 的同一組線框層 .control-group--plain，
@@ -713,7 +723,7 @@
       <section class="form-section form-section--outlined" data-pd-edition-section>
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.edition">Edition</h3>
-          <p class="form-section__sub" data-i18n="product-detail.edition.sub">Fixed after creation — the cap can still change, but never below what's sold.</p>
+          <p class="form-section__sub" data-i18n="product-detail.edition.sub2">Fixed after creation — the cap can still change, but never below what's sold, locked or reserved.</p>
         </div>
         <div class="field" style="margin-bottom:0">
           <div class="segmented radio-cards segmented--locked" id="pd-edition" aria-disabled="true">
@@ -770,8 +780,18 @@
       </section>
             </div>
             <div data-nav-panel="rules">
+      <!-- §2.12 購買條件（D463，2026-10-21；5.1.5.1 §2.12）：與單張門票、組合包同一份七種條件（js/purchase-conds.js），
+           商品原本的限購（§2.12 舊）與折扣設定（§2.15 排程特價）併進來。只在最終版（S105 ⚪）；release2.4 照舊用下面的折扣設定與限購兩節（data-feat-off）。
+           檢視態畫鎖定的條件卡，編輯態可加、改、移除；資料存 product.conds，限購同步寫回 product.limit。 -->
+      <section class="form-section form-section--outlined" data-feat="S105" data-pd-conds-sec>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pc.title">Purchase conditions</h3>
+          <p class="form-section__sub" data-i18n="pc.sub.item">Limits and discounts are set here too.</p>
+        </div>
+        <div data-pd-conds-host></div>
+      </section>
       <!-- §2.15 折扣設定（spec 5.1.5.1 §2.15 · D144）：開啟折扣 → 折扣價＋（可選）限時折扣起訖日；取代原價劃線的特價呈現方式。 -->
-      <section class="form-section form-section--outlined">
+      <section class="form-section form-section--outlined" data-feat-off="S105">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
         </div>
@@ -895,7 +915,7 @@
            markup 由 fieldsHTML(unit='item') 畫進 [data-pd-limit-host]（與建立商品同一套）；
            值由 applyDetailSeed() 依 product.limit（{ person }）填；null＝開關關、欄位空。
            檢視態照全站兩段式面板（Q128）：同一個框顯示成 disabled。 -->
-      <section class="form-section form-section--outlined">
+      <section class="form-section form-section--outlined" data-feat-off="S105">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="product-detail.limit2.title">Purchase limits</h3>
           <p class="form-section__sub" data-i18n="product-detail.limit2.sub">Cap how many each buyer can purchase.</p>
@@ -1299,6 +1319,7 @@
     <div class="payout-dialog__body">
       <div class="salloc salloc--bundle" data-pd-lock-table></div>
       <p class="field__error" data-pd-lock-err hidden data-i18n="stock.lock-err">Exceeds unlocked stock</p>
+      <p class="field__error" data-pd-lock-err-hold hidden></p>
       <div class="field__hint" data-i18n="product-detail.edit.locks-hint">Blank means the channel shares whatever is unlocked</div>
     </div>
     <div class="payout-dialog__foot">
@@ -1333,6 +1354,7 @@
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與建立商品、組合包、活動門票共用；D427 起只剩每人總限購） -->
+<script src="js/purchase-conds.js?v=r2.2"></script><!-- D463（最終版 S105）：七種購買條件（與門票、組合包同一份） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
@@ -1801,6 +1823,20 @@
       const setStat = (sel, v) => { const el = document.querySelector(sel); if (el) el.textContent = qtyText(v); };
       setStat('[data-pd-kpi-onhand]', total);
       setStat('[data-pd-kpi-sellable]', chQty('single'));
+      /* D465：保留中＝各格保留加總；單售有鎖時寫「可賣/配額」，小字帶未鎖定（可賣/配額） */
+      setStat('[data-pd-kpi-held]', isMultiVar() ? 0 : L.holdTotal(product));
+      const sOf = document.querySelector('[data-pd-kpi-sellable-of]'), sMeta = document.querySelector('[data-pd-kpi-sellable-meta]');
+      const sLock = isMultiVar() ? null : L.lockOf(product, 'single');
+      if (sOf) { sOf.hidden = sLock === null; sOf.textContent = sLock === null ? '' : ' / ' + sLock; }
+      if (sMeta) {
+        if (isMultiVar()) sMeta.textContent = '';
+        else if (sLock === null) sMeta.textContent = T('stock.kpi.sellable-shared', 'Not locked — shares unlocked stock');
+        else {
+          const u = L.unlockedQty(product), uh = L.holdOf(product, 'free');
+          const uTxt = u === Infinity ? '∞' : (uh > 0 ? (u - uh) + '/' + u : String(u));
+          sMeta.textContent = T('stock.kpi.sellable-locked', 'Locked for single sale · {u} unlocked').replace('{u}', uTxt);
+        }
+      }
       setStat('[data-pd-kpi-bundle]', bundleLockedQty());
       setStat('[data-pd-kpi-incoming]', window.pdStockHistory ? window.pdStockHistory.pendingFor() : 0);
       const capEl = document.querySelector('[data-pd-kpi-cap]');
@@ -2005,6 +2041,84 @@
       commit: () => { if (product) product.limit = state.limitOn ? limitRead() : null; },
       text: () => state.limitOn && PLm ? PLm.text(limitRead(), 'item', T) : T('product-detail.setov.off', 'Off')
     };
+
+    /* §2.12 購買條件（D463，2026-10-21；最終版 S105）：七種條件同門票與組合包（js/purchase-conds.js），限購與折扣併進同一份。
+       檢視態＝鎖定的條件卡、編輯態＝可加改移除（跟著設定分頁的 data-mode 重畫）；取消還原、儲存寫回 product.conds，
+       「限購」條件同步寫回 product.limit（其他頁照舊讀它）。release2.4 沒有 S105：這支什麼都不做，舊的限購與折扣設定照舊。
+       既有資料轉換〔推導，D463 決定 5〕：沒有 conds 的商品，限購→「限購」、排程特價（有期間）→「限時折扣」、常態折扣→「折扣」，
+       折扣只有 % 的依定價換成固定價（多選項以最低價的組合算〔產品待確認：商品折扣類條件的價格輸入，F14〕）。 */
+    (function () {
+      const PCd = window.ztorPurchaseConds;
+      const host = document.querySelector('[data-pd-conds-host]');
+      const panel = document.querySelector('[data-panel="settings"]');
+      if (!PCd || !host) return;
+      const amt = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
+      let rules = { conds: {} }, snap = null, api = null;
+      const bases = () => {
+        const p = product || {};
+        const vs = (p.variant === 'multiple' && Array.isArray(p.variants)) ? p.variants.map(v => amt(v.price)).filter(n => n > 0) : [];
+        return vs.length ? vs : [amt(p.price)];
+      };
+      const featOn = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
+      const ctx = { capUnit: 'item', emptyKey: 'pc.empty.item', featOn: featOn, pctReadout: c => PCd.pctText(c, bases()) };
+      const editing = () => !!(panel && panel.getAttribute('data-mode') === 'edit');
+      function fromProduct(p) {
+        if (p && p.conds && p.conds.conds) return JSON.parse(JSON.stringify(p.conds));
+        const out = { conds: {} };
+        const lim = PLm ? PLm.norm(p && p.limit) : null;
+        if (lim && lim.person) out.conds.cap = { person: String(lim.person) };
+        const d = p && p.discount;
+        if (d) {
+          const bs = bases().filter(n => n > 0), base = bs.length ? Math.min.apply(null, bs) : 0;
+          const price = (d.price != null && d.price !== '') ? String(amt(d.price))
+            : (d.percent != null && d.percent !== '' && base > 0) ? String(Math.round(base * (1 - amt(d.percent) / 100))) : '';
+          if (d.limited && (d.limited.start || d.limited.end)) out.conds.discTime = { price: price, from: d.limited.start ? d.limited.start + 'T00:00' : '', to: d.limited.end ? d.limited.end + 'T23:59' : '' };
+          else out.conds.disc = { price: price };
+        }
+        return out;
+      }
+      function render() {
+        if (!PCd.uniOn()) { api = null; PCd.release(host); return; }
+        if (editing()) {
+          api = PCd.mount(host, { rules: rules, scope: 'item', ctx: ctx, onChange: r => { rules = r; if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview(); } });
+          return;
+        }
+        api = null;
+        PCd.paint(host, rules, 'item', true, ctx);   /* 唯讀條件卡（換語言自己重畫） */
+      }
+      document.addEventListener('ztor:devstate-changed', render);   /* devtools.js 最後才載入：版本確定後重畫 */
+      if (panel) new MutationObserver(() => {
+        if (editing() && !snap) snap = JSON.stringify(rules);   /* 進編輯態先記一份，取消時還原 */
+        if (!editing()) snap = null;
+        render();
+      }).observe(panel, { attributes: true, attributeFilter: ['data-mode'] });
+      window.pdConds = {
+        on: () => PCd.uniOn(),
+        seed: p => { rules = fromProduct(p); snap = null; render(); },
+        /* 儲存前擋：限購沒填、限時折扣價高於折扣價（就地紅字已由條件卡畫出） */
+        valid: () => {
+          if (!PCd.uniOn()) return true;
+          const n = PCd.errCount(rules);
+          if (api) api.check();
+          if (n) {
+            const msg = T('pc.err.save', 'Fix the purchase conditions marked in red.');
+            if (window.ztorToast) window.ztorToast.show(msg, { tone: 'error' });
+            if (window.pdSettingsGo) window.pdSettingsGo('rules');
+          }
+          return n === 0;
+        },
+        commit: () => {
+          if (!PCd.uniOn() || !product) return;
+          product.conds = JSON.parse(JSON.stringify(rules));
+          const cap = rules.conds.cap, n = cap && PLm ? PLm.posInt(cap.person) : null;
+          product.limit = n ? { person: String(n) } : null;
+          snap = null;
+        },
+        reset: () => { if (snap) rules = JSON.parse(snap); snap = null; },
+        text: () => PCd.summary(rules, 'item')
+      };
+      render();
+    }());
 
     /* §2.15 折扣設定：開啟折扣→折扣價＋限時折扣；限時折扣→起訖日（spec 5.1.5.1 §2.15 · D144）*/
     const revealToggle = (tid, fsel) => {
@@ -2324,6 +2438,7 @@
       state.limitOn = limitOn;
       paintSwitch('pd-limit-toggle', limitOn, '[data-pd-limit-fields]');
       if (PLm) PLm.KEYS.forEach(k => setInput('pd-limit-' + k, limitOn ? lim[k] : ''));
+      if (window.pdConds) window.pdConds.seed(p);   /* D463（最終版）：購買條件（沒有 conds 的舊資料由限購與折扣轉入） */
       /* 項目引用：一列一個項目；titleKey 走 i18n（persona 覆寫字典可換名），title 為字面值 */
       const projSec = document.querySelector('[data-pd-projects]');
       const projList = document.querySelector('[data-pd-projects-list]');
@@ -2578,7 +2693,7 @@
           body: T('e-shop.remove.body', 'It disappears from every list and filter. This cannot be undone.'),
           okKey: 'e-shop.delete.confirm', okFallback: 'Delete', destructive: true,
           onConfirm: () => {
-            if (S && S.remove) S.remove(product);
+            if (S && S.remove) S.remove(product, { name: name });   /* D468：刪除不寫操作紀錄 */
             try { sessionStorage.setItem('ztor.eshop.list', JSON.stringify({ tab: 'products', status: null, q: '' })); } catch (_) {}
             window.location.href = 'e-shop.html';
           }
@@ -2642,8 +2757,35 @@
     /* ✝ 墓碑 2026-09-23（D319 補）：原本不分商品一律預填的 [['Material', 'Letterpress cover · uncoated stock'],
        ['Size', '21 × 15 cm'], ['Pages', '32 pages']] 三列已移除，改由上一行的資料驅動 forEach 取代。 */
     const add = document.getElementById('pd-add-spec');
+    /* D466（2026-10-22）〔推導〕：實體商品編輯時至少保留一筆詳細規格。一筆＝上段已選的系統屬性，或下段名稱與值都填齊的自訂規格
+       （與 create-product.html 的 specCount 同一個算法）。只擋「刪到一筆都不剩」：進編輯時本來就是 0 筆的舊資料不擋儲存
+       （示範資料多數實體商品沒有 specs，見 ASSUMPTIONS UIA-288）。刪除鈕在會刪掉最後一筆時不刪、就地提示；儲存時再驗一次（清空文字也算刪掉）。 */
+    const field = host.closest('.field');
+    const err = field ? field.querySelector('[data-pd-spec-err]') : null;
+    const rowDone = r => { const i = r.querySelectorAll('input'); return !!(i[0] && i[0].value.trim() && i[1] && i[1].value.trim()); };
+    const count = () => Array.from(host.querySelectorAll('.spec-row')).filter(rowDone).length + (window.pdApparel && window.pdApparel.count ? window.pdApparel.count() : 0);
+    const physical = () => !!field && !field.hidden;
+    let startCount = 0;
+    const showErr = on => { if (err) err.hidden = !on; };
     if (add) add.addEventListener('click', () => addRow('', ''));
-    host.addEventListener('click', e => { const rm = e.target.closest('[data-spec-remove]'); if (rm) rm.closest('.spec-row').remove(); });
+    host.addEventListener('click', e => {
+      const rm = e.target.closest('[data-spec-remove]'); if (!rm) return;
+      const row = rm.closest('.spec-row');
+      if (physical() && startCount >= 1 && rowDone(row) && count() <= 1) { showErr(true); return; }
+      row.remove();
+    });
+    host.addEventListener('input', () => { if (count() >= 1) showErr(false); });
+    window.pdSpecs = {
+      begin: () => { startCount = count(); showErr(false); },
+      count: count,
+      valid: () => {
+        const ok = !physical() || startCount < 1 || count() >= 1;
+        showErr(!ok);
+        if (!ok && field && field.scrollIntoView) field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return ok;
+      },
+      reset: () => showErr(false)
+    };
   })();
 </script>
 <script data-pd-apparel-script>
@@ -2750,6 +2892,8 @@
   window.pdApparel = {
     get: () => clone(st),
     set: v => { st = clone(v); render(); },
+    /* 已選系統屬性數（D466：詳細規格「至少一筆」把上段也算進去，見 pdSpecs） */
+    count: () => apparelProduct ? attrDefs().filter(a => { const v = st.attrs[a.key]; return Array.isArray(v) ? v.length : !!v; }).length : 0,
     /* 進出編輯態時 applyReadonly 會把頁面上所有 select 統一開關；這裡補一次，確保重畫後的新 select 狀態一致 */
     refresh: render,
     valid: () => {
@@ -3128,6 +3272,13 @@
        多選項＝一列一個組合，逐組合各自有值（價格與成本沒填就沿用商品層的值）。
        兩階層（顏色×尺寸）仍依第一個選項分組。可改的欄位是輸入框，庫存唯讀。 */
     function lockText(v) { return (v === null || v === undefined) ? '—' : esc(String(v)); }
+    /* D465（2026-10-21）：某一格有保留時寫成「可賣/配額」（例 50/60，主規格 §7.14「保留」的呈現參考），title 帶保留數；沒保留只寫配額 */
+    function quotaText(quota, hold) {
+      if (quota === null || quota === undefined) return '—';
+      var h = Number(hold) || 0;
+      if (!(h > 0) || quota === '∞') return esc(String(quota));
+      return '<span title="' + esc(T('stock.hold.title', '{n} reserved — awaiting payment').replace('{n}', h)) + '">' + esc(String(Math.max(0, quota - h))) + '<span class="text-sub">/' + esc(String(quota)) + '</span></span>';
+    }
     /* 庫存管理表（2026-09-11 · A 案）：表格整張唯讀，只留庫存的欄位——
        組合（底下 SKU 小字）／在庫（限量帶 / 上限）／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨／⋯。
        狀態依門檻：在庫 0＝售罄、低於門檻＝低庫存（紅字）、等於門檻＝到門檻（黃字）、其餘正常。
@@ -3149,9 +3300,9 @@
         /* 上限（2026-09-21）：限量商品逐列各自的上限，獨立一欄（原本只有單一規格那一列以「在庫 / 上限」小字併在在庫格，
            多選項列沒有）；不限量商品的表不掛 --limited，這一格藏起來。 */
         + '<span class="variant-cell--ro variant-cell--total" data-vc="total">' + (o.cap ? esc(String(o.cap)) : '—') + '</span>'
-        + '<span class="variant-cell--ro" data-vc="locked">' + lockText(o.locked) + '</span>'
+        + '<span class="variant-cell--ro" data-vc="locked">' + (o.lockHold ? quotaText(o.locked, o.lockHold) : lockText(o.locked)) + '</span>'
         + '<span class="variant-cell--ro" data-vc="bundle">' + (o.bundle ? esc(String(o.bundle)) : '—') + '</span>'
-        + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + esc(String(o.free)) + '</span>'
+        + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + quotaText(o.free, o.freeHold) + '</span>'
         + '<span class="variant-cell--ro variant-cell--incoming' + (inc ? ' is-on' : '') + '">' + (inc ? '+' + inc : '—') + '</span>'
         + '<span>' + (st.cls ? '<span class="badge ' + st.cls + '"><span data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span></span>' : '<span class="text-sub" data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span>') + '</span>'
         + kebabHTML(!o.delisted);
@@ -3175,11 +3326,12 @@
         var total = (product.pool && product.pool.total === 'unlimited') ? '∞' : Number(product.pool ? product.pool.total : 0);
         var lock = L.lockOf(product, 'single');
         var bl = 0; Object.keys((product.pool && product.pool.locks && product.pool.locks.bundles) || {}).forEach(function (k) { var n = Number(product.pool.locks.bundles[k]); if (isFinite(n)) bl += n; });
-        var free = total === '∞' ? '∞' : Math.max(0, Number(total) - (lock === null ? 0 : lock) - bl);
+        /* 未鎖定＝在庫 − 各管道鎖定（鎖定量含各自的保留、不再另扣）；未鎖定格自己的保留寫成「可賣/配額」（D465） */
+        var free = total === '∞' ? '∞' : L.unlockedQty(product);
         var only = document.createElement('div');
         only.className = 'variant-table__row';
         only.setAttribute('data-vi', 'single');
-        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, bundle: bl, free: free, sku: product.sku || '', vi: 'single', delisted: !!product.delisted });
+        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, lockHold: L.holdOf(product, 'single'), bundle: bl, free: free, freeHold: L.holdOf(product, 'free'), sku: product.sku || '', vi: 'single', delisted: !!product.delisted });
         pageTable.appendChild(only);
       } else {
         var two = MODEL.variants[0].combo.length >= 2;
@@ -3245,7 +3397,9 @@
       var L = window.ListingState;
       if (t === 'single') {
         var total = (product.pool && product.pool.total === 'unlimited') ? Infinity : Number(product.pool ? product.pool.total : 0);
-        return { key: 'single', label: product.name || '—', stock: total, lock: L.lockOf(product, 'single') };
+        /* D465：單一規格的上限要扣組合包鎖定與未鎖定格的保留；調低不得低於單售鎖定格的保留（ListingState.validateLock） */
+        var bl0 = 0; Object.keys((product.pool && product.pool.locks && product.pool.locks.bundles) || {}).forEach(function (k) { var n = Number(product.pool.locks.bundles[k]); if (isFinite(n)) bl0 += n; });
+        return { key: 'single', label: product.name || '—', stock: total, lock: L.lockOf(product, 'single'), bundles: bl0, holdFree: L.holdOf(product, 'free'), hold: Number(((product.pool || {}).holds || {}).single) || 0 };
       }
       var v = MODEL.variants[t];
       return { key: t, label: v.combo.join(' / '), stock: Number(v.stock || 0), lock: lockGet(v, 'single') };
@@ -3283,23 +3437,34 @@
     function lockRefresh() {
       var host = document.querySelector('[data-pd-lock-table]');
       if (!host) return;
-      var bad = false;
+      var bad = false, low = false;
       LOCK.draft.forEach(function (r, i) {
         var row = host.querySelector('[data-lock-i="' + i + '"]');
         if (!row) return;
         var lockN = r.lock === null ? 0 : r.lock;
-        var free = r.stock === Infinity ? Infinity : r.stock - lockN;
-        var over = free < 0;
+        /* D465：未鎖定＝在庫 − 組合包鎖定 − 單售鎖定；未鎖定格的保留也要留著（鎖定總和 ≤ 在庫 − 未鎖定格的保留） */
+        var free = r.stock === Infinity ? Infinity : r.stock - (r.bundles || 0) - lockN;
+        var over = free !== Infinity && free - (r.holdFree || 0) < 0;
+        /* 調低不得低於這一格正被保留的量（D465 補充二）；填 0／留空＝改成不鎖定，保留改記到未鎖定 */
+        var under = !!(r.hold && lockN > 0 && lockN < r.hold);
         if (over) bad = true;
-        row.classList.toggle('salloc__row--error', over);
+        if (under) low = true;
+        row.classList.toggle('salloc__row--error', over || under);
         var f = row.querySelector('[data-lock-free]');
-        if (f) f.textContent = free === Infinity ? '∞' : String(free);
+        if (f) f.textContent = free === Infinity ? '∞' : String(Math.max(0, free));
       });
       var err = document.querySelector('[data-pd-lock-err]'); if (err) err.hidden = !bad;
-      var save = document.querySelector('[data-pd-lock-save]'); if (save) save.disabled = bad;
+      var errH = document.querySelector('[data-pd-lock-err-hold]');
+      if (errH) {
+        var hr = LOCK.draft.filter(function (r) { return r.hold; })[0];
+        errH.hidden = !low;
+        if (hr) errH.textContent = T('stock.lock-err-hold', "Can't go below the {n} reserved in this lock — those orders are still awaiting payment.").replace('{n}', hr.hold);
+      }
+      var save = document.querySelector('[data-pd-lock-save]'); if (save) save.disabled = bad || low;
     }
     function lockSave() {
-      if (LOCK.draft.some(function (r) { return r.stock !== Infinity && (r.lock || 0) > r.stock; })) return;
+      if (LOCK.draft.some(function (r) { return r.stock !== Infinity && (r.lock || 0) + (r.bundles || 0) + (r.holdFree || 0) > r.stock; })) return;
+      if (LOCK.draft.some(function (r) { return r.hold && (r.lock || 0) > 0 && r.lock < r.hold; })) return;
       var changes = [];
       LOCK.draft.forEach(function (r) {
         var before;
@@ -3308,6 +3473,11 @@
           product.pool.locks = product.pool.locks || { single: null, bundles: {} };
           before = product.pool.locks.single;
           product.pool.locks.single = r.lock;
+          /* D465 補充二：單售鎖定被移除（改成不鎖定）時，它還在保留的量改記到未鎖定，那些單照常等付款 */
+          if (!(r.lock > 0) && product.pool.holds && product.pool.holds.single) {
+            product.pool.holds.free = (Number(product.pool.holds.free) || 0) + Number(product.pool.holds.single);
+            product.pool.holds.single = 0;
+          }
         } else {
           before = lockGet(MODEL.variants[r.key], 'single');
           lockSet(MODEL.variants[r.key], 'single', r.lock);
@@ -3478,10 +3648,23 @@
        單一規格看商品層的一格；多選項逐列看各組合。違反的格加 aria-invalid（shared.css 紅框）、
        錯誤句用 DS 的 .field__error（單一規格放欄位底下、多選項放表格底下並點名列）。回傳是否全部合法，儲存前擋。 */
     var capErrRows = document.querySelector('[data-pd-cap-err-rows]');
-    function capBelowSold(cap, sold) {
+    /* D465 補充三（2026-10-21）：上限的下限＝已售＋各鎖定配額＋未鎖定格的保留（鎖定配額已含自己的保留），比照門票張數下限；
+       原「只能 ≥ 已售」改寫。extra＝這一格（商品層或選項組合）的各鎖定配額＋未鎖定格保留。 */
+    function capBelowSold(cap, sold, extra) {
       var c = String(cap == null ? '' : cap).trim();
       if (c === '') return false;                       /* 留空＝沒填，儲存時保留原值（同價格欄的規則） */
-      return (Number(c) || 0) < (Number(sold) || 0);
+      return (Number(c) || 0) < (Number(sold) || 0) + (Number(extra) || 0);
+    }
+    function capExtraSingle() {
+      var L = window.ListingState;
+      return (L && product) ? L.lockedTotal(product) + L.holdOf(product, 'free') : 0;
+    }
+    function capExtraVariant(v) { var L = window.ListingState; return L ? L.variantLockedTotal(v) : 0; }
+    function capFloorText(sold, extra) {
+      var n = (Number(sold) || 0) + (Number(extra) || 0);
+      return extra > 0
+        ? T('product-detail.edition.cap-floor', '{n} (sold {s} + locked and reserved {x})').replace('{n}', n).replace('{s}', Number(sold) || 0).replace('{x}', extra)
+        : String(n);
     }
     function checkCaps(m) {
       if (!(product && product.edition === 'limited')) return true;
@@ -3490,17 +3673,19 @@
         var bad = [];
         m.variants.forEach(function (v, vi) {
           var inp = editTable ? editTable.querySelector('input[data-ec-field="cap"][data-ec-vi="' + vi + '"]') : null;
-          var below = capBelowSold(v.cap, v.sold);
+          var xv = capExtraVariant(v);
+          var below = capBelowSold(v.cap, v.sold, xv);
           if (inp) inp.setAttribute('aria-invalid', below ? 'true' : 'false');
-          if (below) bad.push(T('product-detail.edition.cap-err-row', '{v}: can\'t be lower than units sold ({n})').replace('{v}', v.combo.join(' / ')).replace('{n}', v.sold || '0'));
+          if (below) bad.push(T('product-detail.edition.cap-err-row2', '{v}: can\'t be lower than {n}').replace('{v}', v.combo.join(' / ')).replace('{n}', capFloorText(v.sold, xv)));
         });
         ok = bad.length === 0;
         if (capErrRows) { capErrRows.hidden = ok; capErrRows.textContent = bad.join('；'); }
       } else {
         var capInp = document.querySelector('[data-pd-edit-cap]'), err = document.querySelector('[data-pd-cap-err]');
-        var belowS = capBelowSold(m.cap, m.sold);
+        var xs = capExtraSingle();
+        var belowS = capBelowSold(m.cap, m.sold, xs);
         if (capInp) capInp.setAttribute('aria-invalid', belowS ? 'true' : 'false');
-        if (err) { err.hidden = !belowS; err.textContent = T('product-detail.edition.cap-err', 'Can\'t be lower than units sold ({n})').replace('{n}', m.sold || '0'); }
+        if (err) { err.hidden = !belowS; err.textContent = T('product-detail.edition.cap-err2', 'Can\'t be lower than {n}').replace('{n}', capFloorText(m.sold, xs)); }
         ok = !belowS;
       }
       return ok;
@@ -3634,12 +3819,15 @@
       fillPriceFields(MODEL);
       refreshDraft();
       SNAP = snapshot();
+      if (window.pdSpecs) window.pdSpecs.begin();   /* D466：記下進編輯時有幾筆詳細規格（只擋刪到一筆都不剩） */
       setMode(true);
     }
     function cancelEdit() {
       DRAFT = null;
       restore(SNAP); SNAP = null;
       if (window.pdCodes) window.pdCodes.reset();   /* D458：丟掉未儲存的選碼與暫存新碼 */
+      if (window.pdConds) window.pdConds.reset();   /* D463：購買條件回到進編輯前 */
+      if (window.pdSpecs) window.pdSpecs.reset();   /* D466：收起「至少保留一筆」提示 */
       fillPriceFields(MODEL);
       renderOptEditor(MODEL); renderEditCombos(MODEL);
       setMode(false);
@@ -3647,7 +3835,9 @@
     }
     function saveEdit() {
       if (window.pdApparel && !window.pdApparel.valid()) return;   /* 改了大類卻沒重選次分類：停在編輯態（D360，§2.6） */
-      if (window.pdLimits && !window.pdLimits.valid()) return;   /* 限購開著卻沒填：停在編輯態（D398，§2.12；D427 起只剩一欄） */
+      if (window.pdSpecs && !window.pdSpecs.valid()) return;   /* D466〔推導〕：詳細規格刪到一筆都不剩，停在編輯態、提示在欄位底下 */
+      if (window.pdConds && window.pdConds.on()) { if (!window.pdConds.valid()) return; }   /* D463（最終版）：購買條件有紅字就停在編輯態；限購併在裡面 */
+      else if (window.pdLimits && !window.pdLimits.valid()) return;   /* 限購開著卻沒填：停在編輯態（D398，§2.12；D427 起只剩一欄） */
       if (!DRAFT) DRAFT = copyModel(MODEL);
       /* 上限低於已售（§2.10）就不收：錯誤句已在欄位／表格底下，停在編輯態讓使用者改 */
       if (!checkCaps(DRAFT)) return;
@@ -3676,7 +3866,8 @@
         window.ztorCodes.setSwitch(cKey, !!(cSw && cSw.getAttribute('aria-checked') === 'true'));
         window.pdCodes.commit(cKey, (window.pdProduct && window.pdProduct.name) || cKey);
       }
-      if (window.pdLimits) window.pdLimits.commit();   /* 限購寫回商品記錄（D398；D427 起只剩每人總限購） */
+      if (window.pdLimits && !(window.pdConds && window.pdConds.on())) window.pdLimits.commit();   /* 限購寫回商品記錄（D398；D427 起只剩每人總限購） */
+      if (window.pdConds) window.pdConds.commit();   /* D463（最終版）：購買條件寫回 product.conds，限購條件同步寫回 product.limit */
       if (window.pdApparel) window.pdApparel.commit();   /* 服飾配件欄位寫回商品記錄（group／category／subCategory／audience／attrs／customSpecs） */
       syncLocksToStore();   /* 鎖定量寫回 store，商品層那張唯讀彙總表跟著重畫 */
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
@@ -3822,7 +4013,8 @@
         v: !limited ? T('cp.edition.unlimited', 'Unlimited edition')
           : multi ? T('product-detail.setov.edition.per-variant', 'Limited · per variation')
           : T('product-detail.setov.edition.limited-total', 'Limited · {n} total').replace('{n}', MODEL.cap || '—') });
-      rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
+      if (window.pdConds && window.pdConds.on()) rows.push({ g: 'pricing', go: 'rules', key: 'cpk.title', fb: 'Discount codes', v: on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : T('product-detail.setov.off', 'Off') });   /* D463（最終版）：折扣併進購買條件，這一列只剩優惠碼 */
+      else rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
           ? join([multi ? '' : money(num($v('pd-sale-price'))), $v('pd-sale-percent') ? '-' + $v('pd-sale-percent') + '%' : '', on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : ''])
           : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : '']) });
@@ -3831,7 +4023,8 @@
         rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: on('pd-lowstock-toggle') ? pct + '%' : T('product-detail.setov.off', 'Off') });
       }
       /* 限購（D398；D427 起只剩每人總限購）：一行摘要（「每人 3 件」），關＝Off */
-      rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limits',
+      if (window.pdConds && window.pdConds.on()) rows.push({ g: 'pricing', go: 'rules', key: 'pc.title', fb: 'Purchase conditions', v: window.pdConds.text() });   /* D463（最終版）：限購與折扣併進購買條件 */
+      else rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limits',
         v: window.pdLimits ? window.pdLimits.text() : T('product-detail.setov.off', 'Off') });
       /* 概覽列的值顯示目前方式（標題已改泛稱，2026-09-22） */
       var dmode = (product && product.cat === 'digital') ? T('pd.digital-delivery.title', 'Delivery & access')

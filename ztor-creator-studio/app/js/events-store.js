@@ -223,15 +223,19 @@
       end: '22:00',
       doors: '18:30',
       tiers: [
-        /* reserved＝下單未付款佔走的（2026-08-11 新欄，示範營運列表用）。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, reserved: 6 },
-        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, reserved: 11 },
+        /* reserved＝下單未付款佔走的（2026-08-11 新欄，示範營運列表用）。D465 起改記在格子上：holdFree＝未鎖定格的保留
+           （這兩張沒鎖單售、組合包也沒鎖定，所以保留都在未鎖定格；tierHoldFree 仍相容舊欄 reserved）。 */
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, holdFree: 6 },
+        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, holdFree: 11 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
       ],
       bundles: [
         { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', desc: '一張 VIP 票加一件巡演官方 Tee，現場憑票一併領取。', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
-          price: 4800, sold: 3, cap: 50 },
+          /* 2026-10-21 D465 示範：鎖定 10 套（還沒賣掉的配額），其中 2 套已下單未付款＝保留留在這個鎖定格 →
+             可售 8/10 套；限量總量下限＝已售 3＋保留 2＝5（D465 補充三）；VIP 未鎖定＝100 − 40 − 10＝50，其中未鎖定格保留 6、可賣 44；
+             限量總量上限最多＝已售 3＋保留 2＋還能供應 8＝13（原本寫 50，鎖了 10 套的組合包賣不到那麼多，細節頁編輯一進來就紅字） */
+          price: 4800, sold: 3, cap: 13, lockSets: 10, holdSets: 2 },
         /* 2026-09-21（D296 示範）：允許兩種票種、粉絲任選——原價「從 $4,300 起」（最低票價 Floor 3,300 × 1 ＋ 1,000）。 */
         { id: 'bd-vip-zine', name: 'VIP／Floor 任選 ＋ 精裝寫真誌', tickets: { tierIds: ['tier-vip', 'tier-floor'], qty: 1 },
           products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000 }],
@@ -270,7 +274,10 @@
       doors: '19:00',
       tiers: [
         { id: 'tier-ga',  name: 'General admission', price: 25, qty: 100, sold: 72 },
-        { id: 'tier-vip', name: 'VIP · soundcheck',  price: 60, qty: 20,  sold: 12 }
+        { id: 'tier-vip', name: 'VIP · soundcheck',  price: 60, qty: 20,  sold: 12 },
+        /* 2026-10-21 D465 示範（主規格 §7.14「保留」的使用者例子）：張數 100、鎖給單售 60、單張購買下單 10 張還沒付款
+           （保留留在鎖給單售格）→ 鎖給單售 50/60（可賣/配額）、保留中 10、未鎖定 40；付款成功會變 50/50、逾時回到 60/60 */
+        { id: 'tier-balcony', name: 'Balcony', price: 30, qty: 100, sold: 0, lockSingle: 60, holdSingle: 10, holdFree: 0 }
       ],
       sold: 84,
       revenue: 2520,
@@ -726,7 +733,10 @@
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
            各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。sold 由原本單人票的張數拆出，event.sold 不變、revenue 依三種票價重算。 */
+        /* 2026-10-21 D465 示範（release2.4 的 nick 資料也看得到）：bookyay 門票可單售鎖定（決定 7，ztor 內部分配、不動 bookyay 張數）——
+           鎖給單售 60、其中 10 張下單未付款（保留留在單售鎖定格）→ 鎖給單售 50/60、保留中 10 */
         { id: 'tier-tc-floor', name: 'Standing zone', price: 3192, hkd: 790, qty: 300, sold: 110, img: 'images/projects/nick-asn.jpg',
+          lockSingle: 60, holdSingle: 10,
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true },
         /* 2026-10-16 示範資料補齊（稽核 E1；不是產品規則）：座席票設為隱藏（S92）——粉絲頁票價清單不列，持連結與組合包仍可賣；
            先前已售的 70 張照算。 */
@@ -2462,11 +2472,48 @@
     return (ev.bundles || []).every(function (b) { return !bundleTickets(b).tierIds.length || bundleLeft(ev, b) === 0; });
   }
 
-  /* ── 庫存設為 0（D447，2026-10-19）──────────────────────────────────────────
-     門票的庫存＝還能賣的張數＝張數 − 已售 − 保留 − 其他組合包已鎖定張數（算法沿用 D446：組合包鎖的張數＝鎖定套數 × 每套張數，
-     先由它自己獨有的門票吸收，吸收不了的才壓在這張門票上；bundle-detail 的 otherTixLocks、bundle-editor 的 otherTixTaken 同口徑）。
-     「庫存設為 0」＝把張數改成剛好等於已售＋保留＋已鎖定（tierZeroQty），之後不能再單獨買；調高張數就恢復販售。
-     組合包的「庫存設為 0」＝切成限量（cap）並把總量收到已售，剩餘 0；不新增欄位（最終版，使用者改裁決併入既有限量）。 */
+  /* ── 門票的庫存池、單售鎖定與保留（D465，2026-10-21；主規格 §7.14「保留」「門票的庫存池與單售鎖定」）──────────
+     舊算法（D447 的「庫存＝張數 − 已售 − 保留 − 其他組合包已鎖定」、設為 0＝張數收到已售＋保留＋已鎖定、
+     組合包剩餘只扣全域 reserved）由下面這組取代。三格（鎖給單售、各組合包鎖定、未鎖定）各有配額，保留留在下單的那一格：
+       t.lockSingle   鎖給單售的配額（還沒賣掉的量，賣一張少一張）；null／''／缺＝不鎖定；數字（含 0）＝鎖定模式
+                      （0＝有鎖、賣完＝售罄，只會由「庫存設為 0」或賣光產生；表單填 0 或空白＝不鎖定）
+       t.holdSingle   鎖給單售格的保留（單張購買下單未付款；沒鎖單售時不用）
+       t.holdFree     未鎖定格的保留（沒鎖單售的單張購買、沒鎖定組合包的單）；舊欄 t.reserved 視為這一格（相容）
+       b.lockSets     組合包鎖定套數（配額，含自己的保留）；b.holdSets＝這個組合包被保留的套數
+                      （有鎖定時記在它的鎖定格，張數算在 b.holdTier——缺省＝第一個允許的門票）
+     公式（逐張門票）：
+       各組合包鎖定  tierLocked（每套張數 × 套數，先由組合包自己獨有的門票吸收，沿用 D446）
+       未鎖定        ＝張數 − 已售 − 鎖給單售 − 各組合包鎖定（鎖定已含自己的保留，不再另扣）
+       未鎖定可賣    ＝未鎖定 − 未鎖定格的保留
+       單售可賣      有鎖＝鎖給單售 − 它的保留；沒鎖＝未鎖定可賣（tierStock，即「門票的庫存」）
+       保留中        ＝各格保留加總（tierHeld）；售出進度分子＝已售＋保留中
+       張數下限      ＝已售＋鎖給單售＋各組合包鎖定＋未鎖定格的保留（tierMinQty）
+       鎖給單售上限  ＝張數 − 已售 − 各組合包鎖定 − 未鎖定格的保留（防呆：各鎖定總和 ≤ 張數 − 已售 − 未鎖定格保留）；
+                     下限＝它正被保留的量（調低不得低於保留，D465 補充二）
+       庫存設為 0    鎖給單售縮成只剩它的保留；張數＝已售＋各組合包鎖定＋單售剩下的保留＋未鎖定格的保留（applyTierZero） */
+  function tierSingleLock(t) {
+    var v = t && t.lockSingle;
+    if (v === undefined || v === null || v === '') return null;
+    var n = Number(v);
+    return isFinite(n) && n >= 0 ? Math.floor(n) : null;
+  }
+  function tierHoldSingle(t) { return tierSingleLock(t) === null ? 0 : (Number(t && t.holdSingle) || 0); }
+  function tierHoldFree(t) {
+    if (!t) return 0;
+    return (t.holdFree !== undefined && t.holdFree !== null) ? (Number(t.holdFree) || 0) : (Number(t.reserved) || 0);
+  }
+  /* 組合包鎖定格裡、算在這張門票上的保留張數（有鎖定的組合包才有自己的格；沒鎖定的組合包的單記在未鎖定格） */
+  function tierBundleHold(ev, t) {
+    var sum = 0;
+    ((ev && ev.bundles) || []).forEach(function (b) {
+      if (!(Number(b && b.lockSets) > 0) || !(Number(b.holdSets) > 0)) return;
+      var tk = bundleTickets(b);
+      var at = b.holdTier || tk.tierIds[0];
+      if (t && at === t.id) sum += Math.floor(Number(b.holdSets)) * (tk.qty || 1);
+    });
+    return sum;
+  }
+  function tierHeld(ev, t) { return tierHoldSingle(t) + tierHoldFree(t) + tierBundleHold(ev, t); }
   function tierLocked(ev, t) {
     if (!ev || !t) return 0;
     var tiers = ev.tiers || [], taken = 0;
@@ -2480,36 +2527,71 @@
         if (id === t.id) return;
         var x = null;
         for (var i = 0; i < tiers.length; i++) if (tiers[i].id === id) { x = tiers[i]; break; }
-        if (x) rest -= Math.max(0, (Number(x.qty) || 0) - (Number(x.sold) || 0));
+        if (x) rest -= Math.max(0, (Number(x.qty) || 0) - (Number(x.sold) || 0) - (tierSingleLock(x) || 0));
       });
       if (rest > 0) taken += rest;
     });
-    return Math.min(taken, Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0)));
+    return Math.min(taken, Math.max(0, (Number(t.qty) || 0) - (Number(t.sold) || 0) - (tierSingleLock(t) || 0)));
   }
+  function tierUnlocked(ev, t) {
+    return Math.max(0, (Number(t && t.qty) || 0) - (Number(t && t.sold) || 0) - (tierSingleLock(t) || 0) - tierLocked(ev, t));
+  }
+  function tierFreeAvail(ev, t) { return Math.max(0, tierUnlocked(ev, t) - tierHoldFree(t)); }
+  /* 門票的庫存＝單售此刻還能賣的張數（5.1.6.3 §2.6） */
   function tierStock(ev, t) {
-    return Math.max(0, (Number(t && t.qty) || 0) - (Number(t && t.sold) || 0) - (Number(t && t.reserved) || 0) - tierLocked(ev, t));
+    var l = tierSingleLock(t);
+    return l === null ? tierFreeAvail(ev, t) : Math.max(0, l - tierHoldSingle(t));
   }
+  function tierMinQty(ev, t) {
+    return (Number(t && t.sold) || 0) + (tierSingleLock(t) || 0) + tierLocked(ev, t) + tierHoldFree(t);
+  }
+  /* 鎖給單售的上下限：上限＝張數 − 已售 − 各組合包鎖定 − 未鎖定格的保留；下限＝它正被保留的量 */
+  function tierLockMax(ev, t) {
+    return Math.max(0, (Number(t && t.qty) || 0) - (Number(t && t.sold) || 0) - tierLocked(ev, t) - tierHoldFree(t));
+  }
+  function tierLockMin(t) { return Number(t && t.holdSingle) || 0; }
   function tierZeroQty(ev, t) {
-    return (Number(t && t.sold) || 0) + (Number(t && t.reserved) || 0) + tierLocked(ev, t);
+    return (Number(t && t.sold) || 0) + tierLocked(ev, t) + tierHoldSingle(t) + tierHoldFree(t);
   }
-  /* 組合包實際可售量（D447 決定三）：限量剩餘（總量 cap − 已售 sold；沒設 cap＝不限量）與票券成員剩餘（各允許票種 floor(剩餘 ÷ 每套張數) 加總）取小；
-     回 null＝沒有任何上限可算。「庫存設為 0」＝把 cap 改成剛好等於已售（bundleZeroCap），剩餘 0。 */
+  /* 庫存設為 0（D447；D465 決定 6）：鎖給單售縮成只剩它的保留（沒鎖就維持不鎖），張數收到 tierZeroQty。直接改 t。 */
+  function applyTierZero(ev, t) {
+    if (!t) return t;
+    var q = tierZeroQty(ev, t);
+    if (tierSingleLock(t) !== null) t.lockSingle = tierHoldSingle(t);
+    t.qty = q;
+    return t;
+  }
+  /* 組合包實際可售量（D447 決定三；D465）：
+       限量剩餘＝總量 cap − 已售 − 被保留的套數；
+       有鎖定套數＝鎖定 − 被保留的套數（鎖定的管道不吃未鎖定）；
+       沒鎖定＝各允許門票 floor(未鎖定可賣 ÷ 每套張數) 加總。取小；回 null＝沒有任何上限可算。 */
+  function bundleHoldSets(b) { return Number(b && b.holdSets) || 0; }
   function bundleLeft(ev, b) {
     var caps = [], c = b && b.cap;
-    if (c !== null && c !== undefined && c !== '' && isFinite(Number(c))) caps.push(Math.max(0, Number(c) - (Number(b.sold) || 0)));
+    if (c !== null && c !== undefined && c !== '' && isFinite(Number(c))) caps.push(Math.max(0, Number(c) - (Number(b.sold) || 0) - bundleHoldSets(b)));
     var tk = bundleTickets(b);
-    if (tk.tierIds.length) {
+    if (Number(b && b.lockSets) > 0) caps.push(Math.max(0, Math.floor(Number(b.lockSets)) - bundleHoldSets(b)));
+    else if (tk.tierIds.length) {
       var tiers = (ev && ev.tiers) || [], sum = 0;
       tk.tierIds.forEach(function (id) {
-        for (var i = 0; i < tiers.length; i++) if (tiers[i].id === id) {
-          sum += Math.floor(Math.max(0, (Number(tiers[i].qty) || 0) - (Number(tiers[i].sold) || 0) - (Number(tiers[i].reserved) || 0)) / (tk.qty || 1));
-        }
+        for (var i = 0; i < tiers.length; i++) if (tiers[i].id === id) sum += Math.floor(tierFreeAvail(ev, tiers[i]) / (tk.qty || 1));
       });
       caps.push(sum);
     }
     return caps.length ? Math.min.apply(null, caps) : null;
   }
-  function bundleZeroCap(b) { return Number(b && b.sold) || 0; }
+  /* 組合包「庫存設為 0」＝切成限量、總量收到已售套數＋這個組合包被保留的套數（D465 補充三；限量總量下限同一個數） */
+  function bundleZeroCap(b) { return (Number(b && b.sold) || 0) + bundleHoldSets(b); }
+  /* 票券成員的剩餘張數（組合包鎖定套數上限用，5.1.5.4 F4）：張數 − 已售 − 單售鎖定 − 其他組合包已鎖定 − 未鎖定格的保留 */
+  function tierLeftForBundle(ev, t, exceptBundleId) {
+    var other = 0;
+    if (exceptBundleId) {
+      var keep = ev.bundles;
+      ev = Object.assign({}, ev, { bundles: (keep || []).filter(function (b) { return b.id !== exceptBundleId; }) });
+    }
+    other = tierLocked(ev, t);
+    return Math.max(0, (Number(t && t.qty) || 0) - (Number(t && t.sold) || 0) - (tierSingleLock(t) || 0) - other - tierHoldFree(t));
+  }
 
   /* 組合包票券成員的相容讀取（2026-09-21 D296）：一律回 `{ tierIds:[…], qty:n }`。
      舊 `[{ id, qty }]`／`['id']` 視為 tierIds＝各 id、qty＝第一筆的張數；沒有票券成員回空清單。 */
@@ -3025,6 +3107,20 @@
     tierZeroQty: tierZeroQty,
     bundleLeft: bundleLeft,
     bundleZeroCap: bundleZeroCap,
+    /* D465：門票庫存池、單售鎖定與保留 */
+    tierSingleLock: tierSingleLock,
+    tierHoldSingle: tierHoldSingle,
+    tierHoldFree: tierHoldFree,
+    tierBundleHold: tierBundleHold,
+    tierHeld: tierHeld,
+    tierUnlocked: tierUnlocked,
+    tierFreeAvail: tierFreeAvail,
+    tierMinQty: tierMinQty,
+    tierLockMax: tierLockMax,
+    tierLockMin: tierLockMin,
+    applyTierZero: applyTierZero,
+    bundleHoldSets: bundleHoldSets,
+    tierLeftForBundle: tierLeftForBundle,
     /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
        允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
     setStage: function (id, status) { if (id) writeStage(id, status); },
