@@ -44,11 +44,12 @@
 <link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- D470：取貨方式改勾選（.control-row--check） -->
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購（js/purchase-limits.js）；D427 起只剩每人總限購 -->
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D463（最終版 S105）：購買條件清單（js/purchase-conds.js） -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- D463：條件卡內的 .rule-row -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card-group.css?v=r2.2"><!-- D360：詳細規格上下兩段的小標（.group-title／.group-desc） -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
@@ -946,21 +947,52 @@
         </div>
 
         <div data-pd-cat="physical">
-        <!-- 取貨方式切換（2026-09-22 使用者裁決；建立商品 F4 的 cp-delivery 同一顆 .segmented.radio-cards）：
-             2026-07-22 起本頁只唯讀顯示，這輪改回可切換——編輯態切物流／現場 QR 領取，下方兩套子欄位（既有 data-when-delivery）跟著換，
-             section 標題與頁籤標籤照 07-22 裁決仍＝目前方式。已有未完成訂單時能不能切〔產品待確認〕（ASSUMPTIONS UIA-163），原型不擋。
-             各段掛 data-view-safe：檢視態留著當「現在是哪一種」的狀態展示（Q119 例外），pointer-events 由 shared.css 關掉。 -->
-        <div class="field">
-          <div class="segmented radio-cards" id="pd-delivery">
-            <button class="segmented__btn segmented__btn--active" type="button" data-view-safe data-pd-delivery="shipping" data-i18n="cp.delivery.shipping">Shipping</button>
-            <button class="segmented__btn" type="button" data-view-safe data-pd-delivery="qr" data-i18n="cp.delivery.qr">QR code pickup</button>
+        <!-- D470（2026-10-22，5.1.5.1 §2.11；取代 2026-09-22 的二選一 segmented 切換）：取貨方式改勾選——物流配送、現場 QR 領取或兩者，
+             至少一種（儲存時沒勾就停在編輯態、就地紅字）。取消勾選某種方式後，新的訂單不能再選這種方式〔推導〕；
+             已有選這種方式的未完成訂單怎麼處理〔產品待確認，主規格 §8.12〕——原型不實作、就地不阻擋（ASSUMPTIONS UIA-291）。
+             同建立商品步驟 2 的 .control-row--check；檢視態整列不可點（control-row.css）。取貨場次仍只有一個（D339，D471 撤回 D470 的多場次）。 -->
+        <div class="control-group mb-16" id="pd-delivery">
+          <label class="control-row control-row--check">
+            <span>
+              <span class="control-row__main" data-i18n="cp.delivery.shipping">Shipping</span>
+            </span>
+            <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="pd-dl-ship" data-pd-dl checked><span class="zcheck__box"></span></span>
+          </label>
+          <label class="control-row control-row--check">
+            <span>
+              <span class="control-row__main" data-i18n="cp.delivery.qr">QR code pickup</span>
+            </span>
+            <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="pd-dl-qr" data-pd-dl><span class="zcheck__box"></span></span>
+          </label>
+          <!-- 現場 QR 領取的取貨場次：單售商品只屬於一個場次（D339，D471 保留）；「建立取貨場次」在下拉的動作列（2026-09-11） -->
+          <div class="control-group__body" data-pd-qr-body hidden>
+            <div class="field">
+              <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
+              <div class="field__hint" data-i18n="pd.delivery.session.desc">Redeemed at this session's scanner. Each item has its own pickup QR in the buyer's ztor account, scanned one at a time; the session's URL, password, roster and redemption records live in Pickup management.</div>
+              <select class="select" id="pd-pickup-session" data-pd-dl
+                      data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
+                      data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+                <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
+                <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
+                <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
+              </select>
+              <div class="fact-list" data-pd-session-info hidden>
+                <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-pd-si-loc></span></div>
+                <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-pd-si-time></span></div>
+                <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-pd-si-status><span></span></span></span></div>
+                <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-pd-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="pd-subfields" data-when-delivery="shipping">
-          <!-- 2026-07-22（使用者裁決）：物流配送欄位全部展開，不收合。原本除重量外都收進「顯示更多」，
-               改為重量／運送分類／尺寸／取貨地點一律直接呈現。 -->
+        <p class="field__error" data-pd-delivery-err hidden data-i18n="cp.delivery.err">Tick at least one.</p>
+
+        <!-- 物流資料（對齊建立商品 F15）：D470 起不論勾哪種都在這裡編輯（2026-07-22 使用者裁決：欄位全部展開、不收合）。
+             重量只在勾了物流配送時標＊。 -->
+        <div class="pd-subfields">
+          <div class="group-title" data-i18n="cp.ship.title">Shipping details</div>
           <div class="field">
-            <div class="field__label"><span data-i18n="cp.delivery.weight">Weight</span> <span class="field__req">*</span></div>
+            <div class="field__label"><span data-i18n="cp.delivery.weight">Weight</span> <span class="field__req" data-pd-weight-req>*</span></div>
             <input class="input" value="0.3 KG" style="max-width:var(--w-220)">
           </div>
           <div class="field">
@@ -984,31 +1016,6 @@
             <div class="field__label" data-i18n="cp.delivery.pickup">Pickup location</div>
             <input class="input" value="Tainan studio · 700">
             <div class="field__hint" data-i18n="cp.delivery.pickup.hint">Defaults to your store shipping address (Store settings F5) if left blank.</div>
-          </div>
-        </div>
-        <!-- 2026-09-04（D244）：領取說明欄退場（改由取貨場次持有）；說明橫幅移到場次欄之前，
-             與建立商品同一個順序——先知道機制，才決定掛哪個場次。 -->
-        <div class="pd-subfields" data-when-delivery="qr" hidden>
-          <!-- 2026-09-11（同 create-product）：info-banner 與欄位下方 hint 合併成標籤底下的說明。 -->
-          <div class="field">
-            <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-            <div class="field__hint" data-i18n="pd.delivery.session.desc">Redeemed at this session's scanner. Each item has its own pickup QR in the buyer's ztor account, scanned one at a time; the session's URL, password, roster and redemption records live in Pickup management.</div>
-            <!-- 2026-09-11（同 create-product）：「建立取貨場次」併進下拉的動作列。 -->
-            <select class="select" id="pd-pickup-session"
-                    data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
-                    data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
-              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
-              <option value="tpe" selected data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
-              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
-            </select>
-            <!-- 選定或剛建好的場次資訊（2026-09-11 使用者指示）：唯讀事實列 .fact-list（地點／時間／狀態／入口），
-                 「尚未關聯」時整塊收起。資料由頁尾腳本 paintSessionInfo() 填。 -->
-            <div class="fact-list" data-pd-session-info hidden>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-pd-si-loc></span></div>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-pd-si-time></span></div>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-pd-si-status><span></span></span></span></div>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-pd-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
-            </div>
           </div>
         </div>
         <!-- 取貨與退貨說明（2026-09-18 D291，同 create-product）：兩種取貨方式共用一格，放在兩套子欄位之外；
@@ -1677,7 +1684,7 @@
     if (!document.getElementById('pd-limit-toggle') && !document.getElementById('pd-delivery')) return;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
-    const state = { cat: 'physical', edition: 'unlimited', delivery: 'shipping', limitOn: false, var: 'single' };
+    const state = { cat: 'physical', edition: 'unlimited', ship: true, qr: false, limitOn: false, var: 'single' };   /* D470：取貨方式改勾選（ship／qr） */
     /* 限購（D398；D427 起一欄）：先畫好框（與建立商品同一支 fieldsHTML），seed 與編輯快照才抓得到輸入框 */
     const PLm = window.ztorPurchaseLimits;
     const limitHost = document.querySelector('[data-pd-limit-host]');
@@ -1688,10 +1695,9 @@
 
     function applyVis() {
       /* edition 子欄位在 Stock 卡、規格模式 var 在 Variations 卡（D135）、delivery 在取貨卡 → 一律用 document 範圍 */
-      document.querySelectorAll('[data-when-edition],[data-when-delivery],[data-when-var]').forEach(el => {
+      document.querySelectorAll('[data-when-edition],[data-when-var]').forEach(el => {
         let vis = true;
         if (el.dataset.whenEdition) vis = vis && el.dataset.whenEdition === state.edition;
-        if (el.dataset.whenDelivery) vis = vis && el.dataset.whenDelivery === state.delivery;
         if (el.dataset.whenVar) vis = vis && el.dataset.whenVar === state.var;
         /* 同時掛 data-pd-cat 的元素（商品規格卡）：主分類條件在這裡一起算，
            否則 applyVis 會把 applyCat 剛設好的 hidden 覆寫掉。 */
@@ -1901,11 +1907,15 @@
       state.cat = p.cat;
       state.var = p.variant || 'single';
       state.edition = p.edition || 'unlimited';
-      state.delivery = p.delivery || 'shipping';   /* 取貨方式由商品資料決定（唯讀顯示）；未設＝物流配送 */
+      /* D470：取貨方式勾選集合與取貨場次由商品資料決定（舊的單值資料已由 products-store 原樣轉入）；沒有資料＝物流配送 */
+      (function () {
+        const d = window.ztorDelivery ? window.ztorDelivery.of(p) : { ship: true, qr: false, session: null };
+        state.ship = d.ship; state.qr = d.qr;
+      }());
       /* 交付分頁的 section 標題與上方頁籤標籤＝取貨方式本身（實體＝物流配送／現場 QR 領取；數位＝交付與存取）。
          同時設 data-i18n（語言切換仍正確）與文字（即時生效，不依賴 i18n 執行順序）。 */
       paintDeliveryTitle();
-      paintDeliverySeg();
+      paintDelivery();
       // 頁首：標題／副標／badge
       setText('pd-title', p.name); setVal('pd-title-input', p.name);
       /* 頁首識別小字：價格（多選項給區間）＋選項模式 */
@@ -1985,10 +1995,9 @@
       applyContentFile(p.content);
     }
 
-    /* 取貨方式（2026-09-22 使用者裁決，取代 07-22「細節頁不可更改」）：#pd-delivery 是建立商品 F4 同一顆 segmented，
-       切換寫回 state.delivery 與商品記錄，shipping／qr 兩套子欄位（既有 data-when-delivery）經 applyVis 換邊，
-       section 標題與頁籤維持泛稱「取貨方式」（2026-09-22 裁決，取代 07-22「標題＝目前方式」）。只有編輯態能切（檢視態 shared.css 關掉 pointer-events）。
-       已有未完成訂單能不能切〔產品待確認〕，原型不擋（ASSUMPTIONS UIA-163）。 */
+    /* 取貨方式（2026-09-22 使用者裁決，取代 07-22「細節頁不可更改」；2026-10-22 D470 由二選一 segmented 改勾選，見下方 paintDelivery）：
+       section 標題與頁籤維持泛稱「取貨方式」（2026-09-22 裁決，取代 07-22「標題＝目前方式」）。只有編輯態能改（檢視態 control-row.css 關掉整列的點擊）。
+       已有未完成訂單時取消勾選怎麼處理〔產品待確認〕，原型不擋（ASSUMPTIONS UIA-291，承接 UIA-163）。 */
     function paintDeliveryTitle() {
       /* 2026-09-22 使用者裁決：實體商品的標題改回泛稱「取貨方式」（cp.delivery.title），目前方式由 #pd-delivery 的 segmented 表達，
          標題不再重述；數位商品維持「交付與存取」。 */
@@ -1999,22 +2008,52 @@
         if (el) { el.setAttribute('data-i18n', dkey); el.textContent = dtxt; }
       });
     }
-    function paintDeliverySeg() {
-      syncLockedSeg('pd-delivery', 'pdDelivery', state.delivery);
+    /* D470（5.1.5.1 §2.11）：勾選寫回 state 與商品記錄（product.delivery）；勾了現場 QR 領取才出現取貨場次。
+       都沒勾＝就地紅字、儲存時停在編輯態（pdDelivery.valid）。取消勾選時已有選這種方式的未完成訂單怎麼處理
+       〔產品待確認〕——原型不擋、不另提示（ASSUMPTIONS UIA-291）。重量的＊跟著物流配送的勾選。 */
+    function paintDelivery() {
+      [['pd-dl-ship', 'ship'], ['pd-dl-qr', 'qr']].forEach(function (x) { var cb = document.getElementById(x[0]); if (cb) cb.checked = !!state[x[1]]; });
+      var body = document.querySelector('[data-pd-qr-body]'); if (body) body.hidden = !state.qr;
+      var req = document.querySelector('[data-pd-weight-req]'); if (req) req.hidden = !state.ship;
+      syncDeliveryErr(false);
     }
-    (function () {
-      var seg = document.getElementById('pd-delivery'); if (!seg) return;
-      seg.addEventListener('click', function (e) {
-        var btn = e.target.closest('[data-pd-delivery]'); if (!btn || btn.disabled) return;
-        var v = btn.getAttribute('data-pd-delivery');
-        if (v === state.delivery) return;
-        state.delivery = v;
-        if (product) product.delivery = v;
-        paintDeliverySeg(); applyVis(); paintDeliveryTitle();
-        /* 快照／設定總覽靠 change 事件知道切過（renderSettingsOverview 聽 change） */
-        seg.dispatchEvent(new Event('change', { bubbles: true }));
+    function syncDeliveryErr(show) {
+      var err = document.querySelector('[data-pd-delivery-err]');
+      if (!err) return;
+      var ok = state.ship || state.qr;
+      if (show || ok) err.hidden = ok;
+    }
+    function writeDelivery() {
+      if (!product) return;
+      product.delivery = ['ship', 'qr'].filter(function (k) { return state[k]; });
+    }
+    [['pd-dl-ship', 'ship'], ['pd-dl-qr', 'qr']].forEach(function (x) {
+      var cb = document.getElementById(x[0]); if (!cb) return;
+      cb.addEventListener('change', function () {
+        state[x[1]] = cb.checked;
+        writeDelivery(); paintDelivery(); syncDeliveryErr(true);
+        /* 快照／設定總覽靠 change 事件知道改過（renderSettingsOverview 聽 change） */
       });
-    }());
+    });
+    window.pdDelivery = {
+      get: function () { var sel = document.getElementById('pd-pickup-session'); return { ship: state.ship, qr: state.qr, session: sel ? sel.value : '' }; },
+      set: function (v) {
+        state.ship = !!v.ship; state.qr = !!v.qr; writeDelivery(); paintDelivery();
+        var sel = document.getElementById('pd-pickup-session');
+        if (sel && sel.value !== (v.session || '')) { sel.value = v.session || ''; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+      },
+      valid: function () { syncDeliveryErr(true); return state.cat === 'digital' || state.ship || state.qr; },
+      text: function () {
+        var parts = [];
+        if (state.ship) parts.push(T('cp.delivery.shipping', 'Shipping'));
+        if (state.qr) {
+          var sel = document.getElementById('pd-pickup-session');
+          var o = sel && sel.value ? sel.options[sel.selectedIndex] : null;
+          parts.push(T('cp.delivery.qr', 'QR code pickup') + (o ? '（' + o.textContent.trim() + '）' : ''));
+        }
+        return parts.join(' · ');
+      }
+    };
 
     const lt = document.getElementById('pd-limit-toggle');
     const lf = document.querySelector('[data-pd-limit-fields]');
@@ -2946,9 +2985,15 @@
           /* 2026-09-11：不再跳走，剛建的場次直接成為選項並在底下列出資訊（同 create-product）。 */
           onCreate: function (session) { if (info) info.addCreated(session); }
         }) : null;
+    /* 取貨場次（單售商品一個場次，D339／D471）：初始值讀商品資料（原本 HTML 寫死選台北場），選取寫回商品記錄 */
     var sel = document.getElementById('pd-pickup-session');
+    if (sel && window.pdProduct && window.ztorDelivery) sel.value = window.ztorDelivery.of(window.pdProduct).session || '';
     var info = (sel && window.ZTOR_PARTIALS.bindPickupSessionInfo)
       ? window.ZTOR_PARTIALS.bindPickupSessionInfo(sel, document.querySelector('[data-pd-session-info]')) : null;
+    if (sel) sel.addEventListener('change', function () {
+      if (window.pdProduct) window.pdProduct.pickupSession = sel.value || null;
+      if (window.pdRenderSettingsOverview) window.pdRenderSettingsOverview();
+    });
     if (sel && pickup) sel.addEventListener('zselect:action', function (e) {
       if (e.detail && e.detail.action === 'new-session') {
         /* 預選這一頁的商品（2026-09-14，同 create-product） */
@@ -3777,7 +3822,7 @@
     function snapshot() {
       if (!settingsPanel) return null;
       var snap = [];
-      settingsPanel.querySelectorAll('input:not([data-ec-field]):not([data-opt]):not([data-opt-name]), textarea, select:not([data-pd-ap])').forEach(function (el) {
+      settingsPanel.querySelectorAll('input:not([data-ec-field]):not([data-opt]):not([data-opt-name]):not([data-pd-dl]), textarea, select:not([data-pd-ap]):not([data-pd-dl])').forEach(function (el) {
         snap.push({ el: el, value: el.value });
       });
       settingsPanel.querySelectorAll('.switch').forEach(function (el) { snap.push({ el: el, on: el.classList.contains('switch--on') }); });
@@ -3793,6 +3838,8 @@
       if (window.pdSizeGuide) snap.push({ el: null, sg: window.pdSizeGuide.get() });
       /* 服飾配件的大類／次分類／適用對象／系統屬性（D360 · S70）：選項會隨大類重畫，不能靠逐個 select 記值，整組記在頁尾腳本的 state */
       if (window.pdApparel) snap.push({ el: null, apparel: window.pdApparel.get() });
+      /* 取貨方式勾選與取貨場次（D470）：整組記在 pdDelivery，取消時一次還原 */
+      if (window.pdDelivery) snap.push({ el: null, delivery: window.pdDelivery.get() });
       return snap;
     }
     function restore(snap) {
@@ -3811,6 +3858,8 @@
           if (window.pdSizeGuide) window.pdSizeGuide.set(r.sg);
         } else if ('apparel' in r) {
           if (window.pdApparel) window.pdApparel.set(r.apparel);
+        } else if ('delivery' in r) {
+          if (window.pdDelivery) window.pdDelivery.set(r.delivery);
         }
       });
     }
@@ -3836,6 +3885,7 @@
     function saveEdit() {
       if (window.pdApparel && !window.pdApparel.valid()) return;   /* 改了大類卻沒重選次分類：停在編輯態（D360，§2.6） */
       if (window.pdSpecs && !window.pdSpecs.valid()) return;   /* D466〔推導〕：詳細規格刪到一筆都不剩，停在編輯態、提示在欄位底下 */
+      if (window.pdDelivery && !window.pdDelivery.valid()) return;   /* D470：取貨方式至少勾一種，沒勾就停在編輯態、就地紅字 */
       if (window.pdConds && window.pdConds.on()) { if (!window.pdConds.valid()) return; }   /* D463（最終版）：購買條件有紅字就停在編輯態；限購併在裡面 */
       else if (window.pdLimits && !window.pdLimits.valid()) return;   /* 限購開著卻沒填：停在編輯態（D398，§2.12；D427 起只剩一欄） */
       if (!DRAFT) DRAFT = copyModel(MODEL);
@@ -4027,10 +4077,10 @@
       else rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limits',
         v: window.pdLimits ? window.pdLimits.text() : T('product-detail.setov.off', 'Off') });
       /* 概覽列的值顯示目前方式（標題已改泛稱，2026-09-22） */
+      /* D470：勾了哪幾種就列哪幾種，現場 QR 領取後面括號列出加入的取貨場次 */
       var dmode = (product && product.cat === 'digital') ? T('pd.digital-delivery.title', 'Delivery & access')
-        : ((product && product.delivery === 'qr') ? T('cp.delivery.qr', 'QR code pickup') : T('cp.delivery.shipping', 'Shipping'));
-      rows.push({ g: 'ops', go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup',
-        v: join([dmode, product && product.delivery === 'qr' ? selText('pd-pickup-session') : '']) });
+        : (window.pdDelivery ? window.pdDelivery.text() : T('cp.delivery.shipping', 'Shipping'));
+      rows.push({ g: 'ops', go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup', v: dmode });
       /* 上架／顯示／開賣三態一列（2026-09-11）：開賣＝此刻在販售窗口內（立即開賣，或定時開賣已到且未停售） */
       var mode = document.querySelector('#pd-sale-mode .radio-list__item--active');
       var nowT = Date.now();

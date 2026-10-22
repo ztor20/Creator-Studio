@@ -226,9 +226,11 @@
       sizeGuide: false,
       delivery: item.cat === 'digital'
         ? { icon: 'download', key: 'cp.type.digital-sub', fallback: 'Instant download after purchase' }
-        : (item.delivery === 'qr'
-            ? { icon: 'truck', key: 'cp.pv.qr', fallback: 'On-site QR pickup' }
-            : { icon: 'truck', key: 'cp.delivery.shipping', fallback: 'Shipping' }),
+        : (function () {   /* D470：取貨方式是勾選集合（舊單值已由 products-store 轉入）；兩種都勾＝買家下單時選，同 create-product */
+            var d = window.ztorDelivery ? window.ztorDelivery.of(item) : { ship: item.delivery !== 'qr', qr: item.delivery === 'qr' };
+            if (d.ship && d.qr) return { icon: 'truck', key: 'cp.pv.both', fallback: 'Shipping or on-site QR pickup' };
+            return d.qr ? { icon: 'truck', key: 'cp.pv.qr', fallback: 'On-site QR pickup' } : { icon: 'truck', key: 'cp.delivery.shipping', fallback: 'Shipping' };
+          }()),
       desc: { key: 'desc' },
       specs: specs,
       /* 取貨與退貨段（2026-09-23 · D319 補）：與 collectReturnsField() 同條件——沒填不畫，不出空列。 */

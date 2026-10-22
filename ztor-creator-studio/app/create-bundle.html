@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2"><!-- D471：組合包自己的取貨場次資訊（partials/pickup-session-modal.js mountBundlePickup） -->
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2"><!-- D471：共用「建立取貨場次」彈窗（.pks-step） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
@@ -241,6 +243,17 @@
       </div>
     </section>
 
+    <!-- 取貨與核銷（5.1.5.4 F9）：成員含現場 QR 領取商品時才出現（同組合詳情 5.1.5.9 §2.6）。D470：組合包沒有自己的取貨方式，
+         成員照各自商品的設定；D471（2026-10-22 使用者裁決）：取貨場次預設繼承（各成員沿用自己的場次），可改用組合包自己的一個場次。
+         內容由 partials/pickup-session-modal.js 的 mountBundlePickup 畫（組合詳情同一支），存檔寫進組合記錄的 pickupSession（null＝繼承）。 -->
+    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="pickup" data-outline-group="content" data-cb-pickup hidden>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="bd.pickup.title">Pickup &amp; redemption</h3>
+        <p class="form-section__sub" data-i18n="bd.pickup.sub">Bundles have no delivery method of their own — each member follows its own settings.</p>
+      </div>
+      <div data-cb-pickup-host></div>
+    </section>
+
     <!-- ⑤ 定價（F3 定價＋組合折扣；2026-10-21 三步驟起限時折扣與使用優惠碼搬到第二步的「優惠」） -->
     <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="price" data-outline-group="sale">
       <div class="form-section__head">
@@ -333,7 +346,8 @@
     </section>
 
     <!-- ⑦ 限購（2026-10-21 三步驟：原「購買條件與限購」一節拆開——限購留第一步「組合包設定」，購買條件移到第二步「上架設定」；
-         規則照舊：D456 不繼承成員、預設不限、建立時照預設帶入不能調整（D455 B7），js/purchase-limits.js 畫成 .rules-group 的一列。
+         規則照舊：D456 不繼承成員、預設不限、獨立計算，js/purchase-limits.js 畫成 .rules-group 的一列。
+         2026-10-22 D469（release2.4）：建立時就能設（原 D455 B7「照預設帶入、不能調整」的停用欄位與附註退場），元件與擋存同組合包細節頁。
          沒有成員時整節收起（沿用 2026-10-12「沒有成員時限購區塊整個不顯示」，ASSUMPTIONS UIA 三步驟條）。 -->
     <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="limits" data-outline-group="sale" data-feat="S94" data-cb-limits-sec>
       <div class="form-section__head">
@@ -343,7 +357,6 @@
         <div data-pl-host="cb"></div>
         <div class="rules-group__sum" data-cb-rules-sum hidden>
           <span data-rg-sum></span>
-          <span class="rules-group__sum-note" data-cb-rules-later data-i18n="cb.rules.later">Set from the defaults. You can change them on the bundle page after creating.</span>
         </div>
       </div>
     </section>
@@ -665,6 +678,7 @@
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
+<script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
 <script src="js/row-disclosure.js?v=r2.2"></script>
 <script src="partials/section-outline.js?v=r2.2"></script><!-- 本頁大綱的行為（UI-CHANGES 一百七十七）；要先於下面的頁面腳本載入 -->
 <script>
@@ -1313,12 +1327,38 @@
     return T(sets === null ? 'cpp.bd.sp.foot.sub.nosets' : 'cpp.bd.sp.foot.sub', 'List {list} · up to {n} sets').replace('{list}', moneyFrom(baseTotal(), priceRange())).replace('{n}', sets === null ? '' : fmtInt(sets));
   }
 
+  /* D471：取貨與核銷區（成員含現場 QR 領取商品才出現）；第一次出現時才掛元件，之後成員變了只重畫成員列 */
+  let cbPickupApi = null, cbPickupSession = null;
+  function renderCbPickup() {
+    const sec = document.querySelector('[data-cb-pickup]');
+    const host = document.querySelector('[data-cb-pickup-host]');
+    const DL = window.ztorDelivery;
+    if (!sec || !host || !DL) return;
+    const members = () => productMembers().map(m => ({ name: (products[m.productId] || {}).name || '', product: products[m.productId] }))
+      .filter(m => m.product && m.product.cat === 'physical');
+    sec.hidden = !members().some(m => DL.of(m.product).qr);
+    if (sec.hidden) return;
+    if (cbPickupApi) { cbPickupApi.refresh(); return; }
+    if (!window.ZTOR_PARTIALS || !window.ZTOR_PARTIALS.mountBundlePickup) return;
+    cbPickupApi = window.ZTOR_PARTIALS.mountBundlePickup(host, {
+      members: members,
+      value: cbPickupSession,
+      onChange: key => { cbPickupSession = key; },
+      onCreate: done => {
+        const ph = document.querySelector('[data-pickup-modal-host]');
+        const api = ph && window.ZTOR_PARTIALS.createPickupSession ? window.ZTOR_PARTIALS.createPickupSession(ph, { onCreate: done }) : null;
+        if (api) api.openBlank();
+      }
+    });
+  }
+
   function recompute() {
     /* 限量硬上限先寫回草稿，可售套數＝ListingState.bundleQty() */
     const cap = capN();
     bundleDraft.cap = cap;
     refreshAlloc();
     /* 相容性提示（顯示層）：限量成員、多選項成員、含票券 */
+    renderCbPickup();   /* D471：取貨與核銷區跟著成員重畫 */
     if (notesEl) {
       let notes = '';
       if (productMembers().some(m => (products[m.productId] || {}).edition === 'limited')) notes += '<div class="field__hint field__hint--fact" data-i18n="cb.note.limited">' + esc(T('cb.note.limited', '')) + '</div>';
@@ -1550,7 +1590,7 @@
        · 購買條件：含門票＝上面 renderTbFollow 畫的唯讀預設（跟隨所含門票，buyOnly）；純商品＝預設不限、
          用 js/purchase-conds.js 的條件清單加「限時購買／限粉絲分級購買」，期間須在組合包自己的上架區間內〔推導〕。
        · 限購：js/purchase-limits.js——D456（2026-10-20）起不繼承成員：預設不限、不帶入成員的限購，獨立計算
-         （買組合包不扣成員商品或單張門票的額度）；沒有跟隨成員開關。建立時只呈現預設值，要設上限到組合包細節頁。
+         （買組合包不扣成員商品或單張門票的額度）；沒有跟隨成員開關。D469（2026-10-22，release2.4）起建立時就能設，建立後仍可到組合包細節頁調整。
      限購區塊只在結構變了（有沒有成員、語言）才重畫，打字不重畫、游標不跑。 */
   var PLc = window.ztorPurchaseLimits, PCc = window.ztorPurchaseConds;
   var cbRulesState = { limits: null, conds: { conds: {} } };
@@ -1620,8 +1660,8 @@
       else { cbUApi.refresh(); cbUApi.check(); }
     } else if (!uni && uh && uh.innerHTML) { cbUApi = null; PCc.release(uh); }
     /* 墓碑 2026-10-22：D455（B7）「建立時購買條件照預設帶入、不能調整」在購買條件這一節退場（使用者裁決建立時就能設），
-       第二步那句「照預設帶入，建立後可到組合包細節頁調整」與它的底部彙總列一起拿掉；第一步「限購」那一句照舊（限購建立時仍唯讀）。 */
-    document.querySelectorAll('[data-cb-rules-later]').forEach(later => { later.hidden = !bundleDraft.members.length; });
+       第二步那句「照預設帶入，建立後可到組合包細節頁調整」與它的底部彙總列一起拿掉。
+       墓碑 2026-10-22（D469）：第一步「限購」那句附註（data-cb-rules-later）與它的顯示切換一併退場——限購建立時也能設。 */
     /* 2026-10-22 使用者裁決（release2.4）：純商品組合包建立時就能設購買條件——同組合包細節頁 release2.4（js/purchase-conds.js 條件清單，
        只開限時購買／限粉絲分級購買，預設不限；期間須在組合包自己的上架區間內，擋關算在 cbRulesErr） */
     if (!tixOn && wrap && !uni && PCc) {
@@ -1643,8 +1683,8 @@
     if (force || sig !== cbLimSig) {
       cbLimSig = sig;
       /* 2026-10-12 使用者：沒有成員時限購區塊整個不顯示（原本放一句「至少加入 1 個成員」）
-         D455：disabled＝欄位停用，建立時只呈現預設值（D456：預設不限） */
-      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, T, { group: true, disabled: true, idPrefix: 'cb-pl' }) : '';
+         D469（2026-10-22，release2.4）：欄位可編輯（原 D455 disabled 停用退場），預設不限（D456）；輸入與擋存走下方 input 委派與 cbRulesErr */
+      host.innerHTML = bundleDraft.members.length ? PLc.blockHTML(cbRulesState.limits, T, { group: true, idPrefix: 'cb-pl' }) : '';
       if (window.ztorIcons) window.ztorIcons.applyIcons(host);
     }
     PLc.syncErrors(host, cbRulesState, T);
@@ -2063,6 +2103,8 @@
         ? { kind: 'ticket', eventId: m.eventId, tierIds: (m.tierIds || []).slice(), qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null }
         : { kind: 'product', productId: m.productId, qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null }),
       eventId: (ticketMember() || {}).eventId || null,
+      /* D471：組合包自己的取貨場次（選填；null＝繼承，各成員沿用自己商品的場次） */
+      pickupSession: cbPickupApi ? cbPickupApi.get() : null,
       cap: bundleDraft.cap,
       lockSets: bundleDraft.lockSets,
       alloc: bundleDraft.alloc || {},
@@ -2080,7 +2122,9 @@
       rules: (following && !cbUni()) ? (tbState.rules ? JSON.parse(JSON.stringify(tbState.rules)) : null) : undefined,   /* null＝跟隨所含門票；建立時另設的照存（2026-10-22）。D463（最終版）：不跟隨所含門票，條件寫在 conds */
       /* D398／D456：限購 null＝不限、{ person }＝組合包自己設的上限（獨立計算，以組計）；
          純商品組合包的購買條件（限時購買／限粉絲分級購買，預設不限）——含門票的照 rules（跟隨所含門票） */
-      limits: window.cbRulesState ? window.cbRulesState.limits : null,
+      /* D469：建立時填的上限照存；清空或沒填＝不限（null），不留 { person: '' } 空殼 */
+      limits: (n => n ? { person: String(n) } : null)((window.cbRulesState && window.ztorPurchaseLimits)
+        ? window.ztorPurchaseLimits.posInt((window.ztorPurchaseLimits.norm(window.cbRulesState.limits) || {}).person) : null),
       conds: ((!following || cbUni()) && window.cbRulesState) ? cbCondsToSave() : undefined,
       films: linkedFilms.slice(),
       discountPct: discInfo().pct || null,
@@ -2526,5 +2570,7 @@
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
+<!-- D471：共用「建立取貨場次」彈窗＋組合包的取貨場次區（mountBundlePickup） -->
+<div data-pickup-modal-host></div>
 </body>
 </html>

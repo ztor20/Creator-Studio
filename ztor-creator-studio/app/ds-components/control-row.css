@@ -4,7 +4,7 @@
    一條獨立的圓角外框列：左邊文字（主＋可選副），右邊放控件
    （Switch／數量 stepper／按鈕等）。不同於 settings-row（列表列、
    只有下底線）——這是站得住的單一外框 row。
-   用於：低庫存提醒開關、上架開關、每人限購等。
+   用於：低庫存提醒開關、上架開關、每人限購等；右側是勾選框時加 --check（取貨方式，D470）。
    anatomy
      .control-row
        .control-row__main   (+ .control-row__sub)
@@ -92,6 +92,20 @@
 }
 .control-row__link:hover { color: var(--foreground); }
 .control-row__link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); } /* 原 --radius-xs 不存在；比照 .auth-link:focus-visible 同類文字連結的 focus 圓角，定為 --radius-sm */
+
+/* --check（2026-10-22 · D470）：右側控件是勾選框（checkbox.css 的 .zcheck__control）的列——
+   「可以勾一個以上」的並列選項，例如取貨方式（物流配送／現場 QR 領取，至少一種）。
+   整列用 <label> 包起來：點文字、點空白都會勾到，不必瞄準 14px 的小方框（同 switch 列的點擊面積）。
+   檢視態（[data-mode="view"]，商品細節頁設定分頁）整列不可點，只看得到勾了哪些。
+   首個消費情境：create-product 步驟 2「取貨方式」、product-detail 取貨方式。 */
+.control-row--check { cursor: pointer; }
+.control-row--check .zcheck__control { flex: none; }
+/* <label> 裡只能放行內元素，所以主文字與副文字用 <span>；這裡讓兩行照常上下排 */
+.control-row--check .control-row__main,
+.control-row--check .control-row__sub { display: block; }
+[data-mode="view"] .control-row--check { pointer-events: none; cursor: default; }
+/* 同一個 .control-group 裡連續幾列勾選：列與列之間一條分隔線（同 __body 的上緣線），讀得出是並列的幾個選項 */
+.control-group .control-row--check + .control-row--check { border-top: 1px solid var(--border); }
 
 /* 一列右側不只一個動作時（如尺寸指南的編輯／移除）橫排並列。2026-08-20 D211 新增——
    在此之前每一條 .control-row 的右側都只放一個控件。 */

@@ -28,12 +28,16 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
      仍列在下拉裡，但停用並標「已綁定」；編輯本場次時，本場次自己的商品照常可選可移除。
      樣本分配與編輯示範對齊：編輯的是 tpe，所以 zine／tee 屬 tpe；poster 屬 khh，
      讓建立與編輯兩種情境都看得到停用列；lp 留白，建立新場次時仍有一件可選。 */
+  /* 2026-10-22（D470 取貨方式改勾選；D471 修訂 D470）：商品來源＝取貨方式勾了現場 QR 領取的單售商品（`delivery` 含 'qr'，
+     可同時勾物流配送）；只勾物流配送的不列（下面的 pin 就是對照）。單售商品仍只屬於一個場次——上面 D339 的
+     「已綁定」標示與停用照舊（D471 保留）。 */
   var PRODUCTS = [
-    { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold', session: 'tpe' },
-    { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold', session: 'tpe' },
-    { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered' },
-    { id: 'poster', kind: 'product', name: 'Kowloon After Dark tour poster', meta: 'Prints · 60 sold', session: 'khh' }
-  ];
+    { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold', delivery: ['ship', 'qr'], session: 'tpe' },
+    { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold', delivery: ['qr'], session: 'tpe' },
+    { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered', delivery: ['qr'] },
+    { id: 'poster', kind: 'product', name: 'Kowloon After Dark tour poster', meta: 'Prints · 60 sold', delivery: ['ship', 'qr'], session: 'khh' },
+    { id: 'pin',  kind: 'product', name: 'Neon sign enamel pin', meta: 'Accessories · shipping only', delivery: ['ship'] }
+  ].filter(function (p) { return p.delivery.indexOf('qr') >= 0; });
   var TICKETS = [
     { id: 'sign', kind: 'ticket', name: 'Signing session · GA entry', meta: 'Taipei signing · on-site entry' },
     { id: 'meet', kind: 'ticket', name: 'Fan-meet · VIP', meta: 'Kaohsiung fan-meet · on-site entry' }
@@ -439,11 +443,126 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         var o = document.createElement('option');
         o.value = v;
         o.textContent = (session && session.name) || T('pks.title', 'New pickup session');
-        sel.appendChild(o);
+        sel.insertBefore(o, sel.querySelector('option[value="__new"]'));   /* 原生選單的「建立」選項（組合包頁）維持在最後 */
         sel.value = v;
         sel.dispatchEvent(new Event('change', { bubbles: true }));
         return v;
       }
     };
+  };
+})();
+
+/* ── 組合包的取貨場次（D471，2026-10-22 使用者裁決，修訂 D470）──────────────────
+   組合包沒有自己的取貨方式，成員照各自商品的設定；取貨場次預設「繼承」（各成員沿用自己商品的場次，
+   每個成員有自己的場次），也可以改用組合包自己的一個場次——設了以後，這個組合包的成員領取單位都屬於
+   這一場（D240 不變：領取單位仍逐成員各一個，組合包本身不產生領取碼）。
+   建立組合包（create-bundle）與組合詳情（bundle-detail）的「取貨與核銷」區共用這一支：
+     var api = window.ZTOR_PARTIALS.mountBundlePickup(host, {
+       members: () => [{ name, product }],   // 目前的商品成員（product＝products-store 記錄，取貨方式經 ztorDelivery 讀）
+       value: 'khh' | null,                   // 組合包自己的場次；null＝繼承
+       onChange: function (key|null) {},      // 開關或選單改了
+       onCreate: function (done) {}           // 選單底部「建立取貨場次」：頁面開彈窗，建好呼叫 done(session)
+     });
+     api.refresh()   // 成員變了就重畫成員列
+     api.get()       // 目前的值（開關關＝null）
+   畫面：成員列（.data-list，每列寫出該成員勾的取貨方式與場次）＋開關列「改用組合包自己的場次」（.control-group，
+   開了才出現場次下拉與場次資訊 .fact-list，沿用上面的 bindPickupSessionInfo）。
+   開關開著但還沒選場次＝沒有自己的場次，存成 null（＝繼承；ASSUMPTIONS UIA-291）。 */
+(function () {
+  'use strict';
+  var T = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb || ''; };
+  var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var SHELL =
+    '<div class="data-list" data-bp-list></div>' +
+    '<div class="control-group mt-16" data-feat="S34.1" data-bp-own>' +
+      '<div class="control-row">' +
+        '<div><div class="control-row__main" data-i18n="bd.pickup.own">Use the bundle’s own pickup session</div>' +
+        '<div class="control-row__sub" data-i18n="bd.pickup.own.sub">Every member’s pickup units go to this session.</div></div>' +
+        '<div class="switch" role="switch" aria-checked="false" tabindex="0" data-bp-toggle data-i18n-aria-label="bd.pickup.own" aria-label="Use the bundle’s own pickup session"></div>' +
+      '</div>' +
+      '<div class="control-group__body" data-bp-body hidden>' +
+        '<div class="field" style="margin-bottom:0">' +
+          '<div class="field__label" data-i18n="bd.pickup.own.label">Bundle pickup session</div>' +
+          '<select class="select" data-bp-select data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new" data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">' +
+            '<option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>' +
+            '<option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>' +
+            '<option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>' +
+          '</select>' +
+          '<div class="fact-list" data-bp-session-info hidden>' +
+            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-bp-si-loc></span></div>' +
+            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-bp-si-time></span></div>' +
+            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-bp-si-status><span></span></span></span></div>' +
+            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-bp-si-link data-view-safe data-i18n="cp.delivery.session.view">View session</a></span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  window.ZTOR_PARTIALS.mountBundlePickup = function (host, opts) {
+    if (!host) return null;
+    opts = opts || {};
+    host.innerHTML = SHELL;
+    if (window.applyI18n) window.applyI18n(host);
+    var list = host.querySelector('[data-bp-list]');
+    var tgl = host.querySelector('[data-bp-toggle]');
+    var body = host.querySelector('[data-bp-body]');
+    var sel = host.querySelector('[data-bp-select]');
+    /* 「改用組合包自己的場次」只在最終版（S34.1 ⚪，D471 使用者補充：release2.4 不需要）——版本外整組收起，
+       成員一律照自己的場次（繼承），組合記錄上既有的值也不採用。版本狀態由 js/devtools.js 給，它在頁尾才載入，
+       所以每次重畫都重問一次（並在 load 後重畫）。 */
+    var grp = host.querySelector('[data-bp-own]');
+    function ownOk() { return !(window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S34.1')); }
+    var on = !!opts.value;
+    if (opts.value) sel.value = opts.value;
+    /* 掛在兩段式編輯的檢視態裡（組合詳情設定分頁）時，選單先停用——頁面的 applyReadonly 進出編輯態時會統一開關 */
+    if (host.closest('[data-mode="view"]')) sel.disabled = true;
+    var info = window.ZTOR_PARTIALS.bindPickupSessionInfo ? window.ZTOR_PARTIALS.bindPickupSessionInfo(sel, host.querySelector('[data-bp-session-info]')) : null;
+    if (window.ztorSelect && window.ztorSelect.mount) window.ztorSelect.mount();
+    function get() { return ownOk() && on && sel.value ? sel.value : null; }
+    function sessionName(key) {
+      if (!key) return '';
+      var o = sel ? Array.prototype.filter.call(sel.options, function (x) { return x.value === key; })[0] : null;
+      return o ? o.textContent.trim() : T('cp.delivery.session.' + key, key);
+    }
+    function refresh() {
+      tgl.classList.toggle('switch--on', on);
+      tgl.setAttribute('aria-checked', on ? 'true' : 'false');
+      body.hidden = !on;
+      if (grp) grp.hidden = !ownOk();
+      renderList(get());
+    }
+    function renderList(own) {
+      var DL = window.ztorDelivery;
+      list.innerHTML = (opts.members ? opts.members() : []).map(function (m) {
+        var d = DL && m.product ? DL.of(m.product) : { ship: true, qr: false, session: null };
+        var parts = [DL && m.product ? DL.label(m.product, T) : T('cp.delivery.shipping', 'Shipping')];
+        if (d.qr) parts.push(own ? sessionName(own) : (d.session ? sessionName(d.session) : T('cp.delivery.session.none', 'Not linked yet')));
+        return '<div class="data-list__row"><div class="data-list__row-main">' +
+          '<div class="data-list__icon"><i data-lucide="' + (d.qr ? 'qr-code' : 'truck') + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body"><div class="data-list__title">' + esc(m.name) + '</div>' +
+          '<div class="data-list__meta">' + esc(parts.join(' · ')) + '</div></div></div></div>';
+      }).join('');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+    }
+    function flip() { on = !on; refresh(); if (opts.onChange) opts.onChange(get()); }
+    tgl.addEventListener('click', flip);
+    tgl.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+    /* 頁面沒有載 zselect（組合包兩頁的下拉是原生的）時，「建立取貨場次」改成選單最後一個選項——選到它就開彈窗、選單退回原值 */
+    var last = sel.value;
+    function create() { if (opts.onCreate) opts.onCreate(function (session) { if (info) info.addCreated(session); }); }
+    if (!window.ztorSelect) {
+      var act = document.createElement('option');
+      act.value = '__new'; act.setAttribute('data-i18n', 'cp.delivery.session.new'); act.textContent = T('cp.delivery.session.new', 'Create pickup session');
+      sel.appendChild(act);
+    }
+    sel.addEventListener('change', function () {
+      if (sel.value === '__new') { sel.value = last; if (info) info.paint(); create(); return; }
+      last = sel.value; refresh(); if (opts.onChange) opts.onChange(get());
+    });
+    sel.addEventListener('zselect:action', function (e) { if (e.detail && e.detail.action === 'new-session') create(); });
+    document.addEventListener('i18n:applied', refresh);
+    window.addEventListener('load', refresh);
+    refresh();
+    return { refresh: refresh, get: get, el: host };
   };
 })();

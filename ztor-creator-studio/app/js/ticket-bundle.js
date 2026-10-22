@@ -399,7 +399,7 @@
           kv(T('tb.rules.buy'), buyText(defBuy(def), T)) +
           kv(T('tb.rules.cap'), capText(defCap(def), T)) +
         '</div>') +
-        /* 2026-10-20 D455（B7）：「建立後到細節頁調整」改由 create-bundle 整組購買條件與限購共用一句（[data-cb-rules-later]），這裡只留來源句 */
+        /* 2026-10-20 D455（B7）：「建立後到細節頁調整」改由 create-bundle 共用一句；2026-10-22 D467／D469 起建立時都能設，那句已退場。這裡只留來源句 */
         (opts.readonly ? '<p class="field__hint">' + esc(note) + '</p>' : '') +
         err('empty') + (buyOnly ? '' : err('person'));
     }

@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D463（最終版 S105）：購買條件清單（js/purchase-conds.js） -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- D463：條件卡內的 .rule-row（同建立組合、組合包細節） -->
 <link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- D470：取貨方式改勾選（.control-row--check 右側的 .zcheck__control） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- 2026-09-04：折扣區的 .stack--tight 一直沒有這支 CSS，gap 是 0（使用者回報「要有間距」）-->
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card-group.css?v=r2.2"><!-- D360：詳細規格上下兩段的小標（.group-title／.group-desc） -->
@@ -577,103 +578,48 @@
       <div class="field__hint" id="cp-var-empty" data-i18n="cp.var.empty">Add an option above to generate the variation table.</div>
     </section>
 
-    <!-- §4.1 ⑥ 取貨方式 Delivery method（僅實體）· spec 5.1.5.2 §4.1⑥ / D064 -->
-    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical">
+    <!-- §4.1 F15 物流資料 Shipping details（僅實體；步驟 1）· spec 5.1.5.2 F15 / D470（2026-10-22）。
+         取貨方式（F4）整區移到步驟 2「上架與販售」；這裡只留商品本身的物流資料——不管怎麼交付都一樣，組合包也可繼承。
+         只常駐重量，出貨分類／尺寸／寄件地收進「顯示更多」（D145，2026-07-21 使用者裁示；field-more.js 有值即展開）。
+         重量的必填條件看步驟 2 的勾選：勾了物流配送才標＊、才列入就緒檢查（進入步驟 3 時擋，D464 補充裁決一）。 -->
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical" data-cp-ship-sec>
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.delivery.title">Delivery method</h3>
-        <p class="form-section__sub" data-i18n="cp.delivery.sub">Ship it to buyers, or let them collect on site with a QR code.</p>
+        <h3 class="form-section__title" data-i18n="cp.ship.title">Shipping details</h3>
       </div>
-      <div class="segmented radio-cards" id="cp-delivery">
-        <button class="segmented__btn segmented__btn--active" type="button" data-cp-delivery="shipping" data-i18n="cp.delivery.shipping">Shipping</button>
-        <button class="segmented__btn" type="button" data-cp-delivery="qr" data-i18n="cp.delivery.qr">QR code pickup</button>
-      </div>
-
-      <!-- 物流配送 -->
-      <div class="cp-subfields" data-when-delivery="shipping">
-        <!-- 只留「重量」在外層，出貨分類／尺寸／寄件地收進「顯示更多」（2026-07-21 使用者裁示）。
-             收合行為見 partials/field-more.js：這幾欄若已有值會自動展開（編輯頁不藏資料）。 -->
-        <div class="field">
-          <div class="field__label"><span data-i18n="cp.delivery.weight">Weight</span> <span class="field__req">*</span></div>
-          <input class="input" placeholder="0.0 KG" id="cp-ship-weight" style="max-width:var(--w-220)">
-        </div>
-        <div class="field-more">
-          <button class="btn btn--outline field-more__toggle" type="button" aria-expanded="false">
-            <i data-lucide="chevron-down" class="ztor-icon field-more__icon"></i>
-            <span data-field-more-label data-i18n="field.show-more">Show more</span>
-          </button>
-          <div class="field-more__body" hidden>
-            <div class="field">
-              <div class="field__label" data-i18n="cp.delivery.shipcat">Shipping category</div>
-              <select class="select">
-                <option value="" selected data-i18n="cp.delivery.shipcat.ph">Select cargo type</option>
-                <option data-i18n="cp.delivery.shipcat.standard">Standard parcel</option>
-                <option data-i18n="cp.delivery.shipcat.bulky">Bulky / oversized</option>
-                <option data-i18n="cp.delivery.shipcat.fragile">Fragile</option>
-              </select>
-            </div>
-            <div class="field">
-              <div class="field__label" data-i18n="cp.delivery.dim">Dimensions</div>
-              <div class="form-grid form-grid--3">
-                <input class="input" placeholder="L (CM)" data-cp-ship-dim data-i18n-placeholder="cp.delivery.dim.l">
-                <input class="input" placeholder="W (CM)" data-cp-ship-dim data-i18n-placeholder="cp.delivery.dim.w">
-                <input class="input" placeholder="H (CM)" data-cp-ship-dim data-i18n-placeholder="cp.delivery.dim.h">
-              </div>
-            </div>
-            <div class="field">
-              <div class="field__label" data-i18n="cp.delivery.pickup">Pickup location</div>
-              <input class="input" placeholder="Sender address for the courier" id="cp-ship-pickup" data-i18n-placeholder="cp.delivery.pickup.ph">
-              <div class="field__hint" data-i18n="cp.delivery.pickup.hint">Defaults to your store shipping address (Store settings F5) if left blank.</div>
-            </div>
-          </div>
-        </div>
-        <div class="info-banner">
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-          <span data-i18n="cp.delivery.subsidy">Closed Beta: the platform subsidizes shipping fees.</span>
-        </div>
-      </div>
-
-      <!-- 現場 QR 領取（D111：串接取貨管理場次 → scanner URL 核銷）
-           2026-09-04（使用者裁決 D244）：商品層的「領取說明」欄退場——同一份說明在取貨場次
-           已經有一欄（5.1.5.12 F1 取貨說明），商品再收一份就是兩個地方寫同一件事、
-           而且買家看到的是場次那一份。
-           同輪依用戶旅程重排：選了現場 QR 領取之後，第一件事是「這件事會怎麼運作」（說明橫幅），
-           知道了機制才有辦法決定要掛哪個場次，所以橫幅移到場次欄之前。
-           場次那一列的選單＋建立鈕改用 .input-action（原本是頁面自寫的 inline flex）。 -->
-      <div class="cp-subfields" data-when-delivery="qr" hidden>
-        <!-- 2026-09-11 使用者指示：上方的 info-banner 與欄位下方的 hint 合併成標籤底下的一段說明，
-             兩者都拿掉。做法同本頁「告訴粉絲他們會拿到什麼」那欄（label 下接 .field__hint）。 -->
-        <div class="field">
-          <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-          <div class="field__hint" data-i18n="cp.delivery.session.desc">Pick an existing session or create one — this item joins that session's pickup list. Each item gets its own pickup QR in the buyer's ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.</div>
-          <!-- 2026-09-11 使用者指示：「建立取貨場次」併進下拉最底下那一列（zselect 的動作列），
-               選單旁邊那顆獨立按鈕退場。 -->
-          <select class="select" id="cp-pickup-session"
-                  data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
-                  data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
-            <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
-            <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
-            <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
-          </select>
-          <!-- 選定或剛建好的場次資訊（2026-09-11 使用者指示）：唯讀事實列 .fact-list（地點／時間／狀態／入口），
-               「尚未關聯」時整塊收起。資料由頁尾腳本 paintSessionInfo() 填。 -->
-          <div class="fact-list" data-cp-session-info hidden>
-            <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-cp-si-loc></span></div>
-            <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-cp-si-time></span></div>
-            <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-cp-si-status><span></span></span></span></div>
-            <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-cp-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 取貨與退貨說明（2026-09-18 使用者裁決 D291）：物流配送與現場 QR 領取共用同一格，
-           所以放在兩套子欄位之外、區塊底部，切換取貨方式時不隨之顯隱。選填、短文字；
-           內容進買家端商品頁的「取貨與退換」段（發布前預覽 mock 那一段就是它），
-           屬可翻譯文案欄位（同商品描述，進發布前預覽全頁畫面 publish-stage 的 fields）。
-           與場次層的取貨說明（D244 退場那一欄）是不同東西——那份是現場指示，這份是商品規則。 -->
       <div class="field">
-        <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
-        <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
-        <textarea class="textarea" id="cp-delivery-returns" rows="3" maxlength="200" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached." data-i18n-placeholder="cp.delivery.returns.ph"></textarea>
+        <div class="field__label"><span data-i18n="cp.delivery.weight">Weight</span> <span class="field__req" data-cp-weight-req>*</span></div>
+        <div class="field__hint" data-cp-weight-hint data-i18n="cp.ship.weight.hint">Required for shipping.</div>
+        <input class="input" placeholder="0.0 KG" id="cp-ship-weight" style="max-width:var(--w-220)">
+      </div>
+      <div class="field-more">
+        <button class="btn btn--outline field-more__toggle" type="button" aria-expanded="false">
+          <i data-lucide="chevron-down" class="ztor-icon field-more__icon"></i>
+          <span data-field-more-label data-i18n="field.show-more">Show more</span>
+        </button>
+        <div class="field-more__body" hidden>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.delivery.shipcat">Shipping category</div>
+            <select class="select">
+              <option value="" selected data-i18n="cp.delivery.shipcat.ph">Select cargo type</option>
+              <option data-i18n="cp.delivery.shipcat.standard">Standard parcel</option>
+              <option data-i18n="cp.delivery.shipcat.bulky">Bulky / oversized</option>
+              <option data-i18n="cp.delivery.shipcat.fragile">Fragile</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.delivery.dim">Dimensions</div>
+            <div class="form-grid form-grid--3">
+              <input class="input" placeholder="L (CM)" data-cp-ship-dim data-i18n-placeholder="cp.delivery.dim.l">
+              <input class="input" placeholder="W (CM)" data-cp-ship-dim data-i18n-placeholder="cp.delivery.dim.w">
+              <input class="input" placeholder="H (CM)" data-cp-ship-dim data-i18n-placeholder="cp.delivery.dim.h">
+            </div>
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.delivery.pickup">Pickup location</div>
+            <input class="input" placeholder="Sender address for the courier" id="cp-ship-pickup" data-i18n-placeholder="cp.delivery.pickup.ph">
+            <div class="field__hint" data-i18n="cp.delivery.pickup.hint">Defaults to your store shipping address (Store settings F5) if left blank.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -841,6 +787,67 @@
           </div>
         </div>
         <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
+      </div>
+    </section>
+
+    <!-- §4.1 F4 取貨方式 Delivery method（僅實體；步驟 2，開賣設定之後、購買條件之前）· spec 5.1.5.2 F4 / D470（2026-10-22）。
+         二選一改成勾選：物流配送、現場 QR 領取或兩者，至少一種；新建預設勾物流配送〔推導〕。買家下單時從勾的方式裡自己選。
+         勾了現場 QR 領取才出現取貨場次：選一個既有場次（單售商品只屬於一個場次，D339／D471），或下拉底部「建立取貨場次」開共用彈窗；
+         不必已選場次（可事後加入〔推導〕）。每一列是 .control-row--check（整列是 <label>，點哪裡都勾得到）。
+         取貨與退貨說明（D291）跟著取貨方式放這一步〔推導〕，兩種方式共用同一欄。
+         兩個版本（最終版／release2.4）都在這個位置：之後才接購買條件（S105）或折扣設定（feat-off S105）與優惠碼。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical" data-cp-delivery-sec>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.delivery.title">Delivery method</h3>
+        <p class="form-section__sub" data-i18n="cp.delivery.sub">Tick at least one. Buyers choose at checkout.</p>
+      </div>
+      <div class="control-group" id="cp-delivery">
+        <label class="control-row control-row--check">
+          <span>
+            <span class="control-row__main" data-i18n="cp.delivery.shipping">Shipping</span>
+            <span class="control-row__sub" data-i18n="cp.delivery.subsidy">Closed Beta: the platform subsidizes shipping fees.</span>
+          </span>
+          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="cp-dl-ship" checked><span class="zcheck__box"></span></span>
+        </label>
+        <label class="control-row control-row--check">
+          <span>
+            <span class="control-row__main" data-i18n="cp.delivery.qr">QR code pickup</span>
+            <span class="control-row__sub" data-i18n="cp.delivery.qr.sub">Buyers collect on site; staff scan each item's own QR.</span>
+          </span>
+          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="cp-dl-qr"><span class="zcheck__box"></span></span>
+        </label>
+        <!-- 現場 QR 領取的取貨場次（D111 串接取貨管理）：單售商品只屬於一個場次（D339，D471 保留——D470 一度改成可加入多場，已撤回）。
+             選既有場次，或下拉最底下「建立取貨場次」開共用彈窗；不必已選場次（可事後加入〔推導〕）。
+             說明併在標籤底下、選了場次就在下面列出地點／時間／狀態／入口（2026-09-11 使用者指示的寫法，沿用）。 -->
+        <div class="control-group__body" data-cp-qr-body hidden>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
+            <div class="field__hint" data-i18n="cp.delivery.session.desc">Pick an existing session or create one — this item joins that session's pickup list. Each item gets its own pickup QR in the buyer's ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.</div>
+            <select class="select" id="cp-pickup-session"
+                    data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
+                    data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
+              <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
+              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
+            </select>
+            <div class="fact-list" data-cp-session-info hidden>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-cp-si-loc></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-cp-si-time></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-cp-si-status><span></span></span></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-cp-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="field__error" data-cp-delivery-err hidden data-i18n="cp.delivery.err">Tick at least one.</p>
+
+      <!-- 取貨與退貨說明（2026-09-18 使用者裁決 D291）：物流配送與現場 QR 領取共用同一格，放在勾選之外、區塊底部。
+           選填、短文字；內容進買家端商品頁的「取貨與退換」段，屬可翻譯文案欄位（進發布前預覽 publish-stage 的 fields）。
+           與場次層的取貨說明（D244）是不同東西——那份是現場指示，這份是商品規則。 -->
+      <div class="field mt-16">
+        <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
+        <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
+        <textarea class="textarea" id="cp-delivery-returns" rows="3" maxlength="200" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached." data-i18n-placeholder="cp.delivery.returns.ph"></textarea>
       </div>
     </section>
 
@@ -1097,7 +1104,7 @@
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const assets = {};                              // 模擬已上傳的素材
-  const state = { type: 'physical', varMode: 'single', edition: 'unlimited', delivery: 'shipping', limitOn: false };
+  const state = { type: 'physical', varMode: 'single', edition: 'unlimited', ship: true, qr: false, limitOn: false };   /* D470：取貨方式改勾選（ship／qr 各自一格，新建預設勾物流配送〔推導〕） */
   /* 服飾配件的分類與系統屬性（D360 · S70）：與 products-store 的 category／subCategory／audience／attrs 同形，
      值一律是 window.ztorApparel 的 key（不存顯示字）。customSpecs 沿用 #spec-rows 的逐列 DOM。 */
   const apparel = { category: '', sub: '', audience: '', attrs: {} };
@@ -1464,7 +1471,10 @@
   /* D310 商品側：每一項多帶 id／labelKey／step——全頁畫面的「發布前檢核」要可點跳回表單的對應區段
      （step 是本頁區段代號，見 CP_STEP 與 cpSectionOf），項目與擋關條件本身不變（spec §4.6 就緒檢查）。
      tooltip（renderReadiness）照舊只讀 k。 */
-  const CP_STEP = { info: 1, media: 2, variations: 3, price: 4, stock: 5, specs: 6, delivery: 7, limits: 8, file: 9, returns: 10, conds: 11 };   /* 11＝D463 購買條件（最終版 S105，第二步） */
+  const CP_STEP = { info: 1, media: 2, variations: 3, price: 4, stock: 5, specs: 6, delivery: 7, limits: 8, file: 9, returns: 10, conds: 11, ship: 12 };   /* 11＝D463 購買條件（最終版 S105，第二步）；D470：7＝取貨方式（第二步）、12＝物流資料（第一步） */
+  /* 就緒項「列在第幾步」：預設＝它對到的那一節所在的步驟；listStep 可覆寫（D470：重量欄在第一步，
+     必填條件看第二步的勾選，所以列在第二步、點了跳回第一步的欄位）。 */
+  function checkStep(c) { if (c.listStep) return c.listStep; const t = cpSectionOf(c.step).target; return t ? cpStepOf(t) : 1; }
   function buildChecks() {
     if (state.type === 'physical') {
       const a = [
@@ -1479,7 +1489,9 @@
         if (state.edition === 'limited') a.push({ id: 'cap', labelKey: 'cp.qc.cap', step: CP_STEP.stock, k: 'Total quantity ≥ stock', done: () => capOk() });
       }
       a.push({ id: 'specs', labelKey: 'cp.qc.specs', step: CP_STEP.specs, k: 'Specifications', done: () => specCount() >= 1 });   /* D466：硬性必填（進第三步時擋），所在的「商品資訊」節在本頁大綱裡跟著算必填 */
-      if (state.delivery === 'shipping') a.push({ id: 'weight', labelKey: 'cp.qc.weight', step: CP_STEP.delivery, k: 'Shipping weight', done: () => shippingOk() });
+      /* D470（5.1.5.2 §4.6〔推導〕）：取貨方式至少勾一種；勾了物流配送要有重量。兩項都列在第二步、進入第三步時擋 */
+      a.push({ id: 'delivery', labelKey: 'cp.qc.delivery', step: CP_STEP.delivery, k: 'Delivery method', done: () => state.ship || state.qr });
+      if (state.ship) a.push({ id: 'weight', labelKey: 'cp.qc.weight', step: CP_STEP.ship, listStep: 2, k: 'Shipping weight', done: () => shippingOk() });
       if (!cpUni() && state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
       if (cpUni() && cpCondsAny()) a.push({ id: 'conds', labelKey: 'pc.qc', step: CP_STEP.conds, k: 'Purchase conditions', done: () => cpCondsOk() });   /* D463（S105）：限購併進購買條件，加了就要填完整 */
       return a;
@@ -1516,7 +1528,7 @@
        擋關照舊看全部（remaining）。編輯態／嵌入態不分步，照舊列全部。 */
     let stepN = 0;
     try { stepN = (cpForm && cpForm.hasAttribute('data-at') && cpStep < 3) ? cpStep : 0; } catch (e) { stepN = 0; }
-    const inStep = c => { if (!stepN) return true; const t = cpSectionOf(c.step).target; return (t ? cpStepOf(t) : 1) === stepN; };
+    const inStep = c => !stepN || checkStep(c) === stepN;
     const shown = checks.filter(inStep);
     const remainHere = shown.filter(c => !c.pending).filter(c => !c.done()).length;
     const remainOther = remaining - remainHere;
@@ -1583,10 +1595,7 @@
   function cpStepReady(n) {
     const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
     if (skip) return true;
-    return buildChecks().filter(c => !c.pending).every(c => {
-      const t = cpSectionOf(c.step).target;
-      return (t ? cpStepOf(t) : 1) !== n || c.done();
-    });
+    return buildChecks().filter(c => !c.pending).every(c => checkStep(c) !== n || c.done());
   }
   function renderStepper() {
     if (!stepperEl) return;
@@ -1649,6 +1658,11 @@
       privateLink: null,
       saleStart: listed && saleMode === 'schedule' ? val('cp-listing-sale-start') : null,
       saleEnd: listed ? val('cp-listing-sale-end') : null,
+      /* D470：取貨方式勾選集合；D471：取貨場次單值（僅實體；欄位名同 products-store） */
+      ...(state.type === 'physical' ? {
+        delivery: ['ship', 'qr'].filter(k => state[k]),
+        pickupSession: state.qr ? (((document.getElementById('cp-pickup-session') || {}).value) || null) : null
+      } : {}),
       pool: { total: poolTotal, locks: { single: null, bundles: {} } }
     };
   }
@@ -1862,9 +1876,7 @@
       sizeGuide: stageHasSizeGuide(),
       delivery: state.type === 'digital'
         ? { icon: 'download', key: 'cp.type.digital-sub', fallback: 'Instant download after purchase' }
-        : (state.delivery === 'qr'
-            ? { icon: 'truck', key: 'cp.pv.qr', fallback: 'On-site QR pickup' }
-            : { icon: 'truck', key: 'cp.delivery.shipping', fallback: 'Shipping' }),
+        : Object.assign({ icon: 'truck' }, pvDeliveryKey()),
       desc: { key: 'desc' },
       specs,
       /* 取貨與退換段（F4，D291）：實體且有填才畫——與 collectReturnsField() 同條件 */
@@ -1916,6 +1928,7 @@
       case CP_STEP.stock: return { target: sec(q('#cp-edition')) };
       case CP_STEP.specs: { const r = q('#spec-rows'); return { target: r ? (r.closest('.field') || r) : null }; }
       case CP_STEP.delivery: return { target: sec(q('#cp-delivery')) };
+      case CP_STEP.ship: return { target: sec(q('#cp-ship-weight')), focus: q('#cp-ship-weight') };
       case CP_STEP.returns: { const r = q('#cp-delivery-returns'); return { target: r ? (r.closest('.field') || r) : null, focus: r }; }
       case CP_STEP.limits: return { target: sec(q('#cp-limit-toggle')) };
       case CP_STEP.conds: return { target: q('[data-cp-conds-sec]') };
@@ -2133,15 +2146,18 @@
       + '</div></div>').join('');
   }
 
+  /* D470：兩種都勾＝「物流配送或現場 QR 領取」（買家下單時自己選）；只勾一種照那一種；都沒勾時照預設的物流配送寫（就緒檢查會擋） */
+  function pvDeliveryKey() {
+    if (state.ship && state.qr) return { key: 'cp.pv.both', fallback: 'Shipping or on-site QR pickup' };
+    if (state.qr) return { key: 'cp.pv.qr', fallback: 'On-site QR pickup' };
+    return { key: 'cp.delivery.shipping', fallback: 'Shipping' };
+  }
   function renderPvDelivery() {
     if (!pvDeliveryText) return;
     /* 數位商品沒有取貨方式這一段（F4 僅實體）：改說購買後可下載，與粉絲端一致。 */
-    const key = state.type === 'digital' ? 'cp.cfile.title'
-      : (state.delivery === 'qr' ? 'cp.pv.qr' : 'cp.delivery.shipping');
-    const fallback = state.type === 'digital' ? 'Content file'
-      : (state.delivery === 'qr' ? 'On-site QR pickup' : 'Shipping');
-    pvDeliveryText.setAttribute('data-i18n', key);
-    pvDeliveryText.textContent = T(key, fallback);
+    const d = state.type === 'digital' ? { key: 'cp.cfile.title', fallback: 'Content file' } : pvDeliveryKey();
+    pvDeliveryText.setAttribute('data-i18n', d.key);
+    pvDeliveryText.textContent = T(d.key, d.fallback);
   }
 
   /* 折扣開著且填了折扣價時，粉絲端看到的是折後價＋劃線原價。 */
@@ -2223,16 +2239,16 @@
     });
   }
 
-  /* ---- 條件顯示：依 type / varMode / edition / delivery 統一切換 ---- */
+  /* ---- 條件顯示：依 type / varMode / edition 統一切換；取貨方式（D470 勾選）另由 syncDelivery 管 ---- */
   function applyVisibility() {
-    document.querySelectorAll('[data-cp-show],[data-when-var],[data-when-edition],[data-when-delivery]').forEach(el => {
+    document.querySelectorAll('[data-cp-show],[data-when-var],[data-when-edition]').forEach(el => {
       let vis = true;
       if (el.dataset.cpShow) vis = vis && el.dataset.cpShow.split(' ').includes(state.type);
       if (el.dataset.whenVar) vis = vis && el.dataset.whenVar === state.varMode;
       if (el.dataset.whenEdition) vis = vis && el.dataset.whenEdition === state.edition;
-      if (el.dataset.whenDelivery) vis = vis && el.dataset.whenDelivery === state.delivery;
       el.hidden = !vis;
     });
+    syncDelivery();
     syncLowStock();   // 低庫存自訂門檻的顯示＋預填隨 type/edition 連動（S31.1）
   }
 
@@ -2337,7 +2353,24 @@
     refresh();
   });
   wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); refresh(); });
-  wireSegmented('cp-delivery', 'cpDelivery', v => { state.delivery = v; applyVisibility(); refresh(); });
+  /* D470 取貨方式勾選（5.1.5.2 F4，步驟 2）：勾了現場 QR 領取才出現取貨場次；都沒勾就地紅字「至少勾一種」，
+     就緒檢查同一條（進入步驟 3 時擋）。重量欄的＊與說明跟著物流配送的勾選（重量欄在步驟 1，F15）。 */
+  function syncDelivery() {
+    const body = document.querySelector('[data-cp-qr-body]');
+    if (body) body.hidden = !state.qr;
+    const err = document.querySelector('[data-cp-delivery-err]');
+    if (err) err.hidden = state.ship || state.qr;
+    const req = document.querySelector('[data-cp-weight-req]');
+    if (req) req.hidden = !state.ship;
+    const hint = document.querySelector('[data-cp-weight-hint]');
+    if (hint) hint.hidden = state.ship;   /* 沒勾物流配送時才說明「物流配送時必填」；勾了就由＊表達 */
+  }
+  [['cp-dl-ship', 'ship'], ['cp-dl-qr', 'qr']].forEach(([id, k]) => {
+    const cb = document.getElementById(id);
+    if (!cb) return;
+    state[k] = cb.checked;
+    cb.addEventListener('change', () => { state[k] = cb.checked; syncDelivery(); refresh(); });
+  });
   /* 折扣設定／上架設定的開關→揭示欄位（spec 5.1.5.2 §4.4 F13 / §4.6 · D144）。
      POPCORN 定價單位切換已隨原價一併移除（D144），原 syncPriceUnit 邏輯退場。 */
   function wireReveal(toggleId, fieldsSel) {

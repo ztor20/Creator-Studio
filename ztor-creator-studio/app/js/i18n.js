@@ -3679,8 +3679,12 @@
     'bd.members.alloc-hint': { en: 'Lock amounts are edited in Bundle stock.', zh: '鎖定量在「組合庫存」分頁調整。' },
     /* §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品時才顯示，本區只呈現、不重定義規則本體。 */
     'bd.pickup.title':      { en: 'Pickup & redemption',      zh: '取貨與核銷' },
-    'bd.pickup.sub':        { en: 'After checkout, members with on-site QR pickup expand into their own pickup units — the bundle itself issues no pickup code. Each unit is tagged “from bundle {name}”, and its pickup session follows that member’s own setting.', zh: '下單後，含現場 QR 領取的成員會展開為各自的領取單位；組合本身不產生領取碼，成員的領取單位會標記「來自組合「{name}」」，取貨場次沿用該成員商品自己的設定。' },
-    'bd.pickup.member-meta': { en: 'On-site QR pickup',       zh: '現場 QR 領取' },
+    'bd.pickup.sub':        { en: 'Bundles have no delivery method of their own — each member follows its own settings.', zh: '組合包沒有自己的取貨方式，照各成員的設定。' },   /* D470（2026-10-22）改寫：原「下單後含現場 QR 領取的成員展開為各自的領取單位…場次沿用成員商品自己的設定」 */
+    /* D471（2026-10-22）：組合包可改用自己的取貨場次（預設繼承＝各成員沿用自己的場次）。建立組合包與組合詳情共用 */
+    'bd.pickup.own':        { en: 'Use the bundle’s own pickup session', zh: '改用組合包自己的場次' },
+    'bd.pickup.own.sub':    { en: 'Every member’s pickup units go to this session.', zh: '這個組合包的成員領取單位都在這一場領。' },
+    'bd.pickup.own.label':  { en: 'Bundle pickup session', zh: '組合包的場次' },
+    /* ✝ 墓碑 · 'bd.pickup.member-meta'（2026-10-22 D470 退役）：組合詳情成員列改寫成員勾的取貨方式（cp.delivery.shipping／cp.delivery.qr）與場次。 */
     'bd.kpi.sold':          { en: 'Bundles sold',            zh: '已售組數' },
     'bd.sales.empty':       { en: 'No sales yet. Revenue appears here once fans buy this bundle.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },
     /* 合併 2026-07-29：hint 取本機版（不帶規格編號，使用者可見字串不出現 §），
@@ -5913,7 +5917,7 @@
     'cp.total.hint':        { en: 'Hard cap · restock ceiling',       zh: '硬上限 · 補貨天花板' },
     /* §4.1⑥ 取貨方式 Delivery (D064) */
     'cp.delivery.title':    { en: 'Delivery method',                  zh: '取貨方式' },
-    'cp.delivery.sub':      { en: 'Ship it to buyers, or let them collect on site with a QR code.', zh: '寄送給買家，或讓買家憑 QR code 現場領取。' },
+    'cp.delivery.sub':      { en: 'Tick at least one. Buyers choose at checkout.', zh: '至少勾一種，買家下單時自己選。' },   /* D470：二選一改勾選（原「寄送給買家，或讓買家憑 QR code 現場領取。」） */
     'cp.delivery.shipping': { en: 'Shipping',                         zh: '物流配送' },
     'cp.delivery.qr':       { en: 'QR code pickup',                   zh: '現場 QR 領取' },
     'cp.delivery.weight':   { en: 'Weight',                           zh: '重量' },
@@ -5930,6 +5934,12 @@
     'cp.delivery.pickup.ph': { en: 'Sender address for the courier',  zh: '提供給物流的寄件地址' },
     'cp.delivery.pickup.hint': { en: 'Defaults to your store shipping address (Store settings F5) if left blank.', zh: '留空時沿用商店設定 F5 的寄件地。' },
     'cp.delivery.subsidy':  { en: 'Closed Beta: the platform subsidizes shipping fees.', zh: 'Closed Beta 期間平台補貼運費。' },
+    /* D470（2026-10-22）：取貨方式移到建立商品步驟 2、改勾選；物流資料（F15）留在步驟 1 */
+    'cp.ship.title':        { en: 'Shipping details',                 zh: '物流資料' },
+    'cp.ship.weight.hint':  { en: 'Required when shipping is ticked.', zh: '勾物流配送時必填。' },
+    'cp.delivery.qr.sub':   { en: 'Buyers collect on site; staff scan each item’s own QR.', zh: '買家到現場領取，工作人員逐件掃 QR。' },
+    'cp.delivery.err':      { en: 'Tick at least one.',               zh: '至少勾一種。' },
+    'cp.delivery.join':     { en: ' · ',                              zh: ' · ' },
     /* 2026-09-18 D291：取貨與退貨說明——物流配送／現場 QR 領取共用一格，顯示在買家端商品頁「取貨與退換」段 */
     'cp.delivery.returns':      { en: 'Pickup & returns', zh: '取貨與退貨' },
     'cp.delivery.returns.hint': { en: 'Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.', zh: '顯示在商品頁，物流配送與現場 QR 領取都會出現。選填，留空時商品頁不顯示這一段。' },
@@ -6008,6 +6018,7 @@
     'cp.qc.cap':            { en: 'Total quantity ≥ stock',           zh: '上限數量 ≥ 目前在庫' },
     'cp.qc.specs':          { en: 'Specifications',                   zh: '詳細規格' },
     'cp.qc.weight':         { en: 'Shipping weight',                  zh: '重量' },
+    'cp.qc.delivery':       { en: 'Delivery method',                  zh: '取貨方式' },   /* D470：至少勾一種 */
     'cp.qc.limit':          { en: 'Purchase limit',                   zh: '限購上限' },   /* D427：原「至少一種限購上限」 */
     'cp.qc.cover':          { en: 'Cover art',                        zh: '封面' },
     'cp.qc.digicap':        { en: 'Total quantity & copies',          zh: '上限數量與剩餘份數' },
@@ -6125,6 +6136,7 @@
     'cp.pv.cat':            { en: 'Category',                          zh: '分類' },
     'cp.pv.add':            { en: 'Add to cart',                       zh: '加入購物車' },
     'cp.pv.qr':             { en: 'On-site QR pickup',                 zh: '現場 QR 領取' },
+    'cp.pv.both':           { en: 'Shipping or on-site QR pickup',     zh: '物流配送或現場 QR 領取' },   /* D470：兩種都勾，買家下單時選 */
     'cp.pv.desc':           { en: 'Missing: description',             zh: '尚缺：描述' },
     'cp.pv.itemname':       { en: 'Item name',                        zh: '物品名稱' },
     'cp.pv.story':          { en: 'Missing: story',                   zh: '尚缺：故事' },
@@ -7021,7 +7033,7 @@
     'tb.rules.from.many':      { en: 'Uses the strictest rules of the {n} tickets inside.', zh: '取所含 {n} 張門票中最嚴的條件。' },
     'tb.rules.from.one':       { en: 'Same rules as the ticket inside.', zh: '與所含門票的條件相同。' },
     'tb.rules.sets':           { en: 'Limits count sets ({n} tickets each).', zh: '限購以組計（每組 {n} 張）。' },
-    'cb.rules.later':          { en: 'Set from the defaults. You can change them on the bundle page after creating.', zh: '照預設帶入，建立後可到組合包細節頁調整。' },   /* 2026-10-20 D455（B7）：建立時不能調整 */
+    /* 墓碑 2026-10-22（D469）：'cb.rules.later'（「照預設帶入，建立後可到組合包細節頁調整」，D455 B7）退場——建立組合包的購買條件（D467）與限購（D469）建立時都能設 */
     'tb.rules.none':           { en: 'Add a ticket first — the rules come from it.', zh: '先加入票券成員，購買條件從門票帶入。' },
     'tb.rules.locked':         { en: 'Includes conditions locked by bookyay — they can’t be changed here.', zh: '含 bookyay 帶入且鎖定的條件，這裡不能調整。' },
     'tb.rules.nooverlap':      { en: 'No overlapping time',            zh: '沒有交集的時間' },
@@ -7651,7 +7663,7 @@
     'od.col.pickup':        { en: 'Pickup',                  zh: '取貨狀態' },
     'od.col.fulfil':        { en: 'Fulfilment',              zh: '出貨狀態' },
     'od.col.subtotal':      { en: 'Subtotal',                zh: '小計' },
-    'od.item.pickup.goto':  { en: 'Go to pickup session',    zh: '前往取貨場次' },
+    /* ✝ 墓碑 · 'od.item.pickup.goto'（2026-10-22 D471 退役）：訂單詳情品項改寫出領取單位所屬的那一場（場次名稱連到場次詳情），待設定時連取貨管理（od.pk.goto）。 */
     /* ─── 領取單位彙總與展開列（D240，2026-09-03）───────────────
        品項層取貨狀態改「N 件中已核銷 M 件」彙總，可展開看每個領取單位（領取碼、
        狀態、最近核銷時間；不顯示 QR，見 §7.2 裁決十）。summary 帶 {done}/{total}

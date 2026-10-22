@@ -147,6 +147,20 @@
   /* 取貨場次代號：沿用 pickup.html 既有示範場次（data-pk-url 的 tpe-signing-7f3a2），
      單一來源、不在各筆訂單重複硬寫字串。 */
   var PICKUP_SESSION = 'tpe-signing-7f3a2';
+  /* 2026-10-22（D471，修訂 D470）：訂單詳情的品項取貨狀態要寫出「在哪一場領」——場次照品項所屬商品
+     （組合包設了自己的場次時照組合包）的場次，就是領取單位上的 session，不另記買家選擇。
+     SESSIONS＝場次代號 → 名稱 i18n key 與場次詳情網址（第二場同 pickup.html 的 khh-fanmeet-9d1c4）。 */
+  var SESSIONS = {
+    'tpe-signing-7f3a2': { nameKey: 'pk.row1.name', name: 'Taipei signing — pickup', href: 'pickup-detail.html?s=active' },
+    'khh-fanmeet-9d1c4': { nameKey: 'pk.row2.name', name: 'Kaohsiung fan-meet — pickup', href: 'pickup-detail.html?s=scheduled' }
+  };
+  /* 品項（或組合成員）的領取單位屬於哪一場 → { code, nameKey, name, href }；取貨場次待設定（session 為 null）＝null */
+  function sessionOf(it) {
+    var u = it && it.units && it.units.filter(function (x) { return x.session; })[0];
+    if (!u) return null;
+    var s = SESSIONS[u.session] || { nameKey: '', name: u.session, href: 'pickup.html' };
+    return { code: u.session, nameKey: s.nameKey, name: s.name, href: s.href };
+  }
 
   /* 幣別模型（2026-08-07 使用者裁決 A）：商店結算幣別＝USD，買家在台灣、以 TWD 付款，
      所以跨幣別是常態而非例外——12 筆裡 11 筆有 fx。刻意留兩個對照：
@@ -1679,6 +1693,7 @@
     cancelledBadge: function () { return CANCELLED_BADGE; },
     unitsOf: unitsOf,
     unitSummary: unitSummary,
+    sessionOf: sessionOf,                               /* D471：品項領取單位所屬的取貨場次（訂單詳情寫出在哪一場領） */
     voidState: voidState,
     voidItem: voidItem,
     wholeVoidState: wholeVoidState,                    /* D414：整單撤銷可用條件 */

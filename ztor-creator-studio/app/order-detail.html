@@ -738,6 +738,13 @@
     return '<span data-od-unit-summary data-od-done="' + label.done + '" data-od-total="' + label.total + '">' +
       label.done + ' of ' + label.total + ' redeemed</span>';
   };
+  /* D471（5.1.5.3.1 §2.3.1；修訂 D470 的「買家下單時選場次」）：品項取貨狀態寫出領取單位所屬的那一場——照品項所屬商品
+     （組合包設了自己的場次時照組合包）的場次，就是領取單位上的 session；連到那一場的詳情，取貨場次待設定時連取貨管理。品項與組合成員共用。 */
+  var sessionLinkHtml = function (it) {
+    var ss = S.sessionOf ? S.sessionOf(it) : null;
+    if (ss) return '<a class="card__link" href="' + esc(ss.href) + '"' + (ss.nameKey ? ' data-i18n="' + esc(ss.nameKey) + '"' : '') + '>' + esc(T(ss.nameKey, ss.name)) + '</a>';
+    return '<a class="card__link" href="pickup.html" data-i18n="od.pk.goto">' + esc(T('od.pk.goto', 'Open Pickup management →')) + '</a>';
+  };
   var toggleHtml = function (gid) {
     return '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + gid + '"' +
       ' aria-expanded="false" aria-label="Expand" data-i18n-aria-label="od.units.expand">' +
@@ -842,7 +849,7 @@
         isGroup = true;
         var gid = 'i' + i;
         cellHtml = '<div class="od-item-pickup__head">' + toggleHtml(gid) + summaryHtml(labelFromAgg(S.unitSummary(it))) + '</div>' +
-          '<a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>';
+          sessionLinkHtml(it);
         it.units.forEach(function (u) { extraRowsHtml += unitChildRow(u, gid); });
       } else if (it.mode === 'bundle' && it.members) {
         /* 組合本身不產生領取碼（D240 裁決二）：主列彙總只合計成員裡 pickup 成員的 units，
@@ -864,7 +871,7 @@
           var memberFulfil, memberExtra = '', memberIsGroup = false;
           if (m.mode === 'pickup' && m.units && m.units.length) {
             memberIsGroup = true;
-            memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>';
+            memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>' + sessionLinkHtml(m);
             m.units.forEach(function (u) { memberExtra += unitChildRow(u, mgid); });
           } else if (m.mode === 'ticket') {
             /* 票券成員（2026-09-29，D292 票務商品＝組合包）：不寄送、不經取貨場次，履約欄
