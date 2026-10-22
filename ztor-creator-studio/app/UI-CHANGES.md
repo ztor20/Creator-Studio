@@ -13,6 +13,19 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-22（二百九十三）· 已綁定取貨場次的商品一步換綁前先確認、組合包自設場次的變更先確認（A spec-derived · D472）
+
+**標籤**：release2.4
+
+使用者裁決 D472（回答 D339 待確認第 1 項）：單售商品已綁場次 A 時可在商品細節頁一步換到場次 B，換之前跳確認、列出尚未核銷的件數；最終版組合包自設場次的換場次與自設、沿用互換同樣先確認；使用者已說不進 release2.3。
+
+- `product-detail.html`：取貨場次選單在已有場次時改選另一場（含剛從彈窗建好的新場次）或改成「尚未關聯」，先跳確認（借頁尾既有的 leave-dialog 確認彈窗，`askConfirm` 補 `onCancel`、匯出 `window.pdAskConfirm`）；確認才寫回商品記錄，取消、遮罩、×、Esc 都把選單退回原場次。原本沒綁場次時第一次綁不問；取消編輯的快照還原（`pdDelivery.set`）不問。兩個版本都有。
+- `bundle-detail.html`：§2.6 組合包自設場次（`mountBundlePickup`）傳 `confirm`：換一場、自設改回沿用、沿用改為自設都先確認；`askConfirm` 同樣補 `onCancel`、匯出 `window.bdAskConfirm`。release2.4 沒有自設場次（S34.1），不涉及。
+- `partials/pickup-session-modal.js`：`mountBundlePickup` 新增選填 `confirm(chg, proceed, revert)`——組合包的有效場次要變之前才問；`create-bundle.html` 不傳（建立當下沒有已售件），行為不變。
+- `js/orders-store.js`：新增 `pendingPickupUnits({ productId | bundleId })`，算尚未核銷、已歸到場次的領取單位數（示範訂單）；`product-detail.html`、`bundle-detail.html` 改載入 `orders-store.js`。
+- `js/i18n.js`：新增 `pk.rebind.title`／`body`／`ok`、`pk.unbind.body`／`ok`、`bd.pickup.rebind.to`／`back`（中英）。
+- 沒有新元件：確認彈窗沿用 leave-dialog 殼。文件：ASSUMPTIONS 新增 UIA-292；BUILD-SPEC、requirements-map 同步。
+
 ## 2026-10-22（二百九十二）· 取貨方式改勾選並移到建立商品步驟 2、單售商品維持單一取貨場次、組合包可另設自己的取貨場次（A spec-derived · D470、D471）
 
 **標籤**：release2.4

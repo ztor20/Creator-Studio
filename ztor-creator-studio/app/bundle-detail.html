@@ -769,6 +769,7 @@
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292 第 3 批：活動組合包（含票券成員）的資料源，products-store 查不到 id 時合流查這裡 -->
+<script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁組合包取貨場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
 <script src="js/purchase-limits.js?v=r2.2"></script>
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） --><!-- D398：組合包限購（預設取成員交集、覆寫、擋存），與商品、建立組合、活動門票共用 -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的時間層級與購買條件（與建立活動第 6 步、建立組合共用） -->
@@ -1140,6 +1141,21 @@
         members: members,
         value: (rec && rec.pickupSession) || (bundle && bundle.pickupSession) || null,
         onChange: key => { if (rec) rec.pickupSession = key; if (bundle) bundle.pickupSession = key; },
+        /* D472：組合詳情改組合包自己的場次（換一場、自設↔沿用）前先確認，列出這個組合包各成員尚未核銷的件數（js/orders-store.js 示範訂單，沒有就 0） */
+        confirm: (chg, proceed, revert) => {
+          const ask = window.bdAskConfirm;
+          if (!ask) { proceed(); return; }
+          const k = (window.ztorOrders && window.ztorOrders.pendingPickupUnits && bundle) ? window.ztorOrders.pendingPickupUnits({ bundleId: bundle.id }) : 0;
+          const body = chg.to
+            ? T('bd.pickup.rebind.to', '{k} unredeemed items across this bundle’s members will move to “{to}”. Redeemed items stay redeemed.').replace('{to}', chg.toName)
+            : T('bd.pickup.rebind.back', '{k} unredeemed items across this bundle’s members will go back to each member’s own pickup session. Redeemed items stay redeemed.');
+          ask({
+            title: T('pk.rebind.title', 'Change the pickup session for “{n}”?').replace('{n}', (bundle && bundle.name) || ''),
+            body: body.replace('{k}', String(k)),
+            okKey: 'pk.rebind.ok', okFallback: 'Change session',
+            onConfirm: proceed, onCancel: revert
+          });
+        },
         onCreate: done => {
           const ph = document.querySelector('[data-pickup-modal-host]');
           const api = ph && window.ZTOR_PARTIALS.createPickupSession ? window.ZTOR_PARTIALS.createPickupSession(ph, { onCreate: done }) : null;
@@ -3040,9 +3056,11 @@
       /* 確認彈窗（封存）：借 leave-dialog 的殼，與 e-shop 同一套文案 */
       /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
       const getDialog = () => document.querySelector('[data-bd-confirm-dialog]');
-      let pending = null;
-      const closeConfirm = () => { pending = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
-      /* opts：title／body／items（.leave-dialog__list 列名稱）／okKey／okFallback／noCancel（純告知只留一顆主鈕）／onConfirm */
+      let pending = null, pendingCancel = null;
+      const closeConfirm = () => { pending = null; pendingCancel = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
+      /* 取消（取消鈕、遮罩、×、Esc）＝關掉並呼叫 onCancel（D472 換場次取消要把選單退回原值） */
+      const cancelConfirm = () => { const fn = pendingCancel; closeConfirm(); if (fn) fn(); };
+      /* opts：title／body／items（.leave-dialog__list 列名稱）／okKey／okFallback／noCancel（純告知只留一顆主鈕）／onConfirm／onCancel（選填，D472） */
       const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
       function askConfirm(opts) {
         const dialog = getDialog();
@@ -3065,15 +3083,16 @@
         }
         const cancelBtn = dialog.querySelector('.leave-dialog__actions [data-bd-confirm-cancel]');
         if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
-        pending = opts.onConfirm;
+        pending = opts.onConfirm; pendingCancel = opts.onCancel || null;
         dialog.setAttribute('data-open', '');
         if (ok) ok.focus();
       }
+      window.bdAskConfirm = askConfirm;   /* D472：§2.6 組合包自設場次的換綁確認（renderBdPickup 在本段之前執行，呼叫時才取用） */
       document.addEventListener('click', e => {
         if (e.target.closest('[data-bd-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
-        if (e.target.closest('[data-bd-confirm-cancel]')) closeConfirm();
+        if (e.target.closest('[data-bd-confirm-cancel]')) cancelConfirm();
       });
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && (pending || pendingCancel)) cancelConfirm(); });
 
       const bname = () => (bundle && bundle.name) || '';
       /* 可賣性防呆的擋下（D331 決定三）：頁首按鈕（下架／封存／刪除；隱藏已於 2026-10-15 隨 D424 決定 9 移出）被擋時用純告知彈窗（只有「知道了」，同重新上架被擋的

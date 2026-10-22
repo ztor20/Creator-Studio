@@ -1246,6 +1246,31 @@
     return out;
   }
 
+  /* D472（2026-10-22）：換綁取貨場次前確認彈窗要列的「受影響件數」——尚未核銷、已歸到某個場次的領取單位數。
+     pendingPickupUnits({ productId })：單售品項（mode 'pickup'、productId 相符）的件；
+     pendingPickupUnits({ bundleId })：組合品項（mode 'bundle'，組合 id 取 item.bundleId，或 snap.manage 網址的 ?id=）各 pickup 成員的件總和。
+     只算 status 'pending' 且有 session 的件：已核銷（done）、已作廢（void）不算；取貨場次待設定（unset）本來就不屬於任何場次、也不算。
+     組合成員的示範資料沒有記 productId，所以商品的件數只含單售品項（ASSUMPTIONS UIA-292）。只看電子商店示範訂單（ORDERS），不含活動側。 */
+  function pendingPickupUnits(q) {
+    q = q || {};
+    var n = 0;
+    var count = function (units) { (units || []).forEach(function (u) { if (u.status === 'pending' && u.session) n++; }); };
+    var bundleIdOf = function (it) {
+      if (it.bundleId) return it.bundleId;
+      var m = /[?&]id=([^&#]+)/.exec((it.snap && it.snap.manage) || '');
+      return m ? decodeURIComponent(m[1]) : null;
+    };
+    ORDERS.forEach(function (o) {
+      (o.items || []).forEach(function (it) {
+        if (q.productId && it.mode === 'pickup' && it.productId === q.productId) count(it.units);
+        if (q.bundleId && it.mode === 'bundle' && bundleIdOf(it) === q.bundleId) {
+          (it.members || []).forEach(function (m) { if (m.mode === 'pickup') count(m.units); });
+        }
+      });
+    });
+    return n;
+  }
+
   /* 單一 units［]的計數（D242）：total 不變（購買件數），done／voided／unset 分開算，
      pending（待核銷）由消費頁自己推：total − done − voided − unset。voided 的件不算
      待核銷（規格 5.1.5.3.1 §2.3.1／5.1.5.15 F4.1 的共同口徑）。 */
@@ -1694,6 +1719,7 @@
     unitsOf: unitsOf,
     unitSummary: unitSummary,
     sessionOf: sessionOf,                               /* D471：品項領取單位所屬的取貨場次（訂單詳情寫出在哪一場領） */
+    pendingPickupUnits: pendingPickupUnits,             /* D472：換綁取貨場次前確認彈窗的受影響件數 */
     voidState: voidState,
     voidItem: voidItem,
     wholeVoidState: wholeVoidState,                    /* D414：整單撤銷可用條件 */
