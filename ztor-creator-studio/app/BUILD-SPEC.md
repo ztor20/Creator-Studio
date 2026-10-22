@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-22 · D473 建立組合包取貨與核銷節移到步驟 2（UI-CHANGES 二百九十四、ASSUMPTIONS UIA-293）**：沒有新元件。`create-bundle.html` 的 `[data-cb-pickup]` 分卡改 `data-form-step="2"`、`data-outline-group="sale"`，排在上架與開賣之後、購買條件之前；整節掛 `data-feat="S34.1"`（版本外由 devtools 的 `ztd-ver-hidden` 收起，與成員有沒有現場 QR 商品的 `hidden` 各自獨立；本頁大綱以 `getClientRects` 判斷可見，兩種收起都不列）。
+>
 > **2026-10-22 · D472 換綁取貨場次前確認（UI-CHANGES 二百九十三、ASSUMPTIONS UIA-292）**：沒有新元件。商品細節的取貨場次選單、組合詳情的組合包自設場次，在有效場次要變之前借頁尾既有的 leave-dialog 確認彈窗（頁面 `askConfirm` 補 `onCancel`，匯出 `window.pdAskConfirm`／`window.bdAskConfirm`）；共用的 `mountBundlePickup` 加選填 `confirm(chg, proceed, revert)` 掛鉤，建立組合包不傳。件數讀 `ztorOrders.pendingPickupUnits`。
 >
 > **2026-10-22 · D470＋D471 取貨方式勾選與組合包取貨場次（UI-CHANGES 二百九十二、ASSUMPTIONS UIA-291）**：新增 `.control-row--check`（`control-row.css`：右側勾選框的列，整列是 `<label>`、主副文字用 `<span>` 設 block、同組連續勾選列之間 `--border` 分隔線、檢視態 `pointer-events:none`），首個消費 `create-product.html` 步驟 2 與 `product-detail.html` 取貨方式。組合包取貨與核銷區是純 JS 組裝（`partials/pickup-session-modal.js` `mountBundlePickup`）：`.data-list` 成員列＋`.control-group`（開關列＋揭示區裡的場次下拉與 `.fact-list`），不新增 CSS；開關列掛 `data-feat="S34.1"`，版本判斷在重畫時讀 `ztorDevState.featOn`（devtools 在頁尾才載入，`load` 後再畫一次）。就緒項新增 `listStep`（列在第幾步）覆寫「依所在節判斷步驟」。
