@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-22 D473 原型同步（UI-CHANGES 二百九十四、ASSUMPTIONS UIA-293；tier 🔵 release2.4，整節 S34.1 ⚪ 只在最終版）**：5.1.5.4 §3／F9／§5 → `create-bundle.html`「取貨與核銷」節從步驟 1 移到步驟 2 上架與開賣之後、購買條件之前，整節只在最終版；5.1.5.9 §2.6 → `bundle-detail.html` 不變。
+>
 > **2026-10-22 D472 原型同步（UI-CHANGES 二百九十三、ASSUMPTIONS UIA-292；tier 🔵 release2.4，組合包自設場次 S34.1 ⚪ 只在最終版）**：5.1.5.1 §2.11 → `product-detail.html` 取貨場次選單換綁與取消綁定前確認（列出尚未核銷件數）；5.1.5.4 F9／5.1.5.9 §2.6 → `bundle-detail.html` 組合包自設場次的換場次與自設、沿用互換前確認（`partials/pickup-session-modal.js` `mountBundlePickup` 的 `confirm` 掛鉤），`create-bundle.html` 不確認；件數 `js/orders-store.js` `pendingPickupUnits`。
 > **2026-10-22 D470＋D471 原型同步（UI-CHANGES 二百九十二、ASSUMPTIONS UIA-291；tier 🔵 release2.4，S34.1 ⚪ 只在最終版）**：5.1.5.2 F15／F4／§4.6 → `create-product.html` 步驟 1 物流資料、步驟 2 取貨方式勾選與單一場次、就緒兩項；5.1.5.1 §2.11 → `product-detail.html` 勾選、物流資料一律可編輯；5.1.5.12 F2 → `partials/pickup-session-modal.js` 商品來源＝勾了現場 QR 領取、已綁定照舊；5.1.5.4 F9、5.1.5.9 §2.6 → `create-bundle.html`、`bundle-detail.html` 成員取貨方式與場次、組合包自設場次（S34.1）；5.1.5.3.1 §2.3.1 → `order-detail.html` 所屬取貨場次；資料 `js/products-store.js`（`delivery` 勾選集合、組合包 `pickupSession`）、`js/orders-store.js`（`sessionOf`）。
 > **2026-10-22 D469 原型同步（UI-CHANGES 二百九十一、ASSUMPTIONS UIA-290；tier 🔵 release2.4）**：D469（只記在 D469 與功能表，規格正文照最終版）→ `create-bundle.html` release2.4 步驟 1「限購」建立時可編輯（沿用 `js/purchase-limits.js` 組合包元件與擋存，規則照 D456），移除「照預設帶入」附註，存檔帶上限購值；最終版不變。

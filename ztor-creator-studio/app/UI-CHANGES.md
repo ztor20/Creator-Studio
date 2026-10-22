@@ -13,6 +13,16 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-22（二百九十四）· 建立組合包的「取貨與核銷」節搬到步驟 2、整節只在最終版（A spec-derived · D473）
+
+**標籤**：release2.4
+
+使用者裁決 D473「組合包的取貨場次也要放第二步，但一樣 release2.4 不要有」：組合包自己的取貨場次跟建立商品的取貨方式一樣放在步驟 2；release2.4 仍沒有。使用者已說不進 release2.3。
+
+- `create-bundle.html`：「取貨與核銷」節（`[data-cb-pickup]`，`mountBundlePickup`）從步驟 1 組合物之後搬到步驟 2「上架與開賣」之後、「購買條件」之前（`data-form-step="2"`、大綱群組改 `sale`），步驟 2 變成上架與開賣 → 取貨與核銷 → 購買條件 → 優惠，與建立商品步驟 2 的順序一致。整節掛 `data-feat="S34.1"`：最終版才出現，release2.4 的建立組合包兩步都沒有這一節（成員唯讀列表一併不出現〔推導〕，UIA-293）。出現條件照舊（成員含勾了現場 QR 領取的商品）；這一節沒有檢核項，必填判準與發布前檢核不變；存檔照舊寫 `pickupSession`（release2.4 一律 null）。
+- 不變：`bundle-detail.html` §2.6（成員唯讀列表兩版本都有、自設開關只在最終版）；`partials/pickup-session-modal.js` 未改；建立組合包設定自設場次不跳 D472 的確認。
+- 沒有新元件、沒有新 i18n。文件：ASSUMPTIONS 新增 UIA-293；BUILD-SPEC、requirements-map、feature-scope-map（S34.1 備註）同步。
+
 ## 2026-10-22（二百九十三）· 已綁定取貨場次的商品一步換綁前先確認、組合包自設場次的變更先確認（A spec-derived · D472）
 
 **標籤**：release2.4
