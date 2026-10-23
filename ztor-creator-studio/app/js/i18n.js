@@ -4528,6 +4528,7 @@
     'fans.h1':               { en: 'Your fans, ranked.',                    zh: '你的粉絲，依價值排序' },
     'fans.crumb.self':       { en: 'Fans',                                  zh: '粉絲' },
     'fans.sub':              { en: 'High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment. This is the roster — one person at a time; for the whole picture, see Fan overview.', zh: '依價值排序，可用消費、忠誠點數、近期活躍或分級排序，並對任一族群群發或匯出。這頁是名冊——一個一個看；整體樣貌（多少人、在哪裡、走到哪）在粉絲總覽。' },
+    'fans.sub-p0':           { en: 'Ranked by loyalty points. Sort by points or tier.', zh: '依忠誠點數排名，可改依點數或分級排序。' },   // 2026-10-23 release2.5（S118 收起時的頁首說明）
     'fans.btn.csv':          { en: 'Export CSV',                            zh: '匯出 CSV' },
     'fans.btn.message':      { en: 'Message segment',                       zh: '群發訊息' },
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
@@ -4673,6 +4674,7 @@
     'fans.tab.tiers':        { en: 'Tier settings',                        zh: '粉絲分級設定' },
     'fans.tiers.title':      { en: 'Organise your fan circle',             zh: '組織你的粉絲圈' },
     'fans.tiers.sub':        { en: 'Each tier\u2019s gates and what it unlocks. Going down the ladder, both the conditions and the benefits ease off.', zh: '四個分級各自的門檻與解鎖的權益。往下走條件遞減、權益也遞減。' },
+    'fans.tiers.sub-p0':     { en: 'The gates a fan must clear for each tier.', zh: '每個分級要達到的門檻。' },   // 2026-10-23 release2.5（S119 收起時，唯讀門檻）
     'fans.tiers.toppct-hint':{ en: 'Ranked among fans with points', zh: '在有點數的粉絲中排名' },
     'fans.tiers.perkcount':  { en: 'Benefits',                             zh: '權益數量' },
     'fans.tiers.edit':       { en: 'Edit',                                 zh: '編輯' },
@@ -11238,6 +11240,7 @@
     'vault.note.tiers': { en: 'A fan qualifies for a tier condition the moment they reach that tier; a drop starts a grace countdown and takes effect only if the fan is still short at the next weekly recompute after it ends. If a fan drops below a tier condition, that whole way in stops counting for them — even if they still meet its other conditions. Purchase, backing, event and achievement conditions are permanent: they record something that already happened.', zh: '粉絲升到某個分級的當下就符合該分級條件；掉級先倒數緩衝天數，天數到期後下一次每週重算仍未達標才降。粉絲掉到某個分級條件以下，那一整種進庫方法就不再算他達成，即使同一種方法裡的其他條件仍符合。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事。' },
     /* 2026-10-08（D377）：第二層的入口說明，坐在「這座庫房裡」標題下。第二層一律叫「任務」，不叫鑰匙。 */
     'vault.grid.fine':  { en: 'Each item can carry its own task: fans who get into the vault finish it to see that item. Click an item to set its task or mark it as a grand surprise.', zh: '每件內容可以各自設一個任務：粉絲進庫之後完成它，才看得到那一件。點一件內容就能設定任務，或標為大彩蛋。' },
+    'vault.grid.fine.nk': { en: 'Each item can carry its own task: fans who get into the vault finish it to see that item. Click an item to set its task.', zh: '每件內容可以各自設一個任務：粉絲進庫之後完成它，才看得到那一件。點一件內容就能設定任務。' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     'cp.vaultkey.title': { en: 'This product carries a vault key', zh: '這件商品會附帶一把庫房鑰匙' },
     'cp.vaultkey.body':  { en: 'Write this code onto the product’s NFC tag. A fan who taps it unlocks the vault it came from — one tap, one use.', zh: '把這組代號寫進商品的 NFC 標籤。粉絲碰一下就解鎖它來自的那座庫房——碰一次、用掉一次。' },
     'vault.note.demo':  { en: 'Vault contents and fan counts are prototype sample data. Fan totals match the Fans overview (1,283) and every limited-run figure is capped at what actually sold.', zh: '庫房內容與粉絲人數為原型示範資料。粉絲總數與粉絲總覽一致（1,283 位），所有限量數字都以實際售出量為上限。' },
@@ -11280,6 +11283,8 @@
     'vault.ov.pending.note':   { en: 'The spec does not define where these come from yet, so nothing is shown.', zh: '規格未定義資料來源，暫不顯示。' },
     'vault.ac.reachline':      { en: 'Right now <b class="vault-reachline__big">{total}</b> fans can open it: <b>{rule}</b> by condition, <b>{key}</b> by key{overlap}', zh: '現在 <b class="vault-reachline__big">{total}</b> 人打得開：靠條件 <b>{rule}</b>、靠鑰匙 <b>{key}</b>{overlap}' },
     'vault.ac.reachline.one':  { en: 'Right now <b class="vault-reachline__big">1</b> fan can open it: <b>{rule}</b> by condition, <b>{key}</b> by key{overlap}', zh: '現在 <b class="vault-reachline__big">1</b> 人打得開：靠條件 <b>{rule}</b>、靠鑰匙 <b>{key}</b>{overlap}' },
+    'vault.ac.reachline.nk': { en: 'Right now <b class="vault-reachline__big">{total}</b> fans can open it', zh: '現在 <b class="vault-reachline__big">{total}</b> 人打得開' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
+    'vault.ac.reachline.one.nk': { en: 'Right now <b class="vault-reachline__big">1</b> fan can open it', zh: '現在 <b class="vault-reachline__big">1</b> 人打得開' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     'vault.ac.reachline.both': { en: ' ({n} in both, counted once)', zh: '（重疊 {n} 人只算一次）' },
     'vault.ac.reachline.none': { en: ' (overlap counted once)', zh: '（重疊只算一次）' },
     'vault.ac.rules':          { en: 'Open by conditions', zh: '條件開放' },
@@ -11311,6 +11316,7 @@
     'vault.ac.link':           { en: 'Share link', zh: '分享連結' },
     'vault.ac.link.copy':      { en: 'Copy link', zh: '複製連結' },
     'vault.ac.link.hint':      { en: 'This link brings fans to the vault — it doesn’t let them in. They still need to meet a condition or hold a key.', zh: '連結只帶粉絲到這座庫房，不會讓他進得來——進庫仍要符合條件或持有鑰匙。' },
+    'vault.ac.link.hint.nk': { en: 'This link brings fans to the vault — it doesn’t let them in. They still need to meet a condition.', zh: '連結只帶粉絲到這座庫房，不會讓他進得來——進庫仍要符合條件。' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     /* D475：單件內容預覽（F5）。純檢視，播放鈕只控制預覽本身。 */
     'vault.item.preview.play':  { en: 'Play', zh: '播放' },
     'vault.item.preview.pause': { en: 'Pause', zh: '暫停' },
@@ -11352,6 +11358,7 @@
     'vault.pub.check.empty.d': { en: 'This vault is empty. Add photos, clips or audio under Items & tasks.', zh: '這座庫房還沒有內容，先到「內容與任務」放進來。' },
     'vault.pub.check.noway.t': { en: 'Nobody will be able to get in', zh: '發布後沒有人進得來' },
     'vault.pub.check.noway.d': { en: 'There are no conditions and no keys yet. You can still publish and set them later.', zh: '還沒有進庫方法、也沒有鑰匙；仍可發布，之後再設定。' },
+    'vault.pub.check.noway.d.nk': { en: 'There are no conditions yet. You can still publish and set them later.', zh: '還沒有進庫方法；仍可發布，之後再設定。' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     'vault.pub.ok.now':        { en: 'List now', zh: '立刻上架' },
     'vault.pub.ok.sched':      { en: 'Schedule listing', zh: '排定上架' },
     'vault.pub.cancel':        { en: 'Cancel', zh: '取消' },
@@ -11397,6 +11404,7 @@
     'vault.item.kept':         { en: 'Includes {n} fans who had it unlocked before the task changed — they keep it.', zh: '含 {n} 位改任務前已解開、保留下來的粉絲。' },
     'vault.item.kept.one':     { en: 'Includes 1 fan who had it unlocked before the task changed — they keep it.', zh: '含 1 位改任務前已解開、保留下來的粉絲。' },
     'vault.item.tier.below':   { en: 'Fans who got in with a key or another way but sit below this tier see it as “Needs” this tier.', zh: '靠鑰匙或其他方法進庫、但分級不到這一級的粉絲，這一件是「需要條件」。' },
+    'vault.item.tier.below.nk': { en: 'Fans who got in by a way that doesn’t ask for a tier, but sit below this tier, see it as “Needs” this tier.', zh: '靠不看分級的進庫方法進來、但分級不到這一級的粉絲，這一件是「需要條件」。' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     'vault.item.online':       { en: 'Fans can only view and play it online — no downloads.', zh: '粉絲只能線上看與播放，不提供下載。' },
     'vault.tag.viewers':       { en: '{n} fans can see this now · {e} unlocked in total', zh: '目前 {n} 位看得到 · 累計解開過 {e} 位' },
     'vault.tag.viewers.trial': { en: '{n} fans could see this once listed · {e} unlocked in total', zh: '上架後 {n} 位看得到 · 累計解開過 {e} 位' },
@@ -11428,8 +11436,11 @@
     'vault.gate.keyline':      { en: 'Holding a key also gets a fan in.', zh: '持有鑰匙的人也進得來。' },
     'vault.gate.nokey':        { en: 'No condition on this vault — only fans holding a key get in.', zh: '這座庫房沒有設條件，只有持鑰匙的人進得來。' },
     'vault.gate.none':         { en: 'No condition and no key yet — nobody can open this vault.', zh: '還沒有條件、也沒有鑰匙，目前沒有人打得開這座庫房。' },
+    'vault.gate.none.nk': { en: 'No condition yet — nobody can open this vault.', zh: '還沒有條件，目前沒有人打得開這座庫房。' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     'vault.ac.reachline.trial': { en: 'Once listed, <b class="vault-reachline__big">{total}</b> fans could open it: <b>{rule}</b> by condition, <b>{key}</b> by key{overlap}', zh: '上架後 <b class="vault-reachline__big">{total}</b> 人打得開：靠條件 <b>{rule}</b>、靠鑰匙 <b>{key}</b>{overlap}' },
     'vault.ac.reachline.trial.one': { en: 'Once listed, <b class="vault-reachline__big">1</b> fan could open it: <b>{rule}</b> by condition, <b>{key}</b> by key{overlap}', zh: '上架後 <b class="vault-reachline__big">1</b> 人打得開：靠條件 <b>{rule}</b>、靠鑰匙 <b>{key}</b>{overlap}' },
+    'vault.ac.reachline.trial.nk': { en: 'Once listed, <b class="vault-reachline__big">{total}</b> fans could open it', zh: '上架後 <b class="vault-reachline__big">{total}</b> 人打得開' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
+    'vault.ac.reachline.trial.one.nk': { en: 'Once listed, <b class="vault-reachline__big">1</b> fan could open it', zh: '上架後 <b class="vault-reachline__big">1</b> 人打得開' },   // 2026-10-23 release2.5：鑰匙／大彩蛋不在版本內時的版本（UIA-300）
     'vault.ac.keys.off':       { en: 'Fans can’t claim keys until the vault is listed — they just see “not open yet”, and no use is spent. You can still issue keys now.', zh: '上架前粉絲不能領取鑰匙：領取只會看到「尚未開放」，不會用掉次數；現在仍可先發鑰匙。' },
     'vault.ac.link.off.draft': { en: 'Drafts can’t be shared — fans can’t see this vault yet. Publish it to share the link.', zh: '草稿不能分享：粉絲還看不到這座庫房，發布後才能分享。' },
     'vault.ac.link.off.unlisted': { en: 'Unlisted vaults can’t be shared — fans can’t see it. Relist it to share the link.', zh: '已下架不能分享：粉絲看不到這座庫房，重新上架後才能分享。' },

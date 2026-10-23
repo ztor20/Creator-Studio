@@ -13,6 +13,43 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-23（三百零二）· release2.5 媒體庫範圍＝需求網址 MVP：鑰匙、排程、大彩蛋、其餘六種行動任務與待補數字只在最終版（B 反饋導入 · 交付範圍）
+
+**標籤**：release2.5
+
+使用者 2026-10-23 裁決：release2.5 的媒體庫範圍＝需求網址 https://media-vault-site.vercel.app/ 的 MVP 範圍（本地轉檔 `Project/ztor-endgame-demo/media-vault-site/media-vault-site.md`），並核准放與不放的切法。只動交付範圍與版本閘的呈現，規格不動；版本面板的 release2.5 選項由三百零一建立，本筆不動版本配置。
+
+**B 反饋導入**
+
+- **媒體庫頁進 release2.5（S120 🟣）**：`media-vault.html` 頁級 `data-page-feat` 由 `full` 改 `S120`；`js/devtools.js` `FULL_ROUTES` 改 `'media-vault.html': 'S120'`、`js/sidebar.js` `TIER_ROUTES` 補同一筆（三百零一的依功能放行）。release2.5 的側欄 Fans 群組多出媒體庫；release2.4 照舊看不到、直連導回電子商店。
+- **放進的功能改 🟣 release2.5**：S86（每件任務、每件幾人看得到、以分級檢視）、S93（內容摘要、即時人數條）、S106（單件預覽、分享連結）、S112（庫房狀態、立刻上架、下架、重新上架、刪除、只能線上看與播放）、S113（指定一位粉絲、上鎖卡）、S114（解開紀錄兩個數字）。
+- **不放的拆成新編號 ⚪**：
+  - S121 大彩蛋：抽屜的大彩蛋開關、格子與總覽的小標、內容摘要那一行；內容區說明句改成成對的兩句（提到大彩蛋的掛 S121，`data-feat-off="S121"` 的 `vault.grid.fine.nk` 不提）。
+  - S122 其餘六種行動任務：任務「種類」下拉改由 `actionTaskList()` 產生，版本外只列追蹤創作者、加入社群、分享庫房頁面；最終版那六個選項逐項掛 `data-feat="S122"`。
+  - S123 鑰匙：存取權限整張「直接開放」卡、總覽鑰匙使用情況卡、鑰匙抽屜、上架前不能領鑰匙的兩處提示。
+  - S124 總覽「待補規格的數字」佔位卡。
+  - S125 排程：發布視窗的上架方式整塊（立刻／定時、上架時間、定時下架）；版本外改顯示一句「確認後粉絲立刻看得到」（`data-feat-off="S125"`），發布＝立刻上架。
+- **資料層跟著版本走（`js/vault-store.js`）**：S123 不在版本內時鑰匙不算進人數、`fanWays()` 不回鑰匙；S125 不在版本內時 `isScheduled()` 為否、`applySchedules()` 不執行；S122 不在版本內時用到那六種任務的內容由 `taskOf()` 當成不設任務。只看當下版本、不改資料（UIA-300）。
+- **提到鑰匙或排程的字句（`js/media-vault.js`＋`js/i18n.js`）**：版本外換成不提鑰匙的版本（新鍵 `vault.ac.reachline*.nk`、`vault.ac.link.hint.nk`、`vault.gate.none.nk`、`vault.pub.check.noway.d.nk`、`vault.item.tier.below.nk`、`vault.grid.fine.nk`，任務說明與等級提示的內嵌雙語同理），或整條不列（刪除確認的「鑰匙一併失效」、下架確認的「排程會清掉」）；即時人數條只寫總數、不拆靠條件／靠鑰匙；側欄與標頭不顯示排程。切版本時頁面重畫（監聽 `ztor:devstate-changed`）。
+- **`ds-components/vault-overview.css`**：`.vault-ov__pair` 改成欄數跟著看得到的卡走（`grid-auto-flow: column`），release2.5 收起鑰匙使用情況卡時內容摘要佔滿整列、不留半欄空洞；`design-system.md` 該條同步一句。
+- 功能表：S86、S93、S106、S112–S114 ⚪ 改 🟣，補登 S120 🟣、S121–S125 ⚪，統計以程式逐列重數（🟣 4 → 11、⚪ 49 → 48，合計 208 列）；`devtools.js` `FEAT_TIER` 後備同步。
+
+## 2026-10-23（三百零一）· 建立交付版 release2.5，粉絲管理只放需求站 P0 範圍（D infra）
+
+**標籤**：release2.5
+
+使用者裁示：分出 release2.5（粉絲管理＋媒體庫那一期，與 release2.4 活動並存）；release2.5 只放需求站 MVP「P0 有提到」的粉絲管理，沒提到的只在最終版；release2.4 維持現狀、看不到粉絲管理。媒體庫由另一個 session 處理，本筆不動媒體庫檔案、不替它標期別。
+
+- **新 tier 與版本**：`feature-scope-map.md` Tier 圖例加 🟣 release2.5（再下一版）、開發版本配置表加 `release2.5`（規則 `tier:release2.3,release2.4,release2.5`，含 release2.4 的活動功能），交付輪替補「兩個未來版本並存」的寫法；`js/devtools.js` 的 `TIER_EMOJI` 加 🟣、`VERSIONS` 後備加 release2.5。
+- **依功能放行的路由**：兩份 `FULL_ROUTES` 原本只分「最終版才有」，現在值可以寫功能 ID——`js/devtools.js` 的 `'fans-crm.html': 'S115'`、`'fan-detail.html': 'S117'`，`js/sidebar.js` 另列同內容的 `TIER_ROUTES`，透過新開的 `ztorDevState.featInVersion()` 判斷（不看預覽開關）。release2.5 側欄 Fans 只剩粉絲總覽；release2.4 Fans 群組照舊整組收起。品牌合作、粉絲分析兩頁、粉絲系統說明、分級權益與分級設定兩個備份頁、平台忠誠點數設定仍只在最終版。
+- **粉絲名冊（`fans-crm.html`，頁級 S115）**：release2.5 只留序號、粉絲、分級、忠誠點數四欄與進詳情的箭頭，KPI 只留平均忠誠點數；名人堂分頁、國家／消費／下一級進度／狀態欄、活躍與風險 KPI、風險警示、群發訊息（分頁列與每列）、匯出、標籤篩選、Who's who 掛 S118。欄位收起時表格由頁內 `:has()` 改五欄；頁首說明句換成 P0 版（`fans.sub-p0`，`data-feat-off`）。
+- **分級設定彈窗**：release2.5 只看得到門檻（前幾 % 名、最低點數）與規則分頁的升降級時機、名額取整；編輯／取消／儲存、變更歷史、權益列、計分設定分頁、其餘四條規則掛 S119；說明句換成只講門檻的版本（`fans.tiers.sub-p0`）；Who's who 收起時改單欄。
+- **粉絲詳情（`fan-detail.html`，頁級 S117）**：release2.5 留頁首身分與分級、忠誠點數 KPI、分級設定連結、Admin 調整點數與點數調整紀錄（S110 改 🟣 release2.5）；狀態徽章、標籤、傳訊息、消費／下一級進度／最近活躍 KPI、分節導覽與行為時間軸、點數來源分布、消費與參與與標籤三個分節掛 S118。
+- **`ds-components/section-nav.css`**：分節導覽被版本閘整個收起時，`.section-nav-layout` 改單欄（否則內容會擠進 140px 導覽欄）；`design-system.md`、`design-system.html` §4.52 同步一段說明。
+- **`js/fans-guide-firstrun.js`**：第一次進粉絲頁自動跳粉絲系統說明，只在最終版類版本（最終版、funding-test、Deck for Sony）執行；限縮版不跳、也不記「看過」。
+- `js/i18n.js`：新增 `fans.sub-p0`、`fans.tiers.sub-p0`（中英）。
+- 功能標記：新登記 S115–S117 🟣、S118–S119 ⚪，S110 ⚪ 改 🟣（`feature-scope-map.md`、`devtools.js` FEAT_TIER 後備）；統計以程式逐列重數。文件：專案根 `CLAUDE.md`、`site/CLAUDE.md`、`site/AGENTS.md` 的版本面板、tier、輪替與標籤規則補 release2.5；ASSUMPTIONS 新增 UIA-299。
+
 ## 2026-10-23（三百）· 媒體庫七項定案：庫房狀態與排程、上鎖與進庫方法、解開紀錄兩個數字、指定一位粉絲、三種狀態改名、不提供下載（A spec-derived · D477）
 
 使用者 2026-10-23 裁示七項「照建議」＋第二輪四題（D477；規格 `documents/5.1.7.3-媒體庫.md` 新增 F10，F1～F9 同步）。媒體庫整頁只在最終版，新功能登記 ⚪（S112–S114），不寫交付版標籤。

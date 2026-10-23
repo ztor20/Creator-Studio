@@ -113,16 +113,19 @@
      2026-10-07 改名：tier 代號 p1→release2.3、next→release2.4（交付版本以 release 編號稱呼）。*/
   /* ⚫ 退場：2026-10-19 起也對照成 'retired'（不在任何交付版，與 tbd 同樣在 release2.4 隱藏、最終版照舊全開）。
      以前沒登記，退場列讀不到 tier、只靠 FEAT_TIER 後備值，後備值還留著舊 tier。 */
-  var TIER_EMOJI = { '🟢': 'release2.3', '🔵': 'release2.4', '⚪': 'tbd', '⚫': 'retired' };
+  /* 🟣 release2.5（2026-10-23）：粉絲管理＋媒體庫那一期，與 release2.4 並存（release2.4 下一版、release2.5 再下一版）。 */
+  var TIER_EMOJI = { '🟢': 'release2.3', '🔵': 'release2.4', '🟣': 'release2.5', '⚪': 'tbd', '⚫': 'retired' };
   var RELEASE_RE = /\brelease\d+\.\d+\b/;
   /* 每筆：[鍵, 顯示名, 類型(開發/測試), 規則, 說明]。類型用於分組（測試版自成一組）。
      2026-09-23 起：已交付的版本改由 monorepo 的凍結分支代表（版本鎖死、獨立網址），
      main 的面板只留「最終版」與下一個交付版的預覽（已交付 🟢 ＋ 標成下一版 🔵）。
      2026-10-07 起凍結分支 phase1 改名 release2.3、「下一版預覽」改名 release2.4（鍵 next→release2.4）。
-     要進下一期的功能在 feature-scope-map 標 🔵 release2.4 即可。 */
+     要進下一期的功能在 feature-scope-map 標 🔵 release2.4 即可。
+     2026-10-23 起兩個未來版本並存：release2.4（🔵，活動）＋ release2.5（🟣，粉絲管理與媒體庫，規則含 release2.4）。 */
   var VERSIONS = [
     ['full', '最終版', '開發', 'all', '全部功能（預設）'],
     ['release2.4', 'release2.4', '開發', 'tier:release2.3,release2.4', '已交付（🟢 release2.3）＋下一版（🔵 release2.4）；未排定與未標記者隱藏'],
+    ['release2.5', 'release2.5', '開發', 'tier:release2.3,release2.4,release2.5', '已交付（🟢 release2.3）＋ release2.4（🔵）＋粉絲管理與媒體庫（🟣 release2.5）；未排定與未標記者隱藏'],
     ['funding-test', 'funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
     ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同最終版'],
   ];
@@ -138,7 +141,7 @@
     full: 'full', S05: 'release2.4', S06: 'release2.4', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.4', S45: 'release2.4' /* 2026-10-16 使用者裁決 release2.4 電子商店範圍 */,
     S52: 'release2.4', S53: 'release2.4', S54: 'retired', S55: 'tbd', S56: 'release2.4',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
     S57: 'retired',   // 2026-09-29 D334（活動：說明區塊）；2026-10-05 D354 退場（功能表 ⚫）
-    S86: 'tbd',   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、大彩蛋、每件可看人數）
+    S86: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、每件可看人數；大彩蛋拆到 S121、其餘六種行動任務拆到 S122）
     O34: 'release2.4', O35: 'release2.4', O36: 'release2.4', O37: 'release2.4',   // 2026-10-13 D411（訂單：付款資訊／日期區間與類型篩選／門票訂單／補寄信）
     O38: 'release2.4',   // 2026-10-14 D414（訂單詳情：撤銷整張訂單）
     O39: 'release2.4',   // 2026-10-15 D416（匯出 CSV 與確認視窗：訂單管理＋活動交易明細）
@@ -154,10 +157,14 @@
     'S34.1': 'tbd',      // 2026-10-22 D471（組合包可改用自己的取貨場次；預設沿用各成員的場次。只在最終版，partials/pickup-session-modal.js mountBundlePickup）
     S95: 'tbd',          // 2026-10-13 D410 決定四（非 bookyay 的示範活動，release2.4 隱藏；後備表先登記，避免載入表格前 release2.4 閃現）
     S94: 'release2.4',   // 2026-10-12 D398（組合包的購買條件與限購：D456 起限購不繼承成員、自己設；純商品組合包的購買條件）
-    S93: 'tbd',   // 2026-10-09 媒體庫三分頁（總覽的鑰匙使用／內容摘要／待補數字、存取權限的即時人數條與已發鑰匙清單）
-    S106: 'tbd',  // 2026-10-22 D475（媒體庫單件內容預覽、庫房分享連結）
-    S107: 'tbd', S108: 'tbd', S109: 'tbd', S110: 'tbd', S111: 'tbd',   // 2026-10-23 D476（忠誠點數 B 類：崗位歸屬欄位／各職務分到的點數／賽季範圍倍率與我的賽季加倍／Admin 手動調整點數／歷史訂單回填）
-    S112: 'tbd', S113: 'tbd', S114: 'tbd',   // 2026-10-23 D477（媒體庫：庫房狀態與排程／指定一位粉絲與上鎖卡／解開紀錄兩個數字）
+    S93: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,   // 2026-10-09 媒體庫三分頁（內容摘要、存取權限的即時人數條；鑰匙使用與已發鑰匙清單拆到 S123、待補數字拆到 S124）
+    S106: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,  // 2026-10-22 D475（媒體庫單件內容預覽、庫房分享連結）
+    S107: 'tbd', S108: 'tbd', S109: 'tbd', S110: 'release2.5' /* 2026-10-23 改 🟣（需求站 P0 手動調整點數） */, S111: 'tbd',   // 2026-10-23 D476（忠誠點數 B 類：崗位歸屬欄位／各職務分到的點數／賽季範圍倍率與我的賽季加倍／Admin 手動調整點數／歷史訂單回填）
+    S112: 'release2.5', S113: 'release2.5', S114: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,   // 2026-10-23 D477（媒體庫：庫房狀態／指定一位粉絲與上鎖卡／解開紀錄兩個數字；排程拆到 S125）
+    S120: 'release2.5',   // 2026-10-23 媒體庫頁本身（頁級 data-page-feat、兩份 FULL_ROUTES 依功能放行）
+    S121: 'tbd', S122: 'tbd', S123: 'tbd', S124: 'tbd', S125: 'tbd',   // 2026-10-23 release2.5 不放的媒體庫功能：大彩蛋／其餘六種行動任務／鑰匙／待補規格的數字／排程（只在最終版）
+    S115: 'release2.5', S116: 'release2.5', S117: 'release2.5',   // 2026-10-23 release2.5 粉絲管理 P0（粉絲名冊／分級設定唯讀／粉絲詳情）
+    S118: 'tbd', S119: 'tbd',   // 2026-10-23 粉絲管理 P0 以外（名冊與詳情延伸／分級設定編輯、權益與計分），只在最終版
     S58: 'release2.4',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
     S59: 'release2.4', S60: 'retired', S61: 'release2.4',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
     S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
@@ -188,11 +195,14 @@
     /* 2026-10-07 release2.4 切割：events.html／event-detail.html／create-event.html 移出——活動模組列入 release2.4
        （S72 🔵），三頁改頁級 data-page-feat="S72"；sidebar.js 同名清單同步。 */
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'edit-event.html': 1,
-    'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
+    /* 2026-10-23 release2.5：值可以是功能 ID（字串）＝依功能放行——該功能在目前版本內才顯示連結，否則同 1。
+       粉絲名冊／粉絲詳情改依 S115／S117（🟣）放行；sidebar.js 的 TIER_ROUTES 同步。 */
+    'fans-crm.html': 'S115', 'fan-detail.html': 'S117', 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1,
     /* 2026-07-30 補：外部 r2.2 改版新增的 6 頁只加進 sidebar.js 的同名清單、漏了這裡，
        導致低版本下導覽藏得掉、頁內連結卻還點得進去（版本 gate 漏水）。 */
-    'tier-benefits.html': 1, 'media-vault.html': 1, 'brand-campaigns.html': 1,
+    /* 2026-10-23：媒體庫改依 S120（🟣 release2.5）放行，sidebar.js 的 TIER_ROUTES 同步。 */
+    'tier-benefits.html': 1, 'media-vault.html': 'S120', 'brand-campaigns.html': 1,
     'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1,
     /* 2026-07-31 D158：受眾分析新頁（Fans 群組第 6 個目的地）。 */
     'fan-analytics.html': 1,
@@ -253,12 +263,19 @@
      故 full-only 頁面與跨頁連結照常可見。新增同型特殊版時把 key 加進這裡。 */
   /* 已退場的鍵（golive-4step、home-canvas）不再列：load() 會把未知鍵改寫成 full，這裡不必再兜底。 */
   function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony'; }
+  /* FULL_ROUTES 的值：1＝只在最終版類版本；功能 ID＝該功能在目前版本內才放行（不看 showFuture：預覽不是權限）。 */
+  function routeOpen(route) {
+    var v = FULL_ROUTES[route];
+    if (!v || isFullBaseVersion(state.version)) return true;
+    if (v === 1) return false;
+    var allow = tiersForRule(curVersionRule());
+    return !allow || allow.indexOf(featTier(String(v))) >= 0;
+  }
   function applyRouteAvailability() {
-    var allowFull = isFullBaseVersion(state.version);
     document.querySelectorAll('a[href]').forEach(function (a) {
       var route = (a.getAttribute('href') || '').split(/[?#]/)[0].toLowerCase();
       if (!FULL_ROUTES[route]) return;
-      a.classList.toggle('ztd-ver-hidden', !allowFull);
+      a.classList.toggle('ztd-ver-hidden', !routeOpen(route));
       a.classList.toggle('ztd-ver-future', false); // future preview must never re-open a blocked route
     });
   }
@@ -1065,6 +1082,8 @@
        畫完再呼叫 regate() 讓新節點上的 data-feat 照版本收起（MutationObserver 只重跑路由閘，不重跑 data-feat）。 */
     featOn: function (id) { var a = tiersForRule(curVersionRule()); return !a || !!state.showFuture || a.indexOf(featTier(String(id))) >= 0; },
     regate: function () { applyVersion(); },
+    /* 2026-10-23：給 sidebar.js 的依功能放行路由用——只看版本規則、不看 showFuture（預覽不能把被擋的頁打開）。 */
+    featInVersion: function (id) { var a = tiersForRule(curVersionRule()); return !a || a.indexOf(featTier(String(id))) >= 0; },
   };
   emit();
   loadVersions();

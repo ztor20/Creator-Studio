@@ -233,8 +233,26 @@
 
      revoked ＝ 連結外流時的煞車。撤銷後那把鑰匙的持有者立刻失去權限，
      所以人數會往下掉——這正是撤銷該有的樣子。 */
+  /* ── release2.5 範圍切分（2026-10-23 使用者裁決，ASSUMPTIONS UIA-300）──────────
+     release2.5 的媒體庫＝需求網址 MVP：沒有鑰匙（S123）、沒有排程（S125）、行動任務只有三種
+     （其餘六種是 S122）。這三件不在目前版本時，資料層當它們不存在——鑰匙不算進人數、排程不生效、
+     用到那六種的內容當成「不設任務」——畫面上的數字、標籤、上鎖卡因此彼此一致。
+     只看執行當下的版本，不改資料：切回最終版，原本的鑰匙、排程與任務都還在。
+     載入時（devtools 還沒跑）一律當作全開，種子資料照最終版生成。 */
+  function featOn(id) { var d = window.ztorDevState; return !d || !d.featOn || !!d.featOn(id); }
+  function keysOn() { return featOn("S123"); }
+  function schedOn() { return featOn("S125"); }
+  var MVP_ACTIONS = { follow: 1, join: 1, shareVault: 1 };
+  function moreActionsOn() { return featOn("S122"); }
+  /* 這一件此刻生效的任務：用到不在版本內的六種行動任務時回 null（＝不設任務）。 */
+  function taskOf(item) {
+    var t = (item && item.task) || null;
+    if (t && t.type === "action" && !MVP_ACTIONS[t.kind] && !moreActionsOn()) return null;
+    return t;
+  }
   function keyHolders(vault) {
     var set = {};
+    if (!keysOn()) return set;
     (vault.keys || []).forEach(function (k) {
       if (k.revoked) return;
       (k.claimed || []).forEach(function (idx) { set[idx] = 1; });
@@ -278,7 +296,7 @@
   /* 鑰匙統計：發出的次數、已領取、還剩幾次。 */
   function keyStats(vault) {
     var issued = 0, claimed = 0, live = 0;
-    (vault.keys || []).forEach(function (k) {
+    (keysOn() ? (vault.keys || []) : []).forEach(function (k) {
       if (k.revoked) return;
       live++;
       issued += k.uses;
@@ -396,6 +414,10 @@
     ]
   };
   function actionDef(kind) { return ACTION_TASKS.filter(function (a) { return a.id === kind; })[0]; }
+  /* 任務選單可選的行動任務：release2.5（S122 不在版本內）只有追蹤創作者、加入社群、分享庫房頁面。 */
+  function actionTaskList() {
+    return moreActionsOn() ? ACTION_TASKS : ACTION_TASKS.filter(function (a) { return MVP_ACTIONS[a.id]; });
+  }
   function targetLabel(task) {
     if (!task || !task.target) return null;
     if (task.kind === "shop") {
@@ -464,7 +486,7 @@
      這裡不看庫房狀態：草稿與已下架照樣算，畫面標明是「上架後」的試算（F3，D477）。
      回傳 { 粉絲索引: 1 } 的集合，或 null。 */
   function itemNowSet(vault, item) {
-    var task = item && item.task;
+    var task = taskOf(item);
     if (!taskJudgeable(task)) return null;
     var held = keyHolders(vault), kept = (item && item.kept) || {}, set = {};
     for (var i = 0; i < FANS.length; i++) {
@@ -497,7 +519,7 @@
   }
   /* 累計解開過這一件的人數。判定方式待確認的行動任務回 null（不知道誰完成了）。 */
   function itemEverSet(vault, item) {
-    if (!taskJudgeable(item && item.task)) return null;
+    if (!taskJudgeable(taskOf(item))) return null;
     var set = {};
     Object.keys((item && item.history) || {}).forEach(function (k) { set[k] = 1; });
     if (vault.status === "listed") {
@@ -541,7 +563,7 @@
        condition ＝ 需要條件：等級任務，那一級低於任務等級（畫面寫差哪一級）
        notyet    ＝ 未解開：行動任務，該分級的粉絲要各自完成（D477 推導 11） */
   function itemStatusForTier(item, tierKey) {
-    var task = item && item.task;
+    var task = taskOf(item);
     if (!task) return "unlocked";
     if (task.type === "tier") return TIER_RANK[tierKey] >= TIER_RANK[task.tier] ? "unlocked" : "condition";
     return "notyet";
@@ -550,7 +572,7 @@
        已解開：被改任務保留、不設任務、等級夠、或行動任務已完成（只有指定商品查得到）。
        行動任務判定方式待確認的那幾種，原型查不到他做了沒有，一律當作未解開並標 pending。 */
   function itemStatusForFan(vault, item, idx) {
-    var task = item && item.task, f = FANS[idx];
+    var task = taskOf(item), f = FANS[idx];
     if ((item.kept || {})[idx]) return { st: "unlocked" };
     if (!task) return { st: "unlocked" };
     if (task.type === "tier") return TIER_RANK[f.tier] >= TIER_RANK[task.tier] ? { st: "unlocked" } : { st: "condition", tier: task.tier };
@@ -752,7 +774,7 @@
   function toMs(s) { var t = s ? new Date(s).getTime() : NaN; return isNaN(t) ? null : t; }
   function isListed(v) { return !!v && v.status === "listed"; }
   /* 排程中＝不在上架中、但排了上架時間（從沒上架過的算草稿、下架後再排的算已下架）。 */
-  function isScheduled(v) { return !!v && v.status !== "listed" && !!v.listAt; }
+  function isScheduled(v) { return !!v && schedOn() && v.status !== "listed" && !!v.listAt; }
   /* 「沒有路進來」（F2 其他狀態）＝沒有任何含條件的進庫方法，也沒有任何未撤銷鑰匙。 */
   function hasWayIn(v) { return ruleCount(v) > 0 || keyStats(v).live > 0; }
   /* 發布前檢查（F10）：沒有內容不能發布；沒有路進來只提醒、不擋。 */
@@ -782,6 +804,7 @@
   /* 時間到了就自動上架／下架。原型沒有後端，由頁面定時呼叫；有變動回 true。 */
   function applySchedules(nowMs) {
     var now = nowMs || Date.now(), changed = false;
+    if (!schedOn()) return false;   /* release2.5 沒有排程（S125）：種子裡的排程時間不生效 */
     VAULTS.forEach(function (v) {
       if (v.status !== "listed" && v.listAt && toMs(v.listAt) <= now) {
         var keep = v.unlistAt;
@@ -847,7 +870,7 @@
     var f = FANS[idx];
     var methods = [];
     (vault.rules || []).forEach(function (g, gi) { if (groupMatches(g, f)) methods.push(gi); });
-    var keys = (vault.keys || []).filter(function (k) { return !k.revoked && (k.claimed || []).indexOf(idx) >= 0; });
+    var keys = (keysOn() ? (vault.keys || []) : []).filter(function (k) { return !k.revoked && (k.claimed || []).indexOf(idx) >= 0; });
     return { methods: methods, keys: keys, inVault: methods.length > 0 || keys.length > 0 };
   }
 
@@ -883,6 +906,13 @@
     cover: cover,
     counts: counts,
     actionTasks: ACTION_TASKS,
+    /* 2026-10-23 release2.5 範圍切分（UIA-300）：任務選單、此刻生效的任務、鑰匙／排程在不在版本內 */
+    actionTaskList: actionTaskList,
+    taskOf: taskOf,
+    isMvpAction: function (kind) { return !!MVP_ACTIONS[kind]; },
+    keysOn: keysOn,
+    schedOn: schedOn,
+    featOn: featOn,
     taskTargets: TASK_TARGETS,
     actionDef: actionDef,
     targetLabel: targetLabel,

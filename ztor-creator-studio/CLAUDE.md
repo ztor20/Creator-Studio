@@ -50,14 +50,16 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
   - `release-port.sh <release> <commit> --check` 先試套；ASSUMPTIONS／UI-CHANGES／requirements-map 三份已分歧的紀錄檔內建排除，只搬程式與設計系統文件。
   - `deploy-release.sh <release>` 部署。
 - 凍結分支上的鎖版本改動要保留：`app/js/devtools.js` 標 `★ RELEASE2.3 FROZEN` 的段落、`app/feature-scope-map.md` 開發版本配置表只留 `release2.3` 一列。套修正時不要被 `main` 的內容蓋掉；試套失敗代表兩邊已分歧，手動改寫那筆修正，不要硬套。
-- `main` 的版本切換面板只有四個選項：
+- `main` 的版本切換面板有五個選項（2026-10-23 起多 release2.5）：
   - 最終版
   - release2.4（版本鍵 `release2.4`，規則 `tier:release2.3,release2.4`）
+  - release2.5（版本鍵 `release2.5`，規則 `tier:release2.3,release2.4,release2.5`）
   - funding-test
   - Deck for Sony
 - 功能表 tier（`app/feature-scope-map.md` 的 Tier 欄）：
   - `🟢 release2.3`：已交付
-  - `🔵 release2.4`：下一版
+  - `🔵 release2.4`：下一版（活動）
+  - `🟣 release2.5`：再下一版（粉絲管理＋媒體庫，2026-10-23 起）
   - `⚪ TBD`：未排定
   - `⚫ 退場`
 - 新功能做出來就掛 `data-feat` 標記並登記在 `feature-scope-map.md`（預設 ⚪ 未排定），否則 `main` 的 release2.4 預覽會多顯示不在範圍的東西。
@@ -66,7 +68,8 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
   2. 用面板的「release2.4」確認畫面。
   3. 從 `main` 切 `release2.4` 分支鎖版本。
   4. 開部署 repo 與 Vercel 專案，在 `deploy-release.sh` 的 `release_target` 補一筆，開新網址。
-  5. 交付後把那批功能改標 `🟢 release2.4`；`main` 的下一版改成 release2.5（`feature-scope-map.md` 開發版本配置表，加上 `devtools.js` 的 `VERSIONS` 後備、`TIER_EMOJI` 的 🔵 改對到 release2.5；新標 🔵 的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.4` 值不用改）。
+  5. 交付後把那批功能改標 `🟢 release2.4`，`feature-scope-map.md` 開發版本配置表與 `devtools.js` 的 `VERSIONS` 後備拿掉 `release2.4` 列；`TIER_EMOJI` 往前對（🔵 改對到 release2.5、🟣 改對到再下一版），原 🟣 的功能改標 🔵；新標的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.4` 值不用改。
+  - **兩個未來版本並存**（2026-10-23 起）：release2.4（🔵，活動）＝下一版、release2.5（🟣，粉絲管理＋媒體庫）＝再下一版，各自照上面 1–4 步走：要進 release2.5 的功能標 `🟣 release2.5`、用面板的「release2.5」確認，切分支時從 `main` 切 `release2.5`。release2.5 的規則含 release2.4（`tier:release2.3,release2.4,release2.5`），release2.4 預覽看不到 🟣。整頁屬 🟣 的頁要在 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES` 改成「依功能放行」（devtools 那份的值寫功能 ID、sidebar 那份同步列進 `TIER_ROUTES`），只在 release2.4 收起。
 - 完整流程圖見 [WORKFLOW.md](WORKFLOW.md) §5 與 [WORKFLOW-DIAGRAM.md](WORKFLOW-DIAGRAM.md) 線 4。
 
 ## 變更紀錄的交付版標籤（2026-10-07 起）
@@ -79,6 +82,7 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
     - 選同步 → 標兩個，發進 `main` 後用 `release-port.sh` 搬過去。
     - 選不同步 → 只標 release2.4（只改在 release2.4 與最終版）。
   - 改到 `🔵 release2.4` 的功能 → 標 release2.4（release2.4 凍結後同樣先問）。
+  - 改到 `🟣 release2.5` 的功能 → 標 release2.5（release2.5 凍結後同樣先問）。
   - 只改 `⚪ TBD` 或沒掛功能標記的 → 不標。
 - `collab.sh` 開 PR 時讀這次新增條目的標籤，貼成 GitHub PR 標籤，PR 內文列出新增條目的標題。標到已凍結的交付版時，結尾提醒用 `release-port.sh` 搬。
 
