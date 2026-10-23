@@ -146,9 +146,81 @@ table.map td:nth-child(2){width:22%}
 <body>
 <div class="wrap">
 <h1>媒體庫規則</h1>
-<p class="lede">創作者照這頁的規則判斷哪些粉絲進得了庫房、進庫後看得到哪幾件內容，以及打得開的人數怎麼算；<a href="fans-vault.html">媒體庫</a>畫面提到這些規則時會連回這裡。</p>
-<div class="flow"><span class="tag">達成任一種進庫方法，或持有鑰匙</span><span class="arr">→</span><span class="tag">進得了庫</span><span class="arr">→</span><span class="tag">完成該件的任務</span><span class="arr">→</span><span class="tag ok">看得到該件</span></div>
+<p class="lede">創作者照這頁的規則判斷庫房什麼時候對粉絲開放、哪些粉絲進得了庫房、進庫後解開哪幾件內容，以及人數怎麼算。<a href="fans-vault.html">媒體庫</a>畫面提到這些規則時會連回這裡。</p>
+<div class="flow"><span class="tag">庫房上架中</span><span class="arr">→</span><span class="tag">達成任一種進庫方法，或持有鑰匙</span><span class="arr">→</span><span class="tag">進得了庫</span><span class="arr">→</span><span class="tag">完成該件的任務</span><span class="arr">→</span><span class="tag ok">已解開該件</span></div>
 <div class="toc"></div>
+
+<h2 id="status"><span class="n"></span>庫房的狀態與排程</h2>
+<p>庫房的狀態決定粉絲看不看得到這座庫房。每個狀態下創作者能做什麼，見<a href="#vault-stage">庫房的階段</a>；什麼時候上架與下架，見<a href="#vault-time">上架與下架的時間</a>；發布、下架、重新上架、刪除各自的條件，見<a href="#vault-action">庫房的動作</a>。</p>
+
+<h3 id="vault-stage">庫房的階段</h3>
+<p>Admin 能做創作者能做的一切（代管）。</p>
+<div class="flow">
+  <span class="tag wait">草稿</span><span class="arr">→</span><span class="tag ok">上架中</span><span class="arr">→</span><span class="tag off">已下架</span>
+  <span class="flow__alt">新建的庫房一律從草稿開始；已下架的庫房可以重新上架，上架中與已下架之間可以來回</span>
+</div>
+<div class="tablewrap"><table style="min-width:760px">
+  <thead><tr><th style="width:11%">階段</th><th style="width:19%">什麼時候進入</th><th style="width:26%">創作者能做</th><th style="width:22%">粉絲看到什麼</th><th>鑰匙與分享連結</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>新建庫房一律從這裡開始</td><td>放入內容<br>設進庫方法<br>發鑰匙<br>設任務<br>發布，見<a href="#vault-publish">發布</a><br>刪除，見<a href="#vault-delete">刪除</a></td><td>看不到這座庫房</td><td>鑰匙：可以預先發出，粉絲領取只會得到「尚未開放」<br>分享連結：不能分享</td></tr>
+    <tr><td><span class="tag ok">上架中</span><div class="k">Listed</div></td><td>創作者發布並選立刻上架<br>或排定的上架時間到<br>或已下架的庫房重新上架</td><td>下架，見<a href="#vault-unlist">下架</a><br>上架中的庫房要先下架才能刪除</td><td>所有粉絲都看得到這座庫房，進不了庫的粉絲看到上鎖，見<a href="#visibility">庫房的可見性</a></td><td>鑰匙：粉絲可以領取並用來進庫<br>分享連結：可以複製分享</td></tr>
+    <tr><td><span class="tag off">已下架</span><div class="k">Unlisted</div></td><td>創作者手動下架<br>或設定的下架時間到</td><td>重新上架，見<a href="#vault-relist">重新上架</a><br>刪除，見<a href="#vault-delete">刪除</a></td><td>看不到這座庫房，已解開過內容的粉絲也看不到</td><td>鑰匙：粉絲領取只會得到「尚未開放」<br>分享連結：不能分享<br>解開紀錄保留，重新上架後恢復，見<a href="#unlock-def">解開的定義與紀錄</a><br>已設的排程時間在下架當下清除，見<a href="#vault-time">上架與下架的時間</a></td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="vault-time">上架與下架的時間</h3>
+<p>排程讓創作者預先安排庫房什麼時候開放、什麼時候收起來；不排程就是手動上架與下架。</p>
+<ul class="plain">
+  <li>發布或重新上架時二選一：立刻上架，或排定上架日期與時間，到時間自動上架</li>
+  <li>可另設下架日期與時間（選填），到時間自動下架，後果同手動下架</li>
+  <li>上架日期與時間到下架日期與時間是上架區間；沒設下架時間就沒有終點</li>
+  <li>已排定上架、時間還沒到的庫房，粉絲看不到：
+    <ul class="plain">
+      <li>從沒上架過的算草稿</li>
+      <li>下架後再排定重新上架的算已下架</li>
+    </ul>
+  </li>
+  <li>排程中的庫房可以取消排程</li>
+  <li>庫房下架的當下，已設的上架與下架日期時間一併清除</li>
+</ul>
+
+<h3 id="vault-action">庫房的動作</h3>
+<p><a href="#vault-publish">發布</a>讓草稿上架，<a href="#vault-unlist">下架</a>讓上架中的庫房收起來，<a href="#vault-relist">重新上架</a>讓已下架的庫房再開放，<a href="#vault-delete">刪除</a>移除不再需要的庫房。</p>
+<h4 id="vault-publish">發布</h4>
+<ul class="plain">
+  <li>新庫房是草稿，創作者按「發布」才上架</li>
+  <li>發布時二選一：立刻上架，或排定上架時間，見<a href="#vault-time">上架與下架的時間</a></li>
+  <li>發布前至少要有一件內容，一件都沒有時不能發布</li>
+  <li>沒有任何含條件的進庫方法、也沒有未撤銷的鑰匙時，提醒「發布後沒有人進得來」，創作者仍可發布</li>
+</ul>
+<h4 id="vault-unlist">下架</h4>
+<ul class="plain">
+  <li>上架中的庫房隨時可以手動下架</li>
+  <li>下架後，粉絲看不到這座庫房，已解開過內容的粉絲也看不到</li>
+  <li>下架期間不產生新的解開紀錄，重新上架後原本的紀錄恢復，見<a href="#unlock-def">解開的定義與紀錄</a></li>
+</ul>
+<h4 id="vault-relist">重新上架</h4>
+<ul class="plain">
+  <li>已下架的庫房可以重新上架，同樣二選一：立刻上架，或排定上架時間；也可另設下架時間</li>
+</ul>
+<h4 id="vault-delete">刪除</h4>
+<ul class="plain">
+  <li>只有草稿與已下架的庫房可以刪除；上架中的庫房要先下架</li>
+  <li>刪除前要說明「將有幾位粉絲失去這些內容」與「已發出的鑰匙一併失效」，不能只問「確定嗎」</li>
+  <li>刪除後無法復原</li>
+</ul>
+<p class="note">依據：5.1.7.3 F4、F10；主規格 §7.14、§8.31；D477。</p>
+
+<h2 id="visibility"><span class="n"></span>庫房的可見性</h2>
+<p>可見性讓創作者知道，庫房在各個狀態下，粉絲會看到什麼；庫房的狀態見<a href="#vault-stage">庫房的階段</a>。</p>
+<ul class="plain">
+  <li>上架中的庫房對所有粉絲可見，不論進不進得了庫</li>
+  <li>進不了庫的粉絲看到庫房是上鎖狀態，也看到要符合哪一種進庫方法才進得來</li>
+  <li>草稿與已下架的庫房，粉絲看不到</li>
+  <li>沒有「對外隱藏」開關：上架中的庫房不能設成只讓進得了庫的粉絲看見</li>
+  <li>「上鎖」只指整座庫房進不了；庫房裡某一件還沒解開，稱為需要條件或未解開，見<a href="#item-status">每件內容的三種狀態</a></li>
+</ul>
+<p class="note">依據：5.1.7.3 F2；D477。</p>
 
 <h2 id="unlock"><span class="n"></span>進庫方法</h2>
 <p>進庫方法讓創作者決定哪些粉絲進得了這座庫房，這是粉絲看到庫房內容之前的第一道門。一種進庫方法能放哪些條件，見<a href="#conditions">可選的條件</a>；粉絲掉級時進庫方法還算不算達成，見<a href="#tier-drop">分級條件與掉級</a>。</p>
@@ -166,7 +238,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:24%">條件</th><th>粉絲要符合</th></tr></thead>
   <tbody>
-    <tr><td>分級（Tier）</td><td>在指定分級以上<br>分級每週重算，名單會跟著變</td></tr>
+    <tr><td>分級（Tier）</td><td>在指定分級以上<br>粉絲達標即時升級、降級每週重算，名單會跟著變</td></tr>
     <tr><td>買過（Bought）</td><td>買過電子商店的指定商品，含限量品</td></tr>
     <tr><td>支持過（Backed）</td><td>支持過指定項目</td></tr>
     <tr><td>出席過（Attended）</td><td>出席過指定場次</td></tr>
@@ -177,10 +249,10 @@ table.map td:nth-child(2){width:22%}
 <h3 id="tier-drop">分級條件與掉級</h3>
 <ul class="plain">
   <li>一種進庫方法含分級條件時，粉絲的分級掉到條件以下，整種方法就不再達成，即使同一種方法裡的其他條件仍符合</li>
-  <li>掉級的認定依<a href="fans-tiers.html#recalc">每週重算與降級緩衝</a></li>
+  <li>掉級的認定依<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></li>
   <li>粉絲若沒有其他已達成的進庫方法，也沒有未撤銷的鑰匙，就失去這座庫房的進庫資格</li>
 </ul>
-<p class="note">依據：5.1.7.3 F2、F7；5.1.7.2 F2；主規格 §7.5；D150、D347、D376。</p>
+<p class="note">依據：5.1.7.3 F2、F7；5.1.7.2 F2；主規格 §7.5；D150、D347、D376、D476。</p>
 
 <h2 id="keys"><span class="n"></span>鑰匙</h2>
 <p>鑰匙（進庫憑證）是進庫方法之外的另一條路，讓創作者親手放原本不符合任何進庫方法的粉絲進來；拿到鑰匙的人用掉一次，就能進這座庫房。</p>
@@ -195,23 +267,40 @@ table.map td:nth-child(2){width:22%}
   <li>鑰匙只管進庫，不免除每件內容的<a href="#tasks">任務</a></li>
   <li>還沒被領取的次數不算人，領取後才算進打得開的人數</li>
   <li>鑰匙代碼是唸得出來、能雷雕在實體商品上的短代碼</li>
-  <li>鑰匙目前只會因兩件事失效：次數用完、被撤銷</li>
+  <li>鑰匙失效的情形有三種：
+    <ul class="plain">
+      <li>次數用完</li>
+      <li>被撤銷</li>
+      <li>庫房被刪除</li>
+    </ul>
+  </li>
+  <li>目前沒有到期欄位</li>
+  <li>庫房不在上架中（草稿或已下架）時，粉絲領取鑰匙只會得到「尚未開放」，須等庫房上架後再領</li>
   <li>撤銷後，靠這把鑰匙進來的粉絲立刻失去存取權</li>
   <li>撤銷會保留發放與領取紀錄</li>
 </ul>
 <p>在哪裡發鑰匙、怎麼撤銷，見媒體庫的<a href="fans-vault.html#key-setup">發鑰匙與撤銷</a>。</p>
-<p class="note">依據：5.1.7.3 F4；D377。</p>
+<p class="note">依據：5.1.7.3 F4、F10；D377、D477。</p>
 
 <h2 id="tasks"><span class="n"></span>每件內容的任務</h2>
-<p>任務讓創作者決定粉絲進庫之後，要做什麼才看得到某一件內容；這是第二道門。三種設法各要粉絲做什麼，見<a href="#task-types">任務的三種設法</a>；行動任務能指定哪些事，見<a href="#action-tasks">行動任務的種類</a>；等級任務的等級能選的範圍，見<a href="#tier-task-range">等級任務能選哪幾級</a>；解開後什麼情況會再上鎖，見<a href="#relock">解開之後會不會收回</a>；事後改任務時已解開的粉絲怎麼辦，見<a href="#task-edit">修改任務</a>。</p>
+<p>任務讓創作者決定粉絲進庫之後，要做什麼才看得到某一件內容；這是第二道門。</p>
+<ul class="plain">
+  <li>三種設法各要粉絲做什麼，見<a href="#task-types">任務的三種設法</a></li>
+  <li>行動任務能指定哪些事，見<a href="#action-tasks">行動任務的種類</a></li>
+  <li>等級任務的等級能選的範圍，見<a href="#tier-task-range">等級任務能選哪幾級</a></li>
+  <li>什麼時候算解開、紀錄怎麼記，見<a href="#unlock-def">解開的定義與紀錄</a></li>
+  <li>每件內容的狀態怎麼稱呼，見<a href="#item-status">每件內容的三種狀態</a></li>
+  <li>解開後什麼情況會收回，見<a href="#relock">解開之後會不會收回</a></li>
+  <li>事後改任務時已解開的粉絲怎麼辦，見<a href="#task-edit">修改任務</a></li>
+</ul>
 
 <h3 id="task-types">任務的三種設法</h3>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:24%">設法</th><th>粉絲怎樣才看得到該件</th></tr></thead>
+  <thead><tr><th style="width:24%">設法</th><th>粉絲怎樣才解開該件</th></tr></thead>
   <tbody>
-    <tr><td>不設任務</td><td>進得了庫就看得到</td></tr>
+    <tr><td>不設任務</td><td>進得了庫就解開</td></tr>
     <tr><td>行動任務（Action task）</td><td>完成創作者指定的一件事</td></tr>
-    <tr><td>等級任務（Tier task）</td><td>分級達到創作者指定的等級，自動看得到</td></tr>
+    <tr><td>等級任務（Tier task）</td><td>分級達到創作者指定的等級，自動解開</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
@@ -245,8 +334,29 @@ table.map td:nth-child(2){width:22%}
   <li>進庫方法有分級條件時，只能選那一級或更高</li>
   <li>好幾種進庫方法各有不同的分級條件時，以其中最低的那一級為下限</li>
   <li>只要有任何一種進庫方法不含分級條件，或庫房只靠鑰匙進庫，四級都能選</li>
-  <li>靠鑰匙或不含分級條件的進庫方法進庫、但分級低於任務等級的粉絲，該件維持上鎖</li>
+  <li>靠鑰匙或不含分級條件的進庫方法進庫、但分級低於任務等級的粉絲，該件的狀態是需要條件</li>
 </ul>
+
+<h3 id="unlock-def">解開的定義與紀錄</h3>
+<ul class="plain">
+  <li>粉絲第一次同時符合「進得了庫（庫房上架中）」與「該件的任務」的那一刻，記一筆解開紀錄；以符合的那一刻為準，不是粉絲實際點開那件內容</li>
+  <li>不設任務的內容，進庫那一刻就解開</li>
+  <li>紀錄只增不刪：之後等級掉了收回、粉絲失去進庫資格或庫房下架，紀錄都保留，只影響「目前看得到」</li>
+  <li>下架期間不產生新的解開紀錄；重新上架後，原本的紀錄恢復作用，粉絲不用重解</li>
+  <li>紀錄是「行動任務永久解開」的依據，也是「累計解開過」的來源，見<a href="#item-reach">每件內容的兩個數字</a></li>
+</ul>
+
+<h3 id="item-status">每件內容的三種狀態</h3>
+<p>粉絲進得了庫之後，每件內容是下列三種狀態之一；粉絲端的用詞與此一致。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">狀態</th><th>什麼情況</th></tr></thead>
+  <tbody>
+    <tr><td>已解開（Unlocked）</td><td>該件不設任務<br>該件是等級任務，且分級達到任務等級<br>該件是行動任務，且這位粉絲已完成</td></tr>
+    <tr><td>需要條件（Condition required）</td><td>該件是等級任務，且分級低於任務等級；畫面顯示差什麼，例如需要哪一級</td></tr>
+    <tr><td>未解開（Not yet unlocked）</td><td>該件是行動任務，且這位粉絲還沒完成；畫面附上那一個任務</td></tr>
+  </tbody>
+</table></div>
+<p>整座庫房進不了時稱「上鎖」，不用這三種狀態，見<a href="#visibility">庫房的可見性</a>。</p>
 
 <h3 id="relock">解開之後會不會收回</h3>
 <div class="tablewrap"><table>
@@ -254,7 +364,7 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>不設任務</td><td>跟著進庫資格走</td></tr>
     <tr><td>行動任務</td><td>完成一次就永久解開<br>粉絲失去進庫資格時，整座庫房都看不到；重新進得了庫後，已完成的任務仍算完成</td></tr>
-    <tr><td>等級任務</td><td>跟著分級走：分級掉到任務等級以下，該件收回<br>分級回升後，該件自動再解開<br>掉級的認定依<a href="fans-tiers.html#recalc">每週重算與降級緩衝</a></td></tr>
+    <tr><td>等級任務</td><td>跟著分級走：分級掉到任務等級以下，該件收回<br>分級回升後，該件自動再解開<br>掉級的認定依<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></td></tr>
   </tbody>
 </table></div>
 
@@ -269,11 +379,12 @@ table.map td:nth-child(2){width:22%}
   </li>
   <li>已經解開該件的粉絲保留</li>
   <li>其他粉絲照新任務判定</li>
+  <li>原本不設任務、改為設任務時，先前看得到的粉絲算已解開，改任務後照樣看得到</li>
 </ul>
-<p class="note">依據：5.1.7.3 F4、F8；主規格 §7.5；D377。</p>
+<p class="note">依據：5.1.7.3 F4、F6、F8；主規格 §7.5；D377、D477。</p>
 
 <h2 id="reach"><span class="n"></span>打得開的人數</h2>
-<p>打得開的人數讓創作者知道現在有幾位粉絲進得了這座庫房；每件內容各自有幾位看得到，見<a href="#item-reach">每件內容的可看人數</a>。</p>
+<p>打得開的人數讓創作者知道現在有幾位粉絲進得了這座庫房；每件內容另有「累計解開過」與「目前看得到」兩個數字，見<a href="#item-reach">每件內容的兩個數字</a>。</p>
 <p>打得開的人數＝達成任一種進庫方法的粉絲，加上持有未撤銷鑰匙的粉絲，重複的人只算一次。這個數字只算進庫，不受各件內容的任務影響。</p>
 <div class="stepsum">例：假設達成進庫方法的有 30 人、持有鑰匙的有 5 人，其中 2 人兩者都有，打得開的人數是 33 人。</div>
 <ul class="plain">
@@ -283,35 +394,45 @@ table.map td:nth-child(2){width:22%}
   <li>畫面上怎麼顯示總數、各分級與依來源拆開的數字，見媒體庫的<a href="fans-vault.html#vault-overview">總覽</a></li>
 </ul>
 
-<h3 id="item-reach">每件內容的可看人數</h3>
-<p>每件內容另有一個數字，是進得了庫、而且該件已對他解開的粉絲人數。</p>
+<h3 id="item-reach">每件內容的兩個數字</h3>
+<p>每件內容有兩個數字，分開呈現、不相加；整座庫房的總覽也顯示這兩個數字，見媒體庫的<a href="fans-vault.html#vault-overview">總覽</a>。</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:24%">該件的任務</th><th>可看人數</th></tr></thead>
+  <thead><tr><th style="width:30%">數字</th><th>意思</th></tr></thead>
+  <tbody>
+    <tr><td>累計解開過（Unlocked in total）</td><td>曾經解開這件內容的粉絲人數<br>掉級收回或庫房下架都不減，見<a href="#unlock-def">解開的定義與紀錄</a></td></tr>
+    <tr><td>目前看得到（Currently visible）</td><td>此刻進得了庫、而且這件對他已解開的粉絲人數</td></tr>
+  </tbody>
+</table></div>
+<p>「目前看得到」依該件的任務設法計算：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">該件的任務</th><th>目前看得到</th></tr></thead>
   <tbody>
     <tr><td>不設任務</td><td>等於打得開的人數</td></tr>
     <tr><td>等級任務</td><td>打得開的人之中，分級達到任務等級的人數</td></tr>
     <tr><td>行動任務</td><td>打得開的人之中，已完成該件任務的人數</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.7.3 F3；D377。</p>
+<p>粉絲端每件內容顯示的已解鎖人數，就是累計解開過；畫面細節屬粉絲端。</p>
+<p class="note">依據：5.1.7.3 F3、F8；D377、D477。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.7.3-媒體庫.md</code>（最後更新 2026-10-09）、<code>5.1.7.2-分級權益.md</code>、主規格 §7.5、§8.31</li>
-    <li>決策：D150、D347、D376、D377</li>
+    <li>規格：<code>5.1.7.3-媒體庫.md</code>（最後更新 2026-10-23）、<code>5.1.7.2-分級權益.md</code>、主規格 §7.5、§7.14、§8.31</li>
+    <li>決策：D150、D347、D376、D377、D476、D477</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>「達成過」裡的 Ztor Score 與連續支持月數，是不是忠誠點數、怎麼量</li>
     <li>比對所需的粉絲逐筆紀錄何時完整建好</li>
-    <li>鑰匙代碼的格式、有效期限，要不要加到期機制</li>
+    <li>鑰匙代碼的格式</li>
+    <li>鑰匙的有效期限</li>
+    <li>要不要加到期機制</li>
     <li>連結與內容的加密方式（屬工程範疇）</li>
     <li>各級福利的庫房開關，要不要和媒體庫的分級條件連動</li>
     <li>同一種進庫方法裡，能不能放兩條分級條件</li>
     <li>一座庫房最多幾種進庫方法、一種方法最多幾條條件</li>
-    <li>進不了庫的粉絲，在粉絲端看不看得到這座庫房</li>
     <li>行動任務「追蹤創作者」怎麼認定粉絲已完成</li>
     <li>行動任務「加入社群」怎麼認定粉絲已完成</li>
     <li>行動任務「分享庫房頁面給 N 位朋友」怎麼認定粉絲已完成</li>
@@ -320,19 +441,21 @@ table.map td:nth-child(2){width:22%}
     <li>行動任務「看完指定影片」怎麼認定粉絲已完成</li>
     <li>行動任務「參加過一場 Watch Party（是否限本創作者的場次、可否指定場次）」怎麼認定粉絲已完成</li>
     <li>行動任務「爆米花打賞累積 N」怎麼認定粉絲已完成</li>
-    <li>商城消費選「任一商品」時的範圍，以及指定商品與任一商品完成的認定時點</li>
+    <li>商城消費選「任一商品」時的範圍</li>
+    <li>商城消費選指定商品或任一商品時，完成的認定時點</li>
     <li>數字 N 的可填範圍與上限</li>
     <li>指定貼文可以選哪些</li>
     <li>指定影片可以選哪些</li>
     <li>指定商品可以選哪些</li>
     <li>設定任務之前就已做過的行為，算不算完成</li>
     <li>進庫方法被修改後，既有等級任務低於新下限時怎麼處理</li>
-    <li>不設任務改為設任務時，先前看得到的粉絲算不算已解開</li>
     <li>原為等級任務、修改後保留的粉絲，之後掉級是否仍收回</li>
-    <li>逐人逐件的解開紀錄，資料從哪來、怎麼保存</li>
-    <li>沒有逐人完成資料的行動任務，該件的可看人數怎麼算</li>
+    <li>解開紀錄實際怎麼寫入、資料從哪來（待工程確認）</li>
+    <li>沒有逐人完成資料的行動任務，該件的「目前看得到」人數怎麼算</li>
+    <li>上架中的庫房能不能新增或修改下架時間</li>
+    <li>排程的時區與時間粒度，隨電子商店排程的待確認</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（從媒體庫搬出成規則頁，內容不變）；2026-10-09（至 D377）</p>
+  <p class="k">最近同步：2026-10-23（D477：庫房狀態與排程、庫房的可見性、解開的定義與紀錄、每件內容的三種狀態與兩個數字；D476 升級即時、降級每週重算，改連結名稱）；2026-10-19（從媒體庫搬出成規則頁，內容不變）；2026-10-09（至 D377）</p>
 </details>
 </div>
 </body>
