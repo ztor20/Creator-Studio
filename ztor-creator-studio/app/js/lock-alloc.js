@@ -128,7 +128,10 @@
       else if (freeEl) freeEl.removeAttribute('title');
       var cell = row.querySelector('[' + at('lockcell') + ']');
       if (cell) {
-        if (locked === null) {
+        if (LS.isStocklessMember && LS.isStocklessMember(p)) {
+          /* D480 決定 4：數位商品沒有在庫，不鎖（限量的組合包只看限量上限） */
+          cell.innerHTML = '<span class="lockset__nolock" data-i18n="bd.lock.digital">' + esc(Tfb(T, 'bd.lock.digital', 'Digital — not locked')) + '</span>';
+        } else if (locked === null) {
           cell.innerHTML = '<span class="lockset__nolock" data-i18n="bd.lock.shared">' + esc(Tfb(T, 'bd.lock.shared', 'Not locked')) + '</span>';
         } else {
           var al0 = multi ? LS.bundleAllocOf(b, m, p) : null;

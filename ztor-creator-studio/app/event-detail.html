@@ -7437,6 +7437,9 @@
     const b = (ev.bundles || []).find(x => x.id === id);
     if (!b || bdZeroBlock(b)) return;
     b.cap = window.ztorEvents.bundleZeroCap(b);
+    /* D480 決定 7（2026-10-23）：限量就自動鎖定＝限量 − 已售＝只剩被保留的套數；其餘鎖定退回門票的共用庫存 */
+    const hs = Number(b.holdSets) || 0;
+    b.lockSets = hs > 0 ? hs : null;
     window.ztorEvents.saveEdits(ev.id, { bundles: ev.bundles });
     if (window.ztorToast) window.ztorToast.show(T('ed.bd.zero.toast', 'Stock of {name} set to 0 — raise the total in the bundle page to sell again').replace('{name}', b.name || ''));
     renderBundles();
