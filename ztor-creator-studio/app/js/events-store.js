@@ -140,7 +140,7 @@
       bundles: [
         { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', desc: '一張 VIP 票加一件巡演官方 Tee，現場憑票一併領取。', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
-          price: 4800, sold: 12, cap: 50, override: { HKD: 1188 } }   // HKD 換算 1,189 → 覆寫 1,188（D306 示範）
+          price: 4800, sold: 12, cap: 12, override: { HKD: 1188 } }   // HKD 換算 1,189 → 覆寫 1,188（D306 示範）；D480（2026-10-23）：VIP 已賣完、沒有可鎖的票，限量收到已售 12（原 50）
       ],
       /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／顯示（D341：可見性用詞統一為顯示／隱藏）。
          2026-09-29（D327）：電子門票底下的附屬設定值整組清掉——那組設定已刪除。 */
@@ -239,7 +239,7 @@
         /* 2026-09-21（D296 示範）：允許兩種票種、粉絲任選——原價「從 $4,300 起」（最低票價 Floor 3,300 × 1 ＋ 1,000）。 */
         { id: 'bd-vip-zine', name: 'VIP／Floor 任選 ＋ 精裝寫真誌', tickets: { tierIds: ['tier-vip', 'tier-floor'], qty: 1 },
           products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000 }],
-          price: 4300, sold: 7, cap: 40 }
+          price: 4300, sold: 7, cap: 40, lockSets: 33 }
       ],
       publish: { pickup: 'sf', shown: true },
       /* 只設開賣、不設停售的示範（`to: ''`）——賣到開演為止。 */
@@ -321,7 +321,7 @@
       bundles: [
         { id: 'bd-kenting-cap', name: 'GA ＋ 墾丁限定棒球帽', tickets: { tierIds: ['tier-ga'], qty: 1 },
           products: [{ name: 'Taiwan Fest 墾丁限定棒球帽', img: 'images/products/cap.webp', price: 450 }],
-          price: 1000, sold: 0, cap: 60 }
+          price: 1000, sold: 0, cap: 60, lockSets: 60 }
       ],
       sold: 0,
       revenue: 0,
@@ -453,7 +453,7 @@
       bundles: [
         { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 限量黑膠', tickets: { tierIds: ['tier-slot'], qty: 1 },
           products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 40 }],
-          price: 45, sold: 26, cap: 60 }
+          price: 45, sold: 26, cap: 46, lockSets: 20 }   // D480：限量＝已售 26＋鎖 20（原 60）；Signing slot 還剩 32 張，鎖 20 給組合包、留 12 張給單售
       ],
       /* 販售時間（2026-08-31 新欄 `sale`）：`from` 開賣、`to` 停售，皆為 'YYYY-MM-DD HH:MM'。
          `to` 留空＝只設開賣、賣到開演（見 ASSUMPTIONS SALE-001）；整個 `sale` 缺席＝不設開賣時間＝上架即開賣
@@ -501,7 +501,7 @@
       bundles: [
         { id: 'bd-pt-sunset-tee', name: 'Sunset pit ＋ 黑鮪魚祭 T 恤', tickets: { tierIds: ['tier-pt-sunset'], qty: 1 },
           products: [{ name: '黑鮪魚祭限定 T 恤', img: 'images/products/coastline-tee.webp', price: 600 }],
-          price: 1400, sold: 0, cap: 80 }
+          price: 1400, sold: 0, cap: 80, lockSets: 80 }
       ],
       sold: 0,
       revenue: 0,
@@ -604,7 +604,7 @@
           /* pickup（D401 決定四，原型示意欄位，ASSUMPTIONS UIA-248）：這個商品在哪個取貨場次領取——s＝pickup-detail.html 的示範狀態、
              nameKey＝場次名稱（pickup.html 的示範列）。活動詳情「前往領取場次」依綁到的場次數分三種去處。 */
           products: [{ name: 'Countdown night wristband', img: 'images/products/wristband.webp', price: 400, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 1451, sold: 0, cap: 300, override: { TWD: 1450 },
+          disc: 10, price: 1451, sold: 0, cap: 300, lockSets: 300, override: { TWD: 1450 },
           /* 2026-10-16 示範資料補齊（note/release2.4 假資料覆蓋稽核 E6、E8；不是產品規則）：
              · sched.saleStart：開賣「另設」、早於活動開賣 11/01（仍在上架區間 10/25 起之內）——上架、下架、停售跟隨活動（S62）。
              · rules.conds.cap：組合包限購「覆寫」每人 1 組（S94，獨立計算；門票 tier-ga 換算上限 4 組）。活動組合包的
@@ -755,11 +755,11 @@
            活動發布後，組合包下架了才能改庫存以外的資料（D435）；尚未售出，所以允許的門票與張數也還能改（D433）。 */
         { id: 'bd-tc-floor-tee', name: 'Standing zone ＋ 巡演官方 Tee', desc: '站區票加一件巡演官方 Tee，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 3413, sold: 0, cap: 100, listed: false },
+          disc: 10, price: 3413, sold: 0, cap: 100, lockSets: 100, listed: false },
         /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200、美元覆寫 */
         { id: 'bd-tc-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 2430, sold: 25, cap: 200, override: { USD: 76 } }
+          disc: 10, price: 2430, sold: 25, cap: 200, lockSets: 175, override: { USD: 76 } }
       ],
       sold: 406,   // D429：原 460（套票 1 人票 120 張 → 套票門票 60 張）；收入不變。2026-10-16 ＋6（免費陪同票 tier-tc-companion）
       revenue: 1013260,
@@ -942,7 +942,7 @@
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-kh-duo（賣出 190 組）刪除，銷量改記在門票 tier-kh-duo。 */
         { id: 'bd-kh-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-kh-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 2430, sold: 90, cap: 120, override: { USD: 76 } }
+          disc: 10, price: 2430, sold: 90, cap: 120, lockSets: 30, override: { USD: 76 } }
       ],
       sold: 1590,   // D429：原 1,780（套票 1 人票 380 張 → 套票門票 190 張）；收入不變
       revenue: 3926820,
@@ -1009,7 +1009,7 @@
         /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動下架一併下架（D457：原「取消」連動改為下架） */
         { id: 'bd-pt-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-pt-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 1994, sold: 12, cap: 100, listed: false, override: { USD: 62 } }
+          disc: 10, price: 1994, sold: 12, cap: 100, lockSets: 88, listed: false, override: { USD: 62 } }
       ],
       sold: 451,   // D429：原 481（套票 1 人票 60 張 → 套票門票 30 張）
       revenue: 777798,   // D457：bookyay 沒有取消活動，原「取消後票券全撤銷、收入 0」退場；示範改為已結束＋已下架＋已封存，收入依四種票價與張數重算
@@ -1187,7 +1187,7 @@
       bundles: [
         { id: 'bd-lower-program', name: '一樓票 ＋ 交響夜場刊', tickets: { tierIds: ['tier-lower'], qty: 1 },
           products: [{ name: 'NICK Symphonic Night 場刊', img: 'images/products/tour-zine-vol-02.webp', price: 400 }],
-          price: 3200, sold: 0, cap: 100 },
+          price: 3200, sold: 0, cap: 100, lockSets: 100 },
         /* D342 示範（2026-10-01）：任選樓層的雙人組——允許票種兩種、每組 2 張；購買條件與限購預設取兩張門票最嚴
            （超級粉絲以上 · 10/15 12:00–11/30 23:59 · 每人 2 組；D427 起只剩每人總限購）；開賣另設 10/8 12:00＝組合包預售
            （早於活動 10/15 開賣、仍在上架區間 9/20 起之內）；上架、下架、停售跟隨活動。sched 的格子 null／缺＝跟隨。 */
@@ -1375,7 +1375,7 @@
       bundles: [
         { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: { tierIds: ['tier-front'], qty: 1 },
           products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 700 }],
-          price: 1900, sold: 63, cap: 200 }
+          price: 1900, sold: 63, cap: 200, lockSets: 137 }
       ],
       publish: { pickup: 'eticket', shown: true },
       sold: 1876,
@@ -1410,7 +1410,7 @@
       bundles: [
         { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: { tierIds: ['tier-stream'], qty: 1 },
           products: [{ name: 'LOVE RAGE HOPE — 數位專輯', img: 'images/products/nick-album.jpg', price: 170 }],
-          price: 520, sold: 88, cap: 150 }
+          price: 520, sold: 88, cap: 150, lockSets: 62 }
       ],
       publish: { pickup: 'eticket', shown: true },
       sold: 473,
@@ -1446,7 +1446,7 @@
         /* 2026-09-21（D296 示範）：內野／外野任選 × 2 張——每組兩張同一票種；內野已售罄，只剩外野可選，整組仍可售（D296 決定四 a）。 */
         { id: 'bd-infield-tee', name: '內野／外野 任選 × 2 ＋ 官方 Tee', tickets: { tierIds: ['tier-infield', 'tier-outfield'], qty: 2 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 500 }],
-          price: 2300, sold: 41, cap: 120 }
+          price: 2300, sold: 41, cap: 55, lockSets: 14 }   // D480：每組 2 張、外野只剩 28 張＝14 組，限量＝41＋14（原 120）；刻意全部鎖給組合包，示範單售可賣 0
       ],
       sold: 1172,
       revenue: 1290700,   // 2026-10-16 示範資料修正（UI-CHANGES 二百四十四）：含組合包整組金額（D408）＝門票 1,196,400（內野經組合包的 82 張不重算）＋組合包 41 × 2,300
@@ -1952,7 +1952,7 @@
       bundles: [
         { id: 'bd-encore-tee', name: '加場票 ＋ 官方 Tee', tickets: { tierIds: ['tier-encore-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
-          price: 2800, sold: 0, cap: 100 }
+          price: 2800, sold: 0, cap: 100, lockSets: 100 }
       ],
       sold: 0,
       revenue: 0,
@@ -2480,6 +2480,7 @@
        t.holdSingle   鎖給單售格的保留（單張購買下單未付款；沒鎖單售時不用）
        t.holdFree     未鎖定格的保留（沒鎖單售的單張購買、沒鎖定組合包的單）；舊欄 t.reserved 視為這一格（相容）
        b.lockSets     組合包鎖定套數（配額，含自己的保留）；b.holdSets＝這個組合包被保留的套數
+                      D480（2026-10-23）：限量（有 cap）的組合包鎖定＝cap − 已售，示範資料照這條寫
                       （有鎖定時記在它的鎖定格，張數算在 b.holdTier——缺省＝第一個允許的門票）
      公式（逐張門票）：
        各組合包鎖定  tierLocked（每套張數 × 套數，先由組合包自己獨有的門票吸收，沿用 D446）

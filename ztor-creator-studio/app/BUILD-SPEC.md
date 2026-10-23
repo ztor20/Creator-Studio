@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-23 · D480 組合包限量就自動鎖定（UI-CHANGES 三百零三、ASSUMPTIONS UIA-301）**：沒有新元件。建立組合包與建立活動第 6 步彈窗的數量節把販售上限問句移到鎖定問句之前；限量時鎖定問句的 `segmented.radio-cards` 收起、鎖定組數 `zstep` 停用，改顯示一列 `field__hint--fact`（`[data-cb-lock-auto]`／`[data-bd-lock-auto]`）；組合商品細節頁「組合庫存」分頁同一列說明。成員鎖定量表（`js/lock-alloc.js`）數位成員的已鎖定格沿用 `.lockset__nolock` 寫「數位商品，不鎖定」。數字一律問 `ListingState`（`bundleLimitLock`、`bundleMaxSets`、`bundleQty` 改以 cap − 已售 − 保留為剩餘上限）。
+
 > **2026-10-23 · D478 組合包修改成員的條件（UI-CHANGES 二百九十九、ASSUMPTIONS UIA-297）**：沒有新元件。`bundle-detail.html` 成員節沿用 `[data-bd-members-locked]` 說明列（`info-banner`），`memberEditBlock()` 決定原因（sold／listed／checkout），`syncMembersLock` 依原因換文案並停用加入區、移除鈕、每套用量與允許門票勾選表；`bdStockSync` 在上架、下架後重跑成員鎖。結帳中筆數讀 `bundleModel.pendingCheckout`（缺值以 `holdSets` 代替）。
 
 > **2026-10-22 · D473 建立組合包取貨與核銷節移到步驟 2（UI-CHANGES 二百九十四、ASSUMPTIONS UIA-293）**：沒有新元件。`create-bundle.html` 的 `[data-cb-pickup]` 分卡改 `data-form-step="2"`、`data-outline-group="sale"`，排在上架與開賣之後、購買條件之前；整節掛 `data-feat="S34.1"`（版本外由 devtools 的 `ztd-ver-hidden` 收起，與成員有沒有現場 QR 商品的 `hidden` 各自獨立；本頁大綱以 `getClientRects` 判斷可見，兩種收起都不列）。

@@ -13,6 +13,22 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-23（三百零三）· 組合包設成限量就自動鎖定成員庫存，鎖定＝限量 − 已售（A spec-derived · D480）
+
+**標籤**：release2.4
+
+使用者裁決 D480（「照建議」）：組合包開啟限量就同時開啟鎖定，鎖定套數＝限量 − 已售、跟著限量走不另外設；調高超過成員還能鎖的量擋下並寫缺幾套，調低下限＝已售＋保留，改回不限量鎖定全部退回、之後可自己另設；數位成員不鎖；單售商品不變；票務組合包「庫存設為 0」時鎖定跟著收。同輪更正「現在的資料都是假資料，應該不需要管舊資料」：示範資料直接改成符合新規則，不寫轉換。使用者已說不進 release2.3。
+
+- `create-bundle.html` 數量節：販售上限問句移到鎖定問句之前；新增 `syncLimitLock()`——限量時鎖定組數唯讀＝上限、二選一收起、顯示 `[data-cb-lock-auto]` 一句說明；`capOver` 改看成員還能鎖的套數（`ListingState.bundleMaxSets`），超過時 `[data-cb-capmax]` 寫「還差 N 套（受某成員限制）」並擋第一步；改回不限量時鎖定歸 0、二選一回到「不鎖定」；限量時不再重複報「鎖定超過上限」。
+- `bundle-detail.html`：組合庫存分頁加 `[data-bd-lock-auto]` 說明列，限量時二選一收起、鎖定組數唯讀；`syncLimitLock()` 在 `refreshAlloc()` 開頭依限量與已售導出鎖定（不合法的上限不寫進鎖定）；`capRoom` 改成已售＋成員還能鎖的套數，超量訊息改寫缺幾套；改回不限量鎖定全部退回；「編輯組合」進場拍鎖定快照、取消還原、儲存時鎖定有變記一筆操作紀錄（前 → 後＋各成員導出量）。
+- `js/bundle-editor.js`（建立活動第 6 步組合包彈窗，`layout:'split'`）：同一套——`limitSync()`／`limitAutoText()`、上限問句移到鎖定之前、限量時鎖定唯讀、`capOver`／`capHintSplit` 改看成員還能鎖的套數、改回不限量鎖定歸 0。
+- `js/listing-state.js`：`bundleQty` 的限量改成剩餘上限＝cap − 已售 − 保留（原本把 cap 當成剩餘）；新增 `bundleLimitLock()`、`isStocklessMember()`（只認數位商品）；`applyBundleLock` 數位成員不寫鎖定。`js/lock-alloc.js`：數位成員的已鎖定格寫「數位商品，不鎖定」。
+- `event-detail.html`：票務組合包「庫存設為 0」同時把鎖定收到只剩保留的套數。
+- 示範資料：`js/products-store.js`——簽名會限定組限量 20 → 6（鎖 1＝6 − 5）、冬季預購組限量 100 → 40 並鎖 40、加數位成員主題單曲、選物四件組鎖 2 → 12（50 − 38）、REALIVE 簽名會限定組限量 30 → 20 並鎖 12；九龍夜行入門組合維持不限量單獨鎖 1 套（決定 3 的示範）。`js/events-store.js`——有限量的票務組合包都補 `lockSets`＝限量 − 已售，門票不夠鎖的三組把限量收到已售＋可鎖（bd-vip-tee 高雄 50 → 12、bd-slot-vinyl 60 → 58、bd-infield-tee 120 → 55）。
+- `js/i18n.js`：`cb.cap.s` 改寫；新增 `cb.cap.short`、`cb.lock.auto`、`cb.lock.auto.empty`、`cb.lock.auto.blocked`、`bd.lock.auto`、`bd.lock.auto.blocked`、`bd.cap.short`、`bd.lock.digital`（中英）。
+- 同日驗收修正：數位成員改以商品類型判斷（`cat: 'digital'` 就不鎖、不參與鎖定上限，建立活動彈窗的成員清單也帶 `cat`）；上限被擋下時鎖定欄與說明句一致（建立頁鎖定欄清空並寫「還沒鎖定，請先調低販售上限」，細節頁寫「鎖定維持 N 套」）；`nick-preorder-set` 限量 100 → 3 並鎖 3；album-signing-taipei 的 Signing slot 組合包限量 58 → 46、鎖 20，留 12 張給單售（UIA-301 第 8 項）。
+- 沒有新元件、沒有新功能標記（限量沿用 S45 🔵 release2.4，鎖定本來就沒有標記，兩個版本都有）。文件：ASSUMPTIONS 新增 UIA-301；BUILD-SPEC、requirements-map 同步。
+
 ## 2026-10-23（三百零二）· release2.5 媒體庫範圍＝需求網址 MVP：鑰匙、排程、大彩蛋、其餘六種行動任務與待補數字只在最終版（B 反饋導入 · 交付範圍）
 
 **標籤**：release2.5

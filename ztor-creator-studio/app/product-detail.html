@@ -1818,7 +1818,10 @@
       const L = window.ListingState;
       let sum = 0;
       bundlesOfProduct().forEach(b => {
-        const v = isMultiVar() ? L.variantsChannelLocked(product.variants, { bundle: b.id }) : L.lockOf(product, { bundle: b.id });
+        /* 2026-10-23（D480 驗收）：多選項商品的組合鎖定總量記在商品層（N × 每套用量，含少分配的餘量，ListingState.applyBundleLock）；
+           原本只加逐規格已指定的部分，沒指定規格的組合鎖定永遠算成 0 */
+        const tot = (product.pool && product.pool.locks && product.pool.locks.bundles) ? product.pool.locks.bundles[b.id] : null;
+        const v = isMultiVar() ? ((tot !== null && tot !== undefined) ? Number(tot) : L.variantsChannelLocked(product.variants, { bundle: b.id })) : L.lockOf(product, { bundle: b.id });
         if (v !== null) sum += v;
       });
       return sum;

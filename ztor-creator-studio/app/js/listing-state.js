@@ -336,8 +336,14 @@
       var s = (q === INF) ? INF : Math.floor(q / per);
       if (s < min) min = s;
     }
+    /* D480：限量 cap 是對外總量（含已售），剩餘上限＝cap − 已售套數 − 這個組合包被保留的套數。
+       已售讀 bundle.sold（細節頁模型），沒有就讀示範資料的 sales.units。原本直接拿 cap 比，等於把總量當成剩餘。 */
     var cap = (bundle && bundle.cap !== undefined && bundle.cap !== null) ? num(bundle.cap) : null;
-    if (cap !== null && cap < min) min = cap;
+    if (cap !== null) {
+      var soldSets = (bundle.sold !== undefined && bundle.sold !== null) ? num(bundle.sold) : num(bundle.sales && bundle.sales.units);
+      var capLeft = Math.max(0, cap - soldSets - num(bundle.holdSets));
+      if (capLeft < min) min = capLeft;
+    }
     return min;
   }
 
@@ -360,6 +366,7 @@
     for (var i = 0; i < members.length; i++) {
       var m = members[i], p = map[m.productId || m.id];
       if (!p) return { max: 0, by: null };
+      if (isStocklessMember(p)) continue;   /* D480 決定 4：數位商品不鎖，不參與鎖定上限 */
       var free = freeQty(p);
       if (free === INF) continue;
       var own = lockOf(p, { bundle: bundle.id }) || 0;
@@ -367,6 +374,22 @@
       if (n < max) { max = n; by = p; }
     }
     return { max: max, by: by };
+  }
+  /**
+   * D480：限量的組合包自動鎖定＝限量 N − 已售套數（對內預留跟著對外總量走）；不限量回 null。
+   * cap 空白或不是正數時也回 null（還沒填）。已售讀 bundle.sold，沒有就讀 sales.units。
+   */
+  function bundleLimitLock(bundle) {
+    var cap = (bundle && bundle.cap !== undefined && bundle.cap !== null && bundle.cap !== '') ? num(bundle.cap) : null;
+    if (cap === null || !(cap > 0)) return null;
+    var soldSets = (bundle.sold !== undefined && bundle.sold !== null) ? num(bundle.sold) : num(bundle.sales && bundle.sales.units);
+    return Math.max(0, cap - soldSets);
+  }
+  /** D480 決定 4：成員是不是數位商品——數位商品沒有在庫，不鎖。 */
+  function isStocklessMember(product) {
+    /* 以商品類型判斷（5.1.5.2：數位商品限量只設上限、沒有在庫）：數位商品不論限量或不限量都不鎖，不看 pool.total。
+       活動組合包裡對不回商品資料的商品成員雖用 unlimited 池當替身，但沒有 cat＝digital，不算數位 */
+    return !!product && product.cat === 'digital';
   }
   /** 多選項成員的逐規格分配（選填）。回 { assigned, total, over, rows:[{vi, qty, max, bad}] } */
   function bundleAllocOf(bundle, m, product) {
@@ -397,6 +420,8 @@
       if (!p.pool.locks) p.pool.locks = { single: null, bundles: {} };
       if (!p.pool.locks.bundles) p.pool.locks.bundles = {};
       var total = bundleMemberLock(bundle, m);
+      /* D480 決定 4：數位商品沒有在庫（池＝unlimited），不鎖；限量的組合包只看限量上限 */
+      if (isStocklessMember(p)) total = null;
       p.pool.locks.bundles[bundle.id] = total;
       if (isMulti(p)) {
         var a = ((bundle.alloc) || {})[m.productId] || {};
@@ -955,6 +980,8 @@
     bundleLockSets: bundleLockSets,
     bundleMemberLock: bundleMemberLock,
     bundleMaxSets: bundleMaxSets,
+    bundleLimitLock: bundleLimitLock,
+    isStocklessMember: isStocklessMember,
     bundleAllocOf: bundleAllocOf,
     applyBundleLock: applyBundleLock,
     memberPer: memberPer,

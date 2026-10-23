@@ -295,11 +295,30 @@
         <div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k" data-i18n="cb.qty.max">Can sell</span><span class="form-tally__v" data-cb-sets>—</span></span></div>
       </div>
       <div class="stack">
+        <!-- 販售上限（F4 庫存版本）：不限量／限量二選一；限量的上限不得大於成員能供應的組數（D292）。
+             D480（2026-10-23）：限量會自動鎖定成員庫存，所以移到鎖定之前；上限超過成員還能鎖的套數＝擋下並寫出缺幾套 -->
+        <div class="form-ask">
+          <div class="form-ask__t" data-i18n="cb.cap.q">Set your own sales cap?</div>
+          <div class="form-ask__s" data-i18n="cb.cap.s">A cap only limits how many sets this bundle sells. It doesn’t lock stock.</div>
+          <div class="segmented radio-cards" role="radiogroup" aria-label="Limit" data-i18n-aria-label="cpp.bd.sp.limit" id="cb-edition">
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-edition="unlimited"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.qty.unlim">Unlimited</span></span></button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-edition="limited" data-feat="S45"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.avail.limited">Limited</span></span></button>
+          </div>
+          <div class="form-ask__body" data-when-cb-edition="limited" data-feat="S45" hidden>
+            <div class="form-ask__row">
+              <span class="form-ask__row-k" data-i18n="cb.cap.label">Sales cap</span>
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="" id="cb-total" aria-label="Sales cap" data-i18n-aria-label="cb.cap.label"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            </div>
+            <div class="field__hint field__hint--warn" data-cb-capmax hidden></div>
+          </div>
+        </div>
         <!-- 鎖定（D266）：要不要先把庫存鎖給這個組合；鎖定組數靠右，成員鎖定量由 ListingState 推導、唯讀；
              多選項成員可展開逐規格「選填」分配（D268）。空白＝不鎖定（同既有語意）。 -->
         <div class="form-ask">
           <div class="form-ask__t" data-i18n="cb.lock.q">Lock stock for this bundle?</div>
           <div class="form-ask__s" data-i18n="cb.lock.s">Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</div>
+          <!-- D480：限量時鎖定跟著限量走（＝限量 − 已售），二選一收起、鎖定組數唯讀，改顯示這一句 -->
+          <div class="field__hint field__hint--fact" data-cb-lock-auto hidden></div>
           <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-cb-lockmode>
             <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
             <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
@@ -315,22 +334,6 @@
               </div>
               <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
             </div>
-          </div>
-        </div>
-        <!-- 販售上限（F4 庫存版本）：不限量／限量二選一；限量的上限不得大於成員能供應的組數（D292） -->
-        <div class="form-ask">
-          <div class="form-ask__t" data-i18n="cb.cap.q">Set your own sales cap?</div>
-          <div class="form-ask__s" data-i18n="cb.cap.s">A cap only limits how many sets this bundle sells. It doesn’t lock stock.</div>
-          <div class="segmented radio-cards" role="radiogroup" aria-label="Limit" data-i18n-aria-label="cpp.bd.sp.limit" id="cb-edition">
-            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-edition="unlimited"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.qty.unlim">Unlimited</span></span></button>
-            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-edition="limited" data-feat="S45"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.avail.limited">Limited</span></span></button>
-          </div>
-          <div class="form-ask__body" data-when-cb-edition="limited" data-feat="S45" hidden>
-            <div class="form-ask__row">
-              <span class="form-ask__row-k" data-i18n="cb.cap.label">Sales cap</span>
-              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="" id="cb-total" aria-label="Sales cap" data-i18n-aria-label="cb.cap.label"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-            </div>
-            <div class="field__hint field__hint--warn" data-cb-capmax hidden></div>
           </div>
         </div>
       </div>
@@ -941,12 +944,13 @@
   const whoText = w => w === 'tix' ? T('cpp.bd.sp.who.tix', 'tickets') : String(w || '');
   const lockN = () => LS ? LS.bundleLockSets(bundleDraft) : null;
   function lockOver() {
-    if (!setsInput || !LS) return false;
+    if (!setsInput || !LS || limitedEdition()) return false;   /* D480：限量時超量由 capOver 擋，不重複報 */
     const raw = setsInput.value.trim(); if (raw === '') return false;
     const n = Math.floor(Number(raw)); if (isNaN(n)) return false;
     return n > capWho().n;
   }
   function lockHintText() {
+    if (limitedEdition()) return '';   /* D480：限量時鎖定跟著限量走，說明在 data-cb-lock-auto */
     const c = capWho();
     if (c.n === Infinity) return T('cpp.bd.sp.lock.none', 'Add a member first');
     if (lockOver()) return T('cpp.bd.sp.lock.over', 'Over the ceiling of {n} sets (limited by {who})').replace('{n}', fmtInt(c.n)).replace('{who}', whoText(c.who));
@@ -960,7 +964,9 @@
     return q === Infinity ? null : q;
   }
   const capN = () => { const c = totalInput ? Math.floor(Number(totalInput.value)) : NaN; return (limitedEdition() && !isNaN(c) && c > 0) ? c : null; };
-  const capOver = () => { const s = setsBeforeCap(), c = capN(); return c !== null && s !== null && c > s; };
+  /* D480：限量會自動鎖定成員庫存，上限要看成員還能鎖幾套（數位成員不算，ListingState.bundleMaxSets 已跳過）；建立時已售＝0 */
+  const lockableSets = () => (LS && hasContent()) ? LS.bundleMaxSets(bundleDraft, products).max : Infinity;
+  const capOver = () => { const c = capN(), m = lockableSets(); return c !== null && m !== Infinity && c > m; };
   function sellableSets() {
     if (!LS || !hasContent()) return null;
     const q = LS.bundleQty(bundleDraft, products);
@@ -988,9 +994,33 @@
   /* 限量 hint：前半「成員最多供應 N 組」是同一個上限第 3 次出現，刪；只留「賣完自動售罄」。 */
   /* 2026-10-12 改版：上限只在超過時說話（使用者拿掉了「賣完自動售罄」那句常駐說明） */
   function capHintText() {
-    const s = setsBeforeCap();
-    if (s !== null && capOver()) return T('cpp.bd.sp.cap.over', 'Over the {n} sets members can supply').replace('{n}', fmtInt(s));
+    /* D480：上限超過成員還能鎖的套數＝擋下並就地寫出缺幾套、受誰限制 */
+    if (capOver()) { const c = capWho(), m = lockableSets();
+      return T('cb.cap.short', 'Members can only lock {max} sets — {k} short (limited by {who})').replace('{max}', fmtInt(m)).replace('{k}', fmtInt(capN() - m)).replace('{who}', whoText(c.who)); }
     return '';
+  }
+  /* D480（2026-10-23，主規格 §7.14「組合包：限量與鎖定」）：限量時鎖定＝限量 − 已售（建立時已售 0，所以＝限量），
+     不另外設；鎖定二選一收起、鎖定組數唯讀，改顯示一句「已自動鎖定 N 套」。上限超過成員能鎖的量時不寫進模型（只標紅擋下）。
+     改回不限量時鎖定歸 0、恢復可以自己設（在 edition 切換處處理）。 */
+  function syncLimitLock() {
+    const auto = document.querySelector('[data-cb-lock-auto]');
+    const mode = document.querySelector('[data-cb-lockmode]');
+    const body = document.querySelector('[data-cb-lock-body]');
+    const lim = limitedEdition();
+    if (mode) mode.hidden = lim;
+    if (!lim) { if (auto) auto.hidden = true; return; }
+    const c = capN();
+    const ok = c !== null && !capOver();
+    bundleDraft.lockSets = ok ? c : null;
+    if (setsInput) setsInput.value = ok ? String(c) : '';   /* 擋下時不寫進鎖定，欄位也不顯示上限數字（與說明句一致） */
+    applyLock();
+    if (body) body.hidden = false;
+    if (auto) {
+      auto.hidden = false;
+      auto.textContent = c === null ? T('cb.lock.auto.empty', 'A limited bundle locks member stock for every set automatically. Fill in the sales cap first.')
+        : !ok ? T('cb.lock.auto.blocked', 'Limited to {cap} sets — nothing is locked yet because members can’t cover that many. Lower the sales cap.').replace('{cap}', fmtInt(c))
+        : T('cb.lock.auto', 'Limited to {cap} sets — {n} sets locked automatically. The lock follows the cap; switch to unlimited to set your own.').replace('{cap}', fmtInt(c)).replace('{n}', fmtInt(ok ? c : 0));
+    }
   }
 
   /* 數字、錯誤態與可售套數：一律問 ListingState；沒有成員時鎖定 UI 收起 */
@@ -998,7 +1028,7 @@
     if (!allocEl || !LS) return;
     const has = hasContent();
     if (allocField) allocField.hidden = !has;
-    if (setsInput) setsInput.disabled = !has;
+    if (setsInput) setsInput.disabled = !has || limitedEdition();   /* D480：限量時鎖定組數唯讀 */
     if (!has) { lockBad = false; if (setsHint) { setsHint.textContent = lockHintText(); setsHint.classList.remove('is-over'); } return; }
     const lim = LS.bundleMaxSets(bundleDraft, products);
     const over = lockOver();
@@ -1361,6 +1391,7 @@
     /* 限量硬上限先寫回草稿，可售套數＝ListingState.bundleQty() */
     const cap = capN();
     bundleDraft.cap = cap;
+    syncLimitLock();   /* D480：限量時鎖定跟著限量 */
     refreshAlloc();
     /* 相容性提示（顯示層）：限量成員、多選項成員、含票券 */
     renderCbPickup();   /* D471：取貨與核銷區跟著成員重畫 */
@@ -1448,7 +1479,15 @@
   /* 限量二選一：限量才顯示上限欄 */
   if (editionGrid) editionGrid.querySelectorAll('[data-cb-edition]').forEach(btn => {
     btn.addEventListener('click', () => {
+      const wasLimited = limitedEdition();
       state.avail = btn.dataset.cbEdition;
+      /* D480 決定 3：改回不限量＝鎖定全部退回共用庫存；之後可以自己另設鎖定套數 */
+      if (wasLimited && !limitedEdition()) {
+        bundleDraft.lockSets = null; if (setsInput) setsInput.value = ''; applyLock();
+        const mode = document.querySelector('[data-cb-lockmode]'), body = document.querySelector('[data-cb-lock-body]');
+        if (mode) mode.querySelectorAll('[data-cb-lock]').forEach(b => { const on = b.dataset.cbLock === 'no'; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+        if (body) body.hidden = true;
+      }
       editionGrid.querySelectorAll('[data-cb-edition]').forEach(b => { const on = b === btn; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
       document.querySelectorAll('[data-when-cb-edition]').forEach(el => el.hidden = el.dataset.whenCbEdition !== state.avail);
       recompute();
@@ -2302,7 +2341,7 @@
     push('members', 'cb.qc.members', 'At least 1 item or ticket', hasContent(), CB_STEP.content);
     push('name', 'cb.qc.name', 'Name', !!bundleName(), CB_STEP.name);
     if (state.discountOn) push('disc', 'cb.qc.disc', 'Discount between 0–100%', discInfo().ok, CB_STEP.price);
-    if (bundleDraft.lockSets || (setsInput && setsInput.value.trim())) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.qty);
+    if (!limitedEdition() && (bundleDraft.lockSets || (setsInput && setsInput.value.trim()))) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.qty);
     if (limitedEdition()) push('cap', 'cb.qc.cap', 'Cap filled in, within supply', !!capN() && !capOver(), CB_STEP.qty);
     if (saleOn()) {
       const sp = salePctInfo(), s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';

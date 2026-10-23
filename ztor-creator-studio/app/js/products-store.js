@@ -1272,15 +1272,16 @@
       projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],
       history: [{ id: 'b1', date: '2026/09/05', sets: '— → 1', items: [{ productId: 'tee', delta: '— → 1' }, { productId: 'cap', delta: '— → 1' }, { productId: 'shoes', delta: '— → 1' }, { productId: 'zine', delta: '— → 1' }] }]
     },
-    /* 限量 20、含 QR 領取成員（acetate／wristband）、成員全鎖（每個成員在本組合都有鎖定量）；
+    /* 限量 6（D480，2026-10-23：限量就自動鎖定＝限量 − 已售＝6 − 5＝1 套；zine 剩 1 件壓住上限，原限量 20 改 6 讓示範資料符合新規則）、
+       含 QR 領取成員（acetate／wristband）、成員全鎖（每個成員在本組合都有鎖定量）；
        常態折扣 10%（合計 304）＋限時折扣 10%（10 月）可與優惠碼疊加 */
     'signing-set': {
       id: 'signing-set', persona: 'default', name: '簽名會限定組', img: 'coastline-starter-pack.webp',
-      description: '簽名會現場領取的黑膠與手環，加上舞台外套復刻版與幕後寫真誌。限量 20 組。',
+      description: '簽名會現場領取的黑膠與手環，加上舞台外套復刻版與幕後寫真誌。限量 6 組。',
       members: [{ productId: 'acetate' }, { productId: 'wristband' }, { productId: 'jacket' }, { productId: 'zine' }],
       /* 鎖 1 套（zine 剩 1 件、壓住上限）；手環指定 S、外套指定 Black / M（各 1 件＝全部指定） */
       lockSets: 1, alloc: { wristband: { 0: 1 }, jacket: { 1: 1 } },
-      cap: 20, listed: true, listAt: null, unlistAt: null,
+      cap: 6, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       /* 墓碑 2026-10-16：perks（額外權益，D292 示範）——D402 已從組合包移除，殘留欄位刪除（稽核順帶發現） */
@@ -1317,10 +1318,13 @@
     /* 即將開賣（saleStart 在未來）、限量 100；常態折扣 15%；尚無銷售 */
     'winter-preorder-set': {
       id: 'winter-preorder-set', persona: 'default', name: '冬季預購組', img: 'coastline-hoodie.webp',
-      description: '連帽外套＋六片帽，11 月開放預購。',
+      description: '連帽外套＋六片帽，加送主題單曲數位下載，11 月開放預購。',
       /* D398 示範：每組含 2 頂帽（qty 2）。帽子每人總限購 3 件 ÷ 2 ＝ 每人 1 組；外套不限購（D427 前的「每次 4 件、限 2 次」已退場）→ 改版前跟隨成員＝每人 1 組。D456 起組合包不繼承成員，這筆示範把當時的推導值寫成自己的上限（每人 1 組）〔推導：既有組合包轉換〕 */
-      members: [{ productId: 'hoodie' }, { productId: 'cap', qty: 2 }],
-      cap: 100, listed: true, listAt: null, unlistAt: null,
+      /* D480 示範（2026-10-23）：限量 40、還沒賣 → 自動鎖定 40 套（外套 40 件、帽 80 頂；外套 48 件是成員上限）；
+         加一個數位成員（主題單曲）示範「數位商品沒有在庫、不鎖」——原限量 100 超過成員能鎖的量，改 40 */
+      members: [{ productId: 'hoodie' }, { productId: 'cap', qty: 2 }, { productId: 'song' }],
+      lockSets: 40, alloc: {},
+      cap: 40, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
       discountPct: 15, discount: null,
       limits: { person: '1' },
@@ -1417,7 +1421,7 @@
     },
 
     /* ══ nick persona（周湯豪）══ 第一筆必須是選物四件組：ztorGetBundle() 沒帶 id 時回該 persona 的第一筆 */
-    /* 限量 50、部分鎖（只有白 Tee 逐尺寸鎖 2 件）、販售中；常態折扣 20%（合計 7,480 → 5,984，原手寫的 5,980 是自己四捨五入的結果） */
+    /* 限量 50、已售 38 → 自動鎖定 12 套（D480，2026-10-23；原鎖 2 套）、販售中；常態折扣 20%（合計 7,480 → 5,984，原手寫的 5,980 是自己四捨五入的結果） */
     'wish-you-good-life-four-piece': {
       id: 'wish-you-good-life-four-piece', persona: 'nick', name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
       description: '白 Tee、刺繡 Logo 老帽、束口工裝褲與低筒球鞋，以紅白黑配色組成的四件穿搭。',
@@ -1426,8 +1430,8 @@
         { productId: 'wy-26ms-tshirt-white' }, { productId: 'wy-bundle-cap' },
         { productId: 'wy-bundle-cargo-pants' }, { productId: 'wy-bundle-lowtop-sneakers' }
       ],
-      /* 鎖 2 套；白 Tee 是多選項、不指定規格（少分配＝只限總數） */
-      lockSets: 2, alloc: {},
+      /* 鎖 12 套（＝限量 50 − 已售 38，D480）；白 Tee 是多選項、不指定規格（少分配＝只限總數） */
+      lockSets: 12, alloc: {},
       cap: 50, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3,
       discountPct: 20, discount: null,
@@ -1441,14 +1445,14 @@
         { id: 'b2', date: '2026/08/28', sets: '4 → 6', items: [{ productId: 'wy-26ms-tshirt-white', delta: '4 → 6' }, { productId: 'wy-bundle-cap', delta: '4 → 6' }, { productId: 'wy-bundle-cargo-pants', delta: '4 → 6' }, { productId: 'wy-bundle-lowtop-sneakers', delta: '4 → 6' }] }
       ]
     },
-    /* 對照 signing-set：限量 30、含 QR 成員（nick-vinyl／wy-24ce-tee）、成員全鎖；常態折扣 10%＋限時 10% 可疊加 */
+    /* 對照 signing-set：限量 20（D480，2026-10-23：原 30，鎖定＝20 − 已售 8＝12 套，球衣壓住上限 15）、含 QR 成員（nick-vinyl／wy-24ce-tee）、成員全鎖；常態折扣 10%＋限時 10% 可疊加 */
     'nick-signing-set': {
       id: 'nick-signing-set', persona: 'nick', name: 'REALIVE 簽名會限定組', img: 'nick-realive-cd.jpg',
-      description: '簽名會現場領取的限量黑膠與 WYAGL T-SHIRT，加上 24CE 足球衣。限量 30 組。',
+      description: '簽名會現場領取的限量黑膠與 WYAGL T-SHIRT，加上 24CE 足球衣。限量 20 組。',
       members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-tee' }, { productId: 'wy-24ce-jersey' }],
-      /* 鎖 2 套；球衣指定 M 2 件、Tee 不指定規格 */
-      lockSets: 2, alloc: { 'wy-24ce-jersey': { 1: 2 } },
-      cap: 30, listed: true, listAt: null, unlistAt: null,
+      /* 鎖 12 套（＝限量 20 − 已售 8，D480）；球衣指定 M 2 件（其餘少分配）、Tee 不指定規格 */
+      lockSets: 12, alloc: { 'wy-24ce-jersey': { 1: 2 } },
+      cap: 20, listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       limits: { person: '1' },   /* 2026-10-16 示範資料補齊（稽核 S1）：組合包限購自己設每人 1 組（D456） */
@@ -1478,13 +1482,14 @@
       discountPct: null, discount: null,
       sales: { units: 30, gross: 'NT$79,800', net: 'NT$67,830' }
     },
-    /* 對照 winter-preorder-set：即將開賣、限量 100、常態折扣 15%；尚無銷售 */
+    /* 對照 winter-preorder-set：即將開賣、限量 3（D480，2026-10-23：原限量 100，連帽外套只夠鎖 3 套；限量＝已售 0＋可鎖 3，自動鎖定 3 套）、常態折扣 15%；尚無銷售 */
     'nick-preorder-set': {
       id: 'nick-preorder-set', persona: 'nick', name: '冬季預購組', img: '26ms-hoodie-01.jpeg',
       description: '26MS Hoodie＋刺繡 Logo 老帽，11 月開放預購。',
       members: [{ productId: 'wy-26ms-hoodie' }, { productId: 'wy-bundle-cap' }],
       /* listAt（2026-10-16 示範資料補齊，稽核 S3）：組合包定時上架（未來 10/25），上架後 11/01 才開賣——到 10/25 前顯示「已下架」＋上架時間 */
-      cap: 100, listed: true, listAt: '2026-10-25T12:00:00', unlistAt: null,
+      lockSets: 3, alloc: {},
+      cap: 3, listed: true, listAt: '2026-10-25T12:00:00', unlistAt: null,
       shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
       discountPct: 15, discount: null,
       sales: null
@@ -1770,7 +1775,9 @@
   var P = active();
   window.ZTOR_PRODUCTS = P;
   // 由 ?id 取商品；找不到回 null（頁面自帶預設 zine）。
-  window.ztorGetProduct = function (id) { return (id && P[id]) ? P[id] : null; };
+  /* 2026-10-23（D480 驗收）：先補上架欄位與組合鎖定（同 ProductsStore.get），否則商品細節頁在別處還沒呼叫 get() 前
+     就拿到沒導出組合鎖定的記錄，「鎖給組合」永遠是 0 */
+  window.ztorGetProduct = function (id) { return (id && P[id]) ? applyBundleLocks(seedListing(id, P[id])) : null; };
   /* ── 組合的展示資料（2026-09-11 改制，兩個 persona 都可用）──────────────────────
      ztorGetBundle(id)：從 BUNDLE_SEED[id]（persona 要對上當前 persona）＋成員商品記錄推導展示資料。
      沒帶 id 時回當前 persona 的第一筆（舊行為：nick 的選物四件組）。回傳＝seed 的淺拷貝再加：

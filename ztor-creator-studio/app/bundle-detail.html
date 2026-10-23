@@ -247,6 +247,8 @@
           <div class="form-ask">
             <div class="form-ask__t" data-i18n="cb.lock.q">Lock stock for this bundle?</div>
             <div class="form-ask__s" data-i18n="cb.lock.s">Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</div>
+            <!-- D480：限量時鎖定＝限量 − 已售、跟著限量走：二選一收起、鎖定組數唯讀，改顯示這一句（改限量在「組合設定」的數量卡） -->
+            <div class="field__hint field__hint--fact" data-bd-lock-auto hidden></div>
             <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-bd-lockmode>
               <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-bd-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
               <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-bd-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
@@ -1230,11 +1232,56 @@
       refreshAlloc();
     }
 
+    /* D480（2026-10-23，主規格 §7.14「組合包：限量與鎖定」，5.1.5.9 §2.3）：限量時鎖定＝限量 − 已售套數，跟著限量走、不另外設。
+       調高從成員未鎖定量再鎖、不夠就擋（capOver）；調低多出的鎖定退回未鎖定，下限＝已售＋保留（capUnder）；
+       改回不限量＝鎖定全部退回，之後可在「組合庫存」自己另設。不合法的上限不寫進鎖定（模型停在上一個合法值）。 */
+    let limitAutoOn = false;
+    function syncLimitLock() {
+      bundleModel.sold = soldUnits();   /* ListingState.bundleQty 用它算剩餘上限（cap − 已售 − 保留） */
+      const lim = limitedEdition();
+      const auto = document.querySelector('[data-bd-lock-auto]');
+      const mode = document.querySelector('[data-bd-lockmode]');
+      const body = document.querySelector('[data-bd-lock-body]');
+      if (mode) mode.hidden = lim;
+      if (!lim) {
+        if (limitAutoOn) {
+          bundleModel.lockSets = null; applyLock();
+          if (setsInput) setsInput.value = '';
+          if (body) body.hidden = true;
+          if (mode) mode.querySelectorAll('[data-bd-lock]').forEach(b => { const on = b.dataset.bdLock === 'no'; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+          try { lockYes = false; } catch (_) {}
+        }
+        limitAutoOn = false;
+        if (auto) auto.hidden = true;
+        return;
+      }
+      limitAutoOn = true;
+      const c = totalInput ? Math.floor(Number(totalInput.value)) : NaN;
+      let blocked = false;
+      if (!isNaN(c) && c > 0) {
+        const want = c - soldUnits();
+        const max = LS.bundleMaxSets(bundleModel, productsMap()).max;
+        if (want >= (Number(bundleModel.holdSets) || 0) && (max === Infinity || want <= max)) {
+          bundleModel.lockSets = want > 0 ? want : null;
+          applyLock();
+        } else blocked = true;
+      }
+      if (setsInput) setsInput.value = bundleModel.lockSets == null ? '0' : String(bundleModel.lockSets);
+      if (body) body.hidden = false;
+      if (auto) {
+        auto.hidden = false;
+        auto.textContent = blocked
+          ? T('bd.lock.auto.blocked', 'A cap of {cap} sets can’t be saved — the lock stays at {n} sets until you fix the cap.').replace('{cap}', c.toLocaleString('en-US')).replace('{n}', String(LS.bundleLockSets(bundleModel) || 0))
+          : T('bd.lock.auto', 'Limited to {cap} sets, {s} sold — {n} sets locked automatically. The lock follows the cap: change the cap under Edit bundle, or switch to unlimited to set your own.')
+          .replace('{cap}', isNaN(c) ? '—' : c.toLocaleString('en-US')).replace('{s}', soldUnits().toLocaleString('en-US')).replace('{n}', String(LS.bundleLockSets(bundleModel) || 0));
+      }
+    }
     /* 數字、錯誤態、頁首徽章與右欄鏡射：組合可售量一律問 ListingState.bundleQty()。 */
     function refreshAlloc() {
       if (!LS) return;
       const cap = totalInput ? parseFloat(totalInput.value) : NaN;
       bundleModel.cap = (limitedEdition() && !isNaN(cap)) ? cap : null;
+      syncLimitLock();
       const map = productsMap();
       const n = LS.bundleLockSets(bundleModel);
       const lim = LS.bundleMaxSets(bundleModel, map);
@@ -1246,7 +1293,8 @@
       /* 鎖定套數欄：提示寫上限與誰壓的；超過上限紅字、不寫進模型（模型停在上一個合法值） */
       if (setsInput) { if (over || underHold) setsInput.setAttribute('aria-invalid', 'true'); else setsInput.removeAttribute('aria-invalid'); }
       /* 鎖定套數提示句（2026-09-21 第 2 批改 cpp.bd.sp.lock.*，同建立組合／建立活動第 6 步）：「空白＝不鎖定，與單賣共用剩餘。最多 N 套（受「票券／商品名」限制）」 */
-      if (setsHint) {
+      if (setsHint && limitedEdition()) { setsHint.textContent = ''; setsHint.classList.remove('is-over'); }   /* D480：說明在 data-bd-lock-auto */
+      else if (setsHint) {
         const who = lim.by ? (lim.by.kind === 'ticket' ? T('cpp.bd.sp.who.tix', 'tickets') : (lim.by.name || '')) : '';
         setsHint.textContent = (lim.max === Infinity)
           ? T('cpp.bd.sp.lock.none', 'Add a member first — nothing to lock yet')
@@ -1323,7 +1371,8 @@
     }
     /* D465：限量總量含已售與保留中的套數，所以上限能到「已售＋保留＋成員還能供應的套數」（下限＝已售＋保留，見 capFloor）；
        原本拿總量直接比還能供應的套數，已賣過的組合包一進編輯就紅字 */
-    const capRoom = () => { const sup = capSupply(); return sup === null ? null : soldUnits() + holdSetsOf() + sup; };
+    /* D480：限量會自動鎖定，上限最多到「已售＋成員還能鎖的套數」（bundleMaxSets 已含本組合現有鎖定、保留在鎖定配額裡） */
+    const capRoom = () => { if (!LS) return null; const m = LS.bundleMaxSets(bundleModel, productsMap()).max; return m === Infinity ? null : soldUnits() + m; };
     const capOver = () => {
       if (!LS || !totalInput || !limitedEdition()) return false;
       const c = Math.floor(Number(totalInput.value)), room = capRoom();
@@ -1342,7 +1391,10 @@
       const hint = document.querySelector('[data-bd-capmax]');
       if (hint) {
         hint.hidden = !over && !under;
-        hint.textContent = over ? T('cpp.bd.sp.cap.over', 'Over the {n} sets members can supply').replace('{n}', capRoom().toLocaleString('en-US'))
+        const capWhoBy = over ? LS.bundleMaxSets(bundleModel, productsMap()).by : null;
+        hint.textContent = over ? T('bd.cap.short', 'Members can only cover a cap of {room} sets — {k} short (limited by {who})').replace('{room}', capRoom().toLocaleString('en-US'))
+              .replace('{k}', (Math.floor(Number(totalInput.value)) - capRoom()).toLocaleString('en-US'))
+              .replace('{who}', capWhoBy ? (capWhoBy.kind === 'ticket' ? T('cpp.bd.sp.who.tix', 'tickets') : (capWhoBy.name || '')) : '')
           : under ? (holdSetsOf() > 0
               ? T('bd.cap.under-hold', 'Can’t go below {n} sets — {s} sold plus {h} reserved').replace('{n}', capFloor().toLocaleString('en-US')).replace('{s}', soldUnits().toLocaleString('en-US')).replace('{h}', holdSetsOf().toLocaleString('en-US'))
               : T('bd.cap.under', 'Can’t go below the {n} sets already sold').replace('{n}', soldUnits().toLocaleString('en-US'))) : '';
@@ -1352,6 +1404,36 @@
     window.bdCapOver = capOver;
     window.bdCapUnder = capUnder;
     window.bdCapSig = () => (limitedEdition() ? 'limited' : 'unlimited') + '|' + (totalInput ? totalInput.value.trim() : '');
+    /* D480：限量帶動的鎖定變動——「編輯組合」進場拍鎖定快照；取消時（等快照還原跑完）放回原本的鎖定（含不限量時自己設的鎖定）；
+       儲存時鎖定有變就記一筆操作紀錄（同「組合庫存」的鎖定儲存，鎖定套數 前 → 後＋各成員導出量） */
+    let limitLockSnap;
+    document.addEventListener('click', e => {
+      const edit = e.target.closest('[data-bd-editmode]'), cancel = e.target.closest('[data-bd-edit-cancel]');
+      if (!edit && !cancel) return;
+      const sp = document.querySelector('.tab-panel[data-panel="settings"]');
+      const editing = !!sp && sp.getAttribute('data-mode') === 'edit';
+      if (edit && !editing) { limitLockSnap = { lockSets: bundleModel.lockSets, members: bundleModel.members.map(m => ({ productId: m.productId, lock: LS ? LS.bundleMemberLock(bundleModel, m) : null })) }; return; }
+      if (!limitLockSnap) return;
+      const snap = limitLockSnap;
+      if (cancel) {
+        setTimeout(() => {
+          bundleModel.lockSets = snap.lockSets; applyLock();
+          if (setsInput) setsInput.value = snap.lockSets == null ? '' : String(snap.lockSets);
+          if (!limitedEdition()) { limitAutoOn = false; try { lockYes = snap.lockSets != null; paintLockMode(); } catch (_) {} }
+          renderAlloc();
+        }, 0);
+        limitLockSnap = undefined;
+        return;
+      }
+      setTimeout(() => {
+        if (!sp || sp.getAttribute('data-mode') === 'edit') return;   /* 被擋存，還在編輯 */
+        limitLockSnap = undefined;
+        const a = LS ? LS.bundleLockSets(bundleModel) : null, b = snap.lockSets == null ? null : snap.lockSets;
+        if (a === b || typeof bdHistory === 'undefined') return;
+        const fmt = v => ((v === '' || v === null || v === undefined) ? T('stock.history.unset', 'Unset') : String(v));
+        bdHistory.add({ sets: fmt(b) + ' → ' + fmt(a), items: bundleModel.members.map(m => ({ productId: m.productId, delta: fmt((snap.members.find(x => x.productId === m.productId) || {}).lock) + ' → ' + fmt(LS.bundleMemberLock(bundleModel, m)) })) });
+      }, 0);
+    }, true);
     /* 頁首徽章：主徽章走 deriveFlags（跳過 hidden 那一層），「已隱藏」另掛一顆。 */
     function refreshBadges(qty) {
       if (!LS) return;
@@ -1405,7 +1487,7 @@
       if (lockBody) lockBody.hidden = !lockYes;
     }
     if (lockModeEl) lockModeEl.addEventListener('click', e => {
-      const b = e.target.closest('[data-bd-lock]'); if (!b || !lockEditing) return;
+      const b = e.target.closest('[data-bd-lock]'); if (!b || !lockEditing || limitedEdition()) return;
       lockYes = b.dataset.bdLock === 'yes';
       if (!lockYes && setsInput) { setsInput.value = ''; bundleModel.lockSets = null; applyLock(); }
       paintLockMode();
@@ -1415,7 +1497,7 @@
     function syncLockEditing() {
       if (lockModeEl) lockModeEl.querySelectorAll('[data-bd-lock]').forEach(b => { b.disabled = !lockEditing; });
       /* 墓碑 2026-10-16（D429）：bookyay 自動建立的組合包鎖定套數整組鎖定（D329，srcFix）退場。 */
-      if (setsInput) setsInput.disabled = !lockEditing;
+      if (setsInput) setsInput.disabled = !lockEditing || limitedEdition();   /* D480：限量時鎖定跟著限量、不另外設 */
       if (allocEl) allocEl.querySelectorAll('[data-bd-alloc-input]').forEach(inp => { inp.disabled = !lockEditing || (LS && LS.bundleLockSets(bundleModel) === null); });
       if (lockEditBtn) lockEditBtn.hidden = lockEditing;
       if (lockActions) lockActions.hidden = !lockEditing;
