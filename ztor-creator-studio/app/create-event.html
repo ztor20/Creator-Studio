@@ -508,6 +508,14 @@
           <div class="combobox__menu" id="ce-lineup-menu" hidden></div>
         </div>
         <button type="button" class="btn btn--outline btn--add" id="ce-lineup-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
+        <!-- D476（2026-10-23）崗位歸屬：表演陣容裡屬於 Ztor 用戶的那幾位，各選一個職務等級（5.1.6.1 F3）；
+             外部表演者不發分、不給選。選項與作品上架演職名單同一組（pw.credits.level.*），預設 100%（UIA-296）。
+             清單由 renderLineupLevels() 依 lineup 畫；整塊掛 S107（⚪）。 -->
+        <div id="ce-lineup-levels" data-feat="S107" hidden style="margin-top:var(--sp-16)">
+          <div class="field__label" data-i18n="ce.lineup.level.title">Role level for Ztor users</div>
+          <p class="field__hint" style="margin:0 0 var(--sp-8)" data-i18n="ce.lineup.level.hint">Ticket points are shared among performers with a Ztor account by role level.</p>
+          <div id="ce-lineup-level-rows"></div>
+        </div>
       </div>
 
       <!-- 素材＝圖片＋影片預告同一個區段（2026-08-05 使用者指示）：兩者是同一件事的兩種
@@ -6484,12 +6492,13 @@
     { id: "u-7", name: "傷心欲絕", handle: "@heartbreak_band" },
     { id: "u-8", name: "老王樂隊", handle: "@oldwang_band" }
   ];
-  let lineup = [];        // {id, name, uid?}——有 uid 的是搜到的 ztor 用戶，沒有的是直接輸入的外部表演者
+  let lineup = [];        // {id, name, uid?, level?}——有 uid 的是搜到的 ztor 用戶，沒有的是直接輸入的外部表演者；level 只有 ztor 用戶有（D476）
   let lineupSeq = 0;
 
   function renderLineupChips() {
     const box = document.getElementById("ce-lineup-list");
     if (!box) return;
+    renderLineupLevels();
     if (!lineup.length) { box.hidden = true; box.innerHTML = ""; return; }
     box.hidden = false;
     box.innerHTML = lineup.map(p =>
@@ -6499,6 +6508,29 @@
       '</span>').join("");
     if (window.ztorIcons) window.ztorIcons.applyIcons(box);
   }
+
+  /* D476 崗位歸屬：Ztor 用戶那幾位的職務等級（每位一列，名字＋下拉）。選項文字共用作品上架的 pw.credits.level.*。 */
+  const LINEUP_LEVELS = ["l1", "l2", "l3", "l4", "l5", "l0"];
+  function renderLineupLevels() {
+    const wrap = document.getElementById("ce-lineup-levels");
+    const rows = document.getElementById("ce-lineup-level-rows");
+    if (!wrap || !rows) return;
+    const users = lineup.filter(p => p.uid);
+    wrap.hidden = !users.length;
+    rows.innerHTML = users.map(p =>
+      '<div class="settings-row"><div class="settings-row__label">' + esc(p.name) + '</div>' +
+        '<select class="select" style="max-width:360px" data-lineup-level="' + esc(p.id) + '" aria-label="' + esc(T("pw.credits.level", "Role level")) + '" data-i18n-aria-label="pw.credits.level">' +
+        LINEUP_LEVELS.map(k => '<option value="' + k + '"' + ((p.level || "l1") === k ? " selected" : "") + ' data-i18n="pw.credits.level.' + k + '">' + esc(T("pw.credits.level." + k, k)) + '</option>').join("") +
+        '</select></div>').join("");
+    if (window.ztorSelect) window.ztorSelect.mount(rows);
+    if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate();
+  }
+  document.addEventListener("change", e => {
+    const sel = e.target.closest ? e.target.closest("[data-lineup-level]") : null;
+    if (!sel) return;
+    const p = lineup.find(x => x.id === sel.dataset.lineupLevel);
+    if (p) { p.level = sel.value; scheduleSave(); }
+  });
 
   function lineupMenuHTML(q) {
     const takenUid = new Set(lineup.filter(p => p.uid).map(p => p.uid));
@@ -6549,7 +6581,7 @@
     const rm      = e.target.closest("[data-lineup-remove]");
     if (addUser) {
       const u = LINEUP_USERS.find(x => x.id === addUser.dataset.lineupAddUser);
-      if (u) lineup.push({ id: "lp-" + (++lineupSeq), name: u.name, uid: u.id });
+      if (u) lineup.push({ id: "lp-" + (++lineupSeq), name: u.name, uid: u.id, level: "l1" });
     } else if (addExt) {
       lineup.push({ id: "lp-" + (++lineupSeq), name: addExt.dataset.lineupAddExternal });
     } else if (rm) {
@@ -6818,7 +6850,7 @@
        鎖定欄位（描述、場次、門票、取票方式…）一律留著 bkyApply 帶入的 bookyay 值。 */
     function keepDraft(src) {
       if (Array.isArray(src.lineup) && src.lineup.length) {
-        lineup = src.lineup.map(p => ({ id: "lp-" + (++lineupSeq), name: typeof p === "string" ? p : p.name, uid: p && p.uid }));
+        lineup = src.lineup.map(p => ({ id: "lp-" + (++lineupSeq), name: typeof p === "string" ? p : p.name, uid: p && p.uid, level: p && p.uid ? (p.level || "l1") : undefined }));
         renderLineupChips();
       }
       const imgs = [src.images && src.images.keyvisual].concat((src.images && src.images.gallery) || []).filter(Boolean);

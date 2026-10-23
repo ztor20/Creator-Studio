@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2"><!-- Admin 頁門禁的無權限狀態（js/sidebar.js applyAdminGate）重用這支 -->
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2"><!-- D476 賽季加倍彈窗的範圍、藝人下拉由 js/zselect.js 接手 -->
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -50,8 +51,8 @@
   </div>
 </div>
 
-<!-- 分頁（設定／修改紀錄）＋右端儲存。只有一顆「儲存」：本頁的生效時點只有一種（下一次每週重算），
-     不像平台費率有立即／延遲兩種，所以不用分割鈕。 -->
+<!-- 分頁（設定／修改紀錄）＋右端儲存。只有一顆「儲存」，不用分割鈕。D476 起點數即時入帳、達標即時升級、降級每週重算；
+     本頁參數儲存後的生效時點依 D479 第 5 項分兩類：計分類只作用於之後發生的事件、等級類下一次每週重算起生效（UIA-296）。 -->
 <div class="list-toolbar">
   <nav class="tabs tabs--underline-short" role="tablist" data-tabs>
     <button class="tabs__item tabs__item--active" type="button" role="tab" data-tab="settings" aria-selected="true" data-i18n="ploy.tab.settings">Settings</button>
@@ -62,12 +63,12 @@
   </div>
 </div>
 
-<!-- F6 待生效提示：已儲存、還沒經過每週重算的變更（示範資料的兩筆修改紀錄都還在待生效，所以一開始就顯示）。
-     每週重算的時點〔產品待確認〕（§8.29 第 1 項）——文案不寫星期幾、幾點。 -->
+<!-- F6 已儲存提示（D479 第 5 項）：一句話涵蓋兩類——計分類（全站活動給分與上限、職務權重、賽季加倍）只作用於之後發生的事件、
+     已入帳點數不改寫；等級類（衰減半衰期、降級緩衝、多久沒有行為就往下掉一階）下一次每週重算起生效。常駐顯示。 -->
 <div id="ploy-pending">
   <div class="info-banner mt-16">
     <i data-lucide="clock" class="ztor-icon info-banner__icon"></i>
-    <span data-i18n="ploy.pending">Saved — takes effect at the next weekly recompute. Until then, every creator’s points and tiers stay as last computed.</span>
+    <span data-i18n="ploy.pending">Saved. Scoring changes count only for events from now on; tier changes take effect from the next weekly recompute.</span>
   </div>
 </div>
 
@@ -86,45 +87,106 @@
         <th data-i18n="ploy.act.col.item">Activity</th>
         <th data-i18n="ploy.act.col.points">Points</th>
         <th data-i18n="ploy.act.col.cap">Cap</th>
+        <th data-i18n="ploy.act.col.credit">Credited by</th>
       </tr></thead>
       <tbody>
         <tr>
           <td class="ztor-table__feature"><span data-i18n="ploy.act.checkin">Daily check-in</span></td>
           <td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="50" data-ploy data-ploy-label="ploy.act.checkin" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></td>
           <td class="text-sub" data-i18n="ploy.act.checkin-cap">Once a day</td>
+          <td class="text-sub" style="white-space:nowrap" data-i18n="ploy.act.credit.claim">Claimed by fan</td>
         </tr>
         <tr>
           <td class="ztor-table__feature"><span data-i18n="ploy.act.streak">Streak bonus</span><span class="ztor-table__sub" data-i18n="ploy.act.streak-hint">Every 7th day in a row; a break just restarts the count</span></td>
           <td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="200" data-ploy data-ploy-label="ploy.act.streak" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></td>
           <td><span class="amount-field amount-field--suffix" style="width:180px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="12" data-ploy data-ploy-label="ploy.act.streak" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.times90"><span class="amount-field__unit" data-i18n="ploy.unit.times90">times / 90 days</span></span></td>
+          <td class="text-sub" style="white-space:nowrap" data-i18n="ploy.act.credit.claim">Claimed by fan</td>
         </tr>
         <tr>
           <td class="ztor-table__feature"><span data-i18n="ploy.act.post">Community post</span><span class="ztor-table__sub" data-i18n="ploy.act.post-hint">Counts once someone else interacts with it</span></td>
           <td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="30" data-ploy data-ploy-label="ploy.act.post" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></td>
           <td><span class="amount-field amount-field--suffix" style="width:180px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="3" data-ploy data-ploy-label="ploy.act.post" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.perday"><span class="amount-field__unit" data-i18n="ploy.unit.perday">per day</span></span></td>
+          <td class="text-sub" style="white-space:nowrap" data-i18n="ploy.act.credit.claim">Claimed by fan</td>
         </tr>
         <tr>
           <td class="ztor-table__feature"><span data-i18n="ploy.act.invite">Invite to Ztor</span><span class="ztor-table__sub" data-i18n="ploy.act.invite-hint">Per qualified sign-up; if the friend also follows a creator within 7 days, that creator gets 400 more</span></td>
           <td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1000" data-ploy data-ploy-label="ploy.act.invite" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></td>
           <td><span class="amount-field amount-field--suffix" style="width:180px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-label="ploy.act.invite" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.people90"><span class="amount-field__unit" data-i18n="ploy.unit.people90">people / 90 days</span></span></td>
+          <td class="text-sub" style="white-space:nowrap" data-i18n="ploy.act.credit.auto">Automatic</td>
         </tr>
         <tr>
           <td class="ztor-table__feature"><span data-i18n="ploy.act.profile">Profile completion or payment linked</span> <span class="badge badge--neutral" data-i18n="ploy.candidate">Candidate</span><span class="ztor-table__sub" data-i18n="ploy.act.profile-hint">Whether this exists is pending</span></td>
           <td class="text-sub">200 <span data-i18n="fans.unit.points">pts</span></td>
           <td class="text-sub" data-i18n="ploy.act.profile-cap">One-time</td>
+          <td class="text-sub">—</td>
         </tr>
       </tbody>
     </table>
   </div>
   <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.act.note">Caps count over a rolling 90 days and are checked when points are given. Every platform-activity point goes to the fan’s primary creator; creator activity values don’t apply.</p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.act.claim-note">Unclaimed points expire at 00:00 server time (UTC+8) when the day ends and can’t be claimed later.</p>
 </section>
 
-<!-- F3 賽季加倍週：可設定多段；倍數固定 ×2（作用在原始事件價值上，§7.5）。是否只套用部分創作者
-     〔產品待確認〕（§8.29 第 15 項），所以本版只有「全平台」一種。 -->
+<!-- D476 第 1 項（2026-10-23）崗位歸屬：多人署名的交易（活動票券、影片租賃與付費首映）依職務對每位署名藝人各發一筆。
+     六級：五級百分比 Admin 可改（預設 100／80／60／40／20），0% 不計分固定唯讀。級名「第 N 級」是呈現假設（UIA-296）：
+     百分比可改，不能拿百分比當名稱。掛 S108（⚪）。 -->
+<section class="form-section form-section--outlined" data-feat="S108">
+  <div class="form-section__head">
+    <h3 class="form-section__title" data-i18n="ploy.role.title">Points by credited role</h3>
+    <p class="form-section__sub" data-i18n="ploy.role.sub">When several artists are credited, each linked artist gets their own entry.</p>
+  </div>
+  <div class="admin-table-wrap admin-table-wrap--fluid">
+    <table class="ztor-table">
+      <thead><tr>
+        <th style="white-space:nowrap" data-i18n="ploy.role.col.level">Level</th>
+        <th data-i18n="ploy.role.col.roles">Roles</th>
+        <th data-i18n="ploy.role.col.share">Share</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="ztor-table__feature" style="white-space:nowrap"><span data-i18n="ploy.role.l1">Level</span></td>
+          <td class="text-sub" data-i18n="ploy.role.l1-roles">Roles</td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="100" data-ploy data-ploy-label="ploy.role.l1" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></td>
+        </tr>
+        <tr>
+          <td class="ztor-table__feature" style="white-space:nowrap"><span data-i18n="ploy.role.l2">Level</span></td>
+          <td class="text-sub" data-i18n="ploy.role.l2-roles">Roles</td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="80" data-ploy data-ploy-label="ploy.role.l2" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></td>
+        </tr>
+        <tr>
+          <td class="ztor-table__feature" style="white-space:nowrap"><span data-i18n="ploy.role.l3">Level</span></td>
+          <td class="text-sub" data-i18n="ploy.role.l3-roles">Roles</td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="60" data-ploy data-ploy-label="ploy.role.l3" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></td>
+        </tr>
+        <tr>
+          <td class="ztor-table__feature" style="white-space:nowrap"><span data-i18n="ploy.role.l4">Level</span></td>
+          <td class="text-sub" data-i18n="ploy.role.l4-roles">Roles</td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="40" data-ploy data-ploy-label="ploy.role.l4" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></td>
+        </tr>
+        <tr>
+          <td class="ztor-table__feature" style="white-space:nowrap"><span data-i18n="ploy.role.l5">Level</span></td>
+          <td class="text-sub" data-i18n="ploy.role.l5-roles">Roles</td>
+          <td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="20" data-ploy data-ploy-label="ploy.role.l5" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></td>
+        </tr>
+        <tr>
+          <td class="ztor-table__feature" style="white-space:nowrap"><span data-i18n="ploy.role.l0">Not scored</span></td>
+          <td class="text-sub" data-i18n="ploy.role.l0-roles">Roles</td>
+          <td class="text-sub" style="white-space:nowrap">0% <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.role.note1">Co-holders each get the full share.</p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.role.note2">Unclassified roles wait unscored.</p>
+</section>
+
+<!-- F3 賽季加倍：可設定多段。D476 第 6 項（2026-10-23）：範圍分全平台／特定藝人、倍率可設定（預設 2）；
+     同一層級多個加倍同時生效時不相乘取最高；創作者在分級設定的「我的賽季加倍」覆寫平台設定。
+     範圍與倍率兩欄、彈窗的兩個欄位掛 S109（⚪）；JS 畫完表格呼叫 ztorDevState.regate()。 -->
 <section class="form-section form-section--outlined">
   <div class="form-section__head form-section__head--actions">
     <div class="form-section__head-titles">
-      <h3 class="form-section__title" data-i18n="ploy.season.title">Season double weeks</h3>
+      <h3 class="form-section__title" data-i18n="ploy.season.title">Season boosts</h3>
     </div>
     <button class="btn btn--outline btn--sm" type="button" id="ploy-season-add"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="ploy.season.add">Add period</span></button>
   </div>
@@ -132,6 +194,8 @@
     <table class="ztor-table">
       <thead><tr>
         <th data-i18n="ploy.season.col.period">Period</th>
+        <th data-feat="S109" data-i18n="ploy.season.col.scope">Scope</th>
+        <th data-feat="S109" data-i18n="ploy.season.col.mult">Multiplier</th>
         <th data-i18n="ploy.season.col.status">Status</th>
         <th></th>
       </tr></thead>
@@ -139,10 +203,11 @@
     </table>
   </div>
   <p class="text-sub" id="ploy-season-empty" hidden style="margin:var(--sp-12) 0 0" data-i18n="ploy.season.empty">No double weeks scheduled.</p>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.season.rule">Every behaviour earns 2× points during these periods, platform activities included. Applies to all creators.</p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.season.rule">Every behaviour earns points × the multiplier during a boost.</p>
 </section>
 
-<!-- F4 衰減與等級保留。降級緩衝由本頁設定屬推定（§8.29 第 19 項）；「任何行為」的範圍〔產品待確認〕（第 11 項）。 -->
+<!-- F4 衰減與等級保留。降級緩衝由本頁設定屬推定（§8.29 第 19 項）；「任何行為」的範圍〔產品待確認〕（第 11 項）。
+     D479 第 4 項：降級以天數為準——掉到門檻以下開始倒數緩衝天數（預設 14 天），期間回到門檻以上就取消，到期後下一次每週重算仍未達標才降（取代 D476「連續兩次重算」）。 -->
 <section class="form-section form-section--outlined">
   <div class="form-section__head">
     <h3 class="form-section__title" data-i18n="ploy.decay.title">Decay and tier retention</h3>
@@ -156,7 +221,7 @@
     <span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-label="ploy.decay.active" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span>
   </div>
   <div class="settings-row" style="border-bottom:0">
-    <div><div class="settings-row__label" data-i18n="ploy.decay.grace">Demotion grace</div><div class="settings-row__hint" data-i18n="ploy.decay.grace-hint">Days a fan keeps their tier after falling below it</div></div>
+    <div><div class="settings-row__label" data-i18n="ploy.decay.grace">Demotion grace</div><div class="settings-row__hint" data-i18n="ploy.decay.grace-hint">The countdown starts when a fan falls below a tier’s bar; a fan drops only if still short at the first weekly recompute after the days run out</div></div>
     <span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span>
   </div>
 </section>
@@ -204,10 +269,30 @@
   </div>
 </section>
 
+<!-- D476 第 9 項（2026-10-23）歷史訂單回填：正式規則，忠誠點數上線時由平台執行一次、創作者不需操作。
+     只放狀態與規則摘要，沒有「執行」按鈕（執行方式與畫面規格未定，UIA-296）；起始日期 D479 第 2 項定為上線前 365 天，更早的不回填。掛 S111（⚪）。 -->
+<section class="form-section form-section--outlined" data-feat="S111">
+  <div class="form-section__head">
+    <h3 class="form-section__title" data-i18n="ploy.bf.title">Order backfill at launch</h3>
+  </div>
+  <div class="settings-row">
+    <div><div class="settings-row__label" data-i18n="ploy.bf.status">Status</div><div class="settings-row__hint" data-i18n="ploy.bf.status-hint">Ztor runs it once when loyalty points launch</div></div>
+    <span class="badge badge--neutral" data-i18n="ploy.bf.st.pending">Not run yet</span>
+  </div>
+  <div class="settings-row" style="border-bottom:0">
+    <div><div class="settings-row__label" data-i18n="ploy.bf.from">Backfill orders from</div><div class="settings-row__hint" data-i18n="ploy.bf.from-hint">Only orders placed within 365 days before launch are backfilled</div></div>
+    <span class="badge badge--neutral" data-i18n="ploy.bf.from-v">365 days before launch</span>
+  </div>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.bf.r1">Orders placed before launch are scored with this model.</p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.bf.r2">Backfilled points fade from the original order date.</p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.bf.r3">No season boost applies; refunded orders are skipped.</p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.bf.r4">Each backfilled entry is marked “Backfill” in the ledger.</p>
+</section>
+
 </div><!-- /tab-panel settings -->
 
 <!-- ===== 分頁 2：修改紀錄（F6）：每次儲存一筆，含時間、執行者、改了哪些參數與改前改後的值；
-     頁型比照平台費率設定的版本歷史。已入帳點數要不要依新參數重算〔產品待確認〕（§8.29 第 15 項）。 ===== -->
+     頁型比照平台費率設定的版本歷史。已入帳點數不依新參數重算（D479 第 5 項）。 ===== -->
 <div class="tab-panel" data-panel="log">
 <section class="form-section form-section--outlined">
   <div class="form-section__head">
@@ -224,7 +309,7 @@
       <tbody id="ploy-log-body"></tbody>
     </table>
   </div>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0"><em data-i18n="ploy.log.note">Changes take effect at the next weekly recompute. Whether they also rescore points already earned is pending.</em></p>
+  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0"><em data-i18n="ploy.log.note">Scoring changes count only for events after the save; tier changes take effect from the next weekly recompute.</em></p>
 </section>
 </div><!-- /tab-panel log -->
 
@@ -248,6 +333,29 @@
         <label class="field">
           <span class="field__label" data-i18n="ploy.season.to">Ends</span>
           <input class="input" id="ploy-season-to" type="date">
+        </label>
+      </div>
+      <div class="form-grid mt-16" data-feat="S109">
+        <label class="field">
+          <span class="field__label" data-i18n="ploy.season.scope">Applies to</span>
+          <select class="select" id="ploy-season-scope">
+            <option value="all" data-i18n="ploy.season.scope.all">All creators</option>
+            <option value="artist" data-i18n="ploy.season.scope.artist">One artist</option>
+          </select>
+        </label>
+        <label class="field" id="ploy-season-artist-field" hidden>
+          <span class="field__label" data-i18n="ploy.season.artist">Artist</span>
+          <select class="select" id="ploy-season-artist">
+            <option value="Lin Yuchen">Lin Yuchen</option>
+            <option value="Mika Tanaka">Mika Tanaka</option>
+            <option value="Noel Studio">Noel Studio</option>
+            <option value="Priya Nair">Priya Nair</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label" data-i18n="ploy.season.mult">Multiplier</span>
+          <span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" id="ploy-season-mult" type="number" inputmode="decimal" min="1" step="0.5" value="2"><span class="amount-field__unit">×</span></span>
+          <span class="field__hint" data-i18n="ploy.season.mult-hint">Default 2</span>
         </label>
       </div>
     </div>
@@ -279,9 +387,17 @@
     function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
     function nowStamp() { var d = new Date(); return todayISO() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
     function rangeText(p) { return p.from + ' – ' + p.to; }
+    /* D476：賽季加倍多了範圍（全平台／特定藝人）與倍率（預設 2）。 */
+    function scopeText(p) { return p.scope === 'artist' ? t('ploy.season.scope.artist') + ' · ' + (p.artist || '') : t('ploy.season.scope.all'); }
+    function multText(p) { return '×' + (p.mult || 2); }
+    function seasonText(p) { return rangeText(p) + ' · ' + scopeText(p) + ' · ' + multText(p); }
+    function regate() { if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); }
 
-    /* ── F3 賽季加倍週 ── */
-    var seasons = [{ id: 's1', from: '2026-12-14', to: '2026-12-20' }];
+    /* ── F3 賽季加倍（D476：範圍＋倍率）── */
+    var seasons = [
+      { id: 's1', from: '2026-12-14', to: '2026-12-20', scope: 'all', mult: 2 },
+      { id: 's2', from: '2026-11-23', to: '2026-11-29', scope: 'artist', artist: 'Lin Yuchen', mult: 3 }
+    ];
     var savedSeasonIds = seasons.map(function (p) { return p.id; });
     var removedSinceSave = [];
     var seasonBody = document.getElementById('ploy-season-body'),
@@ -301,14 +417,19 @@
            若在這裡呼叫 applyI18n 會再發一次 i18n:applied，變成無限迴圈。 */
         tr.innerHTML =
           '<td class="ztor-table__feature ztor-table__datecell"></td>' +
+          '<td data-feat="S109"></td>' +
+          '<td data-feat="S109"></td>' +
           '<td><span class="badge ' + st.cls + '"></span></td>' +
           '<td style="text-align:right"><button type="button" class="btn btn--ghost btn--sm" data-season-remove="' + p.id + '"></button></td>';
         tr.children[0].textContent = rangeText(p);
-        tr.children[1].firstChild.textContent = t(st.key);
-        tr.children[2].firstChild.textContent = t('ploy.season.remove', 'Remove');
+        tr.children[1].textContent = scopeText(p);
+        tr.children[2].textContent = multText(p);
+        tr.children[3].firstChild.textContent = t(st.key);
+        tr.children[4].firstChild.textContent = t('ploy.season.remove', 'Remove');
         seasonBody.appendChild(tr);
       });
       if (seasonEmpty) seasonEmpty.hidden = seasons.length > 0;
+      regate();
     }
     if (seasonBody) seasonBody.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-season-remove]') : null;
@@ -326,8 +447,21 @@
     var modal = document.getElementById('ploy-season-modal'),
         fromEl = document.getElementById('ploy-season-from'),
         toEl = document.getElementById('ploy-season-to'),
-        errEl = document.getElementById('ploy-season-err');
-    function openModal() { if (!modal) return; fromEl.value = ''; toEl.value = ''; errEl.hidden = true; modal.hidden = false; fromEl.focus(); }
+        errEl = document.getElementById('ploy-season-err'),
+        scopeEl = document.getElementById('ploy-season-scope'),
+        artistField = document.getElementById('ploy-season-artist-field'),
+        artistEl = document.getElementById('ploy-season-artist'),
+        multEl = document.getElementById('ploy-season-mult');
+    function syncScope() { if (artistField && scopeEl) artistField.hidden = scopeEl.value !== 'artist'; }
+    if (scopeEl) scopeEl.addEventListener('change', syncScope);
+    function openModal() {
+      if (!modal) return;
+      fromEl.value = ''; toEl.value = ''; errEl.hidden = true;
+      if (scopeEl) { scopeEl.value = 'all'; scopeEl.dispatchEvent(new Event('change')); }
+      if (multEl) multEl.value = '2';
+      syncScope();
+      modal.hidden = false; fromEl.focus();
+    }
     function closeModal() { if (modal) modal.hidden = true; }
     var addBtn = document.getElementById('ploy-season-add');
     if (addBtn) addBtn.addEventListener('click', openModal);
@@ -338,22 +472,26 @@
       document.getElementById('ploy-season-confirm').addEventListener('click', function () {
         var f = fromEl.value, to = toEl.value;
         if (!f || !to || to <= f) { errEl.hidden = false; return; }
-        seasons.push({ id: 's' + Date.now(), from: f, to: to });
+        /* 倍率留空或不是數字時退回預設 2（可填範圍未定，UIA-296）；範圍在 release2.4 看不到時一律全平台。 */
+        var m = multEl ? parseFloat(multEl.value) : NaN;
+        var scope = scopeEl && window.getComputedStyle(scopeEl.closest('[data-feat]')).display !== 'none' ? scopeEl.value : 'all';
+        seasons.push({ id: 's' + Date.now(), from: f, to: to, scope: scope,
+                       artist: scope === 'artist' && artistEl ? artistEl.value : '', mult: isFinite(m) && m > 0 ? m : 2 });
         renderSeasons();
         closeModal();
       });
     }
 
-    /* ── F6 修改紀錄（資料 → 表格）── 示範資料：今天建立的兩筆，都還在等下一次每週重算。 */
+    /* ── F6 修改紀錄（資料 → 表格）── 示範資料：兩筆，生效時點都待確認。 */
     var log = [
-      { when: '2026-10-02 09:05', items: [{ kind: 'season-add', range: '2026-12-14 – 2026-12-20' }], status: 'pending' },
-      { when: '2026-10-02 09:00', items: [{ kind: 'key', key: 'ploy.log.initial' }], status: 'pending' }
+      { when: '2026-10-02 09:05', items: [{ kind: 'season-add', p: seasons[0] }, { kind: 'season-add', p: seasons[1] }], status: ['event'] },
+      { when: '2026-10-02 09:00', items: [{ kind: 'key', key: 'ploy.log.initial' }], status: ['event'] }
     ];
     var logBody = document.getElementById('ploy-log-body');
     function itemText(it) {
       if (it.kind === 'key') return t(it.key);
-      if (it.kind === 'season-add') return t('ploy.log.season-add', 'Season double week added: {range}').replace('{range}', it.range);
-      if (it.kind === 'season-remove') return t('ploy.log.season-remove', 'Season double week removed: {range}').replace('{range}', it.range);
+      if (it.kind === 'season-add') return t('ploy.log.season-add', 'Season boost added: {range}').replace('{range}', it.p ? seasonText(it.p) : it.range);
+      if (it.kind === 'season-remove') return t('ploy.log.season-remove', 'Season boost removed: {range}').replace('{range}', it.p ? seasonText(it.p) : it.range);
       var label = t(it.label) + (it.field ? ' · ' + t(it.field) : '');
       var unit = it.unit ? ' ' + t(it.unit) : '';
       var sep = String(document.documentElement.lang || '').indexOf('zh') === 0 ? '：' : ': ';
@@ -370,16 +508,21 @@
         c1.textContent = t('ploy.log.by-admin', 'Admin');
         c2.className = 'text-sub';
         row.items.forEach(function (it) { var s = document.createElement('span'); s.className = 'ztor-table__sub'; s.textContent = itemText(it); c2.appendChild(s); });
-        var b = document.createElement('span');
-        b.className = 'badge ' + (row.status === 'pending' ? 'badge--warning' : 'badge--neutral');
-        b.textContent = t(row.status === 'pending' ? 'ploy.log.st.pending' : 'ploy.log.st.applied');
-        c3.appendChild(b);
+        /* 生效欄（D479 第 5 項）：計分類 → 之後的事件起；等級類（衰減半衰期、降級緩衝、多久沒有行為就往下掉一階）→ 下一次每週重算起。
+           一次儲存兩類都改，就並列兩個徽章。 */
+        (row.status || []).forEach(function (st) {
+          var b = document.createElement('span');
+          b.className = 'badge ' + (st === 'recompute' ? 'badge--warning' : 'badge--neutral');
+          b.textContent = t(st === 'recompute' ? 'ploy.log.st.pending' : 'ploy.log.st.applied');
+          var wrap = document.createElement('span'); wrap.className = 'ztor-table__sub'; wrap.appendChild(b);
+          c3.appendChild(wrap);
+        });
         tr.appendChild(c0); tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
         logBody.appendChild(tr);
       });
     }
 
-    /* ── 儲存：比對 data-saved，有差才記一筆；之後一律「待下一次每週重算」── */
+    /* ── 儲存：比對 data-saved，有差才記一筆；生效欄依參數類別標示（計分類／等級類，D479 第 5 項，UIA-296）── */
     var inputs = Array.prototype.slice.call(document.querySelectorAll('input[data-ploy]'));
     inputs.forEach(function (inp) { inp.setAttribute('data-saved', inp.value); });
     var pending = document.getElementById('ploy-pending');
@@ -392,13 +535,18 @@
         items.push({ kind: 'param', label: inp.getAttribute('data-ploy-label'), field: inp.getAttribute('data-ploy-field'),
                      unit: inp.getAttribute('data-ploy-unit'), from: was, to: now });
       });
-      seasons.forEach(function (p) { if (savedSeasonIds.indexOf(p.id) < 0) items.push({ kind: 'season-add', range: rangeText(p) }); });
-      removedSinceSave.forEach(function (p) { items.push({ kind: 'season-remove', range: rangeText(p) }); });
+      seasons.forEach(function (p) { if (savedSeasonIds.indexOf(p.id) < 0) items.push({ kind: 'season-add', p: p }); });
+      removedSinceSave.forEach(function (p) { items.push({ kind: 'season-remove', p: p }); });
       if (!items.length) {
         if (window.ztorToast) window.ztorToast.show(t('ploy.unchanged', 'Nothing has changed since the last save.'));
         return;
       }
-      log.unshift({ when: nowStamp(), items: items, status: 'pending' });
+      var kinds = [];
+      items.forEach(function (it) {
+        var k = (it.kind === 'param' && String(it.label || '').indexOf('ploy.decay.') === 0) ? 'recompute' : 'event';
+        if (kinds.indexOf(k) < 0) kinds.push(k);
+      });
+      log.unshift({ when: nowStamp(), items: items, status: kinds });
       inputs.forEach(function (inp) { if (inp.value.trim() !== '') inp.setAttribute('data-saved', inp.value.trim()); });
       savedSeasonIds = seasons.map(function (p) { return p.id; });
       removedSinceSave = [];

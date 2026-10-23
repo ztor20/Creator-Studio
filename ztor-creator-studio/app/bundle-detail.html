@@ -1108,6 +1108,9 @@
       alloc: (seed && seed.alloc) ? JSON.parse(JSON.stringify(seed.alloc)) : {},
       /* D465：被保留的套數（下單未付款）——留在鎖定格裡，可售＝鎖定套數 − 保留套數；限量總量與鎖定套數都不得低於它 */
       holdSets: (seed && Number(seed.holdSets)) || 0,
+      /* D478：結帳中（保留中）的訂單筆數——示範資料 seed.pendingCheckout；沒寫時以保留套數代替（假設一筆訂單一套，UIA-297）。
+         大於 0 時成員區唯讀（syncMembersLock），下架也一樣，等這些訂單付款或逾時結清。 */
+      pendingCheckout: (seed && seed.pendingCheckout != null) ? (Number(seed.pendingCheckout) || 0) : ((seed && Number(seed.holdSets)) || 0),
       /* D342：含票券成員的組合包——四個排程時間的跟隨／另設（null／缺＝跟隨）與購買條件（null＝跟隨所含門票）。 */
       sched: (seed && seed.sched) ? Object.assign({}, seed.sched) : {},
       rules: (seed && seed.rules) ? JSON.parse(JSON.stringify(seed.rules)) : null,
@@ -2679,17 +2682,37 @@
       }
       /* 已售出後成員內容鎖定（D292 裁決七，5.1.5.9 §2.3）：已售任何一套之後，成員清單（票券與商品）與各成員數量不可再改——
          加入區收起、移除鈕藏起、數量欄停用，並在清單上方說明理由與仍可改的東西（售價／折扣／販售上限／停售）。 */
+      /* D478（2026-10-23，主規格 §7.14「組合包修改成員的條件」；5.1.5.9 §2.3「修改成員的條件」）：尚未售出時，
+         改成員（增減、替換、每套用量、票券成員的允許門票與張數）要同時符合「已下架」與「沒有結帳中的訂單」。
+         回傳成員區為什麼唯讀：'sold'（已售出鎖定，D292）／'listed'（上架中，先下架）／'checkout'（還有結帳中的訂單）／null（可改）。
+         草稿從未上架、沒有訂單，不擋；定時上架未到算已下架（ListingState.isUnlisted）。純商品與含票券的組合包都適用；其他欄位不受影響。 */
+      function memberEditBlock() {
+        if (soldUnits() > 0) return 'sold';
+        if (!LS || !bundleModel || bundleModel.draft || LS.isArchived(bundleModel)) return null;
+        if (!LS.isUnlisted(bundleModel)) return 'listed';
+        if ((Number(bundleModel.pendingCheckout) || 0) > 0) return 'checkout';
+        return null;
+      }
+      window.bdMemberEditBlock = memberEditBlock;
       function syncMembersLock(editing) {
         const sold = soldUnits();
         /* 墓碑 2026-10-16（D429）：bookyay 套票自動建立的組合包（D329，srcFix）「不論是否已售出，成員與張數從建立起就鎖」與
            來源鎖說明句（cpp.bd.sp.srclocked）、applySrcFix（組合折扣與限時折扣停用）隨自動組合包退場。 */
-        const locked = sold > 0;
+        const why = memberEditBlock();
+        const locked = !!why;
         const banner = document.querySelector('[data-bd-members-locked]');
         const txt = document.querySelector('[data-bd-members-locked-text]');
-        if (banner) banner.hidden = !locked;
-        if (txt) txt.textContent = !locked ? '' : T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold));
-        if (locked) sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = true; });
-        document.querySelectorAll('#bd-members [data-bd-remove]').forEach(b => { if (locked) b.hidden = true; });
+        if (banner) { banner.hidden = !locked; if (why) banner.setAttribute('data-bd-members-why', why); else banner.removeAttribute('data-bd-members-why'); }
+        const pc = Number(bundleModel && bundleModel.pendingCheckout) || 0;
+        if (txt) txt.textContent = !locked ? ''
+          : why === 'listed' ? T('bd.members.listed', 'This bundle is listed. Unlist it to change its members.')
+          : why === 'checkout' ? (pc === 1 ? T('bd.members.checkout1', '1 order is still in checkout. You can change members once it’s settled.')
+              : T('bd.members.checkout', '{n} orders are still in checkout. You can change members once they’re settled.').replace('{n}', String(pc)))
+          : T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold));
+        /* D478：鎖↔解鎖可能在編輯中切換（例如上架中進編輯、再從頁首下架），解鎖時把加入區與移除鈕還原成編輯態的樣子 */
+        if (!locked && editing) ensureRemoveButtons();
+        sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = locked || !editing; });
+        document.querySelectorAll('#bd-members [data-bd-remove]').forEach(b => { b.hidden = locked || bundleModel.members.length <= 1; });
         document.querySelectorAll('#bd-members [data-bd-qty]').forEach(inp => { inp.disabled = locked; if (!locked) inp.readOnly = !editing; });
         const tn = document.querySelector('[data-bd-ticket-note]'); if (tn) tn.hidden = !hasTicketMember();
         if (window.ztorIcons && banner) window.ztorIcons.applyIcons(banner);
@@ -2726,7 +2749,7 @@
         const ev = (EV && EV.get(tixEvent.id)) || tixEvent;
         const tiers = (ev.tiers || []);
         exp.querySelector('[data-bd-tier-table]').innerHTML = window.ZtorTixTierTable.html({
-          tiers: tiers, picked: m.tierIds || [], qty: m.qty || 1, attr: 'data-bd-tier-check', locked: soldUnits() > 0,
+          tiers: tiers, picked: m.tierIds || [], qty: m.qty || 1, attr: 'data-bd-tier-check', locked: !!memberEditBlock(),   /* D478：上架中、結帳中同樣鎖（原只看已售出） */
           ev: ev, bundleId: bundle && bundle.id,   /* D465：剩餘張數改由 ztorEvents.tierLeftForBundle 算（扣單售鎖定、其他組合包鎖定、未鎖定格保留） */
           T: T, esc: esc, name: t => t.name || '', money: t => Number(t.price) === 0 ? T('ce.tier.free', 'Free') : tixCtx.fmtBase(tixCtx.inBase(t)),
           left: tierLeft, fmtInt: n => Number(n).toLocaleString('en-US')
@@ -2768,7 +2791,7 @@
       }
       document.addEventListener('change', e => {
         const cb = e.target.closest && e.target.closest('[data-bd-tier-check]'); if (!cb) return;
-        const m = tixMember(); if (!m || soldUnits() > 0 || sp.getAttribute('data-mode') !== 'edit') return;
+        const m = tixMember(); if (!m || memberEditBlock() || sp.getAttribute('data-mode') !== 'edit') return;
         const id = cb.getAttribute('data-bd-tier-check');
         const ids = cb.checked ? (m.tierIds || []).concat(id) : (m.tierIds || []).filter(x => x !== id);
         const minNote = document.querySelector('[data-bd-tix-min]');
@@ -2815,6 +2838,7 @@
         });
       }
       window.bdStockLockApply = bdStockLockApply;
+      let bdTixKey = null;   /* D478：bdStockSync 上次重畫允許門票表時的「鎖定原因|編輯態」，見下方 */
       function bdStockSync() {
         const on = bdStockOnly();
         const note = document.querySelector('[data-bd-stockonly-note]'); if (note) note.hidden = !on;
@@ -2822,6 +2846,13 @@
         document.querySelectorAll('[data-bd-editmode]').forEach(b => {
           b.disabled = false; b.removeAttribute('aria-disabled'); b.removeAttribute('title');
         });
+        /* D478：上架／下架之後成員區跟著鎖或解鎖（上架中要先下架；下架後還要等結帳中的訂單結清），編輯中也即時切換 */
+        const editingNow = sp.getAttribute('data-mode') === 'edit';
+        syncMembersLock(editingNow);
+        /* 只在「鎖定原因／編輯態」真的變了才重畫允許門票表：renderTixExp 結尾 applyI18n 會發 i18n:applied →
+           syncPrimaryAction → 又回到 bdStockSync，每次都重畫會無限遞迴（2026-10-23 驗收修正） */
+        const tixKey = String(memberEditBlock()) + '|' + editingNow;
+        if (tixKey !== bdTixKey) { bdTixKey = tixKey; renderTixExp(editingNow); }
         bdStockLockApply();
         /* 頁首「預覽與在地化」（UIA-268，2026-10-16；規格 5.1.5.9 §2.8 編輯時機，D435 推導）：翻譯算其他資料，
            看組合包自己的上架狀態——上架中停用入口並用 title 寫原因，比照 event-detail 活動上架中停用在地化入口

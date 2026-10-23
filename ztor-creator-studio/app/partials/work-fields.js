@@ -79,6 +79,20 @@
   var QUALITY_PRESETS = ['4K', 'HD-1080P', 'SD-720P', 'HD-720P', 'SD-480P'];
   var CREDIT_CAST = ['lead-m', 'lead-f', 'sup-m', 'sup-f'];
   var CREDIT_CREW = ['director', 'editor', 'producer', 'writer', 'studio'];
+  /* D476（2026-10-23）崗位歸屬：演職名單每一筆可連結 Ztor 藝人帳號並選職務等級（規格 5.1.2.2.1 F15）。
+     · 職務等級六選一，選項文字＝Admin 平台忠誠點數設定的預設百分比＋該級職務（pw.credits.level.*）
+     · 各角色的預設等級是呈現假設（UIA-296）：主角、導演、編劇 100%，配角 80%，剪輯 60%（直接產出畫面），
+       監製 0%（對到「掛名監製」），出品製作公司 0%（製作公司）；創作者可以改
+     · 帳號清單是示範用的固定名冊（站上還沒有共用的藝人搜尋），沒連帳號的那一筆標「不發分」
+     · 整組附屬欄位掛 data-feat="S107"（⚪），release2.4 只剩姓名格 */
+  var CREDIT_LEVELS = ['l1', 'l2', 'l3', 'l4', 'l5', 'l0'];
+  var CREDIT_DEFAULT_LEVEL = { 'lead-m': 'l1', 'lead-f': 'l1', 'sup-m': 'l2', 'sup-f': 'l2',
+                               director: 'l1', editor: 'l3', producer: 'l0', writer: 'l1', studio: 'l0' };
+  var CREDIT_ACCOUNTS = [
+    { id: 'yuchen', name: 'Lin Yuchen' }, { id: 'mika.t', name: 'Mika Tanaka' },
+    { id: 'priyanair', name: 'Priya Nair' }, { id: 'sora', name: 'Sora Kim' },
+    { id: 'diego.a', name: 'Diego Alvarez' }, { id: 'noelstudio', name: 'Noel Studio' }
+  ];
   var VIDEO_STATE = {
     empty: { key: 'pw.media.file.state.empty', fb: 'Not uploaded', tone: 'badge--neutral' },
     uploading: { key: 'pw.media.file.state.uploading', fb: 'Uploading', tone: 'badge--info' },
@@ -684,8 +698,9 @@
 
   /* ── F15 演職人員：每個角色一份可增可刪的名單 ── */
   function bindRole(field) {
+    var role = field.getAttribute('data-pw-role');
     var list = document.createElement('div');
-    list.className = 'entry-list';
+    list.className = 'entry-list entry-list--extras';
     var add = document.createElement('button');
     add.type = 'button';
     add.className = 'btn btn--outline btn--add entry-list__add';
@@ -703,11 +718,35 @@
       var empty = !last || String(last.querySelector('.input').value || '').trim() === '';
       list.setAttribute('data-last-empty', String(empty));
     }
+    /* D476：每一列多一組附屬欄位（Ztor 藝人帳號＋職務等級＋「不發分」標示），見 entry-list 的 __extras。 */
+    function extrasHtml() {
+      var lv = CREDIT_DEFAULT_LEVEL[role] || 'l1';
+      return '<div class="entry-list__extras" data-feat="S107">'
+        + '<select class="select" data-pw-account aria-label="' + esc(T('pw.credits.account', 'Ztor artist account')) + '" data-i18n-aria-label="pw.credits.account">'
+        + '<option value="" data-i18n="pw.credits.account.none">' + esc(T('pw.credits.account.none', 'Not linked to Ztor')) + '</option>'
+        + CREDIT_ACCOUNTS.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(a.name) + ' · @' + esc(a.id) + '</option>'; }).join('')
+        + '</select>'
+        + '<select class="select" data-pw-level aria-label="' + esc(T('pw.credits.level', 'Role level')) + '" data-i18n-aria-label="pw.credits.level">'
+        + CREDIT_LEVELS.map(function (k) {
+            return '<option value="' + k + '"' + (k === lv ? ' selected' : '') + ' data-i18n="pw.credits.level.' + k + '">' + esc(T('pw.credits.level.' + k, k)) + '</option>';
+          }).join('')
+        + '</select>'
+        + '<span class="badge badge--neutral" data-pw-nopts data-i18n="pw.credits.nopts">' + esc(T('pw.credits.nopts', 'No points')) + '</span>'
+        + '</div>';
+    }
+    function syncNoPts(row) {
+      var acc = row.querySelector('[data-pw-account]'), tag = row.querySelector('[data-pw-nopts]');
+      if (tag) tag.hidden = !!(acc && acc.value);
+    }
     function addRow(takeFocus) {
       var row = document.createElement('div');
-      row.className = 'entry-list__row';
+      row.className = 'entry-list__row entry-list__row--extras';
       row.innerHTML = '<input class="input" data-i18n-placeholder="pw.credits.name.ph" placeholder="' + esc(T('pw.credits.name.ph', 'Name')) + '">'
-        + '<button class="btn btn--icon btn--sm" type="button" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
+        + '<button class="btn btn--icon btn--sm" type="button" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>'
+        + extrasHtml();
+      row.querySelector('[data-pw-account]').addEventListener('change', function () { syncNoPts(row); emit(); });
+      row.querySelector('[data-pw-level]').addEventListener('change', emit);
+      syncNoPts(row);
       row.querySelector('button').addEventListener('click', function () {
         /* 被刪掉的那一列會把焦點一起帶走（掉回 <body>），鍵盤使用者當場失去位置，
            所以先記下要接手的鄰居：優先上一列，刪的是第一列就換下一列。 */
@@ -719,6 +758,8 @@
       list.insertBefore(row, add);
       syncRemoves(); syncAdd();
       if (window.ztorIcons) window.ztorIcons.applyIcons(row);
+      if (window.ztorSelect) window.ztorSelect.mount(row);
+      if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate();
       if (takeFocus) row.querySelector('.input').focus();
     }
     add.addEventListener('click', function () { addRow(true); });
@@ -733,6 +774,9 @@
   }
   function renderCredits(host) {
     var cast = section(host, 'pw.credits.cast.title', 'Cast');
+    /* D476：一句說明為什麼要連帳號與選等級（S107，release2.4 不出現）。 */
+    cast.insertAdjacentHTML('beforeend', '<p class="field__hint" style="margin:0 0 var(--sp-16)" data-feat="S107" data-i18n="pw.credits.points-hint">'
+      + esc(T('pw.credits.points-hint', 'Link each name to a Ztor artist account and pick a role level.')) + '</p>');
     cast.insertAdjacentHTML('beforeend', CREDIT_CAST.map(function (r, i) {
       return '<div class="field" data-pw-role="' + r + '"' + (i === CREDIT_CAST.length - 1 ? ' style="margin-bottom:0"' : '')
         + '><div class="field__label" data-i18n="pw.role.' + r + '">' + esc(T('pw.role.' + r, r)) + '</div></div>';
@@ -755,9 +799,18 @@
           var hit = credits.filter(function (c) { return c.role === key; })[0];
           var names = (hit && hit.names) || [];
           if (!names.length) return;
+          var people = (hit && hit.people) || [];
           var list = f.querySelector('.entry-list');
           while (f.querySelectorAll('.entry-list__row').length < names.length) list._addRow();
-          f.querySelectorAll('.entry-list__row .input').forEach(function (input, n) { setVal(input, names[n]); });
+          f.querySelectorAll('.entry-list__row').forEach(function (row, n) {
+            setVal(row.querySelector('.input'), names[n]);
+            /* D476：有帳號與等級就一起還原（舊資料沒有 people，維持預設） */
+            var pp = people[n];
+            if (!pp) return;
+            var acc = row.querySelector('[data-pw-account]'), lv = row.querySelector('[data-pw-level]');
+            if (acc) { acc.value = pp.account || ''; acc.dispatchEvent(new Event('change')); }
+            if (lv && pp.level) { lv.value = pp.level; lv.dispatchEvent(new Event('change')); }
+          });
           list.dispatchEvent(new Event('input', { bubbles: true }));
         });
       };
@@ -842,9 +895,17 @@
         return { name: c.dataset.pwQuality, price: v[0] || '', popcorn: v[1] || '', rent: v[2] || '', watch: v[3] || '' };
       }),
       credits: qa('[data-pw-role]').map(function (f) {
+        /* D476：people 與 names 平行，多帶每一筆的 Ztor 藝人帳號（空字串＝沒連，不發分）與職務等級鍵 */
+        var rows = Array.prototype.slice.call(f.querySelectorAll('.entry-list__row')).filter(function (r) {
+          return String(r.querySelector('.input').value || '').trim();
+        });
         return {
           role: f.querySelector('.field__label').getAttribute('data-i18n'),
-          names: Array.prototype.slice.call(f.querySelectorAll('.entry-list__row .input')).map(function (i) { return String(i.value || '').trim(); }).filter(Boolean)
+          names: rows.map(function (r) { return String(r.querySelector('.input').value || '').trim(); }),
+          people: rows.map(function (r) {
+            var acc = r.querySelector('[data-pw-account]'), lv = r.querySelector('[data-pw-level]');
+            return { account: acc ? acc.value : '', level: lv ? lv.value : '' };
+          })
         };
       }).filter(function (r) { return r.names.length; }),
       notes: val(q('#pw-notes'))

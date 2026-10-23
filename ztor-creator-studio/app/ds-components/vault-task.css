@@ -25,6 +25,8 @@
          .badge ＋ .vault-task__status-text ＋ ul.vault-task__missing
        .vault-task__reach
          .vault-task__reach-label ＋ .vault-task__reach-num (--pending) ＋ .vault-task__reach-sub
+       .vault-task__reach--pair（D477）＞ .vault-task__reach-cell ×2：目前看得到／累計解開過並排
+       .vault-task__trial（D477）：草稿與已下架時「尚未對粉絲開放，這是上架後的數字」
      .vault-task__flag（大彩蛋：.control-row ＋ .switch，元件各自的 CSS）
 
    surface：--media 只放在影像上（底色自帶，任何影像都讀得出來）；--plain 坐在
@@ -74,8 +76,9 @@
 .vault-tag--media.vault-tag--pending { color: var(--on-media-muted); }
 .vault-tag--plain.vault-tag--pending { color: var(--muted-foreground); }
 
-/* 以分級檢視的三種結果（F6）：看得到＝成功綠；等級不足＝鎖頭＋降墨；需完成行動任務＝品牌橘
-   （它是「還有一步」，不是錯誤）。色相只出現在字上，表面維持中性（Q77）。 */
+/* 檢視身分下的三種結果（F6，D477 改名）：已解開＝成功綠；需要條件（等級不夠，寫差哪一級）
+   ＝鎖頭＋降墨；未解開（行動任務還沒完成）＝品牌橘（它是「還有一步」，不是錯誤）。整座庫房
+   進不了時的「上鎖」也用 --low。色相只出現在字上，表面維持中性（Q77）。 */
 .vault-tag--media.vault-tag--ok     { color: var(--status-success); }
 .vault-tag--plain.vault-tag--ok     { color: var(--status-success-ink); }
 .vault-tag--media.vault-tag--low    { color: var(--on-media-muted); }
@@ -163,6 +166,16 @@
 }
 .vault-task__reach-num--pending { font-size: var(--fs-14); color: var(--muted-foreground); }
 .vault-task__reach-sub { font-size: var(--fs-12); line-height: var(--lh-comfy); color: var(--muted-foreground); }
+/* 兩個數字並排（F3，D477）：目前看得到、累計解開過，各自一格（標籤 → 大數字 → 一句說明），
+   分開呈現、不相加。格內直排，所以數字不再跨兩列。 */
+.vault-task__reach--pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--sp-16);
+}
+.vault-task__reach-cell { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+.vault-task__reach--pair .vault-task__reach-num { grid-row: auto; align-self: flex-start; }
+.vault-task__trial { margin: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
 
 /* 大彩蛋開關列：與任務區同一條分隔節奏，坐在任務區之後。 */
 .vault-task__flag { margin-top: var(--sp-16); }

@@ -1105,7 +1105,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Sticky actions | 🟡 molecule | ✓ App | 頂部 CTA 捲出畫面後在底部浮現複製版動作列；全站消費最廣的元件之一（15 頁）。詳見 §4.106 | [sticky-actions.css](./ds-components/sticky-actions.css) |
 | Vault item task | 🟡 molecule | ✓ App | 媒體庫第二層：每件內容的小標（任務／大彩蛋／幾人看得到／以分級檢視的結果）＋單件抽屜的任務區（不設／行動／等級、參數、可判定或待確認、可看人數）（D377）。詳見 §4.229 | [vault-task.css](./ds-components/vault-task.css) |
 | Vault overview | 🟡 molecule | ✓ App | 媒體庫「總覽」分頁的卡內版面：兩卡並排、檢視身分那一行、每件清單的名稱與小標欄、鑰匙三格、內容摘要兩組小表（2026-10-09 三分頁）。詳見 §4.230 | [vault-overview.css](./ds-components/vault-overview.css) |
-| Vault access | 🟡 molecule | ✓ App | 媒體庫「存取權限」分頁：即時人數條、「方法 N」小卡（每種方法幾人符合）、條件總結、直接開放入口、已發鑰匙清單、淡色分享頁面列（2026-10-09 三分頁）。詳見 §4.231 | [vault-access.css](./ds-components/vault-access.css) |
+| Vault access | 🟡 molecule | ✓ App | 媒體庫「存取權限」分頁：即時人數條、「方法 N」小卡（每種方法幾人符合）、條件總結、直接開放入口、已發鑰匙清單、分享連結卡（2026-10-09 三分頁；分享連結 D475，2026-10-22 取代淡色分享頁面列）。詳見 §4.231 | [vault-access.css](./ds-components/vault-access.css) |
+| Media preview | 🟡 molecule | ✓ App | 單件媒體預覽（2026-10-22，D475，5.1.7.3 F5）：照片整張放大、影片封面＋播放控制、音檔播放條；純檢視不改資料。原型沒有真影音檔，播放只讓進度條照標示長度走（UIA-295）。詳見 §4.242 | [media-preview.css](./ds-components/media-preview.css) |
 | Vault share | 🟠 organism | ✓ App | 媒體庫的加密連結／NFC 鑰匙發放面板，住在 drawer 裡；送禮與 NFC 商品共用同一個物件。詳見 §4.108 | [vault-share.css](./ds-components/vault-share.css) |
 | Wizard split | 🟠 organism | ✓ App | 精靈流程的「內容欄＋貼頂摘要側欄」兩欄版面，供 create-project 兩步共用。詳見 §4.109 | [wizard-split.css](./ds-components/wizard-split.css) |
 | Zselect | 🟡 molecule | ✓ App | 自製下拉選單，取代無法被樣式化的原生 `<select>` 展開清單；全站消費最廣的元件（19 頁）。**2026-09-11 新增動作列 `.zselect__option--action`**：`<select data-zselect-action="<id>">` 讓面板最底下多一列不是選項的動作（hairline 分隔、無勾號、字色略退），點了不改 value、只派 `zselect:action`（detail.action）並關閉面板；首個消費情境＝取貨場次的「建立取貨場次」（原本是選單旁的獨立按鈕）。**2026-09-30 新增下拉複選 `--multi`（D340）**：`<select multiple data-zselect-multi data-zselect-max="24">` 升級成「打開是勾選清單」——每列前一顆 house checkbox（`.zcheck__control`，Q126 複選記號＝方框）、點一列切換不關面板；觸發鈕一行寫出所有已選項、超過字數截斷補「…」、完整一串進 `title`，一項都沒選＝placeholder（`.zselect__label--placeholder`）；disabled 時打不開。首個消費情境＝建立活動的活動語言（取代 Check card）。詳見 §4.110 | [zselect.css](./ds-components/zselect.css) |
@@ -5128,7 +5129,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 **Anatomy**
 - `.vault-overview` / `.vault-ovcard(__cover|__body|__name|__meta|__reach|__num)` / `--new` / `.is-locked` — 庫房總覽卡片牆。**2026-08-01 起只用於保存檔 `media-vault-popup.html`**（`<html data-vault-view="popup">`）：使用者試用後裁示正式頁改回清單與詳情並排的版本，理由是可以直接切換庫房、也直接編輯 media，不必先開再關一層彈窗。兩種版型共用同一支 `js/media-vault.js`。原本的用意——2026-07-31 使用者裁決取代常駐的左側清單欄——全站導覽已經是左欄，庫房清單再一欄就變兩條並排；清單天生垂直（縮圖／名稱／內容數／鑰匙數）轉橫排塞不下，所以改成不要同時出現。封面在卡片牆上放得比 276px 側欄大得多
 - `.vault-modal` / `.vault-modal__sheet` / `.vault-modal__body` — 單一庫房＝彈窗（外殼沿用 `.embed-modal`，只換尺寸與內部捲動）。同樣只用於保存檔。彈窗裡沒有全站導覽，所以清單可以留在左邊：只有一條左欄，並排的問題就不存在，換庫房也不必關掉彈窗。庫房名字只寫在彈窗標題列（捲不走），內文不重複第二次；`.vault-rail` / `.vault-reach` 在彈窗內的貼頂高度歸零（捲動容器換成 `.vault-modal__body`）
-- `.vault-item__preview` / `__facts` / `__glyph` / `__actions` — 單一內容的設定（2026-08-01）：點格子／音檔列打開右側 `.drawer`。用抽屜不用第二層彈窗——庫房本身已是一層彈窗，再疊一層會變成對話框中的對話框，也會蓋掉剛才點的那一格。內容只放規格有的東西（名稱可改；類型／長度／大小／加入日期唯讀；刪除）；2026-10-08 起加上第二層的任務區與大彩蛋開關（D377，見 §4.229）；有效期、浮水印等沒有上游規格的東西不擅自生出來
+- `.vault-item__preview` / `__facts` / `__actions` — 單一內容的設定（2026-08-01）：2026-10-22（D475，F5）起抽屜頂端的預覽本體是 Media preview（§4.242，照片大圖、影片與音檔可播放），`.vault-item__preview` 只剩與下方欄位的間距，原縮圖框與 `__glyph` 退場；點格子／音檔列打開右側 `.drawer`。用抽屜不用第二層彈窗——庫房本身已是一層彈窗，再疊一層會變成對話框中的對話框，也會蓋掉剛才點的那一格。內容只放規格有的東西（名稱可改；類型／長度／大小／加入日期唯讀；刪除）；2026-10-08 起加上第二層的任務區與大彩蛋開關（D377，見 §4.229）；有效期、浮水印等沒有上游規格的東西不擅自生出來
 - `.vault-viewer` — 檢視器只是「眼睛圖示＋一個標準 DS `.select`」的一列，**不外包自己的框**（2026-08-01：先前外層有邊框＋底色，內層 zselect 又有自己的邊框與聚焦環，疊成框中框）；檢視中的狀態由圖示轉品牌橘表示
 - `.vault-lens` / `.vault-viewer` / `.vault-viewer.is-on` — 檢視器列：橫跨在庫房與內容正上方、靠右，選一個分級就把整座庫房換成那一級粉絲看到的樣子。並排版靠左、與內容切齊同一條左邊界，「回到我的視角」排在下拉右邊。2026-08-01 使用者裁示搬進彈窗標題列——它問的是「這座庫房從粉絲那一側長怎樣」，那是進到庫房裡才要問的問題；標題列捲不走，切了分級之後往下看內容時身分要一直在
 - `.vault-layout` — 根層（2026-08-01 起清單靠右：`grid-template-columns: 1fr 276px` ＋ 用 `order` 換位置、不動 DOM 順序，讀屏與 Tab 仍先碰到清單；窄版收單欄時清單回到內容上方）；`.vault-rail` / `.vault-row` / `.vault-row--active` / `.is-locked` — 側欄庫房清單（打不開的庫房變暗）；`.vault-rail__new` 在清單之上，`.vault-rail__draft` — 新庫房名字欄，清單第一列
@@ -5144,7 +5145,11 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 - `.vault-track__thumb` / `.vault-track__thumb-play` — 列的左欄縮圖（2026-10-09 三分頁）：照片、影片也改成一列一件，第一欄 32px 放縮圖（影片在影像上疊播放圖示；沒有影像就放類型圖示），與音檔的 `.vault-track__play` 同寬，三組對得齊。`.vault-track.is-locked` 時影像轉灰。照片／影片格子 `.vault-tile` 在正式頁已沒有呼叫端（JS `tileHtml` 墓碑），CSS 暫留（`.vault-tile__rename`／`__confirm` 列表也在用），是否退場待元件巡檢
 - **三分頁版面（2026-10-09，使用者確認的示範頁）** — 選中庫房後 `.vault-head` 之下是 `.list-toolbar`＋`.tabs--underline-short`（Q38 連殼）分三個 `.tab-panel`：總覽（`.vault-reach` 讀數＋§4.230）、內容與任務（`.vault-gridwrap`）、存取權限（§4.231，`.vault-door` 改成方法小卡）。三個分頁都在 `.vault-body` 裡，`.vault-gate` 遮罩蓋住當下分頁、分頁列留在外面仍可切換。檢視器 `.vault-lens` 搬進 `.page-intro__actions`（頁首右側，對三個分頁都有效）；`.vault-head__actions` 與 `.vault-keys` 區塊在正式頁退場（入口搬進存取權限分頁），CSS 留給保存檔
 - `.vault-tile__rename` / `.vault-tile__confirm` — 就地改名／就地刪除確認（不用 `window.prompt`）
-- `.vault-gate` / `.vault-gate[hidden]` — 上鎖遮罩；`[hidden]` 那條必須留著，否則沒上鎖的庫房也會被罩住
+- `.vault-gate` / `.vault-gate[hidden]` — 上鎖卡（2026-10-23 D477 改寫）：檢視身分進不了這座庫房時，排在 `.vault-body` 最上面的一張卡 ＞ `.vault-gate__panel` ＞ `__head`（`__icon` 鎖頭＋`__titles` 的 `__title`「上鎖」／`__sub`「以誰檢視・進不了」）、`__label`「符合其中一種進庫方法就進得來」、`__rules`（一種方法一列 `.vault-gate__way` ＝ `__wayname`「方法 N」＋`__group` 唯讀 chip，列間 `__join--or`「或是」）、`__foot`（持鑰匙也進得來／沒有條件的說明、草稿或已下架的「以下是上架後的樣子」）。**不再打模糊蓋遮罩**（D477：上架中的庫房對所有粉絲可見，進不了的人看到上鎖與進庫方法）——`.vault-body.is-gated > :not(.vault-gate)` 的 blur 與 `.vault-gate` 的 absolute 疊層退場（墓碑在 css），`.is-gated` 仍由 JS 掛著表示「目前上鎖」。`[hidden]` 那條必須留著，否則沒上鎖的庫房也會冒出空卡
+- **庫房狀態與排程（2026-10-23，D477，S112）** — `.vault-row__status`（名稱下一列：狀態 Badge 草稿 `--neutral`／上架中 `--success`／已下架 `--neutral`，同電子商店清單的狀態徽章色）＋ `.vault-row__sched`（`calendar-clock`＋「日期 上架」，排了上架時間才有）；`.vault-row__keys--trial` ＋ `.vault-row__trial`（草稿與已下架：人數降墨、底下「上架後」，滑過寫完整一句）；`.vault-head__status`（狀態 Badge ＋ `.vault-head__sched` 排程 ＋ `.vault-head__statusnote` 一句白話）與 `.vault-head__actions`（依狀態一顆主要動作：草稿＝發布 `.btn--primary`、排程中＝取消排程 `.btn--outline`、上架中＝下架 `.btn--outline`＋`eye-off`、已下架＝重新上架 `.btn--primary`；另一顆刪除 `.btn--destructive`，比照商品細節頁頁首；上架中按刪除開「要先下架」說明）。`.vault-main[hidden]`／`.vault-none`（無庫房時主欄退位，留一張 `.empty-card--framed` 建立引導）
+- **發布與確認視窗（D477）** — 殼是 canonical `.payout-modal`／`.payout-dialog--narrow`（Q27）；發布的上架區沿用建立商品：`.segmented.radio-cards`（立刻上架／定時上架）→ `.control-group--plain.lctl__derived`（上架日期與時間、`.lctl__rule--group`、定時下架 `.switch`＋下架日期與時間）→ `.lctl__note`；最上面 `.vault-pub__checks` 放發布前檢查（`.alert--row.alert--error` 沒有內容＝確認鈕停用；`.alert--warning` 沒有路進來＝只提醒）。下架與刪除共用一個確認視窗：`.vault-confirm` ＞ `.vault-confirm__list`（一條後果一列，`__sub` 小字口徑）＋ `.vault-confirm__p`；刪除照 Pattern 5.1.11，不可復原用 `.alert--row.alert--error`、確認鈕 `.btn--destructive`（與入口同級，Q134）
+- **檢視身分：指定一位粉絲（D477，S113）** — `.vault-person`（`.owner-lookup` 版型：搜尋欄＋`.owner-lookup__results` 候選，240px，在檢視器下拉右邊）；`.vault-viewas`（`.alert--row.alert--info`，分頁最上面：以分級＝這一級幾人打得開；指定一位粉絲＝他靠哪種方法或哪把鑰匙進來，`.vault-viewas__line`／`__by`／`__way`；草稿與已下架多一句上架後的樣子），進不了時讓位給上鎖卡
+- `.vault-item__online` — 單件設定預覽下面一行「粉絲只能線上看與播放，不提供下載」（D477，F5）
 - `.vault-tile__badges` / `__badges-end` / `.vault-track__badges` — 每件內容的小標列（2026-10-08，D377 第二層）：格子頂端一條，左邊任務、右邊大彩蛋與「幾人看得到」，以分級檢視時右邊換成該分級的結果；音檔列排成曲名下的第三行。小標本身是 §4.229 的 `.vault-tag`。標籤紙格的 `.vault-tile__labelmark` 收進這一列當第一個成員（`position: static`），不再自己絕對定位——同一個角落放兩樣東西會疊在一起。`.vault-tile.is-locked`／`.vault-track.is-locked`＝以分級檢視、等級不足的那一件（降透明、影像轉灰，同側欄 `.vault-row.is-locked` 的語彙）
 - `.vault-gridwrap > .vault-door__fine` — 內容區頂端那句第二層說明（`vault.grid.fine`），借門條細則的字樣、收掉貼底用的 margin／padding
 
@@ -5789,6 +5794,14 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - **空／不空由消費頁的 JS 判斷**，與只剩一列時的刪除鈕同一種分工；屬性寫法沿用站上既有的 `[data-empty]`（`date-input`、票種卡的清空 ✕），不另立第三種「有值才出現」的機制。
 - **焦點不能跟著按鈕消失**：按下新增後那一列是空的、新增鈕當場收起，焦點若留在原地就落在 `display:none` 的按鈕上，所以消費頁要在新增後把焦點交給新那一格的 `.input`；同理，刪除後把焦點交給鄰近一列（優先上一列）。兩者都在 `publish-work.html` 的 `bindRole()` 內。
 
+**變體：帶附屬欄位的列 `--extras`**（2026-10-23，D476 崗位歸屬）— 一列除了主輸入，還要逐筆收一兩個附屬選擇時用（演職名單每位要連 Ztor 藝人帳號、選職務等級）。
+- Anatomy：`.entry-list.entry-list--extras` ＞ `.entry-list__row.entry-list__row--extras` ＞ `.input` ＋ `.btn.btn--icon`（刪除）＋ `.entry-list__extras`（＞ `.select` × 1–2，可加一顆 `.badge` 標示狀態，例如「不發分」）
+- 版面：`.entry-list__extras` 用 `flex: 1 0 100%` 佔滿一行，所以固定換到主輸入的下一行、與主輸入左緣對齊；刪除鈕留在主輸入那一行的行尾——刪的是「這一筆」。兩個下拉 `flex: 1 1 200px` 平分寬度，窄螢幕各自換行；zselect 的觸發鈕沿用 `.select` class，同一條規則一起吃到
+- 列距：`.entry-list--extras` 把列與列的 gap 從 `--sp-8` 加大到 `--sp-16`，看得出哪組附屬欄位屬於哪個名字；列內主輸入與附屬欄位之間 `row-gap: --sp-8`
+- 判斷句：附屬欄位是「這一筆的屬性」嗎？是 → 這個變體；只是另一個並列的問題 → 另開一個欄位
+- surface 與基本款相同：內容各自有邊界，容器不填色，白底灰底都成立
+- Consumers：`partials/work-fields.js` 的 `bindRole()`（`publish-work.html` 步驟 4、`create-project.html` 影片路徑的演職人員），附屬欄位整組掛 `data-feat="S107"`
+
 **Surface** — 內容是 `.input` 與 `.btn--icon`，兩者各自對所在層有邊界，容器本身不填色，白底與灰底（`--card`／`--surface-shell`／`--muted`）都成立。
 
 **Dependencies** — `.input`／`.btn`（`--icon`／`--outline`）／`.ztor-icon`。無獨立 JS 檔，增刪列、`[hidden]` 與 `[data-last-empty]` 的切換都由消費頁的行內控制器處理。
@@ -6172,7 +6185,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Dependencies** — 組成：`button`（§4.2）、`input`（§4.8）。疊在：`listing-controls`（§4.205）的顯示列。
 
-**Consumers（規劃中）** — `product-detail.html`／`bundle-detail.html`／`create-product.html`／`create-bundle.html`。
+**Consumers（規劃中）** — `product-detail.html`／`bundle-detail.html`／`create-product.html`／`create-bundle.html`。另：`media-vault.html` 存取權限分頁的庫房分享連結（F9，D475，2026-10-22），只有複製、沒有重置（規格沒給這條連結撤銷）。
 
 **CSS** — [`link-field.css`](./ds-components/link-field.css) ｜ **JS** — [`link-field.js`](./js/link-field.js)
 
@@ -7284,13 +7297,14 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Anatomy**
 - `.vault-tag` — 22px 膠囊小標（`--radius-pill`、`--fs-11`、等寬數字）＞ `.ztor-icon`（12px）＋ `.vault-tag__text`（超長省略號，完整句放 `title`）
   - 色調：`--media`（`--scrim-media` 76% 混透明＋`blur(6px)`，字 `--on-media`）｜`--plain`（`--ztu-film`＋1px `--border` 內描邊，字 `--foreground-muted`）
-  - 語意：`--grand`（大彩蛋，字轉 `--primary`／`--selected-ink`，不另開色面——它是標記不是狀態）、`--pending`（人數待確認，降一階墨色）、`--ok`（以分級檢視：看得到，成功綠）、`--low`（等級不足，降墨＋鎖頭）、`--action`（需完成行動任務，品牌橘字）。色相只出現在字上，表面維持中性（Q77）
+  - 語意：`--grand`（大彩蛋，字轉 `--primary`／`--selected-ink`，不另開色面——它是標記不是狀態）、`--pending`（人數待確認，降一階墨色）、`--ok`（檢視身分：已解開，成功綠＋勾）、`--low`（需要條件：某一級，降墨＋鎖頭；整座庫房進不了的「上鎖」也用它）、`--action`（未解開：行動任務還沒完成，品牌橘字）。用詞 2026-10-23 依 D477 改名（原「看得到／等級不足／需完成行動任務」退場）。色相只出現在字上，表面維持中性（Q77）
 - `section.vault-task[data-item-task]` — 抽屜裡的任務區，flex column `gap --sp-12`（區內 `.field` 的 margin-bottom 收掉，避免與 gap 疊成兩倍）
   - `.vault-task__head` ＞ `__title`（14 medium）＋ `__lead`（12 muted）
   - `.radio-list`（三種設法；§ Radio list，Q17 窄欄直列的資料選擇）
   - `.vault-task__params` — 選了才長出：行動任務＝「種類」`.select`（九種）＋該種類自己的參數（指定貼文／影片／商品 `.select`、N `input[type=number]` ＋ `.field__hint`／`.field__error`、商城消費範圍 `.segmented`）；等級任務＝「等級」`.select`（低於下限的選項 `disabled`）＋說明下限由來的 `.field__hint`
   - `.vault-task__status`（`--pending`｜`--ready`）— `.badge--warning`「判定方式待確認」或 `.badge--success`「可判定」＋ `__status-text` ＋ `ul.__missing`（逐條抄規格 F8 目錄表寫的缺口，不自行補判定規則）
   - `.vault-task__reach` — `__reach-label`／`__reach-num`（24 display；`--pending` 時改 14 muted 寫「待確認」，不編數字）／`__reach-sub`
+  - `.vault-task__reach--pair` ＞ `.vault-task__reach-cell`×2（D477）— 目前看得到／累計解開過兩格並排、不相加；改任務時保留下來的已解開粉絲寫進目前看得到的說明句。`.vault-task__trial` — 草稿與已下架時一句「這是上架後的數字」
 - `.control-row.vault-task__flag` ＋ `.switch` — 大彩蛋開關（只是標記，不影響解開）
 
 **States** — 三種設法互斥（一件一個任務）；改了即時生效、不設儲存鈕（同名稱欄）。N 不是 1 以上整數時 `.field__error` 出現、`aria-invalid="true"`，任務維持上一個合法值。等級任務若已低於第一層新下限（創作者事後改了第一層）：選項保留可見並加 `.field__hint--warn`，處理方式〔產品待確認〕。
@@ -7316,7 +7330,9 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Anatomy**
 - `.vault-ov` — 分頁內直排，`gap --sp-16` 由容器持有
 - `.vault-ov__pair` — 兩張卡並排（鑰匙使用情況、內容摘要），960px 以下收單欄
-- `.vault-ov__viewer`（`[hidden]`）— 「現在打得開的人數」卡最下面一行：檢視身分開著時「以某級檢視：n / 該級人數 位這一級的粉絲打得開」
+- `.vault-ov__viewer`（`[hidden]`）— 原「現在打得開的人數」卡最下面那一行；**2026-10-23（D477）起正式頁不用**，檢視身分那一行搬到分頁最上面的 `.vault-viewas`（§4.102），三個分頁都看得到
+- `.vault-ov__ever` — 每件清單量條下一行「累計解開過 N」（D477；量條本身是目前看得到）
+- 解開紀錄卡（D477，S114）— `.card` ＞ `.stat-row` 兩格（累計解開過／目前看得到，非上架中寫「上架後看得到」）＋ `.card__note` 兩句（兩個數字的定義；待確認件數或「從沒上架過」）。本檔不另寫樣式
 - `.vault-ov__itemname` ＞ 名稱 ＋ `.vault-ov__tags`（`.vault-tag--plain`，見 §4.229）— 每件清單的名稱欄，小標換行、單顆過長由 `.vault-tag__text` 截斷，不壓到右邊人數條
 - `.vault-ov__kindicon` — 沒有影像的那一件（音檔、剛上傳的影片）放類型圖示，套在 `.meter-list__thumb` 上
 - `.vault-ov__pending` — 人數待確認：寫「待確認」、降一階墨色、空條，不編數字
@@ -7324,7 +7340,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 - `.vault-ov__kvgroups` ＞ `.vault-ov__kvhead` ＋ `.vault-ov__kvrow(--zero)` — 內容摘要兩組小表（類型、任務），一列一項、數字靠右，0 的那一列退到 `--faint-ink`
 - `.vault-ov__empty` — 還沒有內容時的一句話
 
-**States** — 檢視身分關＝`__viewer` 隱藏；開＝顯示該級人數，每件小標多一顆該級結果（看得到／等級不足／需完成行動任務）。人數一律即時：上傳、改名、刪除、改任務、大彩蛋、條件與鑰匙改動、檢視身分切換都會重畫（`renderMain` → `renderOverviewTab`）。
+**States** — 檢視身分開著時每件小標多一顆該角度的結果（D477：已解開／需要條件／未解開；整座進不了＝上鎖）。草稿與已下架：讀數卡標題換「上架後打得開的人數」＋`.badge--neutral`「尚未對粉絲開放」，每件清單卡多一句「這是上架後的數字」。人數一律即時：上傳、改名、刪除、改任務、大彩蛋、條件與鑰匙改動、檢視身分切換都會重畫（`renderMain` → `renderOverviewTab`）。
 
 **Token usage** — `--sp-6`／`--sp-8`／`--sp-12`／`--sp-16`／`--sp-24`、`--fs-12`／`--fs-13`、`--fw-medium`／`--fw-regular`、`--border`、`--foreground`／`--foreground-muted`／`--muted-foreground`／`--faint-ink`。
 
@@ -7338,7 +7354,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 ### 4.231 Vault access（媒體庫存取權限分頁）
 
-**Purpose** — 媒體庫三分頁的第三頁（2026-10-09）。讀法照創作者的旅程：先看「現在多少人進得來」，再看兩條路——條件開放（規格 F2 的進庫方法）與直接開放（規格 F4 的鑰匙）——最後才是淡色的分享頁面入口。條件晶片、新增條件選單、發鑰匙抽屜沿用 §4.102／Vault share；本元件只管這一頁新長出來的版面。
+**Purpose** — 媒體庫三分頁的第三頁（2026-10-09）。讀法照創作者的旅程：先看「現在多少人進得來」，再看兩條路——條件開放（規格 F2 的進庫方法）與直接開放（規格 F4 的鑰匙）——最後是庫房的分享連結（規格 F9，D475，2026-10-22 取代原本淡色的分享頁面入口）。條件晶片、新增條件選單、發鑰匙抽屜沿用 §4.102／Vault share；本元件只管這一頁新長出來的版面。
 
 **`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 人數條與方法小卡是 1px `--border` 髮線框、不上底色，坐在 `.vault-door`／`.card` 玻璃面上都成立。
 
@@ -7352,15 +7368,17 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 - `.vault-access__direct` — 直接開放的兩個入口（送給一位粉絲／做成 NFC 商品，`.btn--outline.btn--sm`，直接開發鑰匙抽屜並預選意圖）
 - `.vault-keylist` ＞ `.vault-keyrow(--head|--revoked)` ＞ `__main`（`__code`＋`__label`）、`__uses`（已領取／總次數）、`.ztor-badge(--success)`（有效／已撤銷）、`.btn--ghost.btn--sm` 撤銷 — 已發鑰匙清單；640px 以下收成兩欄
 - `.vault-access__empty` — 還沒有鑰匙
-- `.vault-sharerow` ＞ `.btn--ghost` 分享頁面 ＋ `__note`「粉絲端庫房頁尚待規格」— 最下方、淡一階（hover／focus 回到全不透明）
+- 庫房非上架中（D477）：直接開放卡多一列 `.alert--row.alert--info`「上架前粉絲不能領取鑰匙…現在仍可先發」；分享連結卡的連結列掛 `.linkf--disabled`、複製鈕 `disabled`，說明句換成原因（草稿／已下架不能分享）。人數條改「上架後 N 人打得開」
+- 分享連結卡（F9，D475，2026-10-22）— `.card[data-feat="S106"]` ＞ 標題「分享連結」＋ `.linkf[data-vault-sharelink]`（Link field §4.206：唯讀網址＋「複製連結」，「已複製」長在按鈕上、不跳 toast）＋ `.linkf__hint`「連結只帶粉絲到這座庫房，不會讓他進得來——進庫仍要符合條件或持有鑰匙」。網址由 `renderAccessTab` 依選中庫房寫入，格式 `https://ztor.com/v/<庫房 id>` 是示範（UIA-295）。不叫鑰匙；直接開放卡開抽屜的按鈕同日改叫「管理鑰匙」、抽屜標題改「鑰匙」，兩者不共用名字。本檔不另寫樣式
+- ~~`.vault-sharerow` ＞ `.btn--ghost` 分享頁面 ＋ `__note`「粉絲端庫房頁尚待規格」~~ — 2026-10-22 退場（墓碑留在 vault-access.css）
 
 **States** — 沒有條件＋沒有鑰匙／沒有條件＋有鑰匙／有條件＋0 人符合／有條件＋有人符合，四種各有一句話（規格 F2「沒有路進來」要和「設了但沒人符合」分得出來）。方法小卡的人數＝只看這一種方法、不含鑰匙；空方法不寫人數。撤銷走與抽屜同一支 `revokeKey`（同一段確認文字，說出會失去幾人）。
 
 **Token usage** — `--sp-2`／`--sp-8`／`--sp-10`／`--sp-12`／`--sp-14`／`--sp-16`、`--fs-12`／`--fs-13`／`--fs-14`／`--fs-18`、`--fw-medium`、`--radius-lg`、`--border`、`--foreground`／`--foreground-muted`／`--muted-foreground`、`--destructive`。
 
-**Dependencies** — Button、Badge、Alert、Explainer、Card、Icon；條件晶片與「或是」分隔、新增條件選單屬 §4.102 Media vault；發鑰匙抽屜屬 Vault share。
+**Dependencies** — Button、Badge、Alert、Explainer、Card、Icon、Link field（分享連結）；條件晶片與「或是」分隔、新增條件選單屬 §4.102 Media vault；發鑰匙抽屜屬 Vault share。
 
-**Consumers** — `media-vault.html`（存取權限分頁，唯一；保存檔 `media-vault-popup.html` 共用 JS、會畫出方法小卡但沒連本支 CSS）。渲染 `js/media-vault.js` 的 `doorGroupHtml`（方法小卡）與 `renderAccessTab`（人數條、總結、鑰匙清單）；功能標記 `data-feat="S93"`（人數條、鑰匙清單）。
+**Consumers** — `media-vault.html`（存取權限分頁，唯一；保存檔 `media-vault-popup.html` 共用 JS、會畫出方法小卡但沒連本支 CSS）。渲染 `js/media-vault.js` 的 `doorGroupHtml`（方法小卡）與 `renderAccessTab`（人數條、總結、鑰匙清單）；功能標記 `data-feat="S93"`（人數條、鑰匙清單）、`data-feat="S106"`（分享連結卡）。
 
 **CSS** — [`vault-access.css`](./ds-components/vault-access.css)
 
@@ -7657,3 +7675,33 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Consumers** — `create-product.html`（商品設定／上架設定）、`create-bundle.html`（組合包設定／上架設定）。
 
 **CSS** — [`form-steps.css`](./ds-components/form-steps.css)
+
+---
+
+### 4.242 Media preview（單件媒體預覽）
+
+**Purpose** — 在編輯的地方直接看單件內容本身（2026-10-22，規格 5.1.7.3 F5，D475）：照片整張放大、影片與音檔可以播放。純檢視——不改任何資料，所以沒有儲存、沒有狀態徽章，只有播放與暫停。首個消費點是媒體庫單件設定抽屜頂端，取代原本只放縮圖或類型圖示的 `.vault-item__preview` 框。
+
+**`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 外框 1px `--border`＋`--radius-lg`，影像區底 `--ztu-film`（同站上其他媒體框），坐在抽屜白底或卡面上都成立。
+
+**Anatomy**
+- `.mpreview`（`--image`｜`--clip`｜`--audio`；`.is-playing` 播放中）
+  - `.mpreview__stage` — 影像區；照片 `object-fit: contain`、最高 360px（要看整張圖，不裁）；影片 16:9 封面 `cover`
+    - `img` 或 `.mpreview__glyph`（沒有影像時的類型圖示，例：剛上傳、還沒抽影格的影片）
+    - `button.mpreview__bigplay` — 影片封面正中央大播放鈕（`--control-h-lg` 圓、底 `--overlay-tint`、字 `--on-media`），播放中隱藏
+  - `.mpreview__bar` — 播放控制列（影片與音檔才有；影片在封面下方、上緣 1px `--border`）
+    - `button.mpreview__toggle` — 播放／暫停（`--control-h-xs` 圓；hover 與播放中轉 `--primary`）
+    - `.mpreview__track` ＞ `.mpreview__fill` — 進度，寬度吃 `--mp-progress`
+    - `.mpreview__time` — 「目前 / 長度」，`--fs-12` 等寬數字
+
+**States** — 照片（無控制列）／影片暫停（大播放鈕＋控制列）／影片播放中／音檔暫停／音檔播放中／沒有影像（類型圖示）。關掉抽屜即停止播放；暫停保留進度，再開另一件從 0 開始。
+
+**原型示意（呈現假設 UIA-295）** — 原型沒有真的影音檔：影片用示範封面＋播放控制、音檔用播放條，按下播放只讓進度條照標示長度每秒往前走。接真檔時把 `__stage` 換成 `<video>`、播放條改讀媒體元素進度即可，外觀不變。
+
+**Token usage** — `--border`、`--radius-lg`、`--radius-pill`、`--ztu-film`、`--muted`、`--muted-foreground`、`--foreground`、`--primary`／`--primary-foreground`、`--overlay-tint`、`--on-media`、`--control-h-xs`／`--control-h-lg`、`--sp-4`／`--sp-10`／`--sp-12`、`--fs-12`、`--duration`、`--easing`。
+
+**Dependencies** — Icon（play／pause 與類型圖示）。
+
+**Consumers** — `media-vault.html` 單件設定抽屜（`js/media-vault.js` 的 `previewHtml`／`togglePreview`／`stopPreview`；文案 i18n `vault.item.preview.*`；功能標記 `data-feat="S106"`）。保存檔 `media-vault-popup.html` 共用 JS、會畫出本元件但沒連本支 CSS。
+
+**CSS** — [`media-preview.css`](./ds-components/media-preview.css)

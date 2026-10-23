@@ -63,6 +63,9 @@
 //              有它時商品層 pool.locks 由 seedListing() 加總得出（見該函式）
 //   組合（BUNDLE_SEED）的 pickupSession（選填，D471 2026-10-22 新增）：組合包自己的取貨場次代號（tpe／khh）。
 //              沒寫／null＝繼承——各成員沿用自己商品的場次；設了＝這個組合包的成員領取單位都屬於這一場（組合包本身仍不產生領取碼，D240）
+//   組合（BUNDLE_SEED）的 holdSets／pendingCheckout（選填，D465／D478）：被保留的套數／結帳中（保留中）的訂單筆數。
+//              pendingCheckout 大於 0 時組合商品細節頁的成員區唯讀（D478：下架後還要等這些訂單結清才能改成員）；
+//              沒寫 pendingCheckout 時以 holdSets 代替（假設一筆一套，UIA-297）。示範：internal-test-set
 //   組合（BUNDLE_SEED）另有（2026-09-11 使用者裁示的價格模型，見 BUNDLE_SEED 上方註解）：
 //              discountPct number|null（常態折扣 %；售價＝成員合計 ×(1−%)）、discount { percent, limited, stack } | null（限時折扣）、
 //              description、membersKey（e-shop 列的成員說明 i18n key，選填）；films／projects／sales／draft 同上、
@@ -1341,7 +1344,10 @@
       members: [{ productId: 'cap' }, { productId: 'shoes' }],
       cap: null, listed: false, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
-      discountPct: null, discount: null, sales: null
+      discountPct: null, discount: null, sales: null,
+      /* D478 示範（2026-10-23）：下架前已建立、還在付款計時中的 1 筆訂單（保留 1 套）——已下架但還沒結清，
+         組合商品細節頁的成員區唯讀並提示「還有 1 筆訂單結帳中，結清後才能修改成員」。pendingCheckout＝結帳中的訂單筆數。 */
+      holdSets: 1, pendingCheckout: 1
     },
     /* 草稿：沒有圖（清單列用 placeholder）、名稱先叫「新組合」 */
     'draft-set': {
