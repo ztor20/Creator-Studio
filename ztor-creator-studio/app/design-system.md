@@ -3155,6 +3155,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 分頁**裡面**再分節時用的左側清單。與 `tabs.css` 的分工：`.tabs` 是頁面層級（橫排、少量、每格一個大主題）；`.section-nav` 住在其中一格裡（直排、可以多、每節是同一主題的不同切面）。五項以上橫排會擠成兩行或被截斷，直排天生可長。
 
 - `.section-nav-layout` 兩欄 grid（**140px** 導覽＋內容，2026-08-31 由 168px 收窄），900px 以下疊成上下、導覽改橫向可捲。這一欄的視覺重量來自每列的 `border-bottom`——標籤多半兩三個字、線卻拉滿整欄寬，收窄之後線跟著短。**140 接近下限**：全站最長的標籤是 fan-detail 的「Behavior timeline」（13px／字重 500 實測 114px ＋ 左右內距 8px ＝ 122px），再窄會換行。設定頁的 `.settings-layout` 同輪一併由 220px 對齊到 140px——兩者長得一樣、item 樣式也共用，不該有兩個寬度；**要改一起改**。
+- **導覽被版本閘收起時改單欄（2026-10-23）**：`.section-nav` 帶 `.ztd-ver-hidden`（cheat code 版本切換把整個導覽收掉，例如 release2.5 的粉絲詳情只剩一節）時，`.section-nav-layout:has(> .section-nav.ztd-ver-hidden)` 改成單欄，內容欄吃滿；否則內容會被格線排進 140px 的導覽欄。consumer：`fan-detail.html`。
 - **間距（2026-08-17 使用者指示加大）**：與上方頁首之間 `--sp-48`（原 24）、兩欄之間 `--sp-40`（原 24）。頁首是「這是哪一場活動」、底下是「這一場的內容」，兩者是不同層級；欄距則要讓人看出左邊是選單、右邊是它選出來的結果。兩個值都寫在元件裡，不靠呼叫端各給一個 `.mt-*`。
 - **已選態＝分隔線式（Q71/Q75 定案 2026-08-25，取代原本的品牌橘 tint／藥丸答案）**：每列 1px `--border-soft` 下緣線、末列去線，無底色、無藥丸、無 icon；已選只換文字色（`--selected-ink`）＋字重（medium），不換底色。三頁同款：product-detail（本輪由橫排 tabs 改為分節導覽）、series-detail、settings。
 - **原本叫 `.settings-nav`**、只長在設定頁；活動詳情的「售票與名單」要用同一個東西時提升成中性名稱。舊 class 仍列在同一組選擇器裡，`settings.html` 的 markup 不必改，`settings.css` 只留容器的吸附位移；item 視覺（含分隔線式已選態）自 Q75 起由本檔 `section-nav.css` 統一提供。
@@ -7329,7 +7330,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Anatomy**
 - `.vault-ov` — 分頁內直排，`gap --sp-16` 由容器持有
-- `.vault-ov__pair` — 兩張卡並排（鑰匙使用情況、內容摘要），960px 以下收單欄
+- `.vault-ov__pair` — 兩張卡並排（鑰匙使用情況、內容摘要），960px 以下收單欄；欄數跟著看得到的卡走（`grid-auto-flow: column`），版本閘收起一張時剩下那張佔滿整列（2026-10-23，release2.5 沒有鑰匙使用情況）
 - `.vault-ov__viewer`（`[hidden]`）— 原「現在打得開的人數」卡最下面那一行；**2026-10-23（D477）起正式頁不用**，檢視身分那一行搬到分頁最上面的 `.vault-viewas`（§4.102），三個分頁都看得到
 - `.vault-ov__ever` — 每件清單量條下一行「累計解開過 N」（D477；量條本身是目前看得到）
 - 解開紀錄卡（D477，S114）— `.card` ＞ `.stat-row` 兩格（累計解開過／目前看得到，非上架中寫「上架後看得到」）＋ `.card__note` 兩句（兩個數字的定義；待確認件數或「從沒上架過」）。本檔不另寫樣式

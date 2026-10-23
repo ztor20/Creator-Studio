@@ -98,7 +98,7 @@
     lz = lz || lens();
     if (lz.kind === "tier") {
       var st = V.itemStatusForTier(it, lz.tier);
-      return { st: st, tier: st === "condition" ? it.task.tier : null };
+      return { st: st, tier: st === "condition" ? V.taskOf(it).tier : null };
     }
     if (lz.kind === "person") return V.itemStatusForFan(f, it, lz.fan.idx);
     return null;
@@ -119,6 +119,7 @@
   /* 排程的白話：「2026/11/01 20:00 上架 · 2026/11/12 23:59 定時下架」。 */
   function schedText(v) {
     var bits = [];
+    if (!V.schedOn()) return "";   /* 排程（S125）不在版本內：種子裡的排程時間不顯示 */
     if (v.status !== "listed" && v.listAt) bits.push(L("vault.sched.list", { t: fmtWhen(v.listAt) }));
     if (v.unlistAt) bits.push(L("vault.sched.unlist", { t: fmtWhen(v.unlistAt) }));
     return bits.join(" · ");
@@ -163,7 +164,7 @@
     var who = lensName(lz);
     if (lensLocked(f, lz)) return tagHtml(tone, "low", "lock", L("vault.st.locked"), L("vault.st.locked.title", { who: who }), "S113");
     var r = lensItem(f, it, lz);
-    var info = taskInfo(it.task);
+    var info = taskInfo(V.taskOf(it));
     if (r.st === "unlocked") return tagHtml(tone, "ok", "check", L("vault.st.unlocked"), L("vault.st.unlocked.title", { who: who }), "S86");
     if (r.st === "condition") {
       var tn = tierName(r.tier);
@@ -179,9 +180,10 @@
      那個角度的結果（已解開／需要條件／未解開；整座進不了是上鎖）。 */
   function itemTags(it, tone) {
     var f = vault();
-    var info = taskInfo(it.task);
+    var info = taskInfo(V.taskOf(it));
     var start = info ? tagHtml(tone, null, info.icon, info.text, info.full, "S86") : "";
-    var end = it.grand ? tagHtml(tone, "grand", "sparkles", tx("Grand surprise", "大彩蛋"), tx("Marked as a grand surprise — it does not change how this item unlocks", "標為大彩蛋——只是標記，不影響解開"), "S86") : "";
+    /* 大彩蛋屬 S121（⚪，release2.5 不放）：小標掛 S121，畫完 regate 收起。 */
+    var end = it.grand ? tagHtml(tone, "grand", "sparkles", tx("Grand surprise", "大彩蛋"), tx("Marked as a grand surprise — it does not change how this item unlocks", "標為大彩蛋——只是標記，不影響解開"), "S121") : "";
     var lz = lens();
     if (lz.kind !== "none") {
       end += lensTag(tone, f, it, lz);
@@ -399,7 +401,7 @@
 
   function taskSectionHtml(it) {
     var f = vault();
-    var task = it.task || null;
+    var task = V.taskOf(it);   /* release2.5 下，用到不在版本內那六種行動任務的內容當成不設任務（UIA-300） */
     var type = task ? task.type : "none";
     var types = [
       ["none",   tx("No task", "不設任務"),       tx("Anyone who gets into the vault sees it.", "進得了庫就看得到。")],
@@ -409,9 +411,12 @@
     var out = '<section class="vault-task" data-item-task data-feat="S86">' +
       '<div class="vault-task__head">' +
         '<h4 class="vault-task__title" id="vault-task-title">' + tx("Task", "任務") + "</h4>" +
-        '<p class="vault-task__lead">' + tx(
-          "What a fan must do, after getting into the vault, to see this item. One task per item. Keys only get fans into the vault — key holders still finish the task.",
-          "粉絲進庫之後，還要做到什麼才看得到這一件；一件只設一個。鑰匙只管進庫，持鑰匙的人一樣要完成任務。") + "</p>" +
+        '<p class="vault-task__lead">' + (V.keysOn()
+          ? tx("What a fan must do, after getting into the vault, to see this item. One task per item. Keys only get fans into the vault — key holders still finish the task.",
+               "粉絲進庫之後，還要做到什麼才看得到這一件；一件只設一個。鑰匙只管進庫，持鑰匙的人一樣要完成任務。")
+          /* 鑰匙（S123）不在版本內：不提鑰匙。 */
+          : tx("What a fan must do, after getting into the vault, to see this item. One task per item.",
+               "粉絲進庫之後，還要做到什麼才看得到這一件；一件只設一個。")) + "</p>" +
       "</div>" +
       '<div class="radio-list" role="radiogroup" aria-labelledby="vault-task-title">' +
         types.map(function (o) {
@@ -434,8 +439,10 @@
     var out = '<div class="vault-task__params">' +
       '<div class="field"><label class="field__label" for="vt-kind">' + tx("Type", "種類") + "</label>" +
         '<select class="select" id="vt-kind" data-task-kind>' +
-          V.actionTasks.map(function (a) {
-            return '<option value="' + a.id + '"' + (a.id === task.kind ? " selected" : "") + ">" + esc(V.t(a.label)) + "</option>";
+          /* release2.5（S122 不在版本內）只列追蹤創作者、加入社群、分享庫房頁面三種。 */
+          V.actionTaskList().map(function (a) {
+            return '<option value="' + a.id + '"' + (a.id === task.kind ? " selected" : "") +
+              (V.isMvpAction(a.id) ? "" : ' data-feat="S122"') + ">" + esc(V.t(a.label)) + "</option>";
           }).join("") +
         "</select></div>";
 
@@ -502,8 +509,11 @@
     var lowest = V.tiers[V.tiers.length - 1].key;
     var under = V.tierRank[task.tier] < floorRank;
     var hint = floor === lowest
-      ? tx("Some way into this vault does not ask for a tier (or fans only get in with a key), so all four tiers are available.",
-           "第一層有不看分級的進庫方法（或只靠鑰匙進庫），四級都能選。")
+      ? (V.keysOn()
+        ? tx("Some way into this vault does not ask for a tier (or fans only get in with a key), so all four tiers are available.",
+             "第一層有不看分級的進庫方法（或只靠鑰匙進庫），四級都能選。")
+        : tx("Some way into this vault does not ask for a tier, so all four tiers are available.",
+             "第一層有不看分級的進庫方法，四級都能選。"))
       : tx("Every way into this vault asks for " + tierAtLeast(floor) + ", so only that tier or higher is available.",
            "第一層每一種進庫方法都要求" + tierAtLeast(floor) + "，所以只能選這一級或更高。");
     return '<div class="vault-task__params">' +
@@ -519,7 +529,7 @@
         (under ? '<p class="field__hint field__hint--warn">' + tx(
           "This tier is now below the vault's lowest tier. How existing tier tasks are handled after the vault changes is still to be confirmed.",
           "這一級已低於第一層目前的下限；第一層改動後既有的等級任務怎麼處理，尚待確認。") + "</p>" : "") +
-        '<p class="field__hint">' + esc(L("vault.item.tier.below")) + "</p>" +
+        '<p class="field__hint">' + esc(L(V.keysOn() ? "vault.item.tier.below" : "vault.item.tier.below.nk")) + "</p>" +
       "</div></div>";
   }
 
@@ -529,7 +539,7 @@
     var n = V.itemViewers(f, it), e = V.itemEver(f, it);
     var total = V.reachAll(f);
     var listed = V.isListed(f);
-    var sub = !it.task
+    var sub = !V.taskOf(it)
       ? tx("Same as everyone who can get into the vault.", "等於進得了庫的全部人數。")
       : n == null
         ? tx("This task has no per-fan data yet, so the count is still to be confirmed.", "這種任務還沒有逐人資料，人數尚待確認。")
@@ -555,7 +565,7 @@
   /* 大彩蛋（F5，D377）：只是標記，不影響解開。 */
   function grandRowHtml(it) {
     var on = !!it.grand;
-    return '<div class="control-row vault-task__flag" data-feat="S86">' +
+    return '<div class="control-row vault-task__flag" data-feat="S121">' +
       "<div>" +
         '<div class="control-row__main" id="vault-grand-label">' + tx("Grand surprise", "大彩蛋") + "</div>" +
         '<div class="control-row__sub">' + tx("Just a marker. It does not change how this item unlocks.", "只是標記，不影響這一件怎麼解開。") + "</div>" +
@@ -727,6 +737,7 @@
     var gs = f.rules || [];
     var n = V.ruleCount(f);
     if (!n) {
+      if (!V.keysOn()) return tx("No condition yet — nobody can open this vault.", "還沒有條件——目前沒有人打得開這座庫房。");
       return noKey
         ? tx("No condition and no key yet — nobody can open this vault.", "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。")
         : tx("No condition — only fans holding a key get in.", "沒有條件——只有持鑰匙的人進得來。");
@@ -854,7 +865,13 @@
       els.shareLink.classList.toggle("linkf--disabled", !listed);
       var copyBtn = els.shareLink.querySelector("[data-linkf-copy]");
       if (copyBtn) copyBtn.disabled = !listed;
-      if (els.linkHint) els.linkHint.hidden = !listed;
+      if (els.linkHint) {
+        els.linkHint.hidden = !listed;
+        /* 鑰匙（S123）不在版本內：說明句不提「持有鑰匙」。data-i18n 一起換，語言切換時才不會被蓋回去。 */
+        var hintKey = V.keysOn() ? "vault.ac.link.hint" : "vault.ac.link.hint.nk";
+        els.linkHint.setAttribute("data-i18n", hintKey);
+        els.linkHint.textContent = L(hintKey);
+      }
       if (els.linkOff) {
         els.linkOff.hidden = listed;
         els.linkOff.textContent = listed ? "" : L(f.status === "draft" ? "vault.ac.link.off.draft" : "vault.ac.link.off.unlisted");
@@ -863,9 +880,11 @@
     /* 上架前不能領鑰匙（F4，D477 第二輪第 4 題）：仍可先發，所以入口照留，只加一句。 */
     if (els.keysOff) els.keysOff.hidden = listed;
     var sp = V.reachSplit(f);
+    /* 鑰匙（S123）不在版本內：只講總數，不拆「靠條件／靠鑰匙」（.nk 鍵）。 */
+    var nk = V.keysOn() ? "" : ".nk";
     els.reachline.innerHTML = L(listed
-      ? (sp.total === 1 ? "vault.ac.reachline.one" : "vault.ac.reachline")
-      : (sp.total === 1 ? "vault.ac.reachline.trial.one" : "vault.ac.reachline.trial"), {
+      ? (sp.total === 1 ? "vault.ac.reachline.one" + nk : "vault.ac.reachline" + nk)
+      : (sp.total === 1 ? "vault.ac.reachline.trial.one" + nk : "vault.ac.reachline.trial" + nk), {
       total: num(sp.total), rule: num(sp.byRule), key: num(sp.byKey),
       overlap: sp.both ? L("vault.ac.reachline.both", { n: num(sp.both) }) : L("vault.ac.reachline.none")
     });
@@ -950,9 +969,9 @@
           ? '<img class="meter-list__thumb" src="' + esc(it.img) + '" alt="" loading="lazy">'
           : '<span class="meter-list__thumb vault-ov__kindicon">' + icon(KIND_ICON[it.kind] || "file") + "</span>";
         var tags = [];
-        var info = taskInfo(it.task);
+        var info = taskInfo(V.taskOf(it));
         tags.push(info ? ovTag(null, info.icon, info.full) : ovTag(null, "circle", L("vault.ov.task.none")));
-        if (it.grand) tags.push(ovTag("grand", "sparkles", L("vault.ov.task.grand")));
+        if (it.grand && V.featOn("S121")) tags.push(ovTag("grand", "sparkles", L("vault.ov.task.grand")));
         if (lz.kind !== "none") tags.push(lensTag("plain", f, it, lz));
         var n = V.itemViewers(f, it), e = V.itemEver(f, it);
         var ever = '<span class="vault-ov__ever" data-feat="S114">' +
@@ -997,14 +1016,16 @@
       kv(L("vault.ov.kind.audio"), c.audio || 0);
     var none = 0, act = 0, tierN = 0, grand = 0;
     f.items.forEach(function (it) {
-      if (!it.task) none++; else if (it.task.type === "tier") tierN++; else act++;
+      var tk = V.taskOf(it);
+      if (!tk) none++; else if (tk.type === "tier") tierN++; else act++;
       if (it.grand) grand++;
     });
     els.ovTasks.innerHTML =
       kv(L("vault.ov.task.none"), none) +
       kv(L("vault.ov.task.action"), act) +
       kv(L("vault.ov.task.tier"), tierN) +
-      kv(L("vault.ov.task.grand"), grand);
+      /* 大彩蛋（S121）不在版本內：摘要不列這一行。 */
+      (V.featOn("S121") ? kv(L("vault.ov.task.grand"), grand) : "");
   }
 
   /* ── 分頁（2026-10-09）──────────────────────────────────────
@@ -1239,7 +1260,7 @@
     if (!locked) { els.gate.innerHTML = ""; return; }
 
     var who = lensName(lz);
-    var liveKeys = (f.keys || []).filter(function (k) { return !k.revoked; }).length;
+    var liveKeys = V.keyStats(f).live;   /* 鑰匙（S123）不在版本內時是 0 */
 
     /* 進庫方法在這裡是唯讀的：粉絲看得到門上寫什麼，但門不是他能改的。一種方法一行
        （「方法 N」＋條件用「＋」串起來），行與行之間寫「或是」。 */
@@ -1251,7 +1272,7 @@
     }).join('<span class="vault-gate__join vault-gate__join--or">' + esc(L("vault.ac.or")) + "</span>");
 
     var foot = !gs.length
-      ? L(liveKeys ? "vault.gate.nokey" : "vault.gate.none")
+      ? L(liveKeys ? "vault.gate.nokey" : V.keysOn() ? "vault.gate.none" : "vault.gate.none.nk")
       : liveKeys ? L("vault.gate.keyline") : "";
     var sub = lz.kind === "tier"
       ? L("vault.gate.sub.tier", { tier: who })
@@ -1386,7 +1407,9 @@
     document.body.classList.add("is-modal-open");
     lastFocus = document.activeElement;
     var first = els.pub.querySelector("[data-pub-mode].segmented__btn--active");
-    if (first) first.focus();
+    /* 排程（S125）不在版本內時上架方式整塊收起，焦點改給確認鈕。 */
+    if (first && first.offsetParent) first.focus();
+    else if (els.pubOk) els.pubOk.focus();
   }
   function closePublish() {
     if (!els.pub || els.pub.hidden) return;
@@ -1405,7 +1428,7 @@
     var chk = V.publishCheck(f);
     els.pubChecks.innerHTML =
       (chk.empty ? alertRow("error", "alert-triangle", L("vault.pub.check.empty.t"), L("vault.pub.check.empty.d")) : "") +
-      (chk.noWay ? alertRow("warning", "alert-triangle", L("vault.pub.check.noway.t"), L("vault.pub.check.noway.d")) : "");
+      (chk.noWay ? alertRow("warning", "alert-triangle", L("vault.pub.check.noway.t"), L(V.keysOn() ? "vault.pub.check.noway.d" : "vault.pub.check.noway.d.nk")) : "");
     els.pubChecks.hidden = !(chk.empty || chk.noWay);
     els.pub.querySelectorAll("[data-pub-mode]").forEach(function (b) {
       var on = b.getAttribute("data-pub-mode") === pub.mode;
@@ -1497,7 +1520,8 @@
     var f = vault();
     openConfirm({
       title: L("vault.unlist.title", { n: vaultName(f) }),
-      body: listHtml([esc(L("vault.unlist.li1")), esc(L("vault.unlist.li2")), esc(L("vault.unlist.li3"))]),
+      /* 第二條講排程會被清掉；排程（S125）不在版本內時不列。 */
+      body: listHtml([esc(L("vault.unlist.li1"))].concat(V.schedOn() ? [esc(L("vault.unlist.li2"))] : []).concat([esc(L("vault.unlist.li3"))])),
       ok: L("vault.act.unlist"),
       onOk: function () {
         V.unlist(f);
@@ -1521,9 +1545,9 @@
       body: listHtml((f.status === "draft" ? [] : [
           L(imp.fans === 1 ? "vault.del.fans.one" : "vault.del.fans", { n: num(imp.fans) }) +
             '<span class="vault-confirm__sub">' + esc(L("vault.del.fans.note")) + "</span>"
-        ]).concat([
+        ]).concat(V.keysOn() ? [
           esc(imp.keys ? L(imp.keys === 1 ? "vault.del.keys.one" : "vault.del.keys", { n: num(imp.keys) }) : L("vault.del.keys.none"))
-        ])) +
+        ] : [])) +   /* 鑰匙（S123）不在版本內：不列「鑰匙一併失效」 */
         alertRow("error", "alert-triangle", L("vault.del.irrev"), ""),
       ok: L("vault.act.delete"), danger: true,
       onOk: function () {
@@ -1656,7 +1680,7 @@
 
     /* — 上架前不能領鑰匙（F4，D477）：草稿或已下架時，抽屜裡也講一次 — */
     if (f.status && !V.isListed(f)) {
-      out += '<div class="info-banner" data-feat="S112">' + icon("clock", "info-banner__icon") + "<span>" + esc(L("vault.ac.keys.off")) + "</span></div>";
+      out += '<div class="info-banner" data-feat="S123">' + icon("clock", "info-banner__icon") + "<span>" + esc(L("vault.ac.keys.off")) + "</span></div>";
     }
 
     /* — 這個機制的規則，寫在畫面上 — */
@@ -2144,13 +2168,13 @@
       var typeBtn = e.target.closest("[data-task-type]");
       if (typeBtn && cur) {
         var type = typeBtn.getAttribute("data-task-type");
-        var was = cur.task ? cur.task.type : "none";
+        var was = V.taskOf(cur) ? V.taskOf(cur).type : "none";
         if (type !== was) {
           /* 改任務前先把已解開、此刻看得到的粉絲留下（F8 修改任務，D477 第二輪第 3 題）。 */
           V.retainOnTaskChange(vault(), cur);
           /* 一件只設一個任務：換設法就換掉整個任務物件，不保留另一種的參數。 */
           cur.task = type === "none" ? null
-            : type === "action" ? newActionTask(V.actionTasks[0].id)
+            : type === "action" ? newActionTask(V.actionTaskList()[0].id)
             : { type: "tier", tier: V.tierFloor(vault()) };
           refreshTask(cur, '[data-task-type="' + type + '"]');
         }
@@ -2398,6 +2422,14 @@
     });
 
     document.addEventListener("i18n:applied", function () { lastReach = null; render(); });
+    /* 2026-10-23 release2.5 範圍切分（UIA-300）：切版本時 JS 畫的內容（任務選單、鑰匙與排程字句、
+       大彩蛋小標、人數）要照新版本重畫；單件設定開著就一起重畫。 */
+    document.addEventListener("ztor:devstate-changed", function () {
+      if (!els.main) return;
+      lastReach = null; render();
+      var open = state.itemId && els.itemSheet.classList.contains("is-open") && itemById(state.itemId);
+      if (open) renderItemSheet(open);
+    });
     window.addEventListener("resize", closeRuleMenu);
   }
 
