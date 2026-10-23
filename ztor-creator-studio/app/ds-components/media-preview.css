@@ -1,0 +1,134 @@
+/* ============================================================
+   media-preview.css · 單件媒體預覽（照片大圖／影片播放／音檔播放條）
+   ------------------------------------------------------------
+   2026-10-22（規格 5.1.7.3 F5 · D475）。創作者在單件內容的設定裡直接看一眼這件
+   內容本身：照片看大圖、影片與音檔按下去播放。純檢視——不改任何資料，所以
+   沒有儲存、沒有狀態徽章，只有播放與暫停。
+
+   首個消費點是媒體庫單件設定抽屜（`media-vault.js` 的 `renderItemSheet`），
+   取代原本只放縮圖或類型圖示的 `.vault-item__preview`。
+
+   ── 原型的示意性質 ─────────────────────────────────────────────
+   原型沒有真的影音檔：影片用示範封面＋播放控制、音檔用播放條，按下播放只讓進度條
+   照標示長度往前走（ASSUMPTIONS UIA-295）。元件本身不假設檔案來源，接上真檔時
+   把 `__stage` 換成 <video>、播放條改讀 media 元素的進度即可，外觀不變。
+
+   anatomy
+     .mpreview                    (--image | --clip | --audio)  ·  .is-playing 播放中
+       .mpreview__stage           影像區：照片整張放得下（contain）、影片封面鋪滿（cover）
+         img                      照片或影片封面
+         .mpreview__glyph         沒有影像時的類型圖示（剛上傳、還沒抽影格的影片）
+         button.mpreview__bigplay 影片封面正中央的大播放鈕（播放中隱藏）
+       .mpreview__bar             播放控制列（影片與音檔才有）
+         button.mpreview__toggle  播放／暫停
+         .mpreview__track ＞ .mpreview__fill   進度（寬度吃 --mp-progress）
+         .mpreview__time          目前時間 / 長度（等寬數字）
+
+   surface：外框 1px --border、影像區底色 --ztu-film（同站上其他媒體框），坐在抽屜白底
+   或卡面上都成立。全值引用 _tokens.css。
+   ============================================================ */
+
+.mpreview {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ── 影像區 ── */
+.mpreview__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--ztu-film);
+  overflow: hidden;
+}
+.mpreview__stage img { display: block; width: 100%; height: 100%; }
+
+/* 照片：要看的就是這張圖本身，整張放得下比裁成固定比例重要。 */
+.mpreview--image .mpreview__stage { max-height: 360px; min-height: 160px; }
+.mpreview--image .mpreview__stage img { object-fit: contain; max-height: 360px; }
+
+/* 影片：封面鋪滿 16:9，播放控制接在下面。 */
+.mpreview--clip .mpreview__stage { aspect-ratio: 16 / 9; }
+.mpreview--clip .mpreview__stage img { object-fit: cover; }
+
+.mpreview__glyph { color: var(--muted-foreground); }
+.mpreview__glyph .ztor-icon { width: 28px; height: 28px; }
+
+.mpreview__bigplay {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--control-h-lg);
+  height: var(--control-h-lg);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--overlay-tint);
+  color: var(--on-media);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing);
+}
+.mpreview__bigplay:hover { background: var(--primary); color: var(--primary-foreground); }
+.mpreview__bigplay .ztor-icon { width: 20px; height: 20px; }
+.mpreview.is-playing .mpreview__bigplay { display: none; }
+
+/* ── 播放控制列 ── */
+.mpreview__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+}
+.mpreview--clip .mpreview__bar { border-top: 1px solid var(--border); }
+
+.mpreview__toggle {
+  flex: none;
+  width: var(--control-h-xs);
+  height: var(--control-h-xs);
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing), border-color var(--duration) var(--easing);
+}
+.mpreview__toggle:hover,
+.mpreview.is-playing .mpreview__toggle {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.mpreview__toggle .ztor-icon { width: 13px; height: 13px; }
+
+.mpreview__track {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--sp-4);
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  overflow: hidden;
+}
+.mpreview__fill {
+  display: block;
+  width: var(--mp-progress, 0%);
+  height: 100%;
+  background: var(--primary);
+}
+
+.mpreview__time {
+  flex: none;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mpreview__bigplay,
+  .mpreview__toggle { transition: none; }
+}

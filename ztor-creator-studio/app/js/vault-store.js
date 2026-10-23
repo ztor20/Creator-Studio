@@ -439,35 +439,123 @@
     return hit ? hit.key : lowest;
   }
 
-  /* 每件可看人數（F3，D377）：進得了庫（進庫方法 ∪ 有效鑰匙）且該件對他已解開的人數。
-       不設任務 → 等於整座庫的觸及
-       等級任務 → 觸及之中分級達到任務等級的人
-       行動任務 → 只有「商城消費・指定商品」有逐人資料（fan.bought，與第一層「買過」同一份）；
-                  其餘回 null＝人數如何計算〔產品待確認〕，畫面顯示「待確認」，不編一個數字。
-     原型沒有逐人逐件的解開紀錄（〔產品待確認〕），所以「修改任務時已解開的人保留」無法模擬，
-     人數一律照目前的任務設法現算。 */
-  function itemViewers(vault, item) {
-    var task = item && item.task;
-    if (!task) return reachAll(vault);
-    if (task.type === "action" && !(task.kind === "shop" && task.scope === "item" && task.target)) return null;
-    var held = keyHolders(vault), n = 0;
-    for (var i = 0; i < FANS.length; i++) {
-      var f = FANS[i];
-      if (!(held[i] || ruleMatches(vault, f))) continue;
-      if (task.type === "tier" ? TIER_RANK[f.tier] >= TIER_RANK[task.tier] : !!f.bought[task.target]) n++;
-    }
-    return n;
+  /* 這個任務有沒有逐人資料可以判定（F8 目錄表的狀態欄）。不設任務與等級任務一定可以；
+     行動任務只有「商城消費・指定商品」可以（fan.bought，與第一層「買過」同一份）。 */
+  function taskJudgeable(task) {
+    if (!task || task.type === "tier") return true;
+    return task.kind === "shop" && task.scope === "item" && !!task.target;
+  }
+  /* 一位粉絲符不符合這一件的任務（只問任務本身，不問進不進得了庫）。 */
+  function meetsTask(task, f) {
+    if (!task) return true;
+    if (task.type === "tier") return TIER_RANK[f.tier] >= TIER_RANK[task.tier];
+    return task.kind === "shop" && task.scope === "item" && !!f.bought[task.target];
+  }
+  function inVault(vault, i, held) {
+    return !!(held[i] || ruleMatches(vault, FANS[i]));
   }
 
-  /* 以某分級檢視時，這一件對那一級的結果（F6，D377）：
-       visible  ＝ 不設任務，或等級任務且那一級達到任務等級
-       tierLow  ＝ 等級任務，那一級低於任務等級
-       action   ＝ 行動任務，那一級的粉絲要各自完成才看得到 */
+  /* 目前看得到這一件的人（F3「目前看得到」，D477；即 D377 的「每件可看人數」）：
+     進得了庫（進庫方法 ∪ 有效鑰匙）且該件對他已解開——符合任務，或在創作者改任務時
+     被保留下來（item.kept，F8「改任務後已解開的粉絲保留」）。
+       不設任務 → 等於整座庫的觸及
+       等級任務 → 觸及之中分級達到任務等級的人
+       行動任務 → 只有「商城消費・指定商品」有逐人資料；其餘回 null＝〔產品待確認〕，畫面寫「待確認」。
+     這裡不看庫房狀態：草稿與已下架照樣算，畫面標明是「上架後」的試算（F3，D477）。
+     回傳 { 粉絲索引: 1 } 的集合，或 null。 */
+  function itemNowSet(vault, item) {
+    var task = item && item.task;
+    if (!taskJudgeable(task)) return null;
+    var held = keyHolders(vault), kept = (item && item.kept) || {}, set = {};
+    for (var i = 0; i < FANS.length; i++) {
+      if (!inVault(vault, i, held)) continue;
+      if (kept[i] || meetsTask(task, FANS[i])) set[i] = 1;
+    }
+    return set;
+  }
+  function size(set) { return set ? Object.keys(set).length : 0; }
+  function itemViewers(vault, item) {
+    var set = itemNowSet(vault, item);
+    return set ? size(set) : null;
+  }
+
+  /* ── 解開紀錄（F8，D477）──────────────────────────────────────
+     粉絲第一次同時符合「進得了庫（庫房上架中）」與「該件的任務」那一刻記一筆，只增不刪。
+     item.history ＝ { 粉絲索引: 1 }。之後掉級、鑰匙撤銷、庫房下架都不刪，只影響「目前看得到」。
+     原型的寫法：上架中的庫房，每次會讓人「看不到」的改動（移除條件、撤銷鑰匙、改任務、
+     下架）之前先呼叫 commitUnlocks，把當下看得到的人併進紀錄；讀數時也把上架中當下看得到的
+     人併進去算，所以「累計解開過」永遠 ≥「目前看得到」。草稿與已下架不產生新紀錄。
+     ⚠ 種子資料裡的既有紀錄是示範資料（ASSUMPTIONS UIA-298）。 */
+  function commitUnlocks(vault) {
+    if (!vault || vault.status !== "listed") return;
+    (vault.items || []).forEach(function (it) {
+      var now = itemNowSet(vault, it);
+      if (!now) return;
+      if (!it.history) it.history = {};
+      Object.keys(now).forEach(function (k) { it.history[k] = 1; });
+    });
+  }
+  /* 累計解開過這一件的人數。判定方式待確認的行動任務回 null（不知道誰完成了）。 */
+  function itemEverSet(vault, item) {
+    if (!taskJudgeable(item && item.task)) return null;
+    var set = {};
+    Object.keys((item && item.history) || {}).forEach(function (k) { set[k] = 1; });
+    if (vault.status === "listed") {
+      var now = itemNowSet(vault, item);
+      Object.keys(now || {}).forEach(function (k) { set[k] = 1; });
+    }
+    return set;
+  }
+  function itemEver(vault, item) {
+    var set = itemEverSet(vault, item);
+    return set ? size(set) : null;
+  }
+  /* 整座庫房的兩個數字（F3，D477 推導 5）：以人數計、一人只算一次。
+       ever ＝ 曾解開本庫房任一件的人；now ＝ 此刻看得到至少一件的人（非上架中＝上架後試算）。
+       pending ＝ 判定方式待確認、沒算進來的件數（畫面要講）。 */
+  function vaultUnlocks(vault) {
+    var ever = {}, now = {}, pending = 0;
+    (vault.items || []).forEach(function (it) {
+      var e = itemEverSet(vault, it), n = itemNowSet(vault, it);
+      if (!e || !n) { pending++; return; }
+      Object.keys(e).forEach(function (k) { ever[k] = 1; });
+      Object.keys(n).forEach(function (k) { now[k] = 1; });
+    });
+    return { ever: size(ever), now: size(now), pending: pending };
+  }
+  /* 改任務之前呼叫（F8「修改任務」，D377＋D477 第二輪第 3 題）：已經解開該件、而且此刻
+     還看得到的粉絲保留下來，改任務後照樣看得到（含原本不設任務、改成設任務）。
+     從沒上架過的草稿沒有人解開過，所以什麼都不留。 */
+  function retainOnTaskChange(vault, item) {
+    if (!vault || !item) return;
+    commitUnlocks(vault);
+    var now = itemNowSet(vault, item);
+    if (!now) return;
+    var hist = item.history || {};
+    if (!item.kept) item.kept = {};
+    Object.keys(now).forEach(function (k) { if (hist[k]) item.kept[k] = 1; });
+  }
+
+  /* 以某分級檢視時，這一件對那一級的結果（F6，D477 改名；取代 D377 的看得到／等級不足／需完成行動任務）：
+       unlocked  ＝ 已解開：不設任務，或等級任務且那一級達到任務等級
+       condition ＝ 需要條件：等級任務，那一級低於任務等級（畫面寫差哪一級）
+       notyet    ＝ 未解開：行動任務，該分級的粉絲要各自完成（D477 推導 11） */
   function itemStatusForTier(item, tierKey) {
     var task = item && item.task;
-    if (!task) return "visible";
-    if (task.type === "tier") return TIER_RANK[tierKey] >= TIER_RANK[task.tier] ? "visible" : "tierLow";
-    return "action";
+    if (!task) return "unlocked";
+    if (task.type === "tier") return TIER_RANK[tierKey] >= TIER_RANK[task.tier] ? "unlocked" : "condition";
+    return "notyet";
+  }
+  /* 指定一位粉絲時，這一件對他的結果（F6，D477）。
+       已解開：被改任務保留、不設任務、等級夠、或行動任務已完成（只有指定商品查得到）。
+       行動任務判定方式待確認的那幾種，原型查不到他做了沒有，一律當作未解開並標 pending。 */
+  function itemStatusForFan(vault, item, idx) {
+    var task = item && item.task, f = FANS[idx];
+    if ((item.kept || {})[idx]) return { st: "unlocked" };
+    if (!task) return { st: "unlocked" };
+    if (task.type === "tier") return TIER_RANK[f.tier] >= TIER_RANK[task.tier] ? { st: "unlocked" } : { st: "condition", tier: task.tier };
+    if (taskJudgeable(task)) return meetsTask(task, f) ? { st: "unlocked" } : { st: "notyet" };
+    return { st: "notyet", pending: true };
   }
 
   /* ── 庫房與內容 ──────────────────────────────────────────
@@ -477,10 +565,23 @@
   /* 2026-10-08（D377）：種子資料逐件掛了第二層任務與大彩蛋，讓使用者一打開就看得到各種狀態——
      東岸巡迴（第一層只有 ≥ Ranked Fans，所以等級任務的下限是 Ranked Fans、Fan 選不到）示範
      不設任務／行動任務（可判定與待確認各有）／等級任務／大彩蛋；未發行 Demo（第一層另有「買過」
-     那種方法，所以四級都能選）示範同一件事在無下限時的樣子；其餘庫房補齊九種行動任務各一。 */
+     那種方法，所以四級都能選）示範同一件事在無下限時的樣子；其餘庫房補齊九種行動任務各一。
+
+     2026-10-23（D477，F10）：每座庫房多了狀態與排程——
+       status   ＝ "draft"（草稿）｜"listed"（上架中）｜"unlisted"（已下架）
+       listAt   ＝ 排定的上架日期與時間（datetime-local 字串；有值且不在上架中＝排程中）
+       unlistAt ＝ 定時下架的日期與時間（選填）
+     種子分布：上架中四座（東岸巡迴另設了定時下架）、片場是排程中的草稿（另預先發了一批
+     NFC 鑰匙、還沒有人能領）、簽名會是已下架（保留下架前的解開紀錄）。排程時間以「今天」
+     往後推算，什麼時候打開原型都還沒到期。 */
+  function rel(days, hh, mm) {
+    var d = new Date(); d.setDate(d.getDate() + days); d.setHours(hh, mm, 0, 0);
+    var p = function (x) { return (x < 10 ? "0" : "") + x; };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
   var VAULTS = [
     {
-      id: "demos", icon: "disc-3",
+      id: "demos", icon: "disc-3", status: "listed",
       name: { en: "Unreleased demos & stems", zh: "未發行 Demo 與分軌" },
       note: { en: "Rough mixes and separated stems. Not licensed for redistribution.", zh: "粗混與分軌檔。未授權再散布。" },
       rules: [{ items: [{ t: "tier", v: "super" }] }, { items: [{ t: "bought", v: "acetate" }] }],
@@ -502,7 +603,7 @@
       ]
     },
     {
-      id: "backstage", icon: "camera",
+      id: "backstage", icon: "camera", status: "listed", unlistAt: rel(20, 23, 59),
       name: { en: "East-coast tour · backstage", zh: "東岸巡迴 · 幕後" },
       note: { en: "Everything that did not make the documentary.", zh: "沒有進紀錄片的那些。" },
       rules: [{ items: [{ t: "tier", v: "devoted" }] }],
@@ -533,12 +634,19 @@
       ]
     },
     {
-      id: "onset", icon: "video",
+      id: "onset", icon: "video", status: "draft", listAt: rel(9, 20, 0),
       name: VAULT_PERSONA === "nick"
         ? { en: "On set · Too Handsome to Stay (MV)", zh: "《帥到分手》MV 拍攝現場" }
         : { en: "On set · Moonlight Over Sham Shui Po", zh: "《深水埗的月光》片場" },
       note: { en: "Set photography and dailies for the backers of this film.", zh: "本片支持者專屬的片場照與毛片。" },
       rules: [{ items: [{ t: "backed", v: "shamshuipo-moonlight" }] }, { items: [{ t: "tier", v: "inner" }] }],
+      /* 草稿階段先發好的一批 NFC 鑰匙（F4，D477）：庫房還沒上架，粉絲領取只會得到「尚未開放」，
+         所以一次都還沒被領走。 */
+      keys: [
+        { id: "k-os-1", code: "PM9R-7WQT", uses: 300, claimedN: 0, born: "2026/10/20",
+          label: { en: "NFC postcard · premiere night", zh: "NFC 明信片 · 首映夜" },
+          product: { id: "nfc-postcard", name: { en: "Premiere night NFC postcard", zh: "首映夜 NFC 明信片" } } }
+      ],
       items: [
         { id: "s1", kind: "image", name: { en: "Night market build, day 3", zh: "夜市搭景 第三天" }, img: "images/projects/shamshuipo-moonlight.jpg", size: "6.1 MB", added: "2026/07/26",
           grand: true },
@@ -549,7 +657,7 @@
       ]
     },
     {
-      id: "signing", icon: "pencil",
+      id: "signing", icon: "pencil", status: "unlisted",
       name: { en: "Signing session · Taipei", zh: "簽名會現場 · 台北" },
       note: { en: "The photographer's full set — including the frames we never posted.", zh: "攝影師完整檔——包含沒有貼出來的那些。" },
       rules: [{ items: [{ t: "attended", v: "album-signing-taipei" }] }],
@@ -564,7 +672,7 @@
       ]
     },
     {
-      id: "voicenotes", icon: "mic",
+      id: "voicenotes", icon: "mic", status: "listed",
       name: { en: "Inner Circle voice notes", zh: "核心圈語音信" },
       note: { en: "One a month, recorded for this room only. No transcript.", zh: "每月一封，只錄給這個房間。沒有逐字稿。" },
       rules: [{ items: [{ t: "tier", v: "inner" }] }, { items: [{ t: "earned", v: "hof" }] }],
@@ -576,7 +684,7 @@
       ]
     },
     {
-      id: "open", icon: "globe",
+      id: "open", icon: "globe", status: "listed",
       name: { en: "Open reel", zh: "公開花絮" },
       note: { en: "No gate on this one — every fan can open it.", zh: "這一個沒有門檻——所有粉絲都打得開。" },
       rules: [{ items: [{ t: "tier", v: "fan" }] }],
@@ -608,6 +716,140 @@
       });
     });
   })();
+
+  /* ── 種子：上架過的庫房，下架前／至今已經記下的解開紀錄（示範資料，UIA-298）────────
+     「累計解開過」要比「目前看得到」多出一些人才看得出兩個數字的差別（F3 情境 21）。多出來的
+     人照真實會發生的兩種原因生：
+       · 鑰匙撤銷——靠那把鑰匙進來、當時解開過的人（東岸巡迴那把外流後撤銷的媒體預覽鑰匙）；
+       · 掉級——差一級的粉絲裡抽一小部分，當作他們當時夠級、之後掉下來（等級任務的那一件，
+         或第一層只靠分級進庫的庫房）。
+     判定方式待確認的行動任務不生紀錄（不知道誰完成了）；從沒上架過的草稿沒有紀錄。 */
+  (function seedHistory() {
+    var r = rng(20261023);
+    VAULTS.forEach(function (v) {
+      if (v.status === "draft") return;
+      var revoked = {};
+      (v.keys || []).forEach(function (k) { if (k.revoked) (k.claimed || []).forEach(function (i) { revoked[i] = 1; }); });
+      var floorRank = TIER_RANK[tierFloor(v)] || 1;
+      v.items.forEach(function (it) {
+        var now = itemNowSet(v, it);
+        if (!now) return;
+        var hist = {};
+        Object.keys(now).forEach(function (k) { hist[k] = 1; });
+        var need = it.task && it.task.type === "tier" ? TIER_RANK[it.task.tier] : floorRank;
+        for (var i = 0; i < FANS.length; i++) {
+          if (hist[i]) continue;
+          var f = FANS[i];
+          if (revoked[i] && meetsTask(it.task, f)) { hist[i] = 1; continue; }
+          if (need > 1 && TIER_RANK[f.tier] === need - 1 && r() < 0.05) hist[i] = 1;
+        }
+        it.history = hist;
+      });
+    });
+  })();
+
+  /* ── 庫房狀態與排程（F10，D477）──────────────────────────────── */
+  function toMs(s) { var t = s ? new Date(s).getTime() : NaN; return isNaN(t) ? null : t; }
+  function isListed(v) { return !!v && v.status === "listed"; }
+  /* 排程中＝不在上架中、但排了上架時間（從沒上架過的算草稿、下架後再排的算已下架）。 */
+  function isScheduled(v) { return !!v && v.status !== "listed" && !!v.listAt; }
+  /* 「沒有路進來」（F2 其他狀態）＝沒有任何含條件的進庫方法，也沒有任何未撤銷鑰匙。 */
+  function hasWayIn(v) { return ruleCount(v) > 0 || keyStats(v).live > 0; }
+  /* 發布前檢查（F10）：沒有內容不能發布；沒有路進來只提醒、不擋。 */
+  function publishCheck(v) { return { empty: !(v.items || []).length, noWay: !hasWayIn(v) }; }
+  /* 發布／重新上架。opt.listAt 有值＝排定上架時間（狀態不變，時間到才上架）；沒有＝立刻上架。 */
+  function publish(v, opt) {
+    opt = opt || {};
+    if (opt.listAt) {
+      v.listAt = opt.listAt;
+      v.unlistAt = opt.unlistAt || null;
+      return;
+    }
+    v.status = "listed";
+    v.listAt = null;
+    v.unlistAt = opt.unlistAt || null;
+    commitUnlocks(v);
+  }
+  /* 取消排程：回到沒有排程的同一個狀態（草稿或已下架）。 */
+  function cancelSchedule(v) { v.listAt = null; v.unlistAt = null; }
+  /* 下架：先把當下看得到的人記進解開紀錄（重新上架後恢復），再清掉排程時間（D477 第二輪第 1 題）。 */
+  function unlist(v) {
+    commitUnlocks(v);
+    v.status = "unlisted";
+    v.listAt = null;
+    v.unlistAt = null;
+  }
+  /* 時間到了就自動上架／下架。原型沒有後端，由頁面定時呼叫；有變動回 true。 */
+  function applySchedules(nowMs) {
+    var now = nowMs || Date.now(), changed = false;
+    VAULTS.forEach(function (v) {
+      if (v.status !== "listed" && v.listAt && toMs(v.listAt) <= now) {
+        var keep = v.unlistAt;
+        publish(v, { unlistAt: keep });
+        changed = true;
+      }
+      if (v.status === "listed" && v.unlistAt && toMs(v.unlistAt) <= now) { unlist(v); changed = true; }
+    });
+    return changed;
+  }
+  /* 刪除的影響（F10，D477 推導 6）：N＝重新上架後看得到本庫房至少一件內容的人數，
+     也就是整座庫房「目前看得到」的上架後試算；以及會一併失效的有效鑰匙把數。 */
+  function deleteImpact(v) {
+    return { fans: vaultUnlocks(v).now, keys: keyStats(v).live };
+  }
+  function removeVault(id) {
+    for (var i = 0; i < VAULTS.length; i++) if (VAULTS[i].id === id) { VAULTS.splice(i, 1); return true; }
+    return false;
+  }
+
+  /* ── 指定一位粉絲（F6，D477）──────────────────────────────────
+     規格的資料來源是粉絲詳情（尚未落地，〔產品待確認〕）。原型借粉絲列表那九位示範粉絲的
+     名字與分級（fans-crm.html，i18n fans.row*），各自對到母體裡同分級的一筆紀錄；挑的時候
+     刻意讓幾種情況都有人示範（靠「支持過」進庫、只靠鑰匙進庫但等級不夠、哪裡都進不去…）。
+     ⚠ 示範資料（UIA-298）：只有名字與分級對得上粉絲列表，買過什麼等紀錄是母體生成的。 */
+  var FAN_DIRECTORY = (function () {
+    var used = {};
+    function claimedBy(keyId) {
+      for (var a = 0; a < VAULTS.length; a++) {
+        var ks = VAULTS[a].keys || [];
+        for (var b = 0; b < ks.length; b++) if (ks[b].id === keyId) return ks[b].claimed || [];
+      }
+      return [];
+    }
+    function pick(tier, pred) {
+      var i;
+      for (i = 0; i < FANS.length; i++) if (!used[i] && FANS[i].tier === tier && pred(FANS[i], i)) { used[i] = 1; return i; }
+      for (i = 0; i < FANS.length; i++) if (!used[i] && FANS[i].tier === tier) { used[i] = 1; return i; }
+      return 0;
+    }
+    function holds(keyId) { var set = {}; claimedBy(keyId).forEach(function (i) { set[i] = 1; }); return function (f, i) { return !!set[i]; }; }
+    function none(f) {
+      return !Object.keys(f.bought).length && !Object.keys(f.backed).length && !Object.keys(f.attended).length && !Object.keys(f.earned).length;
+    }
+    function noKey(f, i) {
+      return !VAULTS.some(function (v) { return (v.keys || []).some(function (k) { return (k.claimed || []).indexOf(i) >= 0; }); });
+    }
+    return [
+      { id: "row1", name: "Wei Yu-han",    handle: "yuhan@studio", idx: pick("inner",   function (f) { return f.earned.hof; }) },
+      { id: "row2", name: "Lin Yiwen",     handle: "yiwen@gmail",  idx: pick("inner",   function (f) { return f.backed["shamshuipo-moonlight"]; }) },
+      { id: "row3", name: "Ahmed Said",    handle: "ahmed@hey",    idx: pick("super",   function (f) { return f.bought.hoodie; }) },
+      { id: "row4", name: "Chen Mei-ling", handle: "meiling@mail", idx: pick("super",   function (f) { return !f.bought.hoodie && !f.bought.acetate; }) },
+      { id: "row5", name: "James Carter",  handle: "james@studio", idx: pick("devoted", function (f) { return f.backed["shamshuipo-moonlight"]; }) },
+      { id: "row6", name: "Park Ji-woo",   handle: "jiwoo@mail",   idx: pick("devoted", function (f) { return f.attended["album-signing-taipei"]; }) },
+      { id: "row7", name: "Sofia Rossi",   handle: "sofia@mail",   idx: pick("fan",     holds("k-bs-1")) },
+      { id: "row8", name: "Liam Nguyen",   handle: "liam@mail",    idx: pick("fan",     function (f, i) { return none(f) && noKey(f, i); }) },
+      { id: "row9", name: "Emma Müller",   handle: "emma@mail",    idx: pick("fan",     holds("k-demo-1")) }
+    ].map(function (d) { d.tier = FANS[d.idx].tier; return d; });
+  })();
+  function fanById(id) { return FAN_DIRECTORY.filter(function (d) { return d.id === id; })[0] || null; }
+  /* 這位粉絲靠什麼進來（F6）：達成的進庫方法（第幾種）與持有的未撤銷鑰匙；可能不只一種。 */
+  function fanWays(vault, idx) {
+    var f = FANS[idx];
+    var methods = [];
+    (vault.rules || []).forEach(function (g, gi) { if (groupMatches(g, f)) methods.push(gi); });
+    var keys = (vault.keys || []).filter(function (k) { return !k.revoked && (k.claimed || []).indexOf(idx) >= 0; });
+    return { methods: methods, keys: keys, inVault: methods.length > 0 || keys.length > 0 };
+  }
 
   /* 庫房封面＝第一張有圖的內容。沒有圖的庫房（純語音）走圖示，
      不放灰色佔位圖：一個永遠不會有封面的房間不該假裝它在等圖。 */
@@ -650,6 +892,28 @@
     tierRank: TIER_RANK,
     itemViewers: itemViewers,
     itemStatusForTier: itemStatusForTier,
+    /* D477（2026-10-23）：庫房狀態與排程、解開紀錄、指定一位粉絲 */
+    taskJudgeable: taskJudgeable,
+    itemEver: itemEver,
+    vaultUnlocks: vaultUnlocks,
+    commitUnlocks: commitUnlocks,
+    retainOnTaskChange: retainOnTaskChange,
+    itemStatusForFan: itemStatusForFan,
+    isListed: isListed,
+    isScheduled: isScheduled,
+    hasWayIn: hasWayIn,
+    publishCheck: publishCheck,
+    publish: publish,
+    cancelSchedule: cancelSchedule,
+    unlist: unlist,
+    applySchedules: applySchedules,
+    deleteImpact: deleteImpact,
+    removeVault: removeVault,
+    toMs: toMs,
+    fans: FAN_DIRECTORY,
+    fanById: fanById,
+    fanWays: fanWays,
+    fanTier: function (idx) { return FANS[idx] && FANS[idx].tier; },
     t: t
   };
 })();

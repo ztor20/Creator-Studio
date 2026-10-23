@@ -19,6 +19,13 @@
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<!-- D476 手動調整點數的彈窗（Admin 代管態）：殼＋欄位＋加扣切換＋點數框＋提示 -->
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* fan-detail 專屬 layout hooks（非可重用樣式留頁內）。 */
@@ -110,6 +117,9 @@
                  原本指向的 tier-settings.html 已經是退出導覽的墓碑頁。 -->
           <a class="btn btn--outline" href="fans-crm.html?msg=inner&amp;fan=Wei%20Yu-han" data-fd-msg><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fan-detail.btn.message">Message</span></a>
           <a class="btn btn--ghost btn--sm" href="fans-crm.html?tier=settings" data-i18n="fan-detail.btn.tier-settings">Tier settings</a>
+          <!-- D476 第 8 項：手動調整點數只有 Admin 能調——Admin 代管態（window.ztorCreator.adminScope()）才出現；
+               創作者本人視角整顆不畫。掛 S110（⚪）。 -->
+          <button class="btn btn--outline" type="button" data-fd-adjust-open data-admin-only data-feat="S110" hidden><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="fan-detail.adjust.btn">Adjust points</span></button>
         </div>
       </section>
 
@@ -117,8 +127,8 @@
       <div class="bento" style="margin-bottom:6px">
         <div class="kpi bento--span-3">
           <div class="kpi__label" data-i18n="fan-detail.kpi.points">Loyalty points</div>
-          <div class="kpi__value">874</div>
-          <div class="kpi__delta" data-i18n="fan-detail.kpi.points-delta">+38 vs last batch</div>
+          <div class="kpi__value" data-fd-points>874</div>
+          <div class="kpi__delta" data-i18n="fan-detail.kpi.points-delta">+38 since the last weekly recompute</div>
         </div>
         <div class="kpi bento--span-3">
           <div class="kpi__label" data-i18n="fan-detail.kpi.spent">Spent</div>
@@ -139,7 +149,7 @@
 
       <p class="text-sub" style="font-size: var(--fs-11);margin:8px 0 18px;display:flex;align-items:center;gap:6px">
         <i data-lucide="info" class="ztor-icon" style="width:12px;height:12px;flex-shrink:0"></i>
-        <span data-i18n="fan-detail.batch-note">Loyalty points and tier are recomputed weekly — values reflect the last run, not live activity.</span>
+        <span data-i18n="fan-detail.batch-note">Points land instantly and fans move up the moment they qualify; demotion is checked weekly and needs two misses in a row.</span>
       </p>
 
       <!-- 分節導覽（2026-08-26：橫排 tabs 改成左側分節導覽 section-nav，與 product-detail／
@@ -265,6 +275,16 @@
               </li>
             </ul>
             <p class="text-sub" style="font-size: var(--fs-11);margin:12px 0 0" data-i18n="fan-detail.repmix.note">Illustrative split. Weights follow your tier settings; platform activities and fading follow Ztor’s settings.</p>
+          </section>
+
+          <!-- D476 第 8 項：點數調整紀錄——每次調整是帳本的一筆（帶操作者、時間、原因）。
+               只在 Admin 代管態顯示；創作者看不看得到這份紀錄未定（UIA-296）。掛 S110（⚪）。 -->
+          <section class="card bento--span-12" data-admin-only data-feat="S110" hidden>
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.adjust.log">Point adjustments</h3>
+              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.adjust.log-sub">Each adjustment is one ledger entry</span>
+            </div>
+            <div class="data-list" data-fd-adjust-log></div>
           </section>
         </div>
       </div>
@@ -451,13 +471,53 @@
     <footer class="app-footer">
       <span data-i18n="fan-detail.footer1">Fan profile · part of Fans CRM</span>
       <span>·</span>
-      <span data-i18n="fan-detail.footer2">Loyalty points &amp; tier recomputed weekly</span>
+      <span data-i18n="fan-detail.footer2">Points credited instantly · demotion checked weekly</span>
     </footer>
   </main>
 </div>
 
+<!-- D476 第 8 項 手動調整點數（Admin 代管態）。殼照 Q27 用 .payout-modal／.payout-dialog；
+     加點／扣點用 Segmented、點數用 Amount field、原因必填（textarea）。送出後在「點數調整紀錄」加一筆、KPI 跟著變。 -->
+<div class="payout-modal" id="fd-adjust-modal" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="fd-adjust-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="fd-adjust-title" data-i18n="fan-detail.adjust.title">Adjust loyalty points</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="fan-detail.adjust.cancel" data-fd-adjust-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="text-sub" style="font-size:var(--fs-12);margin:0 0 var(--sp-16)" data-i18n="fan-detail.adjust.lede">Only Admin can adjust.</p>
+      <div class="field">
+        <span class="field__label" data-i18n="fan-detail.adjust.dir">Add or deduct</span>
+        <div class="flex-row" style="margin-top:var(--sp-8)">
+          <div class="segmented" role="group" aria-label="Add or deduct" data-i18n-aria-label="fan-detail.adjust.dir" data-fd-adjust-dir>
+            <button class="segmented__btn segmented__btn--active" type="button" data-dir="add" data-i18n="fan-detail.adjust.add">Add</button>
+            <button class="segmented__btn" type="button" data-dir="deduct" data-i18n="fan-detail.adjust.deduct">Deduct</button>
+          </div>
+          <span class="amount-field amount-field--suffix" style="width:150px">
+            <input class="input amount-field__input" type="number" inputmode="numeric" min="1" id="fd-adjust-amount" aria-label="Points" data-i18n-aria-label="fan-detail.adjust.amount">
+            <span class="amount-field__unit" data-i18n="fans.unit.points">pts</span>
+          </span>
+        </div>
+        <p class="field__error" id="fd-adjust-err-amount" hidden data-i18n="fan-detail.adjust.err.amount">Enter the number of points.</p>
+      </div>
+      <label class="field" style="margin-bottom:0">
+        <span class="field__label"><span data-i18n="fan-detail.adjust.reason">Reason</span> <span class="field__req">*</span></span>
+        <textarea class="textarea" id="fd-adjust-reason" rows="3" placeholder="e.g. Points missed when the check-in scan failed" data-i18n-placeholder="fan-detail.adjust.reason-ph"></textarea>
+        <p class="field__error" id="fd-adjust-err-reason" hidden data-i18n="fan-detail.adjust.err.reason">A reason is required.</p>
+      </label>
+    </div>
+    <div class="payout-dialog__foot">
+      <div class="payout-dialog__foot-actions">
+        <button class="btn btn--ghost" type="button" data-fd-adjust-close data-i18n="fan-detail.adjust.cancel">Cancel</button>
+        <button class="btn btn--primary" type="button" id="fd-adjust-submit" data-i18n="fan-detail.adjust.submit">Submit adjustment</button>
+      </div>
+    </div>
+  </section>
+</div>
+
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script>
 (function () {
@@ -484,6 +544,85 @@
     });
     panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === id));
   }));
+
+  /* ── D476 第 8 項：手動調整點數（只有 Admin）──────────────────────────
+     誰看得到入口：Admin 代管態＝window.ztorCreator.adminScope()（js/sidebar.js，與 order-detail 的作廢鈕同一個訊號）；
+     代管身分在頁內被切換（ztor:creator-changed）時重新判斷。紀錄存成資料再畫，切語言時整份重畫。 */
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+  function isAdmin() {
+    if (window.ztorCreator && typeof window.ztorCreator.adminScope === 'function') return !!window.ztorCreator.adminScope();
+    try { return localStorage.getItem('ztor.role') === 'admin'; } catch (e) { return false; }
+  }
+  function syncAdmin() {
+    const on = isAdmin();
+    document.querySelectorAll('[data-admin-only]').forEach(el => { el.hidden = !on; });
+  }
+  let points = 874;
+  const adjustments = [
+    { delta: 500, when: '2026-10-20 14:05', reasonKey: 'fan-detail.adjust.demo-reason' }
+  ];
+  const logBox = document.querySelector('[data-fd-adjust-log]');
+  const pointsEl = document.querySelector('[data-fd-points]');
+  function renderLog() {
+    if (pointsEl) pointsEl.textContent = points.toLocaleString('en-US');
+    if (!logBox) return;
+    logBox.innerHTML = '';
+    adjustments.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'data-list__row';
+      row.innerHTML = '<div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div>' +
+        '<div class="data-list__body"><div class="data-list__title"></div><div class="data-list__meta"></div></div></div>' +
+        '<div class="data-list__amount"></div>';
+      row.querySelector('.data-list__title').textContent = a.reasonKey ? T(a.reasonKey) : a.reason;
+      row.querySelector('.data-list__meta').textContent = a.when + ' · Admin';
+      row.querySelector('.data-list__amount').textContent = (a.delta > 0 ? '+' : '−') + Math.abs(a.delta).toLocaleString('en-US') + ' ' + T('fans.unit.points', 'pts');
+      logBox.appendChild(row);
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(logBox);
+  }
+  const modal = document.getElementById('fd-adjust-modal');
+  const amountEl = document.getElementById('fd-adjust-amount');
+  const reasonEl = document.getElementById('fd-adjust-reason');
+  const errAmount = document.getElementById('fd-adjust-err-amount');
+  const errReason = document.getElementById('fd-adjust-err-reason');
+  const dirBox = document.querySelector('[data-fd-adjust-dir]');
+  let dir = 'add';
+  function setDir(d) {
+    dir = d;
+    if (dirBox) dirBox.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.dir === d));
+  }
+  if (dirBox) dirBox.addEventListener('click', e => { const b = e.target.closest('[data-dir]'); if (b) setDir(b.dataset.dir); });
+  function openAdjust() {
+    if (!modal || !isAdmin()) return;
+    setDir('add'); amountEl.value = ''; reasonEl.value = '';
+    errAmount.hidden = true; errReason.hidden = true;
+    modal.hidden = false; amountEl.focus();
+  }
+  function closeAdjust() { if (modal) modal.hidden = true; }
+  document.querySelectorAll('[data-fd-adjust-open]').forEach(b => b.addEventListener('click', openAdjust));
+  if (modal) {
+    modal.querySelectorAll('[data-fd-adjust-close]').forEach(b => b.addEventListener('click', closeAdjust));
+    modal.addEventListener('click', e => { if (e.target === modal) closeAdjust(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeAdjust(); });
+    document.getElementById('fd-adjust-submit').addEventListener('click', () => {
+      const n = parseInt(amountEl.value, 10);
+      const reason = String(reasonEl.value || '').trim();
+      errAmount.hidden = isFinite(n) && n > 0;
+      errReason.hidden = !!reason;
+      if (!errAmount.hidden || !errReason.hidden) return;
+      const delta = dir === 'deduct' ? -n : n;
+      const d = new Date(), pad = x => (x < 10 ? '0' : '') + x;
+      adjustments.unshift({ delta, reason, when: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) });
+      points = Math.max(0, points + delta);
+      renderLog();
+      closeAdjust();
+      if (window.ztorToast) window.ztorToast.show(T('fan-detail.adjust.done', 'Points adjusted'), { tone: 'success' });
+    });
+  }
+  syncAdmin();
+  renderLog();
+  document.addEventListener('ztor:creator-changed', syncAdmin);
+  document.addEventListener('i18n:applied', renderLog);
 })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>

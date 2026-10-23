@@ -16,9 +16,13 @@
          .vault-row         — 一列庫房（封面 / 名稱 / 鑰匙數）
            --active         — 目前開著的庫房
            .is-locked       — 檢視器模式下：該分級打不開（變暗＋鎖頭）
+           .vault-row__status — 狀態一列：狀態徽章（草稿／上架中／已下架）＋ __sched 已排程（D477）
+           .vault-row__keys--trial ＋ .vault-row__trial — 草稿與已下架的人數是上架後試算（D477）
          .vault-rail__new   — 新增庫房（就地輸入，不開 modal）
        .vault-main          — 主欄
          .vault-head        — 庫房標題／說明／動作
+           .vault-head__status — 狀態徽章＋排程（__sched）＋一句白話（__statusnote）（D477）
+           .vault-head__actions — 依狀態的主要動作（發布／取消排程／下架／重新上架＋刪除）（D477）
          .vault-door        — 門條：條件 chips ＋ 觸及讀數 ＋ 分級覆蓋條
          .vault-grid        — 內容格（含第一格上傳投放區）
            .vault-tile      — 一件內容（image / clip / audio 混放）
@@ -168,6 +172,26 @@
 .vault-row__cover .ztor-icon { width: 17px; height: 17px; }
 
 .vault-row__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+/* 狀態一列（F1，D477）：狀態要跟名稱一起看到，所以緊接在名稱下面；排了上架時間的
+   草稿／已下架多一段「日期 上架」，看得出已排程。徽章沿用 Badge（同電子商店清單的狀態徽章）。 */
+.vault-row__status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-6);
+  min-width: 0;
+  margin: var(--sp-2) 0;
+}
+.vault-row__sched {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.vault-row__sched .ztor-icon { width: 12px; height: 12px; }
 .vault-row__name {
   font-size: var(--fs-13);
   color: var(--foreground);
@@ -194,6 +218,11 @@
 .vault-row__keys .ztor-icon { width: 12px; height: 12px; color: var(--muted-foreground); }
 .vault-row--active .vault-row__keys,
 .vault-row--active .vault-row__keys .ztor-icon { color: var(--selected-ink); }
+/* 草稿與已下架（D477）：人數照常試算，但那是「上架後」的數字——數字降一階墨色，
+   底下補一行小字「上架後」，滑過寫完整的一句。 */
+.vault-row__keys--trial { flex-direction: column; align-items: flex-end; gap: 0; color: var(--muted-foreground); }
+.vault-row__keys--trial .ztor-icon { display: none; }
+.vault-row__trial { font-size: var(--fs-11); color: var(--muted-foreground); letter-spacing: 0; }
 /* 沒有任何條件＝沒有人進得來。這是錯誤，不是「零」，所以走 destructive。 */
 .vault-row__keys--none,
 .vault-row__keys--none .ztor-icon { color: var(--destructive); }
@@ -239,6 +268,9 @@
 
 /* ── 主欄 ──────────────────────────────────────────────── */
 .vault-main { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-16); }
+/* 無庫房時主欄退位（D477 起刪得掉最後一座）；[hidden] 要贏過 display:flex。 */
+.vault-main[hidden] { display: none; }
+.vault-none[hidden] { display: none; }
 
 .vault-head {
   display: flex;
@@ -262,6 +294,27 @@
   max-width: 62ch;
 }
 .vault-head__actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }
+/* 庫房狀態（F10，D477）：名稱下面一列——狀態徽章、排程（上架／定時下架的日期與時間）、
+   一句白話（草稿粉絲看不到、已下架設定都保留）。動作在右邊的 __actions。 */
+.vault-head__status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-10);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.vault-head__status:empty { display: none; }
+.vault-head__sched {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+}
+.vault-head__sched .ztor-icon { width: 14px; height: 14px; }
+.vault-head__statusnote { color: var(--muted-foreground); }
 
 /* ── 門條 ──────────────────────────────────────────────
    左：解鎖條件（可移除的 chips ＋ 新增）
@@ -996,70 +1049,59 @@
 @media (max-width: 1080px) {
   .vault-door { grid-template-columns: minmax(0, 1fr); gap: var(--sp-14); }
 }
-/* ── 上鎖遮罩 ──────────────────────────────────────────
-   「以某個分級檢視」時，那一級打不開的庫房：門條與內容整塊打模糊，蓋上
-   一張說明卡寫解鎖條件。
+/* ── 上鎖卡（F2 可見性，D477，2026-10-23 改寫）────────────────
+   「以某個分級／某位粉絲檢視」時進不了的庫房：分頁內容最上面一張上鎖卡，寫「上鎖」
+   與要符合哪一種進庫方法才進得來（一種方法一行，「方法 N」＋條件用「＋」串起，
+   行與行之間「或是」）。
 
-   為什麼是模糊而不是清空：粉絲那一側看到的不是「什麼都沒有」，是「有東西
-   但我進不去」——形狀還在、細節沒了，這正是分級內容的真實觀感。清空會讓
-   創作者誤以為這座庫房是空的。
+   為什麼不再打模糊蓋遮罩：D477 定案上架中的庫房對所有粉絲可見，進不了的粉絲看到的
+   是「上鎖＋進庫方法」，不是一片看不清的東西；創作者檢視時要看得到門上寫什麼，下面
+   的內容也照常看得到（每件小標寫「上鎖」）。墓碑：`.vault-body.is-gated > :not(.vault-gate)`
+   的 blur(7px)／opacity／pointer-events，與 `.vault-gate` 的 absolute inset:0 疊層與暗底，
+   同日退場；`.is-gated` 這個 class 仍掛在 `.vault-body` 上（JS 用來表示「目前上鎖」），
+   本檔不再對它下樣式。
 
-   為什麼標題不進遮罩：`.vault-body` 從門條開始包，`.vault-head` 留在外面。
-   遮罩要回答的是「這一座打不開」，所以「這一座」必須始終讀得到。
-
-   模糊打在 `.vault-body` 的子層、遮罩自己是同層兄弟，因此遮罩上的字不會
-   被自己的 filter 糊掉（filter 只影響套用的那棵子樹）。 */
+   為什麼標題不在卡裡：`.vault-head` 留在外面，「這一座」始終讀得到。 */
 .vault-body {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--sp-16);
 }
-.vault-body.is-gated > :not(.vault-gate) {
-  filter: blur(7px);
-  opacity: 0.75;
-  pointer-events: none;
-  user-select: none;
-}
 
-/* [hidden] 必須蓋過下面的 display:flex，否則沒上鎖的庫房也會被這張 inset:0 的
-   遮罩罩住（暗底照樣蓋上去），連門條都點不到（UA 的 [hidden]{display:none}
-   特異度輸給 .vault-gate）。同 alert.css／button.css／badge.css 的處理。 */
+/* [hidden] 必須蓋過下面的 display:flex，否則沒上鎖的庫房也會冒出一張空卡
+   （UA 的 [hidden]{display:none} 特異度輸給 .vault-gate）。同 alert.css／button.css／badge.css 的處理。 */
 .vault-gate[hidden] { display: none; }
-.vault-gate {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: var(--sp-40) var(--sp-24);
-  border-radius: var(--radius-xl);
-  background: var(--overlay-tint);
-}
+.vault-gate { display: flex; }
 .vault-gate__panel {
-  width: min(400px, 100%);
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--sp-10);
-  padding: var(--sp-24);
-  text-align: center;
+  align-items: flex-start;
+  gap: var(--sp-12);
+  padding: var(--sp-16) var(--sp-18);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: var(--card);
-  box-shadow: var(--shadow-overlay);
+  background: var(--layer-1-surface);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
 }
+.vault-gate__head { display: flex; align-items: center; gap: var(--sp-12); }
+/* 「上架後打得開的人數」標題旁的「尚未對粉絲開放」徽章（D477）：窄欄時換到下一行，不擠標題。 */
+.vault-reach .vault-door__label { flex-wrap: wrap; }
+.vault-gate__titles { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
 .vault-gate__icon {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
+  flex: none;
   display: grid;
   place-items: center;
   border-radius: var(--radius-pill);
-  background: var(--accent);
+  background: var(--ztu-film);
   color: var(--foreground-muted);
 }
-.vault-gate__icon .ztor-icon { width: 20px; height: 20px; }
+.vault-gate__icon .ztor-icon { width: 18px; height: 18px; }
 .vault-gate__title {
   margin: 0;
   font-family: var(--font-display);
@@ -1073,34 +1115,35 @@
   color: var(--foreground-muted);
 }
 .vault-gate__label {
-  margin-top: var(--sp-4);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-11);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+  font-size: var(--fs-12);
   color: var(--muted-foreground);
 }
-.vault-gate__label .ztor-icon { width: 13px; height: 13px; }
-/* 遮罩上的條件改直排（2026-07-31 分組之後）：橫排時「A 或 B 且 C」會斷在任意
-   位置，讀的人無從得知括號在哪。一組一行、「且」自己一行，結構就是版面本身。 */
+/* 一種進庫方法一行：左邊「方法 N」、右邊條件；行與行之間一個「或是」。 */
 .vault-gate__rules {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--sp-6);
+  align-items: flex-start;
+  gap: var(--sp-8);
+  width: 100%;
 }
 .vault-gate__rules .ztor-icon { width: 13px; height: 13px; }
 .vault-gate__rule-verb { color: var(--muted-foreground); }
-/* 遮罩上的條件是唯讀的，連接詞用文字寫出來就夠。一種方法佔一行、同一行的條件
-   用「＋」串起來，行與行之間的「或是」自己一行並加重一階——結構靠版面分開，
-   讀的人不必自己補括號、也不必先學會什麼是「且」。 */
+.vault-gate__way {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+}
+.vault-gate__wayname {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--foreground-muted);
+  min-width: 52px;
+}
 .vault-gate__group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
   gap: var(--sp-6);
 }
 .vault-gate__join {
@@ -1116,8 +1159,64 @@
   margin: 0;
   font-size: var(--fs-12);
   color: var(--muted-foreground);
-  max-width: 34ch;
 }
+
+/* ── 檢視身分那一列（F6，D477）──────────────────────────────
+   分頁內容最上面一條 Alert row（alert.css 管殼），這裡只排描述裡的「靠什麼進來」：
+   一種方法或一把鑰匙一段，條件晶片沿用唯讀的 chip--static。 */
+.vault-viewas .alert__desc { display: flex; flex-direction: column; gap: var(--sp-6); }
+.vault-viewas .alert__desc[hidden] { display: none; }
+.vault-viewas__line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-6); }
+.vault-viewas__by { color: var(--muted-foreground); }
+.vault-viewas__way {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  color: var(--foreground-muted);
+}
+.vault-viewas__way .ztor-icon { width: 13px; height: 13px; }
+
+/* ── 指定一位粉絲的搜尋欄（F6，D477）──────────────────────────
+   放在檢視身分下拉右邊；殼與候選清單沿用 owner-lookup.css，這裡只給寬度。 */
+.vault-person { width: 240px; }
+.vault-person[hidden] { display: none; }
+.vault-person .input { font-size: var(--fs-13); }
+.vault-person .owner-lookup__results { max-height: 320px; overflow-y: auto; }
+
+/* ── 單件設定：粉絲端只能線上看（F5，D477）──────────────────── */
+.vault-item__online {
+  margin: 0 0 var(--sp-16);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.vault-item__online .ztor-icon { width: 14px; height: 14px; flex: none; }
+
+/* ── 發布與確認視窗的內容（F10，D477）─────────────────────────
+   殼是 payout-modal；發布的上架區是 listing-controls＋radio-card。這裡只排：
+   最上面的發布前檢查、確認視窗的後果清單。 */
+.vault-pub__checks { margin-bottom: var(--sp-16); }
+.vault-pub__checks[hidden] { display: none; }
+.vault-confirm { display: flex; flex-direction: column; gap: var(--sp-12); }
+.vault-confirm__p { margin: 0; font-size: var(--fs-14); color: var(--foreground-muted); }
+.vault-confirm__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border-soft);
+}
+.vault-confirm__list li {
+  display: block;
+  padding: var(--sp-10) 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--fs-14);
+  color: var(--foreground);
+}
+.vault-confirm__list b { font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.vault-confirm__sub { display: block; margin-top: var(--sp-2); font-size: var(--fs-12); color: var(--muted-foreground); }
 
 /* 單欄時側欄變成頁面最上面的一段。刻意「不」給清單自己的 max-height ＋
    overflow：那會在頁面裡塞出一個 262px 的內捲區，手指落在上面時捲的是
@@ -1257,19 +1356,10 @@
    2026-08-01 使用者裁示「點進去每個 media 設定裡」。用 .drawer 不用第二層彈窗：
    庫房本身已經是一層彈窗，再疊一層會變成對話框中的對話框，而且會蓋掉剛才點的那
    一格；抽屜從右邊推進來，被編輯的東西還看得見。z-index 200 > 彈窗的 80。 */
-.vault-item__preview {
-  aspect-ratio: var(--img-portrait, 2 / 3);
-  max-height: 240px;
-  margin-bottom: var(--sp-16);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--ztu-film);   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--muted) */
-  display: grid; place-items: center;
-  overflow: hidden;
-}
-.vault-item__preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.vault-item__glyph { color: var(--muted-foreground); }
-.vault-item__glyph .ztor-icon { width: 28px; height: 28px; }
+/* 抽屜頂端的預覽：2026-10-22（F5，D475）起預覽本體是 Media preview（media-preview.css 的
+   .mpreview——照片大圖、影片與音檔可播放），這裡只管它在抽屜裡與下方欄位的距離。
+   原本的縮圖框與 __glyph 類型圖示由 .mpreview__stage／__glyph 取代。 */
+.vault-item__preview { margin-bottom: var(--sp-16); }
 
 /* 唯讀事實用 dl：左邊欄位名、右邊值。它們是檔案本身的屬性，不是可填的欄位，
    做成 input 會讓人以為改得動。 */

@@ -18,6 +18,15 @@
      .entry-list[data-last-empty]
        .entry-list__row      × N   > .input + .btn.btn--icon（刪除）
        .entry-list__add            > .btn.btn--outline.btn--sm
+
+   ---- 變體：帶附屬欄位的列（2026-10-23，D476 崗位歸屬）----
+     .entry-list.entry-list--extras
+       .entry-list__row.entry-list__row--extras > .input + .btn.btn--icon + .entry-list__extras
+         .entry-list__extras > .select × 1–2（＋可選 .badge 狀態標示）
+   一列除了主輸入，還要逐筆收一兩個附屬選擇（演職名單每位要連 Ztor 帳號、選職務等級）時用。
+   附屬欄位固定換到主輸入下一行、與主輸入左緣對齊；刪除鈕留在主輸入那一行的行尾，
+   刪的是「這一筆」而不是某一格。列與列之間的間距加大一級，看得出哪組附屬欄位屬於哪個名字。
+   判斷句：附屬欄位是「這一筆的屬性」嗎？是 → 這個變體；只是另一個並列的問題 → 另開一個欄位。
    ============================================================ */
 
 .entry-list { display: flex; flex-direction: column; gap: var(--sp-8); align-items: stretch; }
@@ -39,3 +48,16 @@
    同一種寫法（不另立第三種「有值才出現」機制）；元件負責的一樣是「藏得掉」。
    沒有設這個屬性的消費頁行為不變——新增鈕照常常駐。 */
 .entry-list[data-last-empty="true"] .entry-list__add { display: none; }
+
+/* ---- 變體：帶附屬欄位的列（D476）---- */
+.entry-list--extras { gap: var(--sp-16); }
+.entry-list__row--extras { flex-wrap: wrap; row-gap: var(--sp-8); }
+/* 附屬欄位整組佔滿一行（flex-basis 100%），所以永遠排在主輸入與刪除鈕的下一行 */
+.entry-list__extras {
+  flex: 1 0 100%;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--sp-8);
+  min-width: 0;
+}
+/* 兩個下拉平分寬度，窄螢幕各自換行；zselect 的觸發鈕沿用 .select 這個 class，同一條規則一起吃到 */
+.entry-list__extras > .select { flex: 1 1 200px; min-width: 0; width: auto; }

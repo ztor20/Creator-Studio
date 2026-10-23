@@ -13,6 +13,81 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-23（三百）· 媒體庫七項定案：庫房狀態與排程、上鎖與進庫方法、解開紀錄兩個數字、指定一位粉絲、三種狀態改名、不提供下載（A spec-derived · D477）
+
+使用者 2026-10-23 裁示七項「照建議」＋第二輪四題（D477；規格 `documents/5.1.7.3-媒體庫.md` 新增 F10，F1～F9 同步）。媒體庫整頁只在最終版，新功能登記 ⚪（S112–S114），不寫交付版標籤。
+
+- **庫房狀態與排程（F10、F1，S112）**：庫房分草稿／上架中／已下架。側欄每列名稱下一列狀態徽章，排了上架時間的多「日期 上架」；草稿與已下架的人數降墨、底下寫「上架後」。庫房標頭多一列狀態（徽章＋排程＋一句白話）與依狀態的主要動作：草稿＝發布、排程中＝取消排程、上架中＝下架、已下架＝重新上架，另一顆刪除（比照商品細節頁頁首）。發布／重新上架用中央彈窗：立刻上架或定時上架（並排兩張卡）、可另設定時下架（開關＋下架日期與時間），最上面是發布前檢查（沒有內容不能發布、沒有路進來只提醒）。下架先確認（三條後果，排程一併清除）；刪除照破壞性確認（N 位粉絲失去內容、鑰匙一併失效、不可復原），上架中按刪除說明要先下架；刪光時整頁回到無庫房引導。排程到期由頁面每 30 秒檢查、自動上架或下架。新建庫房是草稿。種子：上架中四座（東岸巡迴設了定時下架）、片場是排程中的草稿（另預發一批 NFC 鑰匙）、簽名會已下架。
+- **非上架中時（F4、F9、F3）**：存取權限的分享連結列停用並寫原因；直接開放卡與鑰匙抽屜多一句「上架前粉絲不能領取鑰匙，現在仍可先發」；讀數卡、人數條、每件清單、抽屜都改寫成「上架後」的試算並標「尚未對粉絲開放」。
+- **可見性與上鎖（F2，S113）**：檢視身分進不了時，分頁最上面一張上鎖卡列出「方法 N」與條件、持鑰匙也進得來；原本整片模糊的遮罩退場，內容照常看得到、每件小標寫「上鎖」。
+- **指定一位粉絲（F6，S113）**：檢視身分多「指定一位粉絲…」，右邊長出搜尋欄（owner-lookup 版型，示範名單＝粉絲列表九位）；選了之後側欄每列寫進得了／上鎖，分頁最上面一列寫他靠哪種方法或哪把鑰匙進來，每件小標寫他的結果。以分級檢視的「這一級幾人打得開」同一列顯示（從總覽讀數卡底下搬上來）。
+- **三種狀態改名（F6）**：已解開／需要條件：某一級／未解開（取代看得到／等級不足／需完成行動任務），整座進不了叫上鎖；等級任務的說明句同步改「需要條件」。
+- **解開紀錄（F3、F8，S114）**：總覽新增「解開紀錄」卡（累計解開過、目前看得到）；每件清單量條下一行「累計解開過 N」；抽屜人數改成兩格。改任務時已解開的人保留、繼續算目前看得到（不設任務改設任務也一樣），說明句寫保留了幾位。紀錄是示範資料（UIA-298）。「待補規格的數字」只剩觀看次數與熱門內容。
+- **不提供下載（F5）**：單件設定預覽下面一行「粉絲只能線上看與播放，不提供下載」。
+- **DS**：Media vault（§4.102）新增 `.vault-row__status`／`__sched`／`.vault-row__keys--trial`／`.vault-row__trial`、`.vault-head__status`／`__sched`／`__statusnote`（`.vault-head__actions` 回到正式頁）、上鎖卡改寫（`.vault-gate__head`／`__titles`／`__way`／`__wayname`，blur 遮罩退場留墓碑）、`.vault-viewas`、`.vault-person`、`.vault-item__online`、`.vault-pub__checks`、`.vault-confirm`（`__list`／`__sub`／`__p`）、`.vault-main[hidden]`；Vault item task（§4.229）新增 `.vault-task__reach--pair`／`__reach-cell`／`.vault-task__trial`，小標語意改名；Vault overview（§4.230）新增 `.vault-ov__ever`、`.vault-ov__viewer` 退出正式頁。`design-system.md`／`.html` 同步（新增狀態、上鎖、發布與刪除視窗、非上架中存取權限四組 demo），`design-components.html` 重生。沿用既有元件：Badge、Alert row、Payout modal、Listing controls、Radio card、Switch、Owner lookup、Link field 停用態、Empty card。沒有新 token。`media-vault.html` 補連 radio-card／listing-controls／payout-modal／owner-lookup／empty-card。
+- `js/vault-store.js`：庫房 `status`／`listAt`／`unlistAt`、`publish`／`unlist`／`cancelSchedule`／`applySchedules`／`removeVault`／`deleteImpact`／`publishCheck`、解開紀錄 `item.history`／`item.kept` 與 `commitUnlocks`／`itemEver`／`vaultUnlocks`／`retainOnTaskChange`、`itemStatusForTier` 改回傳 `unlocked`／`condition`／`notyet`、新增 `itemStatusForFan`、示範名單 `fans`／`fanWays`。
+- `js/i18n.js`：新增 `vault.status.*`、`vault.sched.*`、`vault.head.*`、`vault.rail.*`、`vault.act.*`、`vault.pub.*`、`vault.toast.*`、`vault.unlist.*`、`vault.del.*`、`vault.none.*`、`vault.ov.reach.trial`／`trial`／`trial.note`／`unlock*`／`items.ever`、`vault.item.*`（ever、kept、tier.below、online）、`vault.tag.viewers*`、`vault.st.*`、`vault.viewer.person`、`vault.person.*`、`vault.vas.*`、`vault.gate.*`、`vault.ac.reachline.trial*`、`vault.ac.keys.off`、`vault.ac.link.off.*`（中英）；改 `vault.ov.items`／`items.note`；刪 `vault.ov.status.*`、`vault.ov.pending.unlocked`／`rate`（留墓碑）。
+- 功能標記：新登記 S112–S114 ⚪（`feature-scope-map.md`、`devtools.js` FEAT_TIER 後備）。文件：ASSUMPTIONS 新增 UIA-298，UIA-230／235／295 被 D477 定案的條目標結案；BUILD-SPEC 4g、requirements-map 同步。
+
+## 2026-10-23（二百九十九）· 組合包要已下架、而且沒有結帳中的訂單才能改成員（A spec-derived · D478）
+
+**標籤**：release2.4
+
+使用者裁決 D478（「照建議」）：組合包修改成員（增減、替換成員，改每套用量，票券成員改允許的門票與張數）要同時符合「已下架」與「沒有結帳中（保留中）的訂單」；純商品組合包與含票券的組合包都適用，已售出後成員鎖定（D292）不變。使用者已說不進 release2.3。
+
+- `bundle-detail.html`：新增 `memberEditBlock()`（匯出 `window.bdMemberEditBlock`），回傳成員區唯讀的原因——已售出（`sold`，既有規則）、上架中（`listed`）、已下架但還有結帳中的訂單（`checkout`）；`syncMembersLock` 改看它，沿用既有的 `[data-bd-members-locked]` 說明列，依原因換文案：上架中「組合包上架中，要先下架才能修改成員。」、結帳中「還有 N 筆訂單結帳中，結清後才能修改成員。」。鎖定時加入區、移除鈕、每套用量與票券成員的允許門票勾選表一起停用；解鎖時（編輯中從頁首下架也算）還原成編輯態。`bdStockSync`（上架／下架後都會跑）補呼叫 `syncMembersLock` 與 `renderTixExp`，成員區跟著上架狀態即時切換。草稿、已封存不受影響；名稱、售價、購買條件、取貨場次等其他欄位的編輯規則不變。兩個版本都有。
+- 示範資料：`bundleModel.pendingCheckout`（結帳中的訂單筆數）讀組合記錄的 `pendingCheckout`，沒寫時以 `holdSets` 代替（UIA-297）；`js/products-store.js` 的「內部測試組」（`internal-test-set`，已下架、零成交）補 `holdSets: 1, pendingCheckout: 1`，看得到結帳中的提示；「冬季預購組」（上架中、零成交）看得到要先下架的提示，下架後可改成員。
+- `js/i18n.js`：新增 `bd.members.listed`、`bd.members.checkout`、`bd.members.checkout1`（中英）。
+- 沒有新元件、沒有新功能標記。文件：ASSUMPTIONS 新增 UIA-297；BUILD-SPEC、requirements-map 同步。
+
+## 2026-10-23（二百九十八）· 忠誠點數五項待確認定案：誰算粉絲、回填範圍、邀請點數暫存、降級緩衝、參數生效時點（A spec-derived · D479）
+
+使用者 2026-10-23 裁示「照建議」（D479；規格同輪由另一個 session 寫入 `documents/`）。沒有新功能標記，不寫交付版標籤。
+
+- **降級改以天數為準（第 4 項）**：「連續兩次每週重算未達標才降」全部改成「掉到門檻以下開始倒數降級緩衝天數（預設 14 天），期間回到門檻以上就取消，到期後下一次每週重算仍未達標才降」——`admin-platform-loyalty.html` 降級緩衝說明、`fan-detail.html` 提示與頁尾、`fans-crm.html`／`tier-settings.html` 門檻提示與升降級時機、`fans-guide.html` 第一幕摘要、`vault.note.tiers`（只改文案 key，媒體庫檔案未動）。
+- **歷史訂單回填（第 2 項）**：Admin 頁回填起始日期由「待確認」徽章改成「上線前 365 天」，說明「只回填上線前 365 天內的訂單，更早的不回填」。
+- **Admin 參數生效時點（第 5 項）**：已儲存提示改成一句話涵蓋兩類（計分類只作用於之後的事件、已入帳不改寫；等級類下一次每週重算起生效）並常駐顯示；修改紀錄的生效欄依參數類別標「之後的事件起」或「下一次每週重算起」，一次兩類都改就並列兩個徽章（儲存時依 `ploy.decay.*` 判別等級類）。
+- **邀請點數暫存（第 3 項）**：Admin 全站活動說明（`ploy.act.note`）補「選定主要應援對象前，邀請朋友加入 Ztor 的點數先暫存、選定當下入帳、不設期限不作廢」。第 1 項（榜上點數大於 0 即粉絲）只寫進規則手冊，原型沒有對應畫面所以不新增。
+- **規則手冊**：`fans-tiers.html`、`admin-loyalty.html`、`fans-tier-settings.html` 正文補五項、頁尾「尚待確認」移除這五項、依據補 D479、同步日更新；`index.html`、`fans-roster.html`、`fans-roster-detail.html` 的降級一句同步。
+- `js/i18n.js`：改 `ploy.pending`、`ploy.decay.grace-hint`、`ploy.log.note`、`ploy.log.st.pending`／`applied`、`ploy.bf.from-hint`／`from-v`、`ploy.act.note`、`fg.earn.recompute-v`、`fan-detail.batch-note`／`footer2`、`vault.note.tiers`、`tier-settings.thresh.batch`／`rules.timing-body`（中英）。ASSUMPTIONS UIA-296 第 5、7、8、12、16 項標「已結案（D479）」。
+
+## 2026-10-23（二百九十七）· 忠誠點數 B 類九項：崗位歸屬、即時入帳與升級、名額取整、主要應援對象、租片、賽季加倍、計分口徑、手動調整點數、歷史訂單回填（A spec-derived · D476）
+
+使用者 2026-10-23 裁示「照建議，但"9. 上線時把歷史訂單算進點數"要直接做完」（D476，依據 `note/忠誠點數-B類裁決-2026-10-23.md`；規格同輪由另一個 session 寫入 `documents/`）。新功能全部登記 ⚪（S107–S111），其餘是沒有功能標記的最終版文案，不寫交付版標籤。
+
+- **崗位歸屬（第 1 項，S107、S108）**：`partials/work-fields.js` 演職名單每列多一行附屬欄位——Ztor 藝人帳號下拉（含「不連結」，沒連的標「不發分」）＋職務等級下拉（六級，選項寫預設百分比與該級職務），卡頭一句說明；`publish-work.html` 與 `create-project.html` 影片路徑同吃。`create-event.html` 表演陣容的 Ztor 用戶在 chip 下方各一列職務等級。`admin-platform-loyalty.html` 全站活動之後新增「多人署名時各職務分到的點數」表（五級可改、0% 唯讀，改了進修改紀錄）。
+- **即時性（第 2 項）**：「點數與分級每週重算才更新」全部改成點數即時入帳、達標即時升級、降級每週重算且連續兩次未達標才降——`fan-detail.html` 提示與頁尾、`fans-crm.html` 忠誠點數提示與分級設定編輯提示、`tier-settings.html` 門檻提示、`fans-guide.html` 第一幕摘要、`brand-campaign-detail.html` 發出點數說明、媒體庫分級條件說明（`vault.note.tiers`）、Admin 頁待生效提示與降級緩衝說明；分級設定規則分頁（兩頁）加「升降級的時機」一列。參數與門檻變更「下一次每週重算起生效」沒有被 D476 改，保留（UIA-296 第 7 項）。
+- **名額取整（第 3 項）**：「前 % 名怎麼算」面板與規則分頁加「名額無條件捨去，但核心圈至少 1 人」。
+- **主要應援對象（第 4 項）、租片（第 5 項）、計分口徑（第 7 項）**：Admin 全站活動說明補首次領取強制選擇；粉絲系統說明改「首次領取時選定」；購買品項說明補定價、不扣分級折扣與優惠碼；影片付費租賃列補「付款成功即入帳、90 天內重複租只計第一次」。
+- **賽季加倍（第 6 項，S109）**：Admin 賽季區塊改名「賽季加倍」，表多範圍（全平台／特定藝人）與倍率兩欄，新增彈窗多範圍、藝人、倍率（預設 2，兩個下拉由 zselect 接手，頁面補連 `zselect.css`），修改紀錄帶範圍與倍率；分級設定「計分設定」分頁（`fans-crm.html` 與備份頁 `tier-settings.html`）新增「我的賽季加倍」（期間＋倍率），說明覆寫平台設定與同層取最高。
+- **手動調整點數（第 8 項，S110）**：`fan-detail.html` 頁首「調整點數」只在 Admin 代管態出現，彈窗加點／扣點＋點數＋必填原因，送出後 KPI 變動、行為時間軸分頁「點數調整紀錄」加一筆；頁面補連 input／field-system／segmented／amount-field／payout-modal／toast。
+- **歷史訂單回填（第 9 項，S111）**：Admin 頁誠信規則之後新增「歷史訂單回填」：狀態「尚未執行」、回填起始日期「待確認」、四句規則摘要，沒有執行按鈕。
+- **DS**：Entry list（§4.118）新增變體 `--extras`（`.entry-list--extras`／`.entry-list__row--extras`／`.entry-list__extras`），三件套同步（css、`design-system.md`、`design-system.html` demo 卡），`design-components.html` 重生。沒有新 token。
+- `js/i18n.js`：新增 `ploy.season.col.scope`／`col.mult`／`scope*`／`artist`／`mult*`、`ploy.role.*`、`ploy.bf.*`、`ce.lineup.level.*`、`pw.credits.points-hint`／`account*`／`level*`／`nopts`、`fan-detail.adjust.*`、`tier-settings.season.*`、`tier-settings.weight.rental-hint`、`tier-settings.explain.toppct.round`、`tier-settings.rules.timing*`／`round`（中英）；改 `fg.earn.platform-v`／`recompute`／`recompute-v`、`rep.points.meta`、`ploy.pending`、`ploy.act.note`、`ploy.season.title`／`rule`／`empty`／`modal`、`ploy.decay.grace-hint`、`ploy.log.season-add`／`remove`、`fans.tiers.effective`、`fans.kpi.rep.tip`、`fan-detail.batch-note`／`footer2`／`kpi.points-delta`、`tier-settings.thresh.batch`／`weight.desc`／`platform.note`、`vault.note.tiers`。
+- 功能標記：新登記 S107–S111 ⚪（`feature-scope-map.md`、`devtools.js` FEAT_TIER 後備）。文件：ASSUMPTIONS 新增 UIA-296；BUILD-SPEC、requirements-map 同步。
+
+- **2026-10-23 修正（引用 D476，B 反饋導入）**：獨立驗收發現原型與規則手冊把「計分設定也等每週重算生效」寫反；規格是門檻下一次每週重算生效、計分設定儲存後只作用於之後發生的事件（已入帳點數不改寫）。已改 `tier-settings.rules.when-body`／`effective-hint`／`footer2`、`fans.tiers.effective`（中英）與規則手冊分級設定、分級、福利三頁；Admin 平台參數的生效時點規格仍〔產品待確認〕，原型儲存提示改「已儲存；生效時點待確認」、手冊正文不再寫時點（UIA-296 第 16 條）；降級緩衝待確認措辭對齊 §8.29 第 24 項；作品上架職務下拉六級舉例補齊裁決檔清單（劇集原創者、IP 持有人、平台、AI 模型與工具）。
+
+## 2026-10-22（二百九十六）· 媒體庫單件預覽與庫房分享連結（A spec-derived · D475）
+
+使用者裁示「先把不需要決定的做完」（D475）：單件內容可預覽（5.1.7.3 F5）、每座庫房一條可複製的公開分享連結（新增 F9，只帶路、不給進庫權限、與鑰匙分開）。媒體庫整頁只在最終版（S86／S93／新登記 S106 皆 ⚪），不寫交付版標籤。
+
+- **預覽（F5）**：單件設定抽屜頂端原本只放縮圖或類型圖示，改成新元件 Media preview（`ds-components/media-preview.css`，§4.242）——照片整張放大（`contain`、最高 360px）；影片是示範封面＋中央大播放鈕＋控制列；音檔是播放條。純檢視，按下播放只讓進度條照標示長度走、關抽屜即停（原型沒有真影音檔，UIA-295）。`js/media-vault.js` 新增 `previewHtml`／`togglePreview`／`stopPreview`；`.vault-item__preview` 縮成只管間距，原縮圖框與 `__glyph` 退場。
+- **分享連結（F9）**：存取權限分頁最下方淡色的「分享頁面」＋「粉絲端庫房頁尚待規格」改成正式的「分享連結」卡：沿用 Link field（唯讀網址＋「複製連結」，「已複製」長在按鈕上、不跳 toast，同 Link field 既有裁決），下面一句「連結只帶粉絲到這座庫房，不會讓他進得來——進庫仍要符合條件或持有鑰匙」。網址 `https://ztor.com/v/<庫房 id>` 隨選中庫房由 `renderAccessTab` 寫入（示範格式）。沒寫「草稿或已下架不能分享」（D475 第 6 項尚未定案）。`.vault-sharerow` 退場（墓碑留在 `vault-access.css`）；保存檔 `media-vault-popup.html` 的舊按鈕與處理器保留。
+- **鑰匙與分享連結不共用名字**：直接開放卡開抽屜的按鈕「分享連結」改「管理鑰匙」（圖示改鑰匙），抽屜標題「鑰匙與分享連結」改「鑰匙」（D475 第 4 項：分享連結不是鑰匙，同一分頁不能有兩個「分享連結」）。
+- `js/i18n.js`：新增 `vault.ac.link`／`.copy`／`.hint`、`vault.item.preview.play`／`pause`（中英）；改 `vault.btn.share-links`、`vault.share.title`；刪 `vault.ac.share.note`。
+- 功能標記：新登記 S106 ⚪（`feature-scope-map.md`、`devtools.js` FEAT_TIER 後備）。DS：新元件三件套（css＋`design-system.md` §4.242＋`design-system.html` demo 卡與 TOC），§4.231 Vault access、§4.206 Link field、§4.102 Media vault 條目同步，`design-components.html` 重生。文件：ASSUMPTIONS 新增 UIA-295、PG-026 標部分定案、UIA-235 第 9 條改寫；BUILD-SPEC 4g、requirements-map 同步。
+
+## 2026-10-22（二百九十五）· 忠誠點數補齊七項規則：入帳方式、全站上限、前 % 名母數、帳本欄位、設定版本（A spec-derived · D474）
+
+使用者裁示把需求站有、規格沒有、不需決策的七項先補上（D474）；規格同輪由另一個 session 寫入，原型只畫有對應畫面的幾項。這批頁面屬 ⚪ 未排定（S65）或沒掛功能標記的分級設定，不寫交付版標籤。
+
+- `admin-platform-loyalty.html`：全站活動表加第四欄「入帳方式」（每日簽到、連續簽到、全站發文互動＝手動領取，邀請朋友加入 Ztor＝自動，候選列「—」），表下補一句未領取點數於 UTC+8 00:00 作廢、不可補領；上限說明補「以每位用戶全站合計、切換主要應援對象不重置額度」；誠信規則「事件帳本」說明補事件編號、時間、訂單編號、規則版本。
+- `fans-crm.html`、`tier-settings.html`：「前 % 名怎麼算」面板（共用同一組 `tier-settings.explain.toppct.*`）改成只計榜上忠誠點數大於 0 的粉絲，補「0 分的追蹤者不計入，屬於一般粉絲」，列標提示改「在有點數的粉絲中排名」；變更歷史每個版本列補操作者、時間與逐項「原值 → 新值」，說明補「變更只往後生效」；規則分頁的版本化一列同步；`tier-settings.html` 版本歷史由單行示例改為三列。
+- `fan-detail.html` 不動：只有點數來源比例，沒有逐筆明細，帳本欄位的呈現假設記在 ASSUMPTIONS。
+- `js/i18n.js`：新增 `ploy.act.col.credit`、`ploy.act.credit.claim`／`auto`、`ploy.act.claim-note`、`fans.tiers.hist.by`／`v3b`／`v2b`（中英）；改 `ploy.act.note`、`ploy.int.ledger-hint`、`tier-settings.explain.toppct.s1`／`s2`／`eg`／`note`、`fans.tiers.toppct-hint`、`fans.tiers.history-sub`、`fans.tiers.hist.v3`／`v2`、`tier-settings.rules.ver-body`／`version-hint`；`tier-settings.rules.history-demo` 作墓碑移除。
+- 沒有新元件、沒有新 token：入帳方式用 `.text-sub`，版本列沿用 `.settings-row`。文件：ASSUMPTIONS 新增 UIA-294；BUILD-SPEC、requirements-map 同步。
+
 ## 2026-10-22（二百九十四）· 建立組合包的「取貨與核銷」節搬到步驟 2、整節只在最終版（A spec-derived · D473）
 
 **標籤**：release2.4
