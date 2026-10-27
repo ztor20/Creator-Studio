@@ -1,17 +1,32 @@
 # Ztor Creator Studio · R 2.2 · UI-CHANGES
 
+> **2026-10-27 序號改名（D484）**：本檔 2026-10-27 以前的條目保留當時寫法。換算：release2.3＝現 release2.2（E-Shop）、release2.4＝現 release2.3（活動）、release2.5＝現 release2.4（粉絲管理＋媒體庫）。
+
 > 嚴格分區：**A** spec-derived 新增 · **B** 反饋導入 · **C** 撤除（intentional removal）· **D** infra / 文件。Bug 修正不寫。
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 >
-> **交付版標籤（2026-10-07 起）**：每筆紀錄的標題下方（隔一個空行）寫 `**標籤**：release2.3`、`**標籤**：release2.4` 或兩者並列（用「、」分隔），標示這筆改動會進哪個交付版；只進最終版的不寫這一行。判斷依 `feature-scope-map.md` 的 Tier 欄：
+> **交付版標籤（2026-10-07 起）**：每筆紀錄的標題下方（隔一個空行）寫 `**標籤**：release2.2`、`**標籤**：release2.3` 或兩者並列（用「、」分隔），標示這筆改動會進哪個交付版；只進最終版的不寫這一行。判斷依 `feature-scope-map.md` 的 Tier 欄：
 >
-> - 改到 🟢 release2.3（E-Shop，已凍結）的功能：先問使用者要不要同步改進 release2.3。要就標 `release2.3、release2.4`，並在發進 `main` 後用 `release-port.sh release2.3` 搬進凍結分支；不要就只標 `release2.4`。
-> - 改到 🔵 release2.4 的功能：標 `release2.4`。release2.4 切出凍結分支之後，改到它也照上一條先問。
+> - 改到 🟢 release2.2（E-Shop，已凍結）的功能：先問使用者要不要同步改進 release2.2。要就標 `release2.2、release2.3`，並在發進 `main` 後用 `release-port.sh release2.2` 搬進凍結分支；不要就只標 `release2.3`。
+> - 改到 🔵 release2.3 的功能：標 `release2.3`。release2.3 切出凍結分支之後，改到它也照上一條先問。
 > - 只改到 ⚪ 未排定的功能、或沒掛功能標記的最終版內容：不寫標籤。
 >
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
+
+## 2026-10-27（三百零八）· 交付版序號改名：release2.3→release2.2、release2.4→release2.3、release2.5→release2.4（D infra · D484）
+
+使用者裁決交付版序號整體往前一號（D484），只換名稱，各版功能範圍不變。
+
+- `js/devtools.js`：`TIER_EMOJI`（🟢 release2.2／🔵 release2.3／🟣 release2.4）、`VERSIONS` 面板選項與規則（`tier:release2.2,release2.3`、`tier:release2.2,release2.3,release2.4`）、`FEAT_TIER` 後備、找不到時的預設 `release2.2`、`VERSION_ALIAS` 的 `next` 改對到 `release2.3`；2026-10-07 改名的註解保留當時名稱並註明現稱。
+- `feature-scope-map.md`：Tier 欄、開發版本配置表、統計列全部換新名。
+- `js/sidebar.js`、`js/i18n.js`（「release2.3 不支援」／「Not in release2.3」）、各頁 HTML／JS／CSS 註解、`BUILD-SPEC.md`、`design-system.md`／`.html`、`requirements-map.md`、`rulebook/WRITING-GUIDE.md`：換新名。
+- 本檔、`ASSUMPTIONS.md` 的舊條目不改，檔頭加一行對照；本檔檔頭的「交付版標籤」規則段換新名。
+- 不改：i18n 鍵名 `ace.r24.*`、截圖檔名 `*-r24.png`。
+- 瀏覽器存過面板選擇的人：舊的「release2.4」會變成新的 release2.4（粉絲＋媒體庫），重選一次即可。
+
+---
 
 ## 2026-10-27（三百零七）· 媒體庫下架時下架時間保存但暫停，重新上架時詢問是否恢復（A spec-derived · D483，比照電子商店 D481）
 

@@ -1,3 +1,5 @@
+> **2026-10-27 序號改名（D484）**：本檔 2026-10-27 以前的條目保留當時寫法。換算：release2.3＝現 release2.2（E-Shop）、release2.4＝現 release2.3（活動）、release2.5＝現 release2.4（粉絲管理＋媒體庫）。
+
 ## UIA-303 · D481 下架時保存排程、重新上架時詢問是否恢復，以及上架中改組合包限量的呈現（2026-10-27；UI-CHANGES 三百零五）— 呈現假設 ＋ 推導落地
 
 `js/listing-state.js`、`partials/relist-restore.js`（新）、`ds-components/sched-restore.css`（新）、`partials/bundle-relist.js`、`product-detail.html`、`bundle-detail.html`、`auction-detail.html`、`e-shop.html`、`event-detail.html`、`js/products-store.js`、`js/events-store.js`、`js/i18n.js`。依據 D481 與主規格 §7.14「下架的副作用」「重新上架時詢問是否恢復排程」（全庫唯一定義處，11 條〔推導〕照做）、「組合包：限量與鎖定」；修訂本檔 UIA-155（下架清除排程）與 UIA-270 第 3 項（活動組合包下架＝另設格子回到跟隨）。媒體庫庫房下架（D477）不動。

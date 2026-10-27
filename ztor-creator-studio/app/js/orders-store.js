@@ -1478,7 +1478,7 @@
   var EVENT_DEMO = [
     /* 2026-10-16（D429）：bookyay 自動組合包（bd-tc-duo／bd-kh-duo／bd-pt-duo）退場，改指向同場保留的創作者自建組合包 */
     /* free（2026-10-16 示範資料補齊，稽核 S7）：免費門票訂單改接 bookyay 活動 nick-live-taichung-bky 的免費陪同票 tier-tc-companion（金額 0）取 3 筆——
-       原本接非 bookyay 的 nantou-lantern-opening，release2.4 收起那場活動、訂單卻照樣出現在清單裡。 */
+       原本接非 bookyay 的 nantou-lantern-opening，release2.3 收起那場活動、訂單卻照樣出現在清單裡。 */
     { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-ga-tee'], free: 3 },
     { ev: 'nick-live-taoyuan-bky', tickets: 2, bundles: ['bd-ty-ga-tee'] },
     { ev: 'nick-live-kaohsiung-bky', tickets: 2, bundles: ['bd-kh-ga-tee'] },

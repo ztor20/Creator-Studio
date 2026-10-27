@@ -84,7 +84,7 @@
      · 各角色的預設等級是呈現假設（UIA-296）：主角、導演、編劇 100%，配角 80%，剪輯 60%（直接產出畫面），
        監製 0%（對到「掛名監製」），出品製作公司 0%（製作公司）；創作者可以改
      · 帳號清單是示範用的固定名冊（站上還沒有共用的藝人搜尋），沒連帳號的那一筆標「不發分」
-     · 整組附屬欄位掛 data-feat="S107"（⚪），release2.4 只剩姓名格 */
+     · 整組附屬欄位掛 data-feat="S107"（⚪），release2.3 只剩姓名格 */
   var CREDIT_LEVELS = ['l1', 'l2', 'l3', 'l4', 'l5', 'l0'];
   var CREDIT_DEFAULT_LEVEL = { 'lead-m': 'l1', 'lead-f': 'l1', 'sup-m': 'l2', 'sup-f': 'l2',
                                director: 'l1', editor: 'l3', producer: 'l0', writer: 'l1', studio: 'l0' };
@@ -774,7 +774,7 @@
   }
   function renderCredits(host) {
     var cast = section(host, 'pw.credits.cast.title', 'Cast');
-    /* D476：一句說明為什麼要連帳號與選等級（S107，release2.4 不出現）。 */
+    /* D476：一句說明為什麼要連帳號與選等級（S107，release2.3 不出現）。 */
     cast.insertAdjacentHTML('beforeend', '<p class="field__hint" style="margin:0 0 var(--sp-16)" data-feat="S107" data-i18n="pw.credits.points-hint">'
       + esc(T('pw.credits.points-hint', 'Link each name to a Ztor artist account and pick a role level.')) + '</p>');
     cast.insertAdjacentHTML('beforeend', CREDIT_CAST.map(function (r, i) {

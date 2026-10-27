@@ -488,7 +488,7 @@
       /* D391 第 5、13 題示範（2026-10-09）：已排程（還沒開賣）的兩場活動——活動詳情編輯模式可移除場次。移除 Day 2 會一併刪除
          「General admission · Day 2」與指定 Day 2 的獨立票「Sunset pit」，確認對話列出這兩張；Sunset pit 列在組合包
          bd-pt-sunset-tee 的允許清單，儲存後組合包保留、組合商品細節頁把它顯示為停用，允許清單只剩它＝整組不能賣。
-         兩場＝多場次（S87 ⚪）：release2.4 由 list() 的多場過濾收起、活動清單那一列掛 data-feat="S87"。 */
+         兩場＝多場次（S87 ⚪）：release2.3 由 list() 的多場過濾收起、活動清單那一列掛 data-feat="S87"。 */
       sessions: [
         { id: 's1', name: 'Day 1', date: '2026-11-02', start: '18:30', end: '', doors: '', early: 'warn' },
         { id: 's2', name: 'Day 2', date: '2026-11-03', start: '18:30', end: '', doors: '', early: 'warn' }
@@ -511,7 +511,7 @@
     },
     {
       id: 'taipei-nye',
-      /* 2026-10-13 D410 決定四（示範資料）：release2.4 只開放演唱會類型，原本的 festival 改成 concert；
+      /* 2026-10-13 D410 決定四（示範資料）：release2.3 只開放演唱會類型，原本的 festival 改成 concert；
          這一場是「已排程」的 bookyay 演唱會全選項示範（亮點、陣容、圖庫、影片預告、門票圖片另補，其餘原本就有）。 */
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
@@ -608,7 +608,7 @@
           /* 2026-10-16 示範資料補齊（note/release2.4 假資料覆蓋稽核 E6、E8；不是產品規則）：
              · sched.saleStart：開賣「另設」、早於活動開賣 11/01（仍在上架區間 10/25 起之內）——上架、下架、停售跟隨活動（S62）。
              · rules.conds.cap：組合包限購「覆寫」每人 1 組（S94，獨立計算；門票 tier-ga 換算上限 4 組）。活動組合包的
-               bundle-detail 讀法只認 rules（evSeed 沒有 limits 欄），所以用 D366 條件清單形狀帶；release2.4 的購買條件區（S63 ⚪）收起，不受影響。 */
+               bundle-detail 讀法只認 rules（evSeed 沒有 limits 欄），所以用 D366 條件清單形狀帶；release2.3 的購買條件區（S63 ⚪）收起，不受影響。 */
           sched: { saleStart: '2026-10-28T12:00' },
           rules: { conds: { cap: { person: '1' } } } }
       ],
@@ -625,13 +625,13 @@
       listing: { from: '2026-10-25 12:00', to: '2027-01-01 12:00' }   // D410 示範：上架時間（排程上架）
     },
     {
-      /* bookyay 帶入、取票方式＝順豐寄送的示範（2026-10-09 D385 決定五）：單一時段，release2.4 也看得到（順豐不在 S89 到店自取的範圍）。
+      /* bookyay 帶入、取票方式＝順豐寄送的示範（2026-10-09 D385 決定五）：單一時段，release2.3 也看得到（順豐不在 S89 到店自取的範圍）。
          取票方式本身與運費鎖定（D308 決定一經 D327 修訂）；運費 bookyay HK$30 → 換算成創作者幣別 NT$121 當基準值（D368 決定四，
          匯率同 taipei-nye 的示範 HK$300 → NT$1,212）。票價同口徑：HK$690 → NT$2,788；本門票限購每人 1 張（bookyay 帶入、鎖定；D417 起限購次數、D427 起每次交易都不帶入）。
          沒有活動限購（D417 起 bookyay 活動一律沒有活動層限購）。對應 create-event 匯入清單的已帶過列 bky-14。 */
       id: 'hsinchu-vinyl-sf',
       bkyId: 'bky-14',
-      /* 2026-10-13 D410 決定四（示範資料）：release2.4 只開放演唱會，發表會改成演唱會（名稱同步改；順豐寄送示範不變） */
+      /* 2026-10-13 D410 決定四（示範資料）：release2.3 只開放演唱會，發表會改成演唱會（名稱同步改；順豐寄送示範不變） */
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
       category: 'concert',
@@ -676,7 +676,7 @@
       sale: { from: '2026-11-01 12:00', to: '2026-12-05 23:59' }
     },
     /* ── bookyay 演唱會：六個狀態的全選項示範（2026-10-13 D410 決定四，原型示範資料、不是產品規則）──────────────
-       release2.4 只顯示 bookyay 匯入的活動與共看派對；每個狀態各一場「所有選項都填入或開啟」的 bookyay 演唱會：
+       release2.3 只顯示 bookyay 匯入的活動與共看派對；每個狀態各一場「所有選項都填入或開啟」的 bookyay 演唱會：
          草稿＝khh-countdown-draft、已排程＝taipei-nye（另有順豐寄送 hsinchu-vinyl-sf）、售票中＝nick-live-taichung-bky
          ＋nick-acoustic-tainan-bky（已下架）、進行中＝nick-live-taoyuan-bky、已結束＝nick-live-kaohsiung-bky（另有已結束且已封存 nick-summer-pingtung-bky，D457）。
        金額口徑同 taipei-nye（D330）：hkd＝bookyay 港幣原價（鎖定）、price＝換算成創作者幣別 TWD 的基準價（HK$ ÷ 7.8 × 31.5，四捨五入）。
@@ -733,7 +733,7 @@
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
            各有自己的購買條件（鎖定）：站席限購、座席限購＋早鳥。sold 由原本單人票的張數拆出，event.sold 不變、revenue 依三種票價重算。 */
-        /* 2026-10-21 D465 示範（release2.4 的 nick 資料也看得到）：bookyay 門票可單售鎖定（決定 7，ztor 內部分配、不動 bookyay 張數）——
+        /* 2026-10-21 D465 示範（release2.3 的 nick 資料也看得到）：bookyay 門票可單售鎖定（決定 7，ztor 內部分配、不動 bookyay 張數）——
            鎖給單售 60、其中 10 張下單未付款（保留留在單售鎖定格）→ 鎖給單售 50/60、保留中 10 */
         { id: 'tier-tc-floor', name: 'Standing zone', price: 3192, hkd: 790, qty: 300, sold: 110, img: 'images/projects/nick-asn.jpg',
           lockSingle: 60, holdSingle: 10,
@@ -1976,7 +1976,7 @@
       /* 2026-10-13 D410 決定四（示範資料）：「草稿」狀態的 bookyay 演唱會全選項示範（原本是 festival）。
          續填時建立流程用 create-event BKY 的 bky-12 重跑帶入（D385 決定四），鎖定欄位一律以那份為準——這裡的鎖定欄位值與它對齊；
          亮點、表演陣容、圖片、上架方式、門票圖片、自建組合包等不鎖的欄位照這裡保留（D386 決定二，keepDraft）。
-         票：bky-12 只有一個時段，release2.4 照 D328 只帶第一種門票（二人套票），第二種（General admission）帶入時略過並出現提示——
+         票：bky-12 只有一個時段，release2.3 照 D328 只帶第一種門票（二人套票），第二種（General admission）帶入時略過並出現提示——
          所以草稿只有一張二人套票門票（D429：票價照 bookyay 現價、張數照時段上限 200、本門票限購每人 2 張落在這張票；D417 起折扣與早鳥不帶入）。 */
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
@@ -2046,12 +2046,12 @@
       /* bky-2 的創作者端草稿（2026-10-09 D390 稽核第一節原型第 16 條）：Admin 創作者活動管理裡 bky-2 是「草稿」（已對應 Gary Lin、已存），
          創作者端活動清單原本卻沒有這份草稿——同一筆兩個答案。補上：bookyay 帶入、二人套票門票（D429 起不拆 1 人票、沒有自動組合包）。
          D440（2026-10-16）：bookyay 三個時段帶入合成同一場（日期與時間取第一個時段，D440 定案），每個時段的那一種門票各成一張、張數＝各自時段上限 151／200／200；
-         同一種門票出現在三個時段，票名後補「· 時段 N」區分〔推導，ASSUMPTIONS UIA-271〕。一場＝release2.4 照常列出。
-         墓碑 2026-10-16（D440）：原本三場（Day 1～3，多場次 S87，release2.4 收起）、一張二人套票張數＝三個時段合計 551。
+         同一種門票出現在三個時段，票名後補「· 時段 N」區分〔推導，ASSUMPTIONS UIA-271〕。一場＝release2.3 照常列出。
+         墓碑 2026-10-16（D440）：原本三場（Day 1～3，多場次 S87，release2.3 收起）、一張二人套票張數＝三個時段合計 551。
          金額口徑同 khh-countdown-draft：hkd＝bookyay 港幣原價（二人套票 HK$399）、price＝換算成 TWD 的基準價。 */
       id: 'mirror-khh-draft',
       bkyId: 'bky-2',
-      /* 2026-10-13 D410 決定四（示範資料）：見面會改成演唱會（release2.4 只開放演唱會） */
+      /* 2026-10-13 D410 決定四（示範資料）：見面會改成演唱會（release2.3 只開放演唱會） */
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
       category: 'concert',
@@ -2917,8 +2917,8 @@
     catch (e) { return {}; }
   }
 
-  /* release2.4 留下的示範活動（D410 決定四）：bookyay 匯入的活動與共看派對。其餘＝功能 S95「非 bookyay 的示範活動（2.4 隱藏）」。
-     2026-10-15 D422 決定一：共看派對另受 S75 管（release2.4 不含，list() 另濾），這支只回答「是不是 S95 那一批」。 */
+  /* release2.3 留下的示範活動（D410 決定四）：bookyay 匯入的活動與共看派對。其餘＝功能 S95「非 bookyay 的示範活動（2.4 隱藏）」。
+     2026-10-15 D422 決定一：共看派對另受 S75 管（release2.3 不含，list() 另濾），這支只回答「是不是 S95 那一批」。 */
   function isRel24Demo(ev) { return !!ev && (ev.source === 'bookyay' || ev.type === 'watchparty'); }
 
   /* ── bookyay 活動的已報到（2026-10-13 · D410 決定三，5.1.6.3 §2.3）──────────────────────────
@@ -2944,7 +2944,7 @@
 
   window.ztorEvents = {
     bundleTickets: bundleTickets,
-    isRel24Demo: isRel24Demo,             /* D410 決定四：release2.4 留下的示範活動（bookyay 匯入＋共看派對） */
+    isRel24Demo: isRel24Demo,             /* D410 決定四：release2.3 留下的示範活動（bookyay 匯入＋共看派對） */
     checkinNoData: function (evOrId) {    /* D410 決定三：bookyay 活動還沒收到入場紀錄＝暫無資料 */
       var ev = typeof evOrId === 'string' ? window.ztorEvents.get(evOrId) : evOrId;
       return checkinNoData(ev);
@@ -3044,13 +3044,13 @@
     resetOverrides: function (id) { if (id) writeFx(id, null); },
     list: function () {
       var m = stageMap();
-      /* 2026-10-09 D383：release2.4 沒有多場次活動（S87 ⚪）——版本切換不含 S87 時，多場的示範活動（album-signing-taipei）
+      /* 2026-10-09 D383：release2.3 沒有多場次活動（S87 ⚪）——版本切換不含 S87 時，多場的示範活動（album-signing-taipei）
          不進清單，活動清單、計數與組合包示範都看不到它；最終版照舊。get() 不濾（直連照樣查得到，畫面上的多場元素由 data-feat 收起）。 */
       var multiOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S87');
-      /* 2026-10-13 D410 決定四（示範資料）：release2.4 只顯示 bookyay 匯入的活動與共看派對——其餘示範活動掛功能 S95（⚪），
+      /* 2026-10-13 D410 決定四（示範資料）：release2.3 只顯示 bookyay 匯入的活動與共看派對——其餘示範活動掛功能 S95（⚪），
          版本不含 S95 時不進清單（活動清單、計數、店鋪設定的活動候選、首頁畫布等 list() 的消費端一起收起）；get() 2026-10-20 起也比照（見 get()）。 */
       var demoOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S95');
-      /* 2026-10-15 D422 決定一：release2.4 不含共看派對（S75 改 ⚪）——版本不含 S75 時共看派對的示範活動也不進清單；
+      /* 2026-10-15 D422 決定一：release2.3 不含共看派對（S75 改 ⚪）——版本不含 S75 時共看派對的示範活動也不進清單；
          與 events.html 靜態列掛 data-feat="S75" 同一個標記（最終版照舊）。get() 不濾。 */
       var wpOff = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S75');
       return clone(EVENTS).concat(dynDrafts()).filter(function (e) {
@@ -3078,9 +3078,9 @@
         }
         if (!ev) ev = dynDrafts().filter(function (e) { return e.id === id; })[0] || null;   // D390：Admin 第一次儲存產生的草稿
       }
-      /* 2026-10-20（使用者：release2.4 不能自建活動）：版本不含 S95 時，直連網址也看不到非 bookyay 的示範活動——
-         原本 get() 不濾（D410 決定四，直連照樣查得到），結果 release2.4 用網址仍進得去自建活動（例：lrh-studio-live）。
-         現在比照 list()：不是 release2.4 留下的示範活動（bookyay 匯入的活動、共看派對）一律回查不到；
+      /* 2026-10-20（使用者：release2.3 不能自建活動）：版本不含 S95 時，直連網址也看不到非 bookyay 的示範活動——
+         原本 get() 不濾（D410 決定四，直連照樣查得到），結果 release2.3 用網址仍進得去自建活動（例：lrh-studio-live）。
+         現在比照 list()：不是 release2.3 留下的示範活動（bookyay 匯入的活動、共看派對）一律回查不到；
          沒帶 id 的示例頁預設改取第一筆留下的活動。最終版（含 S95）不受影響。 */
       var demoOffGet = window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S95');
       if (ev && demoOffGet && !isRel24Demo(ev)) {

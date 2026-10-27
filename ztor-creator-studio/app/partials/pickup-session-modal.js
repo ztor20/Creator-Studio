@@ -508,7 +508,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     var tgl = host.querySelector('[data-bp-toggle]');
     var body = host.querySelector('[data-bp-body]');
     var sel = host.querySelector('[data-bp-select]');
-    /* 「改用組合包自己的場次」只在最終版（S34.1 ⚪，D471 使用者補充：release2.4 不需要）——版本外整組收起，
+    /* 「改用組合包自己的場次」只在最終版（S34.1 ⚪，D471 使用者補充：release2.3 不需要）——版本外整組收起，
        成員一律照自己的場次（繼承），組合記錄上既有的值也不採用。版本狀態由 js/devtools.js 給，它在頁尾才載入，
        所以每次重畫都重問一次（並在 load 後重畫）。 */
     var grp = host.querySelector('[data-bp-own]');

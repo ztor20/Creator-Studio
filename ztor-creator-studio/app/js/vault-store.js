@@ -233,8 +233,8 @@
 
      revoked ＝ 連結外流時的煞車。撤銷後那把鑰匙的持有者立刻失去權限，
      所以人數會往下掉——這正是撤銷該有的樣子。 */
-  /* ── release2.5 範圍切分（2026-10-23 使用者裁決，ASSUMPTIONS UIA-300）──────────
-     release2.5 的媒體庫＝需求網址 MVP：沒有鑰匙（S123）、沒有排程（S125）、行動任務只有三種
+  /* ── release2.4 範圍切分（2026-10-23 使用者裁決，ASSUMPTIONS UIA-300）──────────
+     release2.4 的媒體庫＝需求網址 MVP：沒有鑰匙（S123）、沒有排程（S125）、行動任務只有三種
      （其餘六種是 S122）。這三件不在目前版本時，資料層當它們不存在——鑰匙不算進人數、排程不生效、
      用到那六種的內容當成「不設任務」——畫面上的數字、標籤、上鎖卡因此彼此一致。
      只看執行當下的版本，不改資料：切回最終版，原本的鑰匙、排程與任務都還在。
@@ -414,7 +414,7 @@
     ]
   };
   function actionDef(kind) { return ACTION_TASKS.filter(function (a) { return a.id === kind; })[0]; }
-  /* 任務選單可選的行動任務：release2.5（S122 不在版本內）只有追蹤創作者、加入社群、分享庫房頁面。 */
+  /* 任務選單可選的行動任務：release2.4（S122 不在版本內）只有追蹤創作者、加入社群、分享庫房頁面。 */
   function actionTaskList() {
     return moreActionsOn() ? ACTION_TASKS : ACTION_TASKS.filter(function (a) { return MVP_ACTIONS[a.id]; });
   }
@@ -517,7 +517,7 @@
       Object.keys(now).forEach(function (k) { it.history[k] = 1; });
     });
   }
-  /* release2.5 讀紀錄時的兩個過濾（UIA-300；只在讀取時做，種子與 item.history 不動）：
+  /* release2.4 讀紀錄時的兩個過濾（UIA-300；只在讀取時做，種子與 item.history 不動）：
        · 沒有鑰匙（S123 關閉）→ 只能靠鑰匙進庫的粉絲（持有過這座庫房的鑰匙、含已撤銷，
          但不符合任何進庫方法）在這個版本裡從沒進過庫，他們的紀錄不算。
        · 六種行動任務不在版本內（S122 關閉）→ 那幾件當「不設任務」，累計數要跟同一座庫房裡
@@ -847,7 +847,7 @@
   /* 時間到了就自動上架／下架。原型沒有後端，由頁面定時呼叫；有變動回 true。 */
   function applySchedules(nowMs) {
     var now = nowMs || Date.now(), changed = false;
-    if (!schedOn()) return false;   /* release2.5 沒有排程（S125）：種子裡的排程時間不生效 */
+    if (!schedOn()) return false;   /* release2.4 沒有排程（S125）：種子裡的排程時間不生效 */
     VAULTS.forEach(function (v) {
       if (v.status !== "listed" && v.listAt && toMs(v.listAt) <= now) {
         var keep = v.unlistAt;
@@ -949,7 +949,7 @@
     cover: cover,
     counts: counts,
     actionTasks: ACTION_TASKS,
-    /* 2026-10-23 release2.5 範圍切分（UIA-300）：任務選單、此刻生效的任務、鑰匙／排程在不在版本內 */
+    /* 2026-10-23 release2.4 範圍切分（UIA-300）：任務選單、此刻生效的任務、鑰匙／排程在不在版本內 */
     actionTaskList: actionTaskList,
     taskOf: taskOf,
     isMvpAction: function (kind) { return !!MVP_ACTIONS[kind]; },

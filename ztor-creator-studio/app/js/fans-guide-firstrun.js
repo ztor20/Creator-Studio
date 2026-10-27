@@ -28,11 +28,11 @@
     try { localStorage.setItem(KEY, "1"); } catch (e) {}
   }
 
-  /* 2026-10-23 release2.5：粉絲系統說明（fans-guide.html）只在最終版類版本存在——
-     限縮版（release2.4／release2.5）連過去會被頁級閘門導回 E-Shop，所以不跳、也不記「看過」，
+  /* 2026-10-23 release2.4：粉絲系統說明（fans-guide.html）只在最終版類版本存在——
+     限縮版（release2.3／release2.4）連過去會被頁級閘門導回 E-Shop，所以不跳、也不記「看過」，
      切回最終版第一次進粉絲頁仍會跳。這支在 <head> 早於 devtools.js 執行，自己讀版本：
      URL ?version= 優先，其次 localStorage 的 ztor.devstate；最終版類白名單與 devtools.js 的
-     isFullBaseVersion()、sidebar.js 的 fullVersion() 同一份（舊鍵 next 會被改寫成 release2.4，仍屬限縮版）。 */
+     isFullBaseVersion()、sidebar.js 的 fullVersion() 同一份（舊鍵 next 會被改寫成 release2.3，仍屬限縮版）。 */
   function fullBaseVersion() {
     var v = null;
     try { v = new URLSearchParams(location.search).get("version"); } catch (e) {}

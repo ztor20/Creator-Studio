@@ -167,7 +167,7 @@ if ! git push "$AUTH" "$BR" 2>/tmp/collab_push_err; then
   sed "s#${TOKEN}#***#g" /tmp/collab_push_err | tail -6
   exit 1
 fi
-# 4.5) 交付版標籤（2026-10-07 新增）：讀這次新增的 UI-CHANGES 條目，把「**標籤**：release2.3／release2.4」
+# 4.5) 交付版標籤（2026-10-07 新增）：讀這次新增的 UI-CHANGES 條目，把「**標籤**：release2.2／release2.3」
 #   貼成 PR 標籤，並把新條目的標題列進 PR 內文——協作 repo 的人不用點進檔案也知道這包改了什麼、會進哪個交付版。
 #   只改最終版的條目不寫標籤，PR 也就不掛標籤。標籤不存在就先建（--force 對已存在的只更新說明）。
 UIC="$SUBDIR/app/UI-CHANGES.md"

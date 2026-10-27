@@ -104,86 +104,86 @@
   ];
   /* ---- 版本（最高級別 gate）：讀 feature-scope-map.md 重新配置 ----
      一份 md 當單一真相：版本清單＋規則取自其「## 開發版本配置」表，
-     功能→tier 取自各 pillar 功能表的 Tier 欄：欄內寫了 releaseX.Y 就用它（例：🟢 release2.3），
+     功能→tier 取自各 pillar 功能表的 Tier 欄：欄內寫了 releaseX.Y 就用它（例：🟢 release2.2），
      否則依圖示對照 TIER_EMOJI。fetch 失敗（file://）用內建後備。
-     規則語法：all｜tier:release2.3,release2.4｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
+     規則語法：all｜tier:release2.2,release2.3｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
      減功能型靠元素的 data-feat → tier 比對；特殊版（page:）不減功能、換頁行為待接。
      data-feat＝功能在版本內才顯示；data-feat-off＝功能「不」在版本內才顯示（base／預設呈現），
-     兩者同位置成對即可做「release2.3 用預設、release2.4 起換升級版」的呈現切換（如 S31.1 低庫存門檻）。
-     2026-10-07 改名：tier 代號 p1→release2.3、next→release2.4（交付版本以 release 編號稱呼）。*/
-  /* ⚫ 退場：2026-10-19 起也對照成 'retired'（不在任何交付版，與 tbd 同樣在 release2.4 隱藏、最終版照舊全開）。
+     兩者同位置成對即可做「release2.2 用預設、release2.3 起換升級版」的呈現切換（如 S31.1 低庫存門檻）。
+     2026-10-07 改名：tier 代號 p1→release2.3、next→release2.4（交付版本以 release 編號稱呼）；2026-10-27 序號改名，現稱 release2.2、release2.3。*/
+  /* ⚫ 退場：2026-10-19 起也對照成 'retired'（不在任何交付版，與 tbd 同樣在 release2.3 隱藏、最終版照舊全開）。
      以前沒登記，退場列讀不到 tier、只靠 FEAT_TIER 後備值，後備值還留著舊 tier。 */
-  /* 🟣 release2.5（2026-10-23）：粉絲管理＋媒體庫那一期，與 release2.4 並存（release2.4 下一版、release2.5 再下一版）。 */
-  var TIER_EMOJI = { '🟢': 'release2.3', '🔵': 'release2.4', '🟣': 'release2.5', '⚪': 'tbd', '⚫': 'retired' };
+  /* 🟣 release2.4（2026-10-23）：粉絲管理＋媒體庫那一期，與 release2.3 並存（release2.3 下一版、release2.4 再下一版）。 */
+  var TIER_EMOJI = { '🟢': 'release2.2', '🔵': 'release2.3', '🟣': 'release2.4', '⚪': 'tbd', '⚫': 'retired' };
   var RELEASE_RE = /\brelease\d+\.\d+\b/;
   /* 每筆：[鍵, 顯示名, 類型(開發/測試), 規則, 說明]。類型用於分組（測試版自成一組）。
      2026-09-23 起：已交付的版本改由 monorepo 的凍結分支代表（版本鎖死、獨立網址），
      main 的面板只留「最終版」與下一個交付版的預覽（已交付 🟢 ＋ 標成下一版 🔵）。
-     2026-10-07 起凍結分支 phase1 改名 release2.3、「下一版預覽」改名 release2.4（鍵 next→release2.4）。
-     要進下一期的功能在 feature-scope-map 標 🔵 release2.4 即可。
-     2026-10-23 起兩個未來版本並存：release2.4（🔵，活動）＋ release2.5（🟣，粉絲管理與媒體庫，規則含 release2.4）。 */
+     2026-10-07 起凍結分支 phase1 改名 release2.3、「下一版預覽」改名 release2.4（鍵 next→release2.4）；2026-10-27 序號改名後分別是 release2.2、release2.3。
+     要進下一期的功能在 feature-scope-map 標 🔵 release2.3 即可。
+     2026-10-23 起兩個未來版本並存：release2.3（🔵，活動）＋ release2.4（🟣，粉絲管理與媒體庫，規則含 release2.3）。 */
   var VERSIONS = [
     ['full', '最終版', '開發', 'all', '全部功能（預設）'],
-    ['release2.4', 'release2.4', '開發', 'tier:release2.3,release2.4', '已交付（🟢 release2.3）＋下一版（🔵 release2.4）；未排定與未標記者隱藏'],
-    ['release2.5', 'release2.5', '開發', 'tier:release2.3,release2.4,release2.5', '已交付（🟢 release2.3）＋ release2.4（🔵）＋粉絲管理與媒體庫（🟣 release2.5）；未排定與未標記者隱藏'],
+    ['release2.3', 'release2.3', '開發', 'tier:release2.2,release2.3', '已交付（🟢 release2.2）＋下一版（🔵 release2.3）；未排定與未標記者隱藏'],
+    ['release2.4', 'release2.4', '開發', 'tier:release2.2,release2.3,release2.4', '已交付（🟢 release2.2）＋ release2.3（🔵）＋粉絲管理與媒體庫（🟣 release2.4）；未排定與未標記者隱藏'],
     ['funding-test', 'funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
     ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同最終版'],
   ];
   /* 舊瀏覽器的 devstate 可能還存著已退場的版本鍵（p1／p1-next／p1-next-tbd／golive-4step／home-canvas）。
      未知鍵一律回到 full：否則 isFullBaseVersion() 判 false，會被當成限縮版、導覽少一半。
-     例外：2026-10-07 改名的 next 直接對到新鍵 release2.4（VERSION_ALIAS），不退回 full。 */
-  var VERSION_ALIAS = { next: 'release2.4' };
+     例外：2026-10-07 改名的 next 直接對到活動那一版的鍵（2026-10-27 起叫 release2.3，VERSION_ALIAS），不退回 full。 */
+  var VERSION_ALIAS = { next: 'release2.3' };
   function knownVersion(v) { for (var i = 0; i < VERSIONS.length; i++) if (VERSIONS[i][0] === v) return true; return false; }
   /* `full` 是版本 gate 的保留 tier，不是 feature-scope-map 的產品 ID。
      必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
   /* 載入前／失敗後的安全後備：非 P1 gate 不能因 fetch 問題降格成 P1。 */
   var FEAT_TIER = {
-    full: 'full', S05: 'release2.4', S06: 'release2.4', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.4', S45: 'release2.4' /* 2026-10-16 使用者裁決 release2.4 電子商店範圍 */,
-    S52: 'release2.4', S53: 'release2.4', S54: 'retired', S55: 'tbd', S56: 'release2.4',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
+    full: 'full', S05: 'release2.3', S06: 'release2.3', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.3', S45: 'release2.3' /* 2026-10-16 使用者裁決 release2.3 電子商店範圍 */,
+    S52: 'release2.3', S53: 'release2.3', S54: 'retired', S55: 'tbd', S56: 'release2.3',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
     S57: 'retired',   // 2026-09-29 D334（活動：說明區塊）；2026-10-05 D354 退場（功能表 ⚫）
-    S86: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、每件可看人數；大彩蛋拆到 S121、其餘六種行動任務拆到 S122）
-    O34: 'release2.4', O35: 'release2.4', O36: 'release2.4', O37: 'release2.4',   // 2026-10-13 D411（訂單：付款資訊／日期區間與類型篩選／門票訂單／重寄訂單信）
-    O38: 'release2.4',   // 2026-10-14 D414（訂單詳情：撤銷整張訂單）
-    O39: 'release2.4',   // 2026-10-15 D416（匯出 CSV 與確認視窗：訂單管理＋活動交易明細）
-    O40: 'release2.4', O41: 'release2.4', O42: 'release2.4',   // 2026-10-15 D424（已過期訂單／匯出中提示／匯出紀錄）
-    S97: 'release2.4',   // 2026-10-15 D422 決定二（建立活動第 6 步票務商品的電影關聯，自 S64 拆出）
-    S98: 'tbd',          // 2026-10-15 D423 決定四（活動詳情成本與營收摘要，release2.4 不提供）
-    S99: 'release2.4',   // 2026-10-15 D423 決定一（活動詳情票務商品卡片／列表與隱藏／顯示）
-    S100: 'release2.4',  // 2026-10-19 D447（活動詳情：門票與票務商品庫存設為 0）
-    'S47.1': 'release2.4', 'S51.1': 'release2.4', 'S81.1': 'release2.4',   // 2026-10-16 D433／D432／D435（改允許的門票、優惠碼可選獨立票、活動發布後只能改庫存）
-    S96: 'release2.4',   // 2026-10-15 D417 決定五（bookyay 活動自設折扣與早鳥）；2026-10-20 D461 改 release2.4（release2.4 的 bookyay 門票也能自加折扣與限時折扣）
+    S86: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、每件可看人數；大彩蛋拆到 S121、其餘六種行動任務拆到 S122）
+    O34: 'release2.3', O35: 'release2.3', O36: 'release2.3', O37: 'release2.3',   // 2026-10-13 D411（訂單：付款資訊／日期區間與類型篩選／門票訂單／重寄訂單信）
+    O38: 'release2.3',   // 2026-10-14 D414（訂單詳情：撤銷整張訂單）
+    O39: 'release2.3',   // 2026-10-15 D416（匯出 CSV 與確認視窗：訂單管理＋活動交易明細）
+    O40: 'release2.3', O41: 'release2.3', O42: 'release2.3',   // 2026-10-15 D424（已過期訂單／匯出中提示／匯出紀錄）
+    S97: 'release2.3',   // 2026-10-15 D422 決定二（建立活動第 6 步票務商品的電影關聯，自 S64 拆出）
+    S98: 'tbd',          // 2026-10-15 D423 決定四（活動詳情成本與營收摘要，release2.3 不提供）
+    S99: 'release2.3',   // 2026-10-15 D423 決定一（活動詳情票務商品卡片／列表與隱藏／顯示）
+    S100: 'release2.3',  // 2026-10-19 D447（活動詳情：門票與票務商品庫存設為 0）
+    'S47.1': 'release2.3', 'S51.1': 'release2.3', 'S81.1': 'release2.3',   // 2026-10-16 D433／D432／D435（改允許的門票、優惠碼可選獨立票、活動發布後只能改庫存）
+    S96: 'release2.3',   // 2026-10-15 D417 決定五（bookyay 活動自設折扣與早鳥）；2026-10-20 D461 改 release2.3（release2.3 的 bookyay 門票也能自加折扣與限時折扣）
     S104: 'tbd',         // 2026-10-20 D461（門票的限時購買與限購，只在最終版；js/purchase-conds.js TIX_FEAT，組合包不掛）
     S105: 'tbd',         // 2026-10-21 D463（一般商品與組合包共用七種購買條件、組合包不沿用成員、建立時可設；只在最終版，js/purchase-conds.js UNI_FEAT）
     'S34.1': 'tbd',      // 2026-10-22 D471（組合包可改用自己的取貨場次；預設沿用各成員的場次。只在最終版，partials/pickup-session-modal.js mountBundlePickup）
-    S95: 'tbd',          // 2026-10-13 D410 決定四（非 bookyay 的示範活動，release2.4 隱藏；後備表先登記，避免載入表格前 release2.4 閃現）
-    S94: 'release2.4',   // 2026-10-12 D398（組合包的購買條件與限購：D456 起限購不繼承成員、自己設；純商品組合包的購買條件）
-    S93: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,   // 2026-10-09 媒體庫三分頁（內容摘要、存取權限的即時人數條；鑰匙使用與已發鑰匙清單拆到 S123、待補數字拆到 S124）
-    S106: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,  // 2026-10-22 D475（媒體庫單件內容預覽、庫房分享連結）
-    S107: 'tbd', S108: 'tbd', S109: 'tbd', S110: 'release2.5' /* 2026-10-23 改 🟣（需求站 P0 手動調整點數） */, S111: 'tbd',   // 2026-10-23 D476（忠誠點數 B 類：崗位歸屬欄位／各職務分到的點數／賽季範圍倍率與我的賽季加倍／Admin 手動調整點數／歷史訂單回填）
-    S112: 'release2.5', S113: 'release2.5', S114: 'release2.5' /* 2026-10-23 使用者裁決 release2.5 媒體庫範圍＝需求網址 MVP */,   // 2026-10-23 D477（媒體庫：庫房狀態／指定一位粉絲與上鎖卡／解開紀錄兩個數字；排程拆到 S125）
-    S120: 'release2.5',   // 2026-10-23 媒體庫頁本身（頁級 data-page-feat、兩份 FULL_ROUTES 依功能放行）
-    S121: 'tbd', S122: 'tbd', S123: 'tbd', S124: 'tbd', S125: 'tbd',   // 2026-10-23 release2.5 不放的媒體庫功能：大彩蛋／其餘六種行動任務／鑰匙／待補規格的數字／排程（只在最終版）
-    S115: 'release2.5', S116: 'release2.5', S117: 'release2.5',   // 2026-10-23 release2.5 粉絲管理 P0（粉絲名冊／分級設定唯讀／粉絲詳情）
+    S95: 'tbd',          // 2026-10-13 D410 決定四（非 bookyay 的示範活動，release2.3 隱藏；後備表先登記，避免載入表格前 release2.3 閃現）
+    S94: 'release2.3',   // 2026-10-12 D398（組合包的購買條件與限購：D456 起限購不繼承成員、自己設；純商品組合包的購買條件）
+    S93: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,   // 2026-10-09 媒體庫三分頁（內容摘要、存取權限的即時人數條；鑰匙使用與已發鑰匙清單拆到 S123、待補數字拆到 S124）
+    S106: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,  // 2026-10-22 D475（媒體庫單件內容預覽、庫房分享連結）
+    S107: 'tbd', S108: 'tbd', S109: 'tbd', S110: 'release2.4' /* 2026-10-23 改 🟣（需求站 P0 手動調整點數） */, S111: 'tbd',   // 2026-10-23 D476（忠誠點數 B 類：崗位歸屬欄位／各職務分到的點數／賽季範圍倍率與我的賽季加倍／Admin 手動調整點數／歷史訂單回填）
+    S112: 'release2.4', S113: 'release2.4', S114: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,   // 2026-10-23 D477（媒體庫：庫房狀態／指定一位粉絲與上鎖卡／解開紀錄兩個數字；排程拆到 S125）
+    S120: 'release2.4',   // 2026-10-23 媒體庫頁本身（頁級 data-page-feat、兩份 FULL_ROUTES 依功能放行）
+    S121: 'tbd', S122: 'tbd', S123: 'tbd', S124: 'tbd', S125: 'tbd',   // 2026-10-23 release2.4 不放的媒體庫功能：大彩蛋／其餘六種行動任務／鑰匙／待補規格的數字／排程（只在最終版）
+    S115: 'release2.4', S116: 'release2.4', S117: 'release2.4',   // 2026-10-23 release2.4 粉絲管理 P0（粉絲名冊／分級設定唯讀／粉絲詳情）
     S118: 'tbd', S119: 'tbd',   // 2026-10-23 粉絲管理 P0 以外（名冊與詳情延伸／分級設定編輯、權益與計分），只在最終版
-    S58: 'release2.4',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
-    S59: 'release2.4', S60: 'retired', S61: 'release2.4',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
+    S58: 'release2.3',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
+    S59: 'release2.3', S60: 'retired', S61: 'release2.3',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
     S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
     S68: 'tbd', S69: 'tbd', S70: 'tbd', S71: 'tbd', O33: 'tbd',   // 2026-10-05 D360（需求看板頁／商品層需求入口／服飾配件分類與屬性／尺寸顏色快捷預設／訂單收件國家城市）
-    S62: 'release2.4',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.4
-    S63: 'release2.4', S64: 'release2.4',   // 2026-10-16 使用者指示組合包納入 release2.4（原 2026-10-09 D390 補登為 tbd）
-    S72: 'release2.4', S73: 'release2.4', S74: 'tbd', S75: 'tbd' /* 2026-10-15 D422 決定一：release2.4 不含共看派對 */, S76: 'tbd', S77: 'tbd', S78: 'release2.4', S79: 'release2.4' /* 2026-10-20：見面會／音樂節／發表派對進 release2.4 */, S101: 'tbd', S102: 'tbd' /* 2026-10-20：release2.4 取票方式只有電子門票 */, S103: 'tbd' /* 2026-10-20 D460：release2.4 全是 bookyay 匯入、票種票價張數已鎖定，create-event 步驟 4 的票務設定彈窗不出現 */, S80: 'retired',   // 2026-10-07 release2.4 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
-    S81: 'release2.4',                           // 2026-10-07 D361 建；2026-10-08 D371 改 release2.4（活動：創作者與 Admin 上架／下架＋已下架徽章）
+    S62: 'release2.3',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.3
+    S63: 'release2.3', S64: 'release2.3',   // 2026-10-16 使用者指示組合包納入 release2.3（原 2026-10-09 D390 補登為 tbd）
+    S72: 'release2.3', S73: 'release2.3', S74: 'tbd', S75: 'tbd' /* 2026-10-15 D422 決定一：release2.3 不含共看派對 */, S76: 'tbd', S77: 'tbd', S78: 'release2.3', S79: 'release2.3' /* 2026-10-20：見面會／音樂節／發表派對進 release2.3 */, S101: 'tbd', S102: 'tbd' /* 2026-10-20：release2.3 取票方式只有電子門票 */, S103: 'tbd' /* 2026-10-20 D460：release2.3 全是 bookyay 匯入、票種票價張數已鎖定，create-event 步驟 4 的票務設定彈窗不出現 */, S80: 'retired',   // 2026-10-07 release2.3 切割（活動模組／bookyay 帶入建立／手動建立／Watch Party／複製與再辦一次／舊流程／在地化／其他線下類型入口／直接促銷同意）
+    S81: 'release2.3',                           // 2026-10-07 D361 建；2026-10-08 D371 改 release2.3（活動：創作者與 Admin 上架／下架＋已下架徽章）
     S82: 'tbd',                                  // 2026-10-07 D366／D367（活動：購票規則的粉絲分級條件——限粉絲分級購買、粉絲分級折扣、限時＋限粉絲分級折扣）
-    S83: 'release2.4',                           // 2026-10-08 D371 決定四（活動：建立活動第 7 步「其他售票時間」摘要，原掛 S62）
-    S84: 'release2.4',                           // 2026-10-08 D373 決定三（Admin 創作者活動管理整頁＋側欄入口＋Creator 詳情「已匯入 M 場」）
-    S85: 'release2.4',                           // 2026-10-08 D375 決定七（活動：完售徽章；暫停部分已於 D444 移除）
-    S87: 'tbd', S88: 'tbd', S89: 'tbd', S90: 'tbd', S91: 'tbd', S92: 'release2.4',   // 2026-10-09 D383 範圍收斂（多場次／系列活動／到店自取／轉售／招待票 ⚪；門票隱藏狀態與標示 🔵，自 S55 拆出）；同日 S78 改 release2.4
-    S67: 'release2.4',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
-    O04: 'release2.4', O09: 'release2.4',   /* 2026-10-16 使用者裁決 release2.4 電子商店範圍 */
-    O17: 'release2.4', O18: 'retired', O22: 'release2.4', O23: 'retired' /* 2026-10-19 對齊功能表 ⚫ 退場（D253） */,
-    E08: 'release2.4', E09: 'release2.4', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.4', E20: 'release2.4', E22: 'release2.4' /* 2026-10-15 對齊功能表 🔵（原誤寫 tbd） */, E23: 'release2.4', E24: 'tbd', E25: 'tbd', E26: 'tbd',
-    B07: 'tbd', B10: 'release2.4'   // 2026-10-15 對齊功能表（B07 ⚪ 貨到付款／B10 🔵 公開探索欄）；沒登記會在載入表格前被當成 release2.3
-  };   // { S30:'release2.3', … } 由 md 功能表填
+    S83: 'release2.3',                           // 2026-10-08 D371 決定四（活動：建立活動第 7 步「其他售票時間」摘要，原掛 S62）
+    S84: 'release2.3',                           // 2026-10-08 D373 決定三（Admin 創作者活動管理整頁＋側欄入口＋Creator 詳情「已匯入 M 場」）
+    S85: 'release2.3',                           // 2026-10-08 D375 決定七（活動：完售徽章；暫停部分已於 D444 移除）
+    S87: 'tbd', S88: 'tbd', S89: 'tbd', S90: 'tbd', S91: 'tbd', S92: 'release2.3',   // 2026-10-09 D383 範圍收斂（多場次／系列活動／到店自取／轉售／招待票 ⚪；門票隱藏狀態與標示 🔵，自 S55 拆出）；同日 S78 改 release2.3
+    S67: 'release2.3',                           // 2026-10-05 D354（活動：描述區塊的新增描述與排序；S54 門票簡介〔D353〕、S57 說明區塊、S60 粉絲頁說明區塊同日退場，已無元素掛標記）
+    O04: 'release2.3', O09: 'release2.3',   /* 2026-10-16 使用者裁決 release2.3 電子商店範圍 */
+    O17: 'release2.3', O18: 'retired', O22: 'release2.3', O23: 'retired' /* 2026-10-19 對齊功能表 ⚫ 退場（D253） */,
+    E08: 'release2.3', E09: 'release2.3', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.3', E20: 'release2.3', E22: 'release2.3' /* 2026-10-15 對齊功能表 🔵（原誤寫 tbd） */, E23: 'release2.3', E24: 'tbd', E25: 'tbd', E26: 'tbd',
+    B07: 'tbd', B10: 'release2.3'   // 2026-10-15 對齊功能表（B07 ⚪ 貨到付款／B10 🔵 公開探索欄）；沒登記會在載入表格前被當成 release2.2
+  };   // { S30:'release2.2', … } 由 md 功能表填
   /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
@@ -192,16 +192,16 @@
     'index.html': 1, 'dashboard-classic.html': 1, 'admin-platform-promotions.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
     /* 2026-10-02 D347：平台忠誠點數設定（S65 ⚪ 未排定），與 sidebar.js 同名清單同步。 */
     'admin-platform-loyalty.html': 1,
-    /* 2026-10-07 release2.4 切割：events.html／event-detail.html／create-event.html 移出——活動模組列入 release2.4
+    /* 2026-10-07 release2.3 切割：events.html／event-detail.html／create-event.html 移出——活動模組列入 release2.3
        （S72 🔵），三頁改頁級 data-page-feat="S72"；sidebar.js 同名清單同步。 */
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'edit-event.html': 1,
-    /* 2026-10-23 release2.5：值可以是功能 ID（字串）＝依功能放行——該功能在目前版本內才顯示連結，否則同 1。
+    /* 2026-10-23 release2.4：值可以是功能 ID（字串）＝依功能放行——該功能在目前版本內才顯示連結，否則同 1。
        粉絲名冊／粉絲詳情改依 S115／S117（🟣）放行；sidebar.js 的 TIER_ROUTES 同步。 */
     'fans-crm.html': 'S115', 'fan-detail.html': 'S117', 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1,
     /* 2026-07-30 補：外部 r2.2 改版新增的 6 頁只加進 sidebar.js 的同名清單、漏了這裡，
        導致低版本下導覽藏得掉、頁內連結卻還點得進去（版本 gate 漏水）。 */
-    /* 2026-10-23：媒體庫改依 S120（🟣 release2.5）放行，sidebar.js 的 TIER_ROUTES 同步。 */
+    /* 2026-10-23：媒體庫改依 S120（🟣 release2.4）放行，sidebar.js 的 TIER_ROUTES 同步。 */
     'tier-benefits.html': 1, 'media-vault.html': 'S120', 'brand-campaigns.html': 1,
     'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1,
     /* 2026-07-31 D158：受眾分析新頁（Fans 群組第 6 個目的地）。 */
@@ -210,10 +210,10 @@
     'audience-report.html': 1,
     /* 2026-10-05 D360：需求看板（S68 ⚪ 未排定），與 sidebar.js 同名清單同步。 */
     'demand-board.html': 1,
-    /* 2026-10-09 D383：系列活動母頁（S88 ⚪；頁級本來就是 full），補進清單讓 release2.4 的連結一併收起；sidebar.js 同名清單同步。 */
+    /* 2026-10-09 D383：系列活動母頁（S88 ⚪；頁級本來就是 full），補進清單讓 release2.3 的連結一併收起；sidebar.js 同名清單同步。 */
     'series-detail.html': 1
   };
-  function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'release2.3'); }
+  function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'release2.2'); }
   function parseScopeMd(txt) {
     var lines = txt.split('\n'), vs = [], inVer = false;
     lines.forEach(function (ln) {
