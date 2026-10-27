@@ -15,6 +15,19 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百六十）· 總覽右欄：活動連結與 QR 改上下排列；掃碼器卡重新排版（B 反饋 · event-detail · pickup）
+
+**標籤**：release2.3
+
+- 「活動連結與 QR」（三百五十五搬到總覽右欄）：QR 與連結並排時窄欄把網址擠成「ztor.live/e/nick-」，改成上下排：QR（120）在上、連結框吃滿整欄、說明在下。
+- 掃碼器卡（bookyay 活動）：兩組同構——小標 → 內容 → 動作 → 說明，組與組之間一條貼邊淡線。
+  - 第一組補小標「門票掃碼」（新鍵 `event-detail.scanner.bky.tix`），原本拿說明字當小標。
+  - 第二組「組合包取貨掃碼器連結」：網址框與「前往領取場次」之間、按鈕與說明之間都補上間距。
+  - `ds-components/pickup.css`：`.scanner-access__field` 內部改 flex 直排 `gap: --sp-8`（ztor 自己的掃碼器三格一併受惠）；新增 `.scanner-access__field--group`。`design-system.md` 同步。
+- 驗證：release2.3 活動詳情總覽實測兩張卡的排列與間距；ztor 自建活動（非 bookyay）的掃碼器卡沒有開來看。
+
+---
+
 ## 2026-10-27（三百五十九）· 票種卡與組合包卡改成摘要卡（示意頁第二版上正式）；組合包點開改彈窗；沒有卡片外層的分節左右內縮（B 反饋 · D infra · ticket-tier-card · section-nav · event-detail）
 
 **標籤**：release2.3

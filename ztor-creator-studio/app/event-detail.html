@@ -135,9 +135,12 @@
   .ed-sess > .form-grid:last-child, .ed-sess > .field:last-child { margin-bottom: 0; }
 
   /* 發布設定：連結與 QR 並排（QR 是輔助，尺寸壓小） */
-  .ed-pub__linkrow { display: flex; align-items: center; gap: var(--sp-16); }
-  .ed-pub__linkmain { flex: 1 1 auto; min-width: 0; }   /* 連結改成 disabled 輸入框（2026-10-12），右欄要吃滿剩下的寬度 */
-  .ed-pub__qr { width: 96px; height: 96px; flex: none; color: var(--foreground); background: var(--card); border-radius: var(--radius); padding: var(--sp-6); }
+  /* 2026-10-27（UI-CHANGES 三百六十，使用者：「垂直排列」）：卡片搬到總覽右欄（窄欄 span-4）後，QR 與連結並排會把網址擠成「ztor.live/e/nick-」；
+     改成上下排：QR 在上、連結輸入框吃滿整欄寬、說明在最下。 */
+  .ed-pub__linkrow { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-16); }
+  .ed-pub__linkmain { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-8); }
+  .ed-pub__linkmain .field__hint { margin: 0; }
+  .ed-pub__qr { width: 120px; height: 120px; flex: none; color: var(--foreground); background: var(--card); border-radius: var(--radius); padding: var(--sp-8); }
 </style>
 </head>
 <body>
@@ -727,7 +730,10 @@
                        syncBkyCheckin() 切換。 -->
                   <!-- D454（2026-10-19）：第一格改成「請由 bookyay App 掃碼」提示＋App Store 按鈕（另開分頁），不再顯示掃描器網址與複製鈕；
                        events-store 的 bkyScanUrl 欄位照舊保存（5.1.6.1 F21），只是這裡不顯示。目前只有 iOS 連結，Android 之後補〔推導〕。 -->
-                  <div class="scanner-access__field" id="ed-bky-scan" hidden>
+                  <!-- 2026-10-27（三百六十，使用者：「UI 重新排版」）：兩組同構——小標 → 內容 → 動作 → 說明；兩組之間一條貼邊淡線（--group）。
+                       原本「請由 bookyay App 掃碼」用說明字當小標、網址框與「前往領取場次」黏在一起、說明字貼著按鈕。 -->
+                  <div class="scanner-access__field scanner-access__field--group" id="ed-bky-scan" hidden>
+                    <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.tix">Ticket scanning</div>
                     <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-i18n="event-detail.scanner.bky.app">Please scan tickets in the bookyay App.</p>
                     <a class="btn btn--outline btn--block" id="ed-bky-scan-app" data-view-safe target="_blank" rel="noopener"
                        href="https://apps.apple.com/tw/app/bookyay%E5%95%86%E6%88%B6/id1566521986" data-i18n="event-detail.scanner.bky.app.open">Open bookyay App in the App Store</a>
@@ -735,7 +741,7 @@
                   <!-- D401 決定四（取代 D394 決定二的「前往取貨管理」）：「前往領取場次」——連到這場組合包商品所在的取貨場次。
                        一個場次＝直接進取貨場次詳情；多個＝進取貨管理並預先篩出這場相關的場次（pickup.html?ev=）；
                        沒有＝按鈕停用、說明先到取貨管理建立取貨場次並附入口（三種分支皆〔推導〕）。syncBkyPickup() 決定分支。 -->
-                  <div class="scanner-access__field" id="ed-scanner-bky" hidden>
+                  <div class="scanner-access__field scanner-access__field--group" id="ed-scanner-bky" hidden>
                     <div class="scanner-access__label" id="ed-bky-pickup-label" data-i18n="event-detail.scanner.bky.pickup.scan">Bundle pickup scanner link</div>
                     <!-- D453（2026-10-19）：組合包取貨掃碼器網址——取貨場次的 scanner 網址（用上面 bookyay 那一格同一套「網址＋複製」列，不新增樣式）。
                          一個場次＝只列網址；多個＝逐場「場次名稱＋網址＋複製」；沒有場次＝不畫網址，下方說明先建立取貨場次。
