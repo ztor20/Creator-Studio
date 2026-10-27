@@ -5333,6 +5333,7 @@
     /* 進度列每一步下方的狀態小字（2026-08-18，建立項目與建立活動同一套說法）。 */
     'wiz.step.done':        { en: 'Done',                             zh: '已完成' },
     'wiz.step.todo':        { en: 'Not done',                         zh: '未完成' },
+    'wiz.step.editing':     { en: 'Editing',                          zh: '編輯中' },   /* 2026-10-27 使用者：正在編輯的那一步寫「編輯中」，不是「未完成」 */
     'wiz.duplicate':        { en: 'Duplicate',                        zh: '複製' },
     /* 墓碑 2026-09-18（D284）：`wiz.delete`（刪除）——唯一消費者 create-product.html 頂列 #cp-delete-top 已撤除。 */
     'wiz.more':             { en: 'More',                             zh: '更多' },
@@ -7017,10 +7018,10 @@
     'cb.cap.label':             { en: 'Sales cap', zh: '販售上限' },
     /* D480（2026-10-23）：組合包限量就自動鎖定成員庫存（鎖定＝限量 − 已售，跟著限量走） */
     'cb.cap.short':             { en: 'Members can only lock {max} sets — {k} short (limited by {who})', zh: '成員庫存只夠鎖 {max} 套，還差 {k} 套（受「{who}」限制）' },
-    'cb.lock.auto':             { en: 'Limited to {cap} sets — {n} sets locked automatically. The lock follows the cap; switch to unlimited to set your own.', zh: '限量 {cap} 套：已自動鎖定 {n} 套。鎖定跟著限量走，不另外設；改回不限量才能自己設鎖定組數。' },
-    'cb.lock.auto.blocked':     { en: 'Limited to {cap} sets — nothing is locked yet because members can’t cover that many. Lower the sales cap.', zh: '限量 {cap} 套：成員庫存不夠，還沒鎖定；請先調低販售上限。' },
+    'cb.lock.auto':             { en: 'Locked automatically, follows the sales cap', zh: '限量時自動鎖定，數量跟著販售上限' },
+    'cb.lock.auto.blocked':     { en: 'Members can’t cover the cap — lower the sales cap', zh: '成員庫存不夠，請調低販售上限' },
     'bd.lock.auto.blocked':     { en: 'A cap of {cap} sets can’t be saved — the lock stays at {n} sets until you fix the cap.', zh: '限量 {cap} 套無法儲存，鎖定維持 {n} 套；請先修正販售上限。' },
-    'cb.lock.auto.empty':       { en: 'A limited bundle locks member stock for every set automatically. Fill in the sales cap first.', zh: '限量時會自動替每一套鎖定成員庫存，請先填販售上限。' },
+    'cb.lock.auto.empty':       { en: 'Fill in the sales cap first', zh: '請先填販售上限' },
     'bd.lock.auto':             { en: 'Limited to {cap} sets, {s} sold — {n} sets locked automatically. The lock follows the cap: change the cap under Edit bundle, or switch to unlimited to set your own.', zh: '限量 {cap} 套、已售 {s} 套：已自動鎖定 {n} 套。鎖定跟著限量走：要調整請按「編輯組合」改限量，或改回不限量後自己設。' },
     'bd.cap.short':             { en: 'Members can only cover a cap of {room} sets — {k} short (limited by {who})', zh: '成員庫存最多只夠限量 {room} 套，還差 {k} 套（受「{who}」限制）' },
     'bd.lock.digital':          { en: 'Digital — not locked', zh: '數位商品，不鎖定' },

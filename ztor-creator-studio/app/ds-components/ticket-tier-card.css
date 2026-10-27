@@ -46,8 +46,12 @@
      所以只在放不下三欄時降級，不讓卡片被壓到讀不了。 */
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-12);
-  align-items: start;      /* 編輯中的卡變高時，同列其他卡不跟著拉長 */
+  /* 2026-10-27 使用者：「卡片高度都不一致」——同一列的卡一律等高（某張多一列「限購」也不會參差）。 */
+  align-items: stretch;
+  grid-auto-rows: 1fr;     /* 列與列也等高：每張卡都跟最高那張一樣，不只同一列 */
 }
+/* 編輯中的卡會長很高：有卡在編輯時才回到 start＋各列自己的高度，其他卡不跟著拉長（原本整個網格都是 start） */
+.tier-grid:has(.tier-card--editing) { align-items: start; grid-auto-rows: auto; }
 @media (max-width: 1100px) { .tier-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px)  { .tier-grid { grid-template-columns: minmax(0, 1fr); } }
 .tier-list { display: contents; }

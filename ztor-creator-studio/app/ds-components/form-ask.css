@@ -6,7 +6,7 @@
    1. .form-ask — 一個要使用者做決定的問題（例「要鎖定庫存給這個組合嗎？」「要另設販售上限嗎？」）：
       問句（14）→ 一句白話說明（12，寫清楚選了會怎樣）→ 二選一（segmented radio-cards）→ 選了才出現的 __body。
       __body 裡要填值的那一列用 __row：名稱在左、輸入框靠右（右緣對齊下方表格的最右欄）。
-      同一張卡裡連續幾題時，題與題之間一條細線（.form-ask + .form-ask）。
+      每一題自己一個外框（1px --border-soft、--radius-lg、內距 --sp-16；2026-10-27 起，原本同卡連續幾題只畫中間一條細線）。
    （墓碑 2026-10-12：原第三個零件 .form-cat 表單分類標——分卡上方「序號＋分類名」一行小字——依使用者「不要有這種小標籤」撤除；分類只留在本頁大綱的群組標題與彈窗頂部分頁）
 
    2. .form-tally — 分卡標題列右側的結果讀數（例「數量」卡的「最多可賣 60 組」）：小字名稱＋大數字＋單位，
@@ -25,8 +25,8 @@
    消費：create-bundle.html（數量卡）、bundle-detail.html（組合庫存分頁的鎖定、組合設定分頁的數量卡）、js/bundle-editor.js（建立活動第 5 步組合包彈窗的數量卡）
    surface：.form-ask、.form-tally 坐在 form-section--outlined 卡面上。
    ============================================================ */
-.form-ask { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
-.form-ask + .form-ask { padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+.form-ask { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; padding: var(--sp-16); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); }
+/* 2026-10-27：每一題自己一個外框（原本同卡連續幾題只在中間畫一條細線，.form-ask + .form-ask 退場）；題與題的間距由容器 gap 持有 */
 .form-ask__t { font-size: var(--fs-14); color: var(--foreground); }
 .form-ask__s { font-size: var(--fs-12); line-height: var(--lh-relaxed); color: var(--muted-foreground); }
 .form-ask__body { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
@@ -43,6 +43,8 @@
 /* 下面接著鎖定量表（.lockset）時：右側讓出表格最後一欄（展開鈕 32px）＋欄距，輸入框右緣對齊表格的「已鎖定」欄
    （欄距同 lock-sets.css 的 --lockset-colgap；padding 的 % 與表格 column-gap 的 % 都以同一個容器寬計） */
 .form-ask__row--lockset { padding-right: calc(32px + var(--sp-12) + clamp(var(--sp-12), 4%, var(--sp-32))); }   /* 32＝展開欄、--sp-12＝列的右內距 */
+/* 2026-10-27：輸入框停用（限量時鎖定唯讀、沒有成員）＝下面沒有鎖定量表要對齊，右側不再讓位 */
+.form-ask__row--lockset:has(.zstep__input:disabled, .amount-field__input:disabled) { padding-right: 0; }
 
 .form-tally { display: flex; align-items: baseline; gap: var(--sp-8); white-space: nowrap; }
 .form-tally__k { font-size: var(--fs-12); color: var(--muted-foreground); }

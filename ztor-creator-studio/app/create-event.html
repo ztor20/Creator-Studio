@@ -1496,14 +1496,14 @@
       ps.style.setProperty("--at", at || 1);
       ps.style.setProperty("--progress", ((at - 1) / (shown.length || 1) * 100) + "%");
     }
-    /* 每一步下方的狀態小字：走過的打勾說已完成，其餘寫未完成。 */
+    /* 每一步下方的狀態小字：走過的打勾說已完成，正在編輯的寫編輯中（2026-10-27），其餘寫未完成。 */
     labels.forEach(l => {
       const box = l.querySelector("[data-step-state]");
       if (!box) return;
       const done = labelStep(l) < step;
       box.innerHTML = done
         ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(dT("d.step.done"))
-        : esc(dT("d.step.todo"));
+        : esc(dT(labelStep(l) === step ? "d.step.editing" : "d.step.todo"));   /* 2026-10-27：正在編輯的那一步寫編輯中 */
     });
     if (window.ztorIcons) window.ztorIcons.applyIcons(ps);
     /* 2026-08-09（使用者指示）：預覽卡從覆蓋面板搬成每一步常駐右軌，2～6 步都放寬到
@@ -4090,12 +4090,14 @@
               '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span>' +
             '</span>' +
           '</label>' +
-        '</div>' +
-        '<div class="rule-sub" data-early-block>' +
-          '<div class="field__label">' + esc(dT("d.early.policy")) + (sessLocked ? srcChip() : '') + '</div>' +
-          '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '"' +
-            (sessLocked ? ' aria-disabled="true"' : '') + '>' +
-            opt("warn", "d.early.warn") + opt("block", "d.early.block") +
+          /* 2026-10-27（使用者：「間距要照 DS 做出來」）：早到處理是同一組的第三格，不是下一層——放進同一個 form-grid 佔滿整列，
+             列距交給格線（--sp-28）；原本接在格子後面的 .rule-sub（縮排＋左邊線、上距 12）退場。 */
+          '<div class="field form-grid__full" data-early-block>' +
+            '<div class="field__label">' + esc(dT("d.early.policy")) + (sessLocked ? srcChip() : '') + '</div>' +
+            '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '"' +
+              (sessLocked ? ' aria-disabled="true"' : '') + '>' +
+              opt("warn", "d.early.warn") + opt("block", "d.early.block") +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -4989,6 +4991,7 @@
   const D = {
     "d.step.done":    { en: "Done",     zh: "已完成" },
     "d.step.todo":    { en: "Not done", zh: "未完成" },
+    "d.step.editing": { en: "Editing", zh: "編輯中" },   // 2026-10-27：正在編輯的那一步
     "d.step.basic":   { en: "Basics",            zh: "基本資料" },
     "d.step.session": { en: "Dates",             zh: "場次" },
     "d.step.bundle":  { en: "Bundles",           zh: "票務商品" },
@@ -5642,7 +5645,8 @@
   }
 
   function srcChip() {
-    return '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i>' + esc(dT("d.src")) + '</span>';
+    /* 2026-10-27 使用者：bookyay 帶入只留鎖頭 icon，「bookyay 帶入」字樣收進 title／aria-label（滑過看得到、讀屏唸得到） */
+    return '<span class="field-source" role="img" title="' + esc(dT("d.src")) + '" aria-label="' + esc(dT("d.src")) + '"><i data-lucide="lock" class="ztor-icon"></i></span>';
   }
   /* 墓碑 2026-10-09（D390 決定五）：門票上的「加入商品」（加購商品）整組刪除——合併到票務商品，只走第 5 步組合包。
      本輪一併移除殘留：shopProducts／addonRowsHTML／addonFieldHTML／prodMenuHTML／openProdMenu、[data-tier-prodq] 與
@@ -6011,6 +6015,45 @@
         { name: "學生票", priceHkd: "390", persons: 1 }
       ],
       slots: [{ startD: "2026-12-19", startT: "18:00", endD: "2026-12-20", endT: "02:00", earlyEntryInMin: 90, earlyMode: "block", cap: 301, types: [0, 1, 2] }] },
+    /* bky-21（2026-10-27）：「多票種」示範——想看一場活動帶入很多種門票就選這一筆（假資料，非產品規則）。
+       九種門票，依 D440 營運實務各放一個同時間的時段（一個時段多種票只會帶第一種），合成同一場、九張門票；
+       張數＝各自時段人數上限。第 1 種帶本門票限購（每人總限購帶入、其餘不帶），第 9 種現價 0（免費票照常帶入，票價一律 0）。 */
+    { id: "bky-21", type: "concert",
+      label: "ZENITH Fan Fest — 多票種示範",
+      note:  "2026/12/05 · 台北國際會議中心（九種門票 · 九個同時間時段）",
+      name: "ZENITH Fan Fest — 多票種示範",
+      intros: ["<p>年度粉絲祭：同一天、同一個場館，依座位、福利與身分分成九種門票，購票前請確認各票種的入場區域。</p>"],
+      country: "TW", langs: ["cmn", "en"],
+      images: ["images/projects/nick-realive.jpg"],
+      location: "台北國際會議中心", region: "信義區",
+      meet: "1 樓大廳服務台", transit: "捷運台北 101／世貿站 4 號出口步行 5 分鐘",
+      saleFromD: "2026-10-28", saleFromT: "12:00", saleToD: "2026-12-04", saleToT: "23:59",
+      ship: "eticket",
+      isPrivate: false,
+      showTncs: true,
+      tncs: "<p>票券一經售出，除活動取消或延期外，恕不退換；各票種入場區域不可互換，請依票面指定通道入場。</p>",
+      ticketTypes: [
+        { name: "Platinum 前排", priceHkd: "1480", persons: 1, limit: { maxPurchaseCnt: 2, maxPurchaseCntEachTime: 2 } },
+        { name: "Gold 搖滾區", priceHkd: "1180", persons: 1 },
+        { name: "Silver 搖滾區", priceHkd: "880", persons: 1 },
+        { name: "一樓看台", priceHkd: "720", persons: 1 },
+        { name: "二樓看台", priceHkd: "560", persons: 1 },
+        { name: "學生票", priceHkd: "420", persons: 1 },
+        { name: "會員優先票", priceHkd: "780", persons: 1 },
+        { name: "輪椅席（含 1 位陪同）", priceHkd: "560", persons: 2 },
+        { name: "兒童免費票", priceHkd: "0", persons: 1 }
+      ],
+      slots: [
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 100, types: [0] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 200, types: [1] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 400, types: [2] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 300, types: [3] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 300, types: [4] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 150, types: [5] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 120, types: [6] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 20, types: [7] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 50, types: [8] }
+      ] },
     /* bky-12（2026-10-09 D385 決定五補原始資料）：活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`；
        js/sidebar.js BOOKYAY_EVENTS 的 bky-12，創作者活動管理「草稿」那一列）。原本只有清單摘要、沒有 bookyay 原始欄位，
        草稿續填只能走一般續填、鎖定全部掉光；補上後續填改用這份資料重跑帶入（D385 決定四，見 demoInit 的 draft 分支）。

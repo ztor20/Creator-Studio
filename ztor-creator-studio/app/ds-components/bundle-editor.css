@@ -69,7 +69,9 @@
    --control-raise，所以它坐在哪一層都比那一層亮一階。 */
 .fc-add, .fc-add-item { display: flex; width: 100%; justify-content: center; align-items: center; }
 .fc-add, .fc-add-item { border-style: dashed; }
-.fc-add { min-height: 56px; font-weight: var(--fw-regular); }
+.fc-add { min-height: 56px; font-weight: var(--fw-regular); margin-top: var(--sp-16); border-radius: var(--radius-xl); }
+/* 2026-10-27：新增鈕坐在一排卡片（組合包收合列、套組卡）正下方，圓角改跟卡片同一級（--radius-xl，原本吃按鈕的 10px），
+   與上面那排卡片的距離收進元件（--sp-16；原本各頁各自 inline margin-top 12，建立活動那頁漏掛，貼得只剩收合列的 10px）。 */
 .fc-add-item { min-height: 48px; margin-top: var(--sp-10); }
 
 /* ============================================================
@@ -783,9 +785,10 @@
    （預覽卡）；語意句用既有 insight-row、鎖定套數用既有 lock-sets、算式列用既有 kv-list。
    淺色模式由彈窗殼自己鋪底，不覆寫 body（demo 那條 `html[data-theme="light"] body` 是 lab 權宜）。 */
 
-/* 側欄寬 340：預覽卡要放得下「票種 · $4,200」一排三顆 chip；`--payout-split-side` 是
-   payout-modal 開給消費者的變數，不覆寫元件本身。 */
-.bd-split { --payout-split-side: 340px; }
+/* 側欄寬 260（2026-10-27 由 340 收窄）：預覽圖是直式 2:3，寬度直接決定高度——340 時圖就吃掉約 500px，
+   一屏只看得到圖、看不到下面的名稱與價格；260 讓圖約 390px，名稱、價格、CTA 在一屏內露出。票種 chip 窄了會換行（chip-group 本來就會 wrap）。
+   `--payout-split-side` 是 payout-modal 開給消費者的變數，不覆寫元件本身。 */
+.bd-split { --payout-split-side: 260px; }
 /* 特寬彈窗的高度上限放到視窗高（payout-dialog 預設 760px）：右欄預覽卡連 CTA 約 640px，
    760 減掉頭尾只剩 580，卡的按鈕永遠在摺線下、側欄又是自己內捲，看不出那裡還有東西。 */
 .bd-dialog--split { max-height: calc(100vh - var(--sp-48)); }
