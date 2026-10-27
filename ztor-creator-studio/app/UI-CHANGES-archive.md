@@ -2201,7 +2201,7 @@
 
 ### D. Infra / 文件
 
-> 背景：`design-system.md` / `.html` 是從上游 `Design/Design System/ztor yellow/` 整份拷貝來的，而 ztor yellow 是 design-system-analyzer 逆向爬 上游來源系統（GEO / AI 搜尋分析 SaaS）的產出。出貨頁面早已是 Ztor Creator Studio，但這份 DS 文件仍在描述 上游來源系統。本次對齊 2026-06-01 更新後的 `project-ui-creator` skill 規則（DSS v1.4），把文件改寫成本產品自己的設計系統。
+> 背景：`design-system.md` / `.html` 是從上游 `知識庫/Design/Design System/ztor yellow/` 整份拷貝來的，而 ztor yellow 是 design-system-analyzer 逆向爬 上游來源系統（GEO / AI 搜尋分析 SaaS）的產出。出貨頁面早已是 Ztor Creator Studio，但這份 DS 文件仍在描述 上游來源系統。本次對齊 2026-06-01 更新後的 `project-ui-creator` skill 規則（DSS v1.4），把文件改寫成本產品自己的設計系統。
 
 - **`design-system.md`（source of truth）+ `design-system.html`（視覺化鏡像）都已同步去 上游來源系統 / 去 Framer 爬網框架。** 上游 canonical ztor yellow 未動（仍有同樣殘留，日後重拷會回來）。
 - **Identity** — Tagline / Category / Overview / Tags 從「AI search analytics / GEO」改寫成創作者經濟營運後台；語氣原則對齊 SPEC §1（透明 / 降門檻 / 任務導向 / 連動 / 合規）。Similar systems 改列 Notion / Linear / Vercel / Attio / Stripe Dashboard。
@@ -3008,7 +3008,7 @@ Playwright:0 console error / 0 warning / 0 未解析 icon;掃描所有 `.demo` �
 
 ### D. Infrastructure / 文件
 
-`project-ui-creator` skill 升級到 v3 — 對齊 `Design/design-system-standard.md` 的 **DSS v1.4 7-Pillar 架構**（取代舊版「5 支柱」）。新規範 memory 已存於 `feedback_design_system_dss_v14`。本次走完整 edit-cycle protocol（讀 SPEC → 動工 → 同步 demo → 更新 UI-CHANGES + SPEC）把 R 2.1 design system 文件升上去。
+`project-ui-creator` skill 升級到 v3 — 對齊 `知識庫/Design/design-system-standard.md` 的 **DSS v1.4 7-Pillar 架構**（取代舊版「5 支柱」）。新規範 memory 已存於 `feedback_design_system_dss_v14`。本次走完整 edit-cycle protocol（讀 SPEC → 動工 → 同步 demo → 更新 UI-CHANGES + SPEC）把 R 2.1 design system 文件升上去。
 
 **design-system.md（authoritative 文件）重構**：
 
@@ -3778,7 +3778,7 @@ Playwright:0 console error / 0 warning / 0 未解析 icon;掃描所有 `.demo` �
 
 ### D. Infra / 文件
 
-- **設計系統來源**：直接拷貝 `Design/Design System/ztor yellow/` 而非從 R 2.0 fork。內含 11 個基礎元件 + design-system.html + sample.html + design-system.md。
+- **設計系統來源**：直接拷貝 `知識庫/Design/Design System/ztor yellow/` 而非從 R 2.0 fork。內含 11 個基礎元件 + design-system.html + sample.html + design-system.md。
 - **字型**：從 R 2.0 fonts/ 拷貝（Geist Variable / Geist Mono / Inter / Taipei Sans TC Beta × 3 weight），對齊 [feedback_product_spec_doc.md] 的「自架字型」要求。
 - **theme.js + icons.js**：從 R 2.0 拷貝，未改動；R 2.1 product-spec doc 中標註為「沿用」。
 - **新增 sidebar.js + hero.js**：sidebar 為共用導航，sidebar.js 依當前 pathname 注入 nav HTML + 標 active；hero.js 控 Dashboard 輪播。
@@ -3818,9 +3818,9 @@ Playwright:0 console error / 0 warning / 0 未解析 icon;掃描所有 `.demo` �
 ### D. Infrastructure / 文件
 
 - **Token sync 跨三個位置**：
-  1. `Design/Design System/ztor yellow/components/_tokens.css` — 改 `--border: #D1D1C7 → #E5E5E5`，header comment 同步更新
+  1. `知識庫/Design/Design System/ztor yellow/components/_tokens.css` — 改 `--border: #D1D1C7 → #E5E5E5`，header comment 同步更新
   2. `Project/ztor-creator-studio/site/R 2.1/ds-components/_tokens.css` — 用 `cp` 從上面同步進來（不是 symlink，符合 [project_ztor_creator_studio_deploy](#) 規範「ds-components 必須實體複製」）
-  3. `Design/Design System/ztor yellow/design-system.md` — 改 5 處：Quick Reference 表 / Color 表 / Overview prose / Accordion border 範例 / Accessibility 對比表 + R 2.1 副本 `design-system.md` 同步
+  3. `知識庫/Design/Design System/ztor yellow/design-system.md` — 改 5 處：Quick Reference 表 / Color 表 / Overview prose / Accordion border 範例 / Accessibility 對比表 + R 2.1 副本 `design-system.md` 同步
 - **`.app-nav__panel` + `.app-account__panel` bg 改 `--background`**：原本用 `--surface`，但 dark mode 的 `--surface` 是 `rgba(253,253,253,0.10)` translucent overlay，當 panel 疊在彩色 hero 上時看不清楚。改用 `--background`（永遠 opaque），dark mode 再加一條 `#1F1F1F` 覆寫提升對比。**這是 design system 半透明 surface 在彩色 hero 場景的已知限制；project-level 解決，不動 base token。**
 - **`project-ui-creator` skill 載入並改採其協議**：本次編修是第一次正式跑「編修循環協議」（讀 SPEC → 定位層級 → 改 → 同步 demo + UI-CHANGES + SPEC）。前兩次（R 2.1.0、R 2.1.1）等於繞過 skill 自己跑，導致 design system 與 project layer 脫節。
 - 新增 4 張驗證截圖（10-13）：light + dark / canonical topbar / dropdown 開啟 / Settings stub。

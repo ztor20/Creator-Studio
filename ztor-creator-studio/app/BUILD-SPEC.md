@@ -228,7 +228,7 @@
 
 | 面向 | R 2.0 | R 2.1 |
 |---|---|---|
-| **Design system 來源** | 從 ztor yellow fork → 改名 `ztor`（住在 R 2.0 內部） | 直接拷貝 `Design/Design System/ztor yellow/` 作為 source of truth |
+| **Design system 來源** | 從 ztor yellow fork → 改名 `ztor`（住在 R 2.0 內部） | 直接拷貝 `知識庫/Design/Design System/ztor yellow/` 作為 source of truth |
 | **App 框架** | Slim topbar + 內容滿版 | **Canonical ztor-header topbar 64 px sticky · 邊到邊**（padding 0 32px）+ hover dropdown nav 對應 spec §3.2.2 |
 | **首屏節奏** | Page-intro → KPI strip → 大量 patterns | **全屏 Hero banner 輪播**（spec §5.1.1.1，`.hero--fullbleed` 邊到邊）→ Page intro → KPI bento → 模組化卡片群 |
 | **資料呈現偏好** | Card-per-row · shadow-heavy | **Row-divider 為主**（`.data-list`）· 卡片只用於資訊區塊 |
@@ -329,7 +329,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 
 ### 3.1 來源
 
-完全套用 `Design/Design System/ztor yellow/` 的 design system，文件結構對齊 **DSS v1.4 7-Pillar 架構**（Pillar 0 Record · 1 Foundation · 2 Role · 3 Mode · 4 Component · 5 Pattern · 6 Structure + Appendix A/B）。重點 tokens：
+完全套用 `知識庫/Design/Design System/ztor yellow/` 的 design system，文件結構對齊 **DSS v1.4 7-Pillar 架構**（Pillar 0 Record · 1 Foundation · 2 Role · 3 Mode · 4 Component · 5 Pattern · 6 Structure + Appendix A/B）。重點 tokens：
 
 - **Foundation**（raw）：`#FAFAF7` warm paper · `#ffa33f` highlighter orange · `#171717` dark text on orange
 - **Role**（semantic）：`--background / --card / --primary / --foreground-muted / --status-{success|error|info|warning}` 在 `_tokens.css` 統一注入
