@@ -54,7 +54,8 @@
  *     transit: { key:'venue-transit' } | '捷運站步行 3 分鐘' | null,   // 交通說明（D445）：同上
  *                                                // D369：address 有值時，詳情左欄描述之後多畫「活動地點」一節＝依地址產生的地圖（partials/venue-map.js）
  *     priority: { window: '…', state: '…' } | null,   // 優先購（原型示意）
- *     limit: '每人最多 4 張' | null,   // D427：每人總限購
+ *     limit: { tiers:[{ name:{key}|'…', n }], sets:[{ name, n }] } | '每人最多 4 張' | null,   // D427：每人總限購；2026-10-27 起給物件＝照前台逐張／逐組列
+ *     durationMin: 105,                         // 2026-10-27：時長分鐘數，本檔照語系寫「約 1 小時 45 分」；沒給退回 duration 字串
  *     desc: { key:'desc' },
  *     descBlocks: [{ type:'text', text, html } | { type:'image'|'video', src }] | undefined,   // D354：描述的區塊
  *     descMedia: [{ type:'image'|'video', src }] | undefined,   // D335 舊形狀（沒給 descBlocks 時才用）
@@ -173,6 +174,29 @@
   /* 墓碑 2026-10-05（D354）：clampBody()／infoSections()（說明區塊：標題＋內文、太長才收合「展開全文」，D340，
      .pdp-info[data-feat="S60"]）隨說明區塊退場——原說明區塊的內容是描述裡的無標題文字區塊，由上面的 richBody 照順序畫。 */
 
+  /* 長描述收合（照前台 assets/c-read-more.js，2026-10-27）：高度超過 --read-more-max（960）再多 160 才收，差一點點不收 */
+  function readMore(box) {
+    var SLACK = 160;
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'btn btn--ghost btn--sm read-more__toggle'; btn.hidden = true;
+    btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('data-i18n', 'fep.more'); btn.textContent = T('fep.more', 'Show all');
+    box.insertAdjacentElement('afterend', btn);
+    var limit = function () { var v = parseFloat(getComputedStyle(box).getPropertyValue('--read-more-max')); return isNaN(v) ? 960 : v; };
+    var check = function () {
+      if (box.classList.contains('is-open')) return;
+      var over = box.scrollHeight > limit() + SLACK;
+      box.classList.toggle('is-clamped', over); btn.hidden = !over;
+    };
+    btn.addEventListener('click', function () {
+      var open = !box.classList.contains('is-open');
+      box.classList.toggle('is-open', open); box.classList.toggle('is-clamped', !open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('data-i18n', open ? 'fep.less' : 'fep.more');
+      btn.textContent = open ? T('fep.less', 'Show less') : T('fep.more', 'Show all');
+    });
+    if (window.ResizeObserver) new ResizeObserver(check).observe(box);
+    requestAnimationFrame(check);
+  }
   function valueOf(api, field) { return (field && field.key) ? (api.getValue(field.key) || '') : (field == null ? '' : String(field)); }
 
   /* 前台 inline 的 svg（heart／cart／back／zoom／play）：照抄 path，不走 icons.js registry（形狀要一模一樣） */
@@ -480,14 +504,35 @@
     }
     row('fep.date', 'Date', esc(m.date));
     row('fep.time', 'Time', esc(m.time));
-    row('fep.duration', 'Length', esc(m.duration));
+    /* 時長（2026-10-27，照前台「約 1 小時 45 分」）：宿主給 durationMin（分鐘）就照語系組句；沒給退回舊的 duration 字串 */
+    var durText = m.durationMin > 0 ? (function (d) {
+      var h = Math.floor(d / 60), mm = d % 60;
+      var k = h && mm ? 'fep.dur.hm' : (h ? 'fep.dur.h' : 'fep.dur.m');
+      return T(k, h && mm ? 'About {h} h {m} min' : (h ? 'About {h} h' : 'About {m} min')).replace('{h}', h).replace('{m}', mm);
+    })(m.durationMin) : m.duration;
+    row('fep.duration', 'Length', esc(durText));
     /* 新前台：場館下多一行「在 Google 地圖查看 ›」（預覽不動作，D443 決定八的呈現參考） */
     row('fep.venue', 'Venue', venueText ? esc(venueText) + (m.address ? '<small>' + esc(m.address) + '</small>' +
       '<a class="pdp-event-meta__map" data-pp-inert>' + dsIcon('map-pin') + '<span data-i18n="fep.map.link">' + esc(T('fep.map.link', 'View on Google Maps ›')) + '</span></a>' : '') : '');
     var langVal = Array.isArray(m.language) ? m.language.filter(Boolean).join(T('ce.evlang.sep', ', ')) : m.language;
     row('fep.language', 'Language', esc(langVal));
     if (m.priority) row('fep.priority', 'Early access', '<span class="pdp-event-meta__nowrap">' + esc(m.priority.window) + '</span>' + (m.priority.state ? '<small>' + esc(m.priority.state) + '</small>' : ''), 'pdp-event-meta__row--names');
-    row('fep.limit', 'Limit', esc(m.limit));
+    /* 限購（2026-10-27，照前台 .pdp-limit-row）：宿主給 { tiers:[{ name, n }], sets:[{ name, n }] }——
+       單票一行「單票 每人限購」＋下一行小字逐張列「名稱 n 張」（前台第一行是「每個帳號最多 N 張」的活動總限購；
+       我們沒有活動層限購（D460），只有每張門票自己的每人總限購（D427），所以第一行寫「每人限購」、逐張數字放小字）；
+       套組一行「套組 名稱 n 組 · …」。舊宿主給字串照舊一行。名稱可給 { key }（譯文）。 */
+    var limHtml = '';
+    if (m.limit && typeof m.limit === 'object') {
+      var seg = function (s) { return '<span class="pdp-limit-row__seg">' + esc(s) + '</span>'; };
+      var pair = function (it, unitKey, unitFb) { return '<span class="pdp-limit-row__pair">' + seg(valueOf(api, it.name)) + ' ' + seg(T(unitKey, unitFb).replace('{n}', it.n)) + '</span>'; };
+      var lt = (m.limit.tiers || []).filter(function (x) { return x && x.n > 0; });
+      var ls = (m.limit.sets || []).filter(function (x) { return x && x.n > 0; });
+      if (lt.length) limHtml += '<span class="pdp-limit-row__line">' + seg(T('fep.limit.tix', 'Tickets')) + ' ' + seg(T('fep.limit.each', 'Per person')) +
+        '<span class="pdp-limit-row__tiers">' + lt.map(function (x) { return pair(x, 'fep.limit.n.tix', '{n}'); }).join(seg(T('ce.evlang.sep', '、'))) + '</span></span>';
+      if (ls.length) limHtml += '<span class="pdp-limit-row__line">' + seg(T('fep.limit.set', 'Bundles')) + ' ' +
+        ls.map(function (x) { return pair(x, 'fep.limit.n.set', '{n}'); }).join(seg(' · ')) + '</span>';
+    } else if (m.limit) limHtml = esc(m.limit);
+    row('fep.limit', 'Limit', limHtml);
     row('fep.pickup.k', 'Tickets', esc(m.pickup));
     buy.appendChild(em);
 
@@ -530,19 +575,23 @@
     var details = el('section', 'pdp-details pdp-details--event');
     details.setAttribute('aria-label', T('fep.details.label', 'Event details'));
     var inner = el('div', 'pdp-details__inner container');
-    var h2 = el('h2', 'pdp-details__heading'); h2.setAttribute('data-i18n', 'fep.sec.about'); h2.textContent = T('fep.sec.about', 'About');
+    var h2 = el('h2', 'pdp-details__heading'); h2.setAttribute('data-i18n', 'fep.sec.about'); h2.textContent = T('fep.sec.about', 'Event details');   /* 2026-10-27：照前台「活動詳情」（原「活動介紹」） */
     inner.appendChild(h2);
     var layout = el('div', 'pdp-details__layout');
     var dmain = el('div', 'pdp-details__main');
     /* 描述（D354）：宿主給了 descBlocks 就照區塊順序畫（文字含格式、圖片、影片，見 richBody），
        整塊仍掛 lead 段 class（預覽的「編輯」入口認它）。沒給的舊宿主退回 D335 的最小做法（UIA-187）。
-       整段過長的收合交 UI 層，原型照長度展開（UIA-196）。 */
+       整段過長的收合（2026-10-27 照前台 c-read-more.js）：描述包進 .pdp-story[data-read-more]，超過 960px＋160px 寬限就收成 960px
+       並在下緣漸隱、後面接「展開全部」，展開後改「收合」；預覽區改寬度或圖片晚到時重量（ResizeObserver）。原 UIA-196「照長度展開」退場。 */
+    var story = el('div', 'pdp-story'); story.setAttribute('data-read-more', '');
     if (m.descBlocks) {
-      dmain.appendChild(richBody(api, m.descBlocks, (m.desc && m.desc.key) || 'desc', 'pdp-details__lead', T('cp.pv.desc-ph', 'Description')));
+      story.appendChild(richBody(api, m.descBlocks, (m.desc && m.desc.key) || 'desc', 'pdp-details__lead', T('cp.pv.desc-ph', 'Description')));
     } else {
-      dmain.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
-      (m.descMedia || []).forEach(function (md) { if (md && md.src) dmain.appendChild(mediaFig(md)); });
+      story.appendChild(slot(api, 'p', 'pdp-details__lead', m.desc, T('cp.pv.desc-ph', 'Description')));
+      (m.descMedia || []).forEach(function (md) { if (md && md.src) story.appendChild(mediaFig(md)); });
     }
+    dmain.appendChild(story);
+    readMore(story);
     /* 活動地點（D369）：依完整地址產生的地圖。新前台沒有這一節，D443 決定八放在描述之後。沒有地址＝不畫。 */
     var mapHtml = (m.address && window.ztorVenueMap) ? window.ztorVenueMap.html({ address: m.address }) : '';
     /* 集合地點與交通說明（D445 決定三）：畫在「活動地點」一節、地圖下方；有值才畫（兩項都沒有、也沒有地址＝整節不畫）。

@@ -160,9 +160,9 @@
   function locModel() {
     const first = edSessions[0] || {};
     const start = first.start || ev.start || '', end = first.end || ev.end || '';
-    let duration = '';
+    let duration = '', durationMin = 0;   /* 2026-10-27：durationMin 交給渲染器寫「約 1 小時 45 分」 */
     const a = hhmmToMin(start), b = hhmmToMin(end);
-    if (!first.endDate && a != null && b != null && b > a) { const d = b - a; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
+    if (!first.endDate && a != null && b != null && b > a) { const d = b - a; durationMin = d; duration = ((d >= 60 ? Math.floor(d / 60) + ' h' : '') + (d % 60 ? ' ' + (d % 60) + ' min' : '')).trim(); }
     const pickupKey = { eticket: 'fep.pickup.eticket', sf: 'fep.pickup.sf', pickup: 'fep.pickup.pickup', store: 'fep.pickup.pickup' }[(ev.publish || {}).pickup] || 'fep.pickup.eticket';
     const statusKey = { 'on-sale': ['fep.status.on-sale', 'On sale', 'badge--success'], live: ['fep.status.on-sale', 'On sale', 'badge--success'],
       scheduled: ['fep.status.soon', 'Coming soon', 'badge--info'], ended: ['fep.status.ended', 'Ended', 'badge--neutral']
@@ -203,12 +203,20 @@
       organizer: persona ? persona.name : '', organizerAvatar: persona ? (persona.avatar || '') : '',
       /* 跨日（D328）：場次有 endDate 就寫成日期區間 */
       date: fmtDate(first.date || ev.date) + (first.endDate ? ' – ' + fmtDate(first.endDate) : ''),
-      time: start ? (end ? start + ' – ' + end : start) : '', duration, doors: first.doors || ev.doors || '',
+      time: start ? (end ? start + ' – ' + end : start) : '', duration, durationMin, doors: first.doors || ev.doors || '',
       /* 活動語言（D328，可複選）：store 有 languages 才顯示（多值交給渲染器以語系分隔符串起） */
       venue: { key: 'venue' }, address: ev.address || '',   /* D445：場地名稱吃譯文；集合地點與交通說明有值才畫（地圖下方） */
       meet: (ev.meetPoint || '').trim() ? { key: 'venue-meet' } : null, transit: (ev.transit || '').trim() ? { key: 'venue-transit' } : null,
       language: (ev.languages || []).map(k => T('ce.evlang.' + k, k)),
-      priority: null, limit: null,
+      priority: null,
+      /* 限購（2026-10-27，同建立活動）：每張門票自己的每人總限購（rules.conds.cap.person）＋每組組合包自己的限購（limits，D456） */
+      limit: (function () {
+        const PL = window.ztorPurchaseLimits;
+        const pos = v => { const n = Math.floor(Number(v)); return n > 0 ? n : 0; };
+        const tl = edTiers.filter(t => !t.hidden).map(t => { const n = pos(t.rules && t.rules.conds && t.rules.conds.cap && t.rules.conds.cap.person); return n ? { name: { key: 'tier-' + t.id }, n } : null; }).filter(Boolean);
+        const sl = (ev.bundles || []).map(b => { const lim = PL && PL.norm ? PL.norm(b.limits) : (b.limits && typeof b.limits === 'object' ? b.limits : null), n = pos(lim && lim.person);   /* 本頁沒載 purchase-limits.js：直接讀 { person } */ return n ? { name: { key: 'bundle-name-' + b.id }, n } : null; }).filter(Boolean);
+        return (tl.length || sl.length) ? { tiers: tl, sets: sl } : null;
+      })(),
       desc: { key: 'desc' },
       /* D354：描述的所有區塊照排定順序（文字含格式、圖片、影片）；文字區塊譯文的 key 與 locFields 同一套。
          墓碑 2026-10-05（D354）：infoSections（說明區塊）隨說明區塊退場，舊資料已由 descBlocksOf() 併進描述。 */

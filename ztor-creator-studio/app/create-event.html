@@ -2259,11 +2259,11 @@
     const cSel = document.getElementById("ce-country");
     const first = series.list[0] || {};
     const timeLine = first.start ? (first.end ? first.start + " – " + first.end : first.start) : "";
-    let duration = "";
+    let duration = "", durationMin = 0;   /* durationMin：2026-10-27 起交給渲染器照語系寫「約 1 小時 45 分」 */
     if (first.start && first.end && !first.multiDay) {   // 跨日場次不算時長（跨天的時差不是一天內的起訖）
       const toMin = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(s); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
       const a = toMin(first.start), b = toMin(first.end);
-      if (a != null && b != null && b > a) { const d = b - a; duration = (d >= 60 ? Math.floor(d / 60) + " h" : "") + (d % 60 ? " " + (d % 60) + " min" : ""); duration = duration.trim(); }
+      if (a != null && b != null && b > a) { const d = b - a; durationMin = d; duration = (d >= 60 ? Math.floor(d / 60) + " h" : "") + (d % 60 ? " " + (d % 60) + " min" : ""); duration = duration.trim(); }
     }
     const sessionsN = series.list.length;
     /* 跨日（D328）：開了跨日的場次寫成「開始日期 – 結束日期」。 */
@@ -2351,7 +2351,23 @@
       name: { key: "name" }, highlight: { key: "highlight" },
       /* 主辦＝創作者本人（原型無主辦欄，取目前 persona 的名冊名＋頭像） */
       organizer: persona ? persona.name : "Gary Lin", organizerAvatar: persona ? (persona.avatar || "") : "",
-      date: dateLine, time: timeLine, duration, doors: first.doors || "",
+      date: dateLine, time: timeLine, duration, durationMin, doors: first.doors || "",
+      /* 限購（2026-10-27，照前台資訊表「限購」一列）：每張門票自己的每人總限購（rules.conds.cap.person，D427）＋每組組合包自己的限購（b.limits，D456）。
+         D460 說的「活動層沒有購票規則、這一列不畫」指的是活動總限購；這裡列的是各票各組自己的值，ASSUMPTIONS UIA-312。 */
+      limit: (function () {
+        const PL = window.ztorPurchaseLimits;
+        const pos = v => { const n = Math.floor(Number(v)); return n > 0 ? n : 0; };
+        const tl = types.map(ty => {
+          const cells = savedTiers().filter(t => t.type === ty.id), c = cells.find(t => !t.hidden) || cells[0];
+          const n = pos(c && c.rules && c.rules.conds && c.rules.conds.cap && c.rules.conds.cap.person);
+          return n ? { name: { key: "tier-" + ty.id }, n } : null;
+        }).filter(Boolean);
+        const sl = ctx.bundles.map(b => {
+          const lim = PL && PL.norm ? PL.norm(b.limits) : null, n = pos(lim && lim.person);
+          return n ? { name: { key: "bundle-name-" + b.id }, n } : null;
+        }).filter(Boolean);
+        return (tl.length || sl.length) ? { tiers: tl, sets: sl } : null;
+      })(),
       /* D445：場地名稱給 { key }（可翻譯）；集合地點與交通說明有值才給 key（畫在活動地點一節、地圖下方），沒值＝null 不畫 */
       venue: { key: "venue" }, address: (document.querySelector('[data-ce="addr"]')?.value || "").trim(),
       meet: (document.querySelector('[data-ce="venue-meet"]')?.value || "").trim() ? { key: "venue-meet" } : null,
