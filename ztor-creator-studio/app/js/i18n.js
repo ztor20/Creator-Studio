@@ -11408,8 +11408,11 @@
     'vault.toast.auto.unlisted': { en: '“{n}” unlisted on schedule', zh: '「{n}」已依排程下架' },
     'vault.unlist.title':      { en: 'Unlist “{n}”?', zh: '要下架「{n}」嗎？' },
     'vault.unlist.li1':        { en: 'Fans can’t see this vault any more — including fans who already unlocked items.', zh: '粉絲看不到這座庫房，已經解開過內容的粉絲也看不到。' },
-    'vault.unlist.li2':        { en: 'Any listing and unlisting times you set are cleared.', zh: '已設的上架與下架日期與時間會一併清除。' },
+    'vault.unlist.li2':        { en: 'The unlisting time you set is saved and paused — you can restore it when you relist.', zh: '已設的下架日期與時間會保存並暫停，重新上架時可以選擇恢復。' },
     'vault.unlist.li3':        { en: 'Relist it later and fans who unlocked items get them back without redoing anything.', zh: '之後重新上架，解開過的粉絲直接恢復，不用重解。' },
+    /* D483（比照電子商店 D481）：重新上架對話框裡「恢復原本的排程／不恢復」兩個選項的說明（標題沿用 rr.*） */
+    'vault.rr.restore.sub':    { en: 'The unlisting time comes back below and unlists it automatically when it comes.', zh: '下架時間帶回下方，時間到了自動下架。' },
+    'vault.rr.keep.sub':       { en: 'The saved unlisting time is cleared — it stays listed until you unlist it.', zh: '保存的下架時間會清除，上架後不會自動下架。' },
     'vault.del.title':         { en: 'Delete “{n}”?', zh: '要刪除「{n}」嗎？' },
     'vault.del.fans':          { en: '<b>{n}</b> fans lose these items', zh: '將有 <b>{n}</b> 位粉絲失去這些內容' },
     'vault.del.fans.one':      { en: '<b>1</b> fan loses these items', zh: '將有 <b>1</b> 位粉絲失去這些內容' },

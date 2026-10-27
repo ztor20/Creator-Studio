@@ -808,6 +808,7 @@
   /* 發布／重新上架。opt.listAt 有值＝排定上架時間（狀態不變，時間到才上架）；沒有＝立刻上架。 */
   function publish(v, opt) {
     opt = opt || {};
+    clearPaused(v);
     if (opt.listAt) {
       v.listAt = opt.listAt;
       v.unlistAt = opt.unlistAt || null;
@@ -818,14 +819,30 @@
     v.unlistAt = opt.unlistAt || null;
     commitUnlocks(v);
   }
+  /* 上架或排定上架之後，下架時保存的排程（paused，D483 比照電子商店 D481）就交給了對話框的選擇：
+     選「恢復」時保存的下架時間已帶進 opt.unlistAt，選「不恢復」時沒帶——兩種都把保存的這份清掉。 */
+  function clearPaused(v) { if (v) delete v.paused; }
   /* 取消排程：回到沒有排程的同一個狀態（草稿或已下架）。 */
   function cancelSchedule(v) { v.listAt = null; v.unlistAt = null; }
-  /* 下架：先把當下看得到的人記進解開紀錄（重新上架後恢復），再清掉排程時間（D477 第二輪第 1 題）。 */
+  /* 下架：先把當下看得到的人記進解開紀錄（重新上架後恢復），再把排程時間移出生效欄位（D477 第二輪第 1 題）。
+     2026-10-27（D483，比照電子商店 D481）：手動或定時下架到期都一樣——排程時間先存進 v.paused、暫停不觸發，
+     重新上架時 restorableTimes() 列出還沒到的下架時間，創作者選恢復或不恢復。排程（S125）不在版本內時照舊直接清掉。 */
   function unlist(v) {
     commitUnlocks(v);
     v.status = "unlisted";
+    if (schedOn() && (v.listAt || v.unlistAt)) v.paused = { listAt: v.listAt || null, unlistAt: v.unlistAt || null };
+    else delete v.paused;
     v.listAt = null;
     v.unlistAt = null;
+  }
+  /* 重新上架時可以恢復的排程（D483 比照 D481）：只有還沒到的下架時間；保存的上架時間不列——按下重新上架就是此刻上架。
+     回 [{ key:"unlistAt", at }]，形狀同 ListingState.restorableTimes，好直接交給 partials/relist-restore.js 的 blockHTML。 */
+  function restorableTimes(v, nowMs) {
+    var p = v && v.paused, now = nowMs || Date.now(), out = [];
+    if (!p || !schedOn() || v.status !== "unlisted") return out;
+    var ms = toMs(p.unlistAt);
+    if (ms != null && ms > now) out.push({ key: "unlistAt", at: p.unlistAt });
+    return out;
   }
   /* 時間到了就自動上架／下架。原型沒有後端，由頁面定時呼叫；有變動回 true。 */
   function applySchedules(nowMs) {
@@ -962,6 +979,7 @@
     publish: publish,
     cancelSchedule: cancelSchedule,
     unlist: unlist,
+    restorableTimes: restorableTimes,
     applySchedules: applySchedules,
     deleteImpact: deleteImpact,
     removeVault: removeVault,

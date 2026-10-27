@@ -1395,13 +1395,43 @@
      中央彈窗（Q27：編輯與新增用 .payout-modal）。版面沿用建立商品的上架區：
      並排兩張卡選「立刻上架／定時上架」→ 線框盒（上架日期與時間、分隔線、定時下架開關＋下架日期與時間）。
      發布前檢查放在最上面：沒有內容＝擋（確認鈕停用），沒有路進來＝提醒、可發布。 */
-  var pub = { mode: "now", unlistOn: false };
+  var pub = { mode: "now", unlistOn: false, restore: null, plan: null };
+  /* D483（2026-10-27，比照電子商店 D481）：重新上架時，下架時保存、還沒到的下架時間放在對話框最上面問
+     「恢復原本的排程／不恢復」（partials/relist-restore.js 的 blockHTML＋bindChoice，sched-restore.css）。
+     放在同一個對話框而不是先跳一層確認：媒體庫只有下架時間一個能恢復，選了就直接反映在下面的定時下架開關與欄位，
+     創作者看得到恢復的結果、也還能再改。沒選之前確認鈕不可按（同 D481「一定要選一個」）。
+     媒體庫沒有 ListingState：可恢復的時間由 VaultStore.restorableTimes 算，這裡自己組 plan 物件。 */
+  function restorePlan(f) {
+    var items = V.restorableTimes ? V.restorableTimes(f) : [];
+    return items.length ? { groups: [{ entity: f, name: vaultName(f), items: items.map(function (it) { return { key: it.key, at: it.at, end: null, reason: null }; }) }], any: true } : null;
+  }
+  /* 兩個選項的說明改用媒體庫的文案（電子商店那句講的是開賣）。 */
+  function restoreT(k) {
+    var m = { "rr.restore.sub": "vault.rr.restore.sub", "rr.keep.sub": "vault.rr.keep.sub" };
+    return m[k] ? L(m[k]) : null;
+  }
+  function paintRestore(f) {
+    if (!els.pubRestore) return;
+    pub.plan = window.ZtorRelistRestore ? restorePlan(f) : null;
+    pub.restore = null;
+    els.pubRestore.hidden = !pub.plan;
+    els.pubRestore.innerHTML = pub.plan ? window.ZtorRelistRestore.blockHTML(pub.plan, { T: restoreT }) : "";
+    if (!pub.plan) return;
+    window.ZtorRelistRestore.bindChoice(els.pubRestore, function (restore) {
+      pub.restore = restore;
+      var at = pub.plan.groups[0].items[0].at;
+      pub.unlistOn = restore;
+      els.pubUnlistTime.value = restore ? at : "";
+      paintPublish();
+    });
+  }
   function openPublish() {
     if (!els.pub) return;
     var f = vault();
     pub.mode = "now"; pub.unlistOn = false;
     els.pubTitle.textContent = L(f.status === "unlisted" ? "vault.pub.title.relist" : "vault.pub.title", { n: vaultName(f) });
     els.pubListTime.value = ""; els.pubUnlistTime.value = "";
+    paintRestore(f);
     paintPublish();
     els.pub.hidden = false;
     document.body.classList.add("is-modal-open");
@@ -1441,7 +1471,7 @@
     els.pubUnlistSwitch.setAttribute("aria-checked", String(pub.unlistOn));
     els.pubUnlistFields.hidden = !pub.unlistOn;
     els.pubOk.querySelector("span").textContent = L(pub.mode === "schedule" ? "vault.pub.ok.sched" : "vault.pub.ok.now");
-    els.pubOk.disabled = chk.empty;
+    els.pubOk.disabled = chk.empty || (!!pub.plan && pub.restore === null);   /* D483：要先選恢復或不恢復 */
     validatePublish(false);
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.pub);
   }
@@ -1474,6 +1504,7 @@
   function confirmPublish() {
     var f = vault();
     if (V.publishCheck(f).empty) return;
+    if (pub.plan && pub.restore === null) return;
     if (!validatePublish(true)) return;
     var opt = {
       listAt: pub.mode === "schedule" ? els.pubListTime.value : null,
@@ -1490,7 +1521,7 @@
 
   /* ── 確認視窗：下架、刪除、上架中要先下架（canonical 對話框殼，Pattern 5.1.11）──────
      刪除照破壞性確認的四段：動到哪一座 → 會發生什麼（幾位粉絲失去內容、鑰匙一併失效）→ 不可復原。
-     下架可以再上架，但粉絲會看不到、排程會被清掉，所以照電子商店下架一樣先問一次。 */
+     下架可以再上架，但粉絲會看不到、排程會暫停（D483：保存起來，重新上架時可選恢復），所以照電子商店下架一樣先問一次。 */
   var confirmOk = null;
   function openConfirm(o) {
     if (!els.cf) { if (o.onOk) o.onOk(); return; }
@@ -1520,8 +1551,9 @@
     var f = vault();
     openConfirm({
       title: L("vault.unlist.title", { n: vaultName(f) }),
-      /* 第二條講排程會被清掉；排程（S125）不在版本內時不列。 */
-      body: listHtml([esc(L("vault.unlist.li1"))].concat(V.schedOn() ? [esc(L("vault.unlist.li2"))] : []).concat([esc(L("vault.unlist.li3"))])),
+      /* 第二條講已設的下架時間會保存並暫停、重新上架時可選恢復（D483 比照 D481）；
+         排程（S125）不在版本內、或沒設下架時間時不列。 */
+      body: listHtml([esc(L("vault.unlist.li1"))].concat(V.schedOn() && f.unlistAt ? [esc(L("vault.unlist.li2"))] : []).concat([esc(L("vault.unlist.li3"))])),
       ok: L("vault.act.unlist"),
       onOk: function () {
         V.unlist(f);
@@ -2524,6 +2556,7 @@
       els.pubUnlistTime = els.pub.querySelector("[data-pub-unlisttime]");
       els.pubUnlistErr = els.pub.querySelector("[data-pub-unlisterr]");
       els.pubOk = els.pub.querySelector("[data-pub-ok]");
+      els.pubRestore = els.pub.querySelector("[data-pub-restore]");
     }
     els.cf        = document.querySelector("[data-vault-confirm]");
     if (els.cf) {
