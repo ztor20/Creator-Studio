@@ -465,7 +465,7 @@
 - `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide
 - `field-more.css` — .field-more, .form-grid, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
-- `field-source-tag.css` — .field-source, .field__label, .is-source-locked ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式
+- `field-source-tag.css` — .field-source, .field__label, .is-source-locked, .radio-cards, .segmented ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式
 - `field-system.css` — .field, .field__label, .field__hint, .field__req, .field__error ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）

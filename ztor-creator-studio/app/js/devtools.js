@@ -342,11 +342,31 @@
         + '<div class="ztd__rows-v">' + groups[t].map(row).join('') + '</div>';
     }).join('');
   }
+  /* 版本閘要管到的文件：本頁，加上同源 iframe（詳情覆蓋層 detail-sheet、商店設定 embed-modal）。
+     iframe 裡的 devtools.js 只掛傳話的、不跑版本閘（上方 embedded 分支），所以活動詳情在覆蓋層裡開時，
+     未納入版本的功能（例：release2.3 的招待票）原本照樣顯示；改由外層代為套用，並補上收起用的樣式。 */
+  function gateDocs() {
+    var docs = [document];
+    Array.prototype.forEach.call(document.querySelectorAll('iframe'), function (f) {
+      try {
+        var d = f.contentDocument;
+        if (!d || !d.head || !d.body) return;
+        if (!d.getElementById('ztd-frame-gate')) {
+          var st = d.createElement('style'); st.id = 'ztd-frame-gate';
+          st.textContent = '.ztd-ver-hidden{display:none!important}';
+          d.head.appendChild(st);
+        }
+        docs.push(d);
+      } catch (e) {}
+    });
+    return docs;
+  }
   function applyVersion() {
     var rule = curVersionRule();
     /* 1) 減功能：依 tier 隱藏／標記帶 data-feat 的元素 */
     var allow = tiersForRule(rule);
-    document.querySelectorAll('[data-feat]').forEach(function (el) {
+    var docs = gateDocs();
+    docs.forEach(function (doc) { doc.querySelectorAll('[data-feat]').forEach(function (el) {
       /* data-feat 支援逗號多值（外殼包多個功能時）：任一功能在版本內→顯示；全部不在→藏 */
       var ids = el.getAttribute('data-feat').split(',');
       var inVer = !allow || ids.some(function (id) {
@@ -355,18 +375,18 @@
       el.classList.toggle('ztd-ver-hidden', !inVer && !state.showFuture);
       el.classList.toggle('ztd-ver-future', !inVer && state.showFuture);
       setFeatureLinkDisabled(el, !inVer);
-    });
+    }); });
     /* 1b) 反向閘：data-feat-off 的元素是「該功能未納入版本時才顯示」的 base／預設呈現，
        與同位置的 data-feat 元素成對——功能在版本內（或預覽 future）→ 顯示升級版、收起 base；
        功能不在 → 顯示 base、藏升級版。逗號多值＝任一功能在版本內即收起 base。 */
-    document.querySelectorAll('[data-feat-off]').forEach(function (el) {
+    docs.forEach(function (doc) { doc.querySelectorAll('[data-feat-off]').forEach(function (el) {
       var offIds = el.getAttribute('data-feat-off').split(',');
       var featShown = offIds.some(function (id) {
         var inVer = !allow || allow.indexOf(featTier(id)) >= 0;
         return inVer || state.showFuture;
       });
       el.classList.toggle('ztd-ver-hidden', featShown);
-    });
+    }); });
     /* 1c) 空殼收合（2026-10-16）：區段卡片（.bd-sec／.form-section）裡標題列以外的內容
        全被上面兩步收起時，整段（含標題與說明）一起收起，不留只剩標題的空卡片。
        只收「因版本閘而空」的殼——內容至少要有一個 .ztd-ver-hidden，其餘只能是同樣被收起的節點
@@ -374,12 +394,12 @@
        自己收的殼標 data-ztd-empty，下次切版本先還原再重算。 */
     collapseEmptySections();
     /* 作用中分頁被版本藏掉時，自動切到第一個可見的兄弟 tab（點擊觸發頁面自身切換 JS）*/
-    document.querySelectorAll('.tabs__item.ztd-ver-hidden, .filter-tabs__item.ztd-ver-hidden').forEach(function (t) {
+    docs.forEach(function (doc) { doc.querySelectorAll('.tabs__item.ztd-ver-hidden, .filter-tabs__item.ztd-ver-hidden').forEach(function (t) {
       var active = t.classList.contains('tabs__item--active') || t.classList.contains('filter-tabs__item--active') || t.getAttribute('aria-selected') === 'true';
       if (!active || !t.parentElement) return;
       var sib = t.parentElement.querySelector('.tabs__item:not(.ztd-ver-hidden), .filter-tabs__item:not(.ztd-ver-hidden)');
       if (sib && sib !== t) sib.click();
-    });
+    }); });
     /* 2) 改接：route:來源=目標（連結改接抽成 applyRouteRedirects，供 DOM 變動後重跑）*/
     applyRouteRedirects();
     applyRouteAvailability();
@@ -1093,6 +1113,11 @@
     new MutationObserver(function () { applyRouteRedirects(); applyRouteAvailability(); })
       .observe(document.body, { childList: true, subtree: true });
   }
+  /* 任何同源 iframe 載入完都補套一次版本閘（load 不冒泡，用捕獲階段接）：覆蓋層、組合包／商店的「新增商品」彈窗
+     （create-product.html?embed=1）等都靠這裡，不必各自記得呼叫 regate()。 */
+  document.addEventListener('load', function (e) {
+    if (e.target && e.target.tagName === 'IFRAME') applyVersion();
+  }, true);
   /* 首次進站：跳 popup 選版本 → 確定進入（每裝置第一次；手機免 Alt＋右鍵也能設版本）*/
   var ONBOARD_LS = 'ztor.devtools.onboarded';
   function showOnboarding() {

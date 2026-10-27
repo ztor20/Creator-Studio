@@ -61,6 +61,8 @@
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D388：自建活動的購買條件編輯（新增條件清單，js/purchase-conds.js 注入） -->
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2"><!-- D388：條件清單的「新增條件」選單 -->
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 2026-10-27：交易篩選列 .filter-row（篩選分頁靠左、訂單日期靠右） -->
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=r2.2"><!-- 2026-10-27：組合包卡點開的彈窗 -->
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- D340：顯示設定隱藏時的活動連結（複製／重置） -->
 <link rel="stylesheet" href="ds-components/collapse-group.css?v=r2.2">   <!-- 2026-08-13：場次盒的折疊列＋一行摘要 -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
@@ -193,10 +195,7 @@
                它要編輯的東西全部住在那一頁，開關卻掛在頁首、離對象兩個層級遠；工作列採
                e-shop 那組骨架（左 tabs、右動作群）之後，那裡本來就是這一頁動作的落點。 -->
           <button class="btn btn--outline" type="button" data-ed-preview data-dock-icon><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="event-detail.btn.preview">View ticket page</span></button>
-          <!-- 預覽與在地化（2026-09-22 · D305／D306，5.1.6.3 §2.13）：與「檢視售票頁」相鄰（規格的呈現參考）——
-               再開發布前預覽確認層（mode:'save'），改翻譯與逐幣別價格；主動作「儲存」即生效、不改上架狀態。
-               data-view-safe：檢視態也能開（它不是編輯活動欄位的入口，翻譯與幣別價有自己的儲存）。 -->
-          <button class="btn btn--outline" type="button" data-ed-localize data-feat="S78" data-view-safe data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
+          <!-- 墓碑 2026-10-27：「預覽與在地化」自頁首搬到設定分頁工具列、「編輯」左邊（使用者指示），見該處。 -->
           <div data-dock-actions></div>
         </div>
       </div>
@@ -660,6 +659,20 @@
               <button class="btn btn--outline btn--block" type="button" data-view-safe data-goto-setup data-i18n="event-detail.summary.go">Event settings</button>
             </div>
           </section>
+          <section class="card" id="ed-link-card">
+            <div class="card__head">
+              <div class="card__title-group">
+                <h3 class="card__title" data-i18n="ed.pub.link">Event link &amp; QR</h3>
+              </div>
+            </div>
+            <div class="ed-pub__linkrow">
+              <div class="ed-pub__qr" id="ed-pub-qr" aria-hidden="true"></div>
+              <div class="ed-pub__linkmain">
+                <input class="input" id="ed-pub-url" disabled aria-label="Event link" data-i18n-aria-label="ed.pub.link.hidden">
+                <p class="field__hint" data-i18n="ed.pub.link.hint">Where fans buy tickets. The QR points at the same page.</p>
+              </div>
+            </div>
+          </section>
           <section class="card" id="ed-scanner">
             <!-- 2026-08-18 使用者指示（「多了一層，UI 重新考慮 UX」）：卡名回來、狀態徽章上到卡頭、
                  內層交出自己的面（`--bare`）。三件事是同一個問題的三面——
@@ -857,7 +870,6 @@
             <button type="button" class="tabs__item" data-view-safe data-nav-item="dates" data-i18n="ed.dates.title">Dates</button>
             <button type="button" class="tabs__item" data-view-safe data-hide-type="watchparty virtual" data-nav-item="venue" data-i18n="ed.venue.title">Venue</button>
             <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="ed.pub.title">Publish</button>
-            <button type="button" class="tabs__item" data-view-safe data-nav-item="link" data-i18n="ed.pub.link">Link & QR</button>
               </nav>
             <!-- 動作群（2026-08-18 使用者指示「這裡要像電子商店的 topbar 一樣的元件」）：
                  `.list-toolbar` 本來就是「左邊切分頁、右邊放這一頁的動作」那組骨架（e-shop
@@ -865,11 +877,27 @@
             <div class="list-toolbar__actions">
               <!-- data-view-safe：這顆就是「進入編輯」的開關本身，被「檢視模式藏掉所有按鈕」
                    那條規則掃到會讓人再也進不了編輯（它原本住在 page-intro，不在那條規則的範圍內）。 -->
-              <button class="btn btn--ghost" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="undo-2" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
+              <!-- 預覽與在地化（D305／D306，5.1.6.3 §2.13）：2026-10-27 自頁首搬到這裡、「編輯」左邊（使用者指示）。
+                   data-view-safe：檢視態也能開（翻譯與幣別價有自己的儲存，不是編輯活動欄位的入口）。 -->
+              <button class="btn btn--outline" type="button" data-ed-localize data-feat="S78" data-view-safe data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="ed.loc.btn">Preview &amp; localization</span></button>
+              <button class="btn btn--outline" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="arrow-back-up" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
               </button>
+              <!-- 更多動作（2026-10-27 使用者指示）：下架／重新上架、封存收進這顆「⋯」下拉，設定分頁底部原本的兩個區塊拿掉。
+                   按鈕沿用原本的 data-ed-unlist／data-ed-relist／data-ed-archive，確認窗與規則（D371／D457）不變；
+                   顯示與否由 syncMoreMenu() 依狀態算：草稿與已封存整顆收起（已封存只剩頁首的解除封存）、
+                   下架中才有「重新上架」、已下架且未封存才有「封存」。 -->
+              <details class="dropdown" id="ed-more" data-feat="S81" hidden>
+                <summary class="btn btn--outline btn--icon" aria-label="More actions" data-i18n-aria-label="event-detail.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
+                <div class="dropdown__menu" role="menu">
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-ed-shown><i data-lucide="eye-off" class="ztor-icon"></i><span data-ed-shown-label data-i18n="event-detail.hide.btn">Hide from shop</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-ed-unlist><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="event-detail.unlist.btn">Unlist event</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-ed-relist hidden><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="event-detail.relist.btn">Relist event</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-ed-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="e-shop.a.archive">Archive</span></button>
+                </div>
+              </details>
             </div>
           </div>
         <!-- D435（2026-10-16，S81.1）：已發布且上架中的活動按「編輯活動」只能改庫存——就地說明＋下架入口（按鈕帶 data-ed-unlist，與「上架與下架」那顆同一個動作、同一個確認窗）。edStockSync() 切 hidden -->
@@ -1307,61 +1335,16 @@
         </div>
           </div>
 
-          <div data-nav-panel="link">
-<section class="card mt-16">
-          <div class="card__head">
-            <h3 class="card__title" data-i18n="ed.pub.link">Event link &amp; QR</h3>
-          </div>
-          <div class="ed-pub__linkrow">
-            <div class="ed-pub__qr" id="ed-pub-qr" aria-hidden="true"></div>
-            <div class="ed-pub__linkmain">
-              <input class="input" id="ed-pub-url" disabled aria-label="Event link" data-i18n-aria-label="ed.pub.link.hidden">
-              <p class="field__hint" data-i18n="ed.pub.link.hint">Where fans buy tickets. The QR points at the same page.</p>
-            </div>
-          </div>
-        </section>
-          </div>
+          <!-- 墓碑 2026-10-27：「活動連結與 QR」自設定分頁（原最後一個子分頁）搬到總覽右欄、活動摘要下方（使用者指示）；
+               欄位 id（ed-pub-url、ed-pub-qr）沒變，renderPublish() 照常填。 -->
 
           <!-- D453（2026-10-19）：設定分頁的「在地化」子分頁與卡（翻譯／基準幣別／幣別覆寫三格摘要、bookyay 港幣鎖定說明、卡內按鈕）整張拿掉；
                要翻譯、改幣別或覆寫價格，一律從頁首的「預覽與在地化」按鈕進 event-localization.html（5.1.6.3 §2.13，D305／D306／D310）。
                bookyay 港幣價格鎖定的說明由預覽與在地化頁價格表的港幣欄鎖頭承擔。 -->
 
 
-          <!-- ═══ 取消活動（2026-08-17 自頁首搬來）═══
-               頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定——
-               放在最順手的位置只會增加誤觸。改放設定的最末端，並用破壞性樣式與一句
-               後果說明把它跟上面的設定隔開。實際的確認彈窗（會退掉幾張票）不變。 -->
-          <!-- ═══ 上架／下架（2026-10-07 · D361 → 2026-10-08 · D371 決定一）═══
-               上架／下架是階段以外的另一維度：下架後活動留在原本的階段，頁首與清單列另掛「已下架」徽章。
-               D371：創作者本人與 Admin 代管態都能按；草稿以外六個階段都出現（本頁不收草稿）。已結束與已取消
-               整頁唯讀（D361 決定三），這兩顆是例外——data-view-safe 讓它在檢視模式下照樣能按。
-               已下架時同一處換成「重新上架」（標題、說明、按鈕由 syncUnlist() 依 ev.unlisted 切換）。 -->
-          <div data-nav-panel="unlist" id="ed-unlist" data-feat="S81" hidden>
-            <div class="section-head">
-              <h2 class="section-head__title" id="ed-unlist-title" data-i18n="event-detail.unlist.title">Unlist this event</h2>
-              <div class="section-head__sub" id="ed-unlist-sub" data-i18n="event-detail.unlist.sub">Fans see it as unlisted and can’t buy; anything in their carts shows as unavailable. It stays in its current stage, and tickets already sold stay valid.</div>
-            </div>
-            <section class="card">
-              <button class="btn btn--outline" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
-              <button class="btn btn--outline" type="button" data-view-safe data-ed-relist hidden data-i18n="event-detail.relist.btn">Relist event</button>
-              <!-- D415 決定一、二（2026-10-14，修訂 D375 決定三）：bookyay 端修改同步到 ztor 時自動下架並通知創作者，重新上架一律手動；
-                   bookyay 改回草稿仍同步下架。ztor 自己的上下架照舊保留 -->
-              <p class="field__hint field__hint--fact mt-8" id="ed-unlist-bky" hidden data-i18n="event-detail.unlist.bky">When an edit in bookyay syncs to this event, it’s unlisted automatically and you’ll get a notice — relist it yourself once you’ve checked it. Moving it back to draft in bookyay unlists it here too.</p>
-            </section>
-          </div>
-
-          <!-- ═══ 封存／解除封存（D457，2026-10-20；取代原「取消活動」整塊）═══
-               活動沒有取消動作，要歸檔就封存（比照商品 D284／D298）：只有已下架才出現，封存後整頁唯讀、離開主清單；
-               已封存時整頁只剩頁首的「解除封存」，這一塊跟著收起。確認內容由 syncArchive()／click 委派處理。 -->
-          <div data-nav-panel="archive" id="ed-archive" data-feat="S81" hidden>
-            <div class="section-head">
-              <h2 class="section-head__title" data-i18n="event-detail.archive.title">Archive this event</h2>
-              <div class="section-head__sub" data-i18n="event-detail.archive.sub">It leaves the main list and only shows under Archived. Its page turns read-only; orders and revenue are not affected. You can unarchive it anytime.</div>
-            </div>
-            <section class="card">
-              <button class="btn btn--outline" type="button" data-view-safe data-ed-archive><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="e-shop.a.archive">Archive</span></button>
-            </section>
-          </div>
+          <!-- 墓碑 2026-10-27：「上架／下架」與「封存」兩個區塊自設定分頁底部拿掉（使用者指示），入口改在分頁工具列右側的「⋯」下拉（#ed-more）。
+               原區塊的標題與說明句（event-detail.unlist.title／sub、relist.title／sub、archive.title／sub）i18n 鍵保留未用。 -->
 
           </div>
         </div>
@@ -1393,7 +1376,7 @@
             <!-- 2026-10-10（使用者指示「整頁的編輯要在票務這一列的右側也能開啟」）：整頁編輯開關與「設定」「售票與名單」分頁那兩顆是同一個動作，
                  三處都掛 data-ed-editmode，狀態（編輯／儲存 N 項變更）一起同步。 -->
             <div class="list-toolbar__actions">
-              <button class="btn btn--ghost" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="undo-2" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
+              <button class="btn btn--outline" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="arrow-back-up" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
@@ -1586,7 +1569,7 @@
                  這一頁是互斥切換（data-nav-mode="switch"），工作列跟著目前那一節換動作：data-nav-act="<節 key>" 只在那一節是目前這一節時出現，
                  顯隱由 syncNavSections() 統一算；交易明細還沒有任何一筆時另掛 data-nav-act-off 收起（同原本整組收起）。 -->
             <div class="list-toolbar__actions">
-              <button class="btn btn--ghost" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="undo-2" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
+              <button class="btn btn--outline" type="button" data-view-safe data-ed-cancel data-dock-icon hidden><i data-lucide="arrow-back-up" class="ztor-icon"></i><span data-i18n="ee.discard">Discard changes</span></button>
               <button class="btn btn--outline" type="button" data-view-safe data-ed-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
@@ -1626,18 +1609,21 @@
              已經有答案（filter-tabs），這裡卻自己畫了第二種。
              2026-09-09（D253）：篩選值第三態 data-tx-filter 內部值改 "voided"（對應 tx.status
              ='voided'），顯示文字改「Cancelled／已取消」——與交易列的狀態徽章同一個詞。 -->
-        <nav class="filter-tabs mt-16" role="tablist" aria-label="Filter transactions" data-i18n-aria-label="event-detail.tx.f.aria">
+        <!-- 2026-10-27 使用者：篩選分頁與訂單日期「一左一右」——兩個收進同一列 .filter-row（chip.css，左右撐開、窄寬時折行） -->
+        <div class="filter-row mt-16">
+        <nav class="filter-tabs" role="tablist" aria-label="Filter transactions" data-i18n-aria-label="event-detail.tx.f.aria">
           <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-tx-filter="all"><span data-i18n="event-detail.tx.f.all">All</span><span class="filter-tabs__count" data-tx-count="all">0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="paid"><span data-i18n="event-detail.tx.f.paid">Paid</span><span class="filter-tabs__count" data-tx-count="paid">0</span></button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tx-filter="voided"><span data-i18n="event-detail.tx.f.cancelled">Cancelled</span><span class="filter-tabs__count" data-tx-count="voided">0</span></button>
         </nav>
         <!-- D411（5.1.6.3 §2.7）：訂單日期（起）／（訖），可只填一邊，與子集篩選同時成立；匯出照篩選結果。共用 date-range（同訂單管理） -->
-        <div class="date-range mt-16" data-feat="O35" data-tx-dates>
+        <div class="date-range" data-feat="O35" data-tx-dates>
           <span class="date-range__label" data-i18n="orders.filter.date">Order date</span>
           <span class="date-range__field"><input class="input" type="date" data-tx-date-from data-view-safe aria-label="Order date (from)" data-i18n-aria-label="orders.filter.date.from"></span>
           <span class="date-range__sep">–</span>
           <span class="date-range__field"><input class="input" type="date" data-tx-date-to data-view-safe aria-label="Order date (to)" data-i18n-aria-label="orders.filter.date.to"></span>
           <button class="btn btn--ghost btn--xs date-range__clear" type="button" data-tx-date-clear data-view-safe hidden data-i18n="orders.filter.date.clear">Clear dates</button>
+        </div>
         </div>
 
         <section class="card mt-16" style="padding:0;overflow:hidden">
@@ -2006,6 +1992,16 @@
       <span>·</span>
       <span data-i18n="event-detail.footer2">Ticket revenue rolls up to Earnings → Event ticketing</span>
     </footer>
+    <!-- 組合包彈窗（2026-10-27，UI-CHANGES 三百五十九）：點組合包卡在這裡開組合商品細節頁，不離開活動詳情 -->
+    <div class="embed-modal" id="ed-bd-popup" hidden role="dialog" aria-modal="true" aria-labelledby="ed-bd-popup-title">
+      <div class="embed-modal__sheet">
+        <div class="embed-modal__head">
+          <h2 class="embed-modal__title" id="ed-bd-popup-title"></h2>
+          <button class="embed-modal__close" type="button" data-view-safe data-bd-popup-close aria-label="Close" data-i18n-aria-label="sheet.close"><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <iframe class="embed-modal__frame" title="Bundle"></iframe>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -3138,7 +3134,7 @@
       if (b.closest('.page-intro__actions')) b.hidden = !(s === 'ended' || !!ev.unlisted);
     });
     document.querySelectorAll('[data-ed-unarchive]').forEach(b => { b.hidden = !arch; });
-    if (arch) document.querySelectorAll('.page-intro__actions [data-ed-preview], .page-intro__actions [data-ed-localize]').forEach(b => { b.hidden = true; });
+    if (arch) document.querySelectorAll('.page-intro__actions [data-ed-preview], [data-ed-localize]').forEach(b => { b.hidden = true; });
   }
 
   /* 封存／解除封存（D457，2026-10-20；比照商品 D284／D288／D298，規則本體在 5.1.6.3 §2.1）：
@@ -3147,8 +3143,6 @@
      「設定」分頁底部的封存區塊只在已下架（且尚未封存）時出現；已封存時上架／下架區塊也收起（唯一動作是頁首解除封存）。 */
   function syncArchive() {
     const arch = !!ev.archived;
-    const box = document.getElementById('ed-archive');
-    if (box) box.hidden = !(ev.unlisted && !arch && ev.status !== 'draft');
     const badge = document.getElementById('ed-archived-badge');
     if (badge) badge.hidden = !arch;
     const banner = document.getElementById('ed-archived-banner');
@@ -3156,38 +3150,49 @@
     if (arch) {
       const ub = document.getElementById('ed-unlisted-badge'); if (ub) ub.hidden = true;
       const sb = document.getElementById('ed-soldout-badge'); if (sb) sb.hidden = true;
-      const ul = document.getElementById('ed-unlist'); if (ul) ul.hidden = true;
     }
+    syncMoreMenu();
     syncHeaderActions();
   }
+  /* 設定分頁工具列的「⋯」下拉（2026-10-27）：草稿與已封存整顆收起；下架中才有「重新上架」；已下架且未封存才有「封存」。 */
+  function syncMoreMenu() {
+    const menu = document.getElementById('ed-more');
+    if (!menu) return;
+    const off = !!ev.unlisted, arch = !!ev.archived;
+    menu.hidden = ev.status === 'draft' || arch;
+    if (menu.hidden) menu.removeAttribute('open');
+    const un = menu.querySelector('[data-ed-unlist]'), re = menu.querySelector('[data-ed-relist]'), ar = menu.querySelector('[data-ed-archive]');
+    if (un) un.hidden = off;
+    if (re) re.hidden = !off;
+    if (ar) ar.hidden = !(off && !arch && ev.status !== 'draft');
+    /* 隱藏／顯示於商店（營運動作）：標籤與圖示跟著目前狀態；缺值＝顯示 */
+    const sh = menu.querySelector('[data-ed-shown]');
+    if (sh) {
+      const shownNow = !ev.publish || ev.publish.shown !== false;
+      const key = shownNow ? 'event-detail.hide.btn' : 'event-detail.show.btn';
+      const lab = sh.querySelector('[data-ed-shown-label]');
+      if (lab) { lab.setAttribute('data-i18n', key); lab.textContent = T(key, shownNow ? 'Hide from shop' : 'Show in shop'); }
+      const ic = sh.querySelector('svg, i'); if (ic) ic.setAttribute('data-lucide', shownNow ? 'eye-off' : 'eye');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(sh);
+    }
+  }
+  /* 點選單項目後收起；點選單以外的地方也收起（原生 <details> 不會自己關）。 */
+  document.addEventListener('click', e => {
+    /* 三百五十九起：票種卡、組合包卡的「⋯」也是同一種下拉，一併處理 */
+    document.querySelectorAll('#ed-more[open], .tier-card__more[open]').forEach(menu => {
+      if (!menu.contains(e.target) || e.target.closest('.dropdown__item')) menu.removeAttribute('open');
+    });
+  });
 
   /* 上架／下架（D361 決定五 → D371 決定一，2026-10-08）：草稿以外六個階段都出現（本頁不收草稿），
      創作者本人與 Admin 代管態都能按。已下架時同一處換成「重新上架」：標題、說明、按鈕跟著切；
      頁首另掛「已下架」徽章（階段徽章不動）。 */
   function syncUnlist() {
-    const box = document.getElementById('ed-unlist');
     const badge = document.getElementById('ed-unlisted-badge');
     if (badge) badge.hidden = !ev.unlisted;
-    if (!box) return;
-    box.hidden = ev.status === 'draft';
-    const off = !!ev.unlisted;
-    const setKey = (el, key, fb) => { if (!el) return; el.setAttribute('data-i18n', key); el.textContent = T(key, fb); };
-    setKey(document.getElementById('ed-unlist-title'),
-      off ? 'event-detail.relist.title' : 'event-detail.unlist.title',
-      off ? 'Relist this event' : 'Unlist this event');
-    setKey(document.getElementById('ed-unlist-sub'),
-      off ? 'event-detail.relist.sub' : 'event-detail.unlist.sub',
-      off ? 'This event is unlisted — fans see it as unlisted and can’t buy. When you relist, you can choose to relist the bundles that came down with it.'
-          : 'Fans see it as unlisted and can’t buy; anything in their carts shows as unavailable. It stays in its current stage, and tickets already sold stay valid.');
-    const un = box.querySelector('[data-ed-unlist]');
-    const re = box.querySelector('[data-ed-relist]');
-    if (un) un.hidden = off;
-    if (re) re.hidden = !off;
-    const bkyNote = document.getElementById('ed-unlist-bky');
-    if (bkyNote) bkyNote.hidden = !isBky();   // D415（修訂 D375 決定三）：bookyay 修改同步＝自動下架並通知、手動重新上架；改回草稿＝同步下架
     syncBkySyncNotice();
     syncSaleBadges();
-    syncArchive();    // D457：封存區塊、頁首動作與徽章優先序跟著上架／下架重算
+    syncArchive();    // D457：封存項目、頁首動作與徽章優先序跟著上架／下架重算（也會更新「⋯」下拉）
     edLiveRelock();   // D413：進行中的高影響欄位跟著上架／下架鎖或解
   }
   document.addEventListener('ztor:creator-changed', () => syncUnlist());
@@ -3308,6 +3313,28 @@
           if (window.ztorToast) window.ztorToast.show(T('event-detail.unlist.toast', 'Event unlisted'));
         }
       });
+      return;
+    }
+    /* 隱藏／顯示於商店（2026-10-27 使用者指示；營運動作、立即生效，與設定分頁「發布設定」的「顯示於商店」同一個值 publish.shown）：
+       隱藏時產生非公開連結（publish.linkKey）、切回顯示即撤銷（D340／D375 決定八）；編輯中還有沒儲存的變更時先不切，
+       以免草稿與已生效的值打架（同重新上架的做法）。 */
+    if (e.target.closest('[data-ed-shown]')) {
+      const pEd = document.querySelector('.tab-panel[data-editable]');
+      if (pEd && pEd.getAttribute('data-mode') === 'edit' && isDirty()) {
+        if (window.ztorToast) window.ztorToast.show(T('event-detail.shown.dirty', 'Save or discard your changes first, then change visibility.'));
+        return;
+      }
+      const p0 = ev.publish || {};
+      const toHidden = p0.shown !== false;
+      const next = Object.assign({}, p0, { shown: !toHidden, linkKey: toHidden ? (p0.linkKey || pubLinkKey()) : '' });
+      ev.publish = next;
+      window.ztorEvents.saveEdits(ev.id, { publish: next });
+      if (pubDraft) pubDraft.publish = Object.assign({}, next);
+      try { renderPublish(); } catch (err) {}
+      syncMoreMenu();
+      if (window.ztorToast) window.ztorToast.show(toHidden
+        ? T('event-detail.hide.toast', 'Hidden from the shop — only people with the event link or QR can get in')
+        : T('event-detail.show.toast', 'Shown in the shop; the old event link stops working'));
       return;
     }
     /* 重新上架（D371 決定一；D457：已取消退場）：已結束先提示「粉絲找得到活動頁但不能購買」，確認才上架；
@@ -4667,7 +4694,7 @@
       if (label) {
         const key = editing ? 'event-detail.btn.save' : 'event-detail.btn.edit';
         label.setAttribute('data-i18n', key);
-        label.textContent = T(key, editing ? 'Save changes' : 'Edit event');
+        label.textContent = T(key, editing ? 'Save' : 'Edit event');
       }
     });
   }
@@ -4754,7 +4781,7 @@
           label.textContent = T('event-detail.btn.save-n', 'Save {n} changes').replace('{n}', String(n));
         } else {
           label.setAttribute('data-i18n', 'event-detail.btn.save');
-          label.textContent = T('event-detail.btn.save', 'Save changes');
+          label.textContent = T('event-detail.btn.save', 'Save');
         }
       }
     });
@@ -5313,35 +5340,58 @@
         /* 2026-10-09（D390 稽核第一節原型第 17 條）：bookyay 活動的門票隱藏徽章掛 S92；創作者自建活動自己切成隱藏的票屬 S55
            （⚪，release2.3 收起開關），徽章跟著收，不然看得到「隱藏」卻找不到開關。墓碑 2026-10-16（D429）：1 人票（hideFix）條件退場。 */
         (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
+      /* 摘要卡（2026-10-27，UI-CHANGES 三百五十九；lab-event-cards.html 第二版）：縮圖直式在上 → 名稱＋徽章 → 事實列 → 底部銷售區；
+         動作收進右上「⋯」：編輯門票（開門票彈窗）、隱藏／顯示（D422，toggleTierVisNow）、庫存設為 0（D447）。
+         張數與銷量兩列收成銷售區（數字＋量條）；「已覆寫」不自佔一列，併進票價左邊的小標記（滑過列出幣別）。 */
+      const S = window.ztorEvents;
+      const qty = Number(t.qty) || 0;
+      const stock = S.tierStock(ev, t);
+      const ovr = overrideLine(S.priceOf(ev, t));
+      const ovrN = ovr ? ovr.split(' · ').length : 0;
+      const priceVal = Number(t.price) === 0 ? tixEsc(T('ce.tier.free', 'Free')) : tixEsc(S.moneyIn(S.priceOf(ev, t)));
+      const ovrMark = ovr ? '<span class="tier-card__ovr" title="' + tixEsc(ovr) + '"><i data-lucide="globe" class="ztor-icon"></i>' +
+        tixEsc(T('tc.ovr', '{n} set separately').replace('{n}', ovrN)) + '</span>' : '';
+      const visWhy = tierVisBlock(t), zeroWhy = ev.status === 'draft' ? 'draft' : tierZeroBlock(t);
+      const menu = removed ? '' :
+        '<details class="dropdown tier-card__more"><summary class="btn btn--ghost btn--icon btn--sm" aria-label="' + tixEsc(T('event-detail.more', 'More actions')) + '"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>' +
+        '<div class="dropdown__menu" role="menu">' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-view-safe data-tix-open="' + tixEsc(t.id) + '"><i data-lucide="pencil" class="ztor-icon"></i><span>' + tixEsc(T('ed.tix.menu.edit', 'Edit ticket')) + '</span></button>' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-view-safe data-tix-vis="' + tixEsc(t.id) + '" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '"' +
+            (visWhy ? ' disabled aria-disabled="true" title="' + tixEsc(T('ed.tm.ro', 'This event has ended or is archived — tickets are view-only.')) + '"' : '') + '>' +
+            '<i data-lucide="' + (t.hidden ? 'eye' : 'eye-off') + '" class="ztor-icon"></i><span>' + tixEsc(T(t.hidden ? 'ed.tix.show' : 'ed.tix.hide', t.hidden ? 'Show' : 'Hide')) + '</span></button>' +
+          (zeroWhy === 'draft' ? '' : '<button class="dropdown__item" type="button" role="menuitem" data-view-safe data-tix-zero="' + tixEsc(t.id) + '" data-feat="S100"' +
+            (zeroWhy ? ' disabled aria-disabled="true" title="' + tixEsc(tierZeroWhy(zeroWhy)) + '"' : '') + '>' +
+            '<i data-lucide="package-x" class="ztor-icon"></i><span>' + tixEsc(T('ed.tix.zero', 'Set stock to 0')) + '</span></button>') +
+        '</div></details>';
+      const pct = qty ? Math.min(100, Math.round(sold / qty * 100)) : 0;
+      const state = stock > 0
+        ? '<span>' + tixEsc(T('tc.left', '{n} left').replace('{n}', fmtNum(stock))) + '</span>'
+        : (sold >= qty ? '<span class="tier-card__sales-state--out">' + tixEsc(T('events.badge.soldout', 'Sold out')) + '</span>' : '<span>' + tixEsc(T('tc.left', '{n} left').replace('{n}', '0')) + '</span>');
       return (removed
-          ? '<div class="card tier-card staged-remove" data-ed-tier-removed="' + tixEsc(t.id) + '">'
-          : '<div class="card tier-card tier-card--clickable" data-ed-tier="' + tixEsc(t.id) + '">') +
-        '<div class="tier-card__head">' +
-          '<h4 class="tier-card__name' + (removed ? ' staged-remove__strike' : '') + '">' + tixEsc(t.name || T('ce.tier.untitled', 'Untitled tier')) + '</h4>' + badges +
-        '</div>' +
+          ? '<div class="card tier-card tier-card--summary staged-remove" data-ed-tier-removed="' + tixEsc(t.id) + '">'
+          : '<div class="card tier-card tier-card--summary tier-card--clickable' + (t.hidden ? ' is-off' : '') + '" data-ed-tier="' + tixEsc(t.id) + '">') +
+        menu +
         '<div class="tier-card__thumb">' +
           /* D384：門票有自己的圖就用它，沒有就沿用活動主視覺 */
           (tierImgOf(t) ? '<img src="' + tixEsc(tierImgOf(t)) + '" alt="">' : '<i data-lucide="image" class="ztor-icon"></i>') +
         '</div>' +
+        '<div class="tier-card__head">' +
+          '<h4 class="tier-card__name' + (removed ? ' staged-remove__strike' : '') + '">' + tixEsc(t.name || T('ce.tier.untitled', 'Untitled tier')) + '</h4>' + badges +
+        '</div>' +
         '<dl class="tier-card__facts">' +
           /* D380：多場活動的獨立票寫出所屬場次（單場不寫——只有一場，沒有「哪一場」要分） */
           (soloSessText(t) ? fact(T('ed.tix.sess', 'Date'), tixEsc(soloSessText(t))) : '') +
-          /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6：基準幣別＝建立當下的預設幣別，bookyay 帶入者為港幣）；
-             其他幣別不逐一列出、只在有覆寫時補一行「其他幣別」列出被改過的那幾格（呈現假設，UIA-165），
-             完整五幣別表在「設定 → 在地化」再開的價格表。 */
-          fact(T('ee.tix.price', 'Price'), Number(t.price) === 0 ? tixEsc(T('ce.tier.free', 'Free')) : tixEsc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t)))) +
-          /* bookyay 帶入者（D330）：基準價是港幣原價換算來的——多一列「bookyay 原價 HK$300」，換算的來源看得到；
-             覆寫列可能含基準幣別欄（創作者幣別可覆寫），標題改「已覆寫」而不是「其他幣別」。 */
+          /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6）；有覆寫時價格左邊一枚「n 幣別另設」小標記（原「其他幣別／已覆寫」一列，UIA-165） */
+          fact(T('ee.tix.price', 'Price'), ovrMark + priceVal) +
+          /* bookyay 帶入者（D330）：基準價是港幣原價換算來的——多一列「bookyay 原價 HK$300」 */
           (bkyPinText(t) ? fact(T('ed.tix.bky-price', 'bookyay price'), tixEsc(bkyPinText(t))) : '') +
-          (overrideLine(window.ztorEvents.priceOf(ev, t)) ? fact(isBkyTier(t) ? T('ed.tix.overrides', 'Overridden') : T('ed.tix.other-cur', 'Other currencies'), tixEsc(overrideLine(window.ztorEvents.priceOf(ev, t)))) : '') +
-          /* 墓碑 2026-09-23（D316）：卡面的「手續費」事實列隨欄位退場。 */
-          fact(T('ee.tix.qty', 'Quantity'), fmtNum(Number(t.qty) || 0)) +
-          fact(T('ed.tix.col.sold', 'Sold'), fmtNum(sold)) +
           /* D465：鎖給單售（可賣/配額）與保留中；沒鎖單售、也沒有保留時不加列 */
-          (window.ztorEvents.tierSingleLock(t) !== null ? fact(T('ed.tix.col.lock', 'Locked for single sale'), quotaHTML(window.ztorEvents.tierSingleLock(t), window.ztorEvents.tierHoldSingle(t))) : '') +
-          (window.ztorEvents.tierHeld(ev, t) ? fact(T('ed.tix.col.reserved', 'Reserved'), fmtNum(window.ztorEvents.tierHeld(ev, t))) : '') +
-          /* 墓碑 2026-10-21（D462）：卡面的「提前入場」事實列隨門票層提前入場退場。 */
+          (S.tierSingleLock(t) !== null ? fact(T('ed.tix.col.lock', 'Locked for single sale'), quotaHTML(S.tierSingleLock(t), S.tierHoldSingle(t))) : '') +
+          (S.tierHeld(ev, t) ? fact(T('ed.tix.col.reserved', 'Reserved'), fmtNum(S.tierHeld(ev, t))) : '') +
+          /* 墓碑 2026-10-27（三百五十九）：「張數」「銷量」兩列收進下方銷售區；墓碑 2026-09-23（D316）手續費、2026-10-21（D462）提前入場 */
         '</dl>' +
+        '<div class="tier-card__sales"><div class="tier-card__sales-row"><span>' + tixEsc(T('ed.bd.sold', 'Sold')) + ' <b>' + fmtNum(sold) + '</b> / ' + fmtNum(qty) + '</span>' + state + '</div>' +
+          '<div class="stock-bar"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div></div>' +
         (removed ? '<div class="staged-remove__keep staged-remove__bar">' + stagedRemoveKeep(t) + '</div>' : '') +
       '</div>';
     };
@@ -5968,6 +6018,20 @@
   }
   document.getElementById('ed-tier-list')?.addEventListener('click', e => {
     if (undoStagedRemove(e)) return;
+    /* 摘要卡右上「⋯」（三百五十九）：點開選單本身不開彈窗；選單項目各做各的事 */
+    if (e.target.closest('summary')) return;
+    const op = e.target.closest('[data-tix-open], [data-tix-vis], [data-tix-zero]');
+    if (op) {
+      if (op.disabled) return;
+      const tt = edTiers.find(x => x.id === (op.dataset.tixOpen || op.dataset.tixVis || op.dataset.tixZero));
+      if (!tt) return;
+      op.closest('details')?.removeAttribute('open');
+      if (op.dataset.tixOpen) openTierModal(tt);
+      else if (op.dataset.tixVis) { toggleTierVisNow(tt); refreshTix(); }
+      else if (setTierStockZeroNow(tt) === 'ok') refreshTix();
+      return;
+    }
+    if (e.target.closest('.dropdown')) return;
     const card = e.target.closest('[data-ed-tier]');
     if (!card) return;
     const t = edTiers.find(x => x.id === card.dataset.edTier);
@@ -7278,6 +7342,7 @@
     if (urlEl) urlEl.value = url;
     const qr = document.getElementById('ed-pub-qr');
     if (qr && window.ztorFauxQr) qr.innerHTML = window.ztorFauxQr(ev.id.length * 3 + 5);
+    try { syncMoreMenu(); } catch (e) {}   // 「隱藏／顯示於商店」的標籤跟著發布設定存檔後的值
   }
   /* 頂列黏住之後，麵包屑換成「縮圖＋名稱」（2026-08-18，做法與 project-detail 同一支）：
      黏在頂端的那一列如果只剩按鈕，看不出是在對哪一場活動下指令；而麵包屑那串路徑捲下來
@@ -7397,9 +7462,30 @@
       const saleWhen = v => String(v || '').replace(/-/g, '/').replace('T', ' ') || '—';
       const saleVal = b.sale ? T('cpp.bd.sp.sale.val', '{pct}% off · {from} – {to}').replace('{pct}', String(b.sale.pct))
         .replace('{from}', saleWhen(b.sale.from)).replace('{to}', saleWhen(b.sale.to)) : '';
-      return '<div class="card tier-card tier-card--clickable" role="link" tabindex="0" data-ed-bundle="' + esc(b.id) + '" data-href="' + esc(href) + '">' +
+      /* 摘要卡（2026-10-27，UI-CHANGES 三百五十九）：與票種卡同一副骨架——封面直式在上（組合包封面 b.cover → 第一個商品圖 → 活動主視覺）
+         → 名稱＋隱藏徽章 → 事實列（組合價／內含票券／內含商品／已佔用票券／限時折扣）→ 底部銷售區（已售／限量＋剩幾組或售完）；
+         卡尾原本那排「在電子商店管理 →／庫存設為 0／隱藏・顯示」收進右上「⋯」。整卡點開改成彈窗（使用者：「組合包點開，可以先用 popup 開啟」）。 */
+      const cover = (typeof b.cover === 'string' && b.cover) || ((b.products || []).map(x => x && x.img).filter(Boolean)[0]) || (ev.images && ev.images.keyvisual) || '';
+      const left = capOn ? Math.max(0, cap - sold) : null;
+      const pct = capOn && cap ? Math.min(100, Math.round(sold / cap * 100)) : 0;
+      const state = !capOn ? '' : (left > 0
+        ? '<span>' + esc(T('tc.left.sets', '{n} left').replace('{n}', fmtNum(left))) + '</span>'
+        : '<span class="tier-card__sales-state--out">' + esc(T('events.badge.soldout', 'Sold out')) + '</span>');
+      const zWhy = ev.status === 'draft' ? 'draft' : bdZeroBlock(b), vWhy = bdVisBlock();
+      const menu = '<details class="dropdown tier-card__more"><summary class="btn btn--ghost btn--icon btn--sm" aria-label="' + esc(T('event-detail.more', 'More actions')) + '"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>' +
+        '<div class="dropdown__menu" role="menu">' +
+          '<a class="dropdown__item" role="menuitem" href="' + esc(href) + '"><i data-lucide="external-link" class="ztor-icon"></i><span>' + esc(T('ed.bd.menu.manage', 'Manage in e-shop')) + '</span></a>' +
+          '<button class="dropdown__item" type="button" role="menuitem" data-view-safe data-bd-vis="' + esc(b.id) + '" data-feat="S99"' +
+            (vWhy ? ' disabled aria-disabled="true" title="' + esc(T('ed.bd.vis.ro', 'This event has ended or is archived — bundles here are view-only.')) + '"' : '') + '>' +
+            '<i data-lucide="' + (b.shown === false ? 'eye' : 'eye-off') + '" class="ztor-icon"></i><span>' + esc(T(b.shown === false ? 'ed.tix.show' : 'ed.tix.hide', b.shown === false ? 'Show' : 'Hide')) + '</span></button>' +
+          (zWhy === 'draft' ? '' : '<button class="dropdown__item" type="button" role="menuitem" data-view-safe data-bd-zero="' + esc(b.id) + '" data-feat="S100"' +
+            (zWhy ? ' disabled aria-disabled="true" title="' + esc(bdZeroWhy(zWhy)) + '"' : '') + '>' +
+            '<i data-lucide="package-x" class="ztor-icon"></i><span>' + esc(T('ed.tix.zero', 'Set stock to 0')) + '</span></button>') +
+        '</div></details>';
+      return '<div class="card tier-card tier-card--summary tier-card--clickable' + (b.shown === false ? ' is-off' : '') + '" role="link" tabindex="0" data-ed-bundle="' + esc(b.id) + '" data-href="' + esc(href) + '">' +
+        menu +
+        '<div class="tier-card__thumb">' + (cover ? '<img src="' + esc(cover) + '" alt="">' : '<i data-lucide="package" class="ztor-icon"></i>') + '</div>' +
         '<div class="tier-card__head">' +
-          '<span class="card__title-icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
           '<h4 class="tier-card__name">' + esc(b.name) + '</h4>' +
           /* D423 決定一：隱藏的組合包標「隱藏」（同票種卡的隱藏徽章） */
           (b.shown === false ? '<span class="badge badge--neutral" data-feat="S99">' + esc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +
@@ -7410,14 +7496,12 @@
           // products 是 { name, img }（2026-08-17 起）——直接 join 會印出 [object Object]
           fact(T('ed.bd.products', 'Products inside'),
                esc((b.products || []).map(x => (x && x.name) || x).join('，') || '—')) +
-          fact(T('ed.bd.sold', 'Sold'), fmtNum(sold) + (capOn ? ' / ' + fmtNum(cap) : '')) +
-          (capOn ? fact(T('ed.bd.left', 'Left'), fmtNum(Math.max(0, cap - sold))) : '') +
           fact(T('ed.bd.pool', 'Tickets drawn from stock'), fmtNum(tickets)) +
           (saleVal ? fact(T('cpp.bd.sp.sale', 'Limited-time discount'), esc(saleVal)) : '') +
+          /* 墓碑 2026-10-27（三百五十九）：「已售」「剩餘」兩列收進下方銷售區 */
         '</dl>' +
-        /* 入口連結放卡尾、不放卡頭：卡頭放的話三欄格裡名稱被擠成三行（1440 寬實測）。 */
-        /* D423 決定一：卡尾右邊一顆隱藏／顯示（營運動作、立即生效；點它不導頁，見下方導頁 handler） */
-        '<div class="mt-8 flex-row" style="justify-content:space-between;align-items:center;gap:var(--sp-8)"><a class="card__link" href="' + esc(href) + '">' + esc(T('ed.bd.manage', 'Manage in e-shop →')) + '</a><span class="flex-row" style="gap:var(--sp-8)">' + (tk.tierIds.length ? bdZeroBtn(b) : '') + bdVisBtn(b) + '</span></div>' +
+        '<div class="tier-card__sales"><div class="tier-card__sales-row"><span>' + esc(T('ed.bd.sold', 'Sold')) + ' <b>' + fmtNum(sold) + '</b>' + (capOn ? ' / ' + fmtNum(cap) : '') + '</span>' + state + '</div>' +
+          (capOn ? '<div class="stock-bar"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div>' : '') + '</div>' +
       '</div>';
     }).join('') +
       /* D397 決定一：有組合包時的新增入口＝空狀態那顆的同一個目的地。長相沿用票種的「新增門票」卡（.upload-tile.tier-add），
@@ -7545,11 +7629,36 @@
     renderBundles();
   });
   renderBundles();
+  /* 組合包彈窗（2026-10-27，三百五十九）：embed-modal（ds-components/embed-modal.css）裝 bundle-detail.html?embed=1；
+     關閉後重讀組合包並重畫卡片——彈窗裡改了顯示、庫存或內容，卡片要跟上（兩頁讀寫同一份 events-store 覆寫）。 */
+  function openBundlePopup(href, name) {
+    const m = document.getElementById('ed-bd-popup');
+    if (!m) { leaveTo(href); return; }
+    m.querySelector('.embed-modal__title').textContent = name;
+    m.querySelector('iframe').src = href + (href.indexOf('?') >= 0 ? '&' : '?') + 'embed=1&theme=' + encodeURIComponent(document.documentElement.getAttribute('data-theme') || 'dark');
+    m.hidden = false;
+    document.body.classList.add('is-modal-open');
+    m.querySelector('[data-bd-popup-close]').focus();
+  }
+  function closeBundlePopup() {
+    const m = document.getElementById('ed-bd-popup');
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    m.querySelector('iframe').src = 'about:blank';
+    document.body.classList.remove('is-modal-open');
+    try { const fresh = window.ztorEvents.get(ev.id); if (fresh && fresh.bundles) ev.bundles = fresh.bundles; } catch (e) {}
+    renderBundles();
+  }
+  document.querySelector('#ed-bd-popup [data-bd-popup-close]')?.addEventListener('click', closeBundlePopup);
+  document.getElementById('ed-bd-popup')?.addEventListener('click', e => { if (e.target.id === 'ed-bd-popup') closeBundlePopup(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBundlePopup(); });
   /* 組合包卡的導頁：點卡或鍵盤 Enter／Space 都到細節頁（卡是 div 不是 <a>，避免整卡文字吃到連結色）。 */
   (function () {
     const list = document.getElementById('ed-bundle-list');
     if (!list) return;
-    const go = el => { const card = el && el.closest('[data-ed-bundle]'); if (card && card.dataset.href) leaveTo(card.dataset.href); };   // D392 補充二
+    /* 2026-10-27（三百五十九，使用者：「組合包點開，可以先用 popup 開啟」）：點卡改成在彈窗裡開組合商品細節頁（embed-modal＋iframe），
+       不離開活動詳情；「⋯」裡的「在電子商店管理」仍是整頁前往。 */
+    const go = el => { const card = el && el.closest('[data-ed-bundle]'); if (card && card.dataset.href) openBundlePopup(card.dataset.href, (card.querySelector('.tier-card__name') || {}).textContent || ''); };
     /* 卡頭的「在電子商店管理 →」是真 <a>（同一個目的地）：點它交給瀏覽器原生導頁，不重複導。 */
     list.addEventListener('click', e => {
       /* D423 決定一：卡尾的隱藏／顯示鈕是營運動作，不導頁 */
@@ -7557,11 +7666,12 @@
       if (vis) { if (!vis.disabled) toggleBundleVisNow(vis.dataset.bdVis); return; }
       const zro = e.target.closest('[data-bd-zero]');
       if (zro) { if (!zro.disabled) setBundleSetsZeroNow(zro.dataset.bdZero); return; }
+      if (e.target.closest('summary, .dropdown')) return;   // 「⋯」本身與選單裡的其他地方不開彈窗
       if (e.target.closest('a')) return; go(e.target);
     });
     list.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
-      if (!e.target.closest('[data-ed-bundle]') || e.target.closest('[data-bd-vis], [data-bd-zero]')) return;
+      if (!e.target.closest('[data-ed-bundle]') || e.target.closest('[data-bd-vis], [data-bd-zero], .dropdown')) return;
       e.preventDefault(); go(e.target);
     });
   })();

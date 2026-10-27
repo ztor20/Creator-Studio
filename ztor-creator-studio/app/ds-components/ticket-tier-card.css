@@ -368,3 +368,34 @@
   line-height: var(--lh-snug);
   color: var(--muted-foreground);
 }
+
+/* ── 摘要卡 .tier-card--summary（2026-10-27，UI-CHANGES 三百五十九；示意頁 lab-event-cards.html 第二版定案）──────────
+   活動詳情「票務」分頁的票種卡與組合包卡：只讀、整卡點開。沿用 .tier-card 的骨架（縮圖 → 卡標 → 事實列），改四處：
+     1 縮圖改直式 3:4（48 寬），放最上面；名稱與徽章在圖下面（使用者：「名字放在圖片下面」）
+     2 動作收進右上「⋯」（.tier-card__more，dropdown-menu.css）
+     3 張數／銷量（組合包：已售／剩餘）收成底部的銷售區 .tier-card__sales：數字在上（已售放大）、量條在下；
+       上緣一條貼齊卡片左右邊的淡分隔線；銷售區用 margin-top:auto 貼底，同一列卡片的線與量條對齊
+     4 「已覆寫幣別」不自佔一行，併進票價那一行左邊的小標記 .tier-card__ovr（滑過看是哪幾個幣別）
+   間距：圖→名稱 16、名稱→事實列 12、事實列之間 8、事實列→分隔線至少 20、線→數字 16、數字→量條 8。 */
+.tier-card--summary { display: flex; flex-direction: column; position: relative; }
+.tier-card--summary > .tier-card__more { position: absolute; top: var(--sp-16); right: var(--sp-16); }
+.tier-card--summary > .tier-card__thumb { width: 48px; height: auto; aspect-ratio: 3 / 4; margin: 0; }
+.tier-card--summary > .tier-card__head { margin-top: var(--sp-16); align-items: flex-start; flex-wrap: wrap; }
+.tier-card--summary > .tier-card__head .badge { flex: none; }
+.tier-card--summary > .tier-card__facts { margin: var(--sp-12) 0 var(--sp-20); gap: var(--sp-8); }
+.tier-card--summary.is-off > .tier-card__thumb { opacity: .5; }   /* 隱藏中：只淡化縮圖，文字照常可讀，狀態交給「隱藏」徽章 */
+.tier-card__sales {
+  display: flex; flex-direction: column; gap: var(--sp-8);
+  margin: auto calc(var(--sp-20) * -1) 0;
+  padding: var(--sp-16) var(--sp-20) 0;
+  border-top: 1px solid var(--border-soft);
+}
+.tier-card__sales .stock-bar { margin: 0; }
+.tier-card__sales-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-8);
+  font-size: var(--fs-13); color: var(--muted-foreground); font-variant-numeric: tabular-nums;
+}
+.tier-card__sales-row b { font-weight: var(--fw-regular); font-size: var(--fs-20); line-height: 1; color: var(--foreground); margin: 0 var(--sp-2); }
+.tier-card__sales-state--out { color: var(--brand-ink); }
+.tier-card__ovr { display: inline-flex; align-items: center; gap: var(--sp-4); margin-right: var(--sp-8); font-size: var(--fs-11); color: var(--faint-ink); }
+.tier-card__ovr .ztor-icon { width: 12px; height: 12px; }

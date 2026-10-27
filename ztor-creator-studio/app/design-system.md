@@ -1710,6 +1710,8 @@ Static callout — no interactive states.
 | `.select--bare` default | — | 無邊框無填色（`box-shadow:none`、`background:transparent`）、pill 圓角、`--foreground-muted` 文字、`--fs-12`／`--fw-medium`（比照同列 `.filter-tabs__item`） |
 | `.select--bare` hover | `:hover` | 浮出 `--muted` 底、文字轉 `--foreground` |
 
+**readonly ＝ disabled 樣子（2026-10-27，UI-CHANGES 三百五十七）** — `:is(.input, .textarea)[readonly]` 不分在不在兩段式面板（原本只限 `[data-mode="edit"]`，規則在 shared.css）一律吃上表 disabled 的底色、墨色與 `not-allowed`；例外 `.linkf__input`（帶複製鈕的連結欄）。
+
 **狀態缺口** — `aria-invalid`（錯誤 ring）樣式尚未在 `input.css` 實作；design-system.html 不示範，待補。（`:disabled` 已於 2026-07-16 補上，見上表）
 
 **Class API** (CSS classes — Props/API = N/A, this is a static CSS prototype)
@@ -3212,6 +3214,8 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 - 捲動同步標「跨過上緣參考線的最後一節」。三個實測踩到的坑：**捲到頂**時沒有任何一節命中參考線（要 fallback 到第一節）；**捲到底**時最後一節碰不到參考線（要判斷 `scrollHeight - scrollTop - clientHeight < 4`）；**點擊後**平滑捲動途中會經過別節，要暫停同步並在落定後重新標記一次。
 
 **間距**：分節橫列與內容之間也是 `--sp-18`（`.nav-sections { margin-top }`），並把 `.list-toolbar` 自己的 8px 歸零，讓間距只有一個來源。不改 `.list-toolbar` 的預設值，是因為在清單頁它底下緊接的是次層篩選列（同一組控制項的上下兩排，8px 是對的）；這裡它底下是內容區，兩者是「控制」與「被控制的東西」，距離該拉開。
+
+**沒有卡片外層的分節左右內縮（2026-10-27，UI-CHANGES 三百五十九）** — `.nav-sections > [data-nav-panel]:not(:has(> .card))` 左右各 `--sp-20`：分節內容直接排在畫布上（小標＋票種卡格、組合包、空狀態）時，起點與上方工作列裡的文字對齊；整節包在一張卡裡的分節不動（卡邊與工作列對齊）。
 
 ### 4.22h1 Stat row · Meter list · Day bars（總覽階段主卡的三支，2026-08-17）
 
@@ -5617,6 +5621,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.tier-list` — 卡片的渲染容器，`display: contents`：卡片由 JS 重繪、新增格是靜態 markup，兩者要落在同一張網格上，中間這層就不能自己成為 grid item
 - `.tier-add` — 網格最後一格的新增卡（沿用 `.upload-tile` 的虛線語彙），與票種卡等寬、同列等高（2026-10-12 補 `align-self: stretch`：`.tier-grid` 用 `align-items:start`，新增格不自己 stretch 會停在 min-height、比同列卡矮一截）
 - `.tier-toolbar`（`__actions`）— 網格上方靠右的批次編輯工具列
+- `.tier-card--summary`（2026-10-27，UI-CHANGES 三百五十九；示意頁 lab-event-cards.html 第二版）— 活動詳情票務分頁的唯讀摘要卡（票種與組合包共用）：直式縮圖 3:4（48 寬）在最上 → `.tier-card__head`（名稱＋徽章）→ 事實列 → 底部 `.tier-card__sales`（`__sales-row` 已售數字 `--fs-20`＋右側剩幾張／`__sales-state--out` 售完，下方 `.stock-bar`；上緣一條貼齊卡片左右邊的 `--border-soft` 線，`margin-top:auto` 貼底讓同列對齊）；動作收進右上 `.tier-card__more`（dropdown-menu.css）；`.is-off` 隱藏中只淡化縮圖；`.tier-card__ovr` 票價左邊的「n 幣別另設」小標記（滑過列出幣別），取代原本自佔一列的「已覆寫／其他幣別」。
 - `.card.tier-card` — 單張票種卡，卡體外觀全部來自 `.card`（Q32 的無邊框＋陰影），本元件不重畫
 - `.tier-card--clickable`（2026-08-09 promote）— 加法修飾類，整張卡是開啟編輯的點擊區（`⋮` 選單與拖曳把手排除）。**opt-in，不寫進裸的 `.tier-card`**：本元件也給 `create-event-legacy.html` 用，那邊的卡從來不是「整卡可點」，直接改基礎 class 會讓 legacy 卡悄悄跟著變可點 hover（2026-10-20，使用者回饋看不出上浮）：上浮 `--clickable-card-lift`（4px）＋底色 `--clickable-card-hover-bg`（＝按鈕 hover 用的 `--control-raise-hover`），不換邊框與陰影；同日這組數值升為全站可點卡片標準（見 5.3「可點卡片 hover」），本卡不再自成一格；減少動態偏好時不位移。
 - `.tier-card__grip`（2026-08-09 promote）— 卡標列的拖曳把手（排序不從 bookyay 帶入，直接在 UI 上拖），`cursor:grab`／拖曳中 `grabbing`；`--editing` 態收起（少了它票種名才能與下面自動生成的門票名稱左緣對齊）
@@ -5885,6 +5890,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 **Anatomy**
 - `.field-source` — 掛在 `.field__label` 內、緊跟欄名（2026-10-12 由靠右改為跟標題走；**2026-10-27 起只留小鎖頭 icon**，「bookyay 帶入」字樣收進 `title`／`aria-label`＋`role="img"`，滑過看得到、讀屏唸得到）；`.field__label:has(.field-source)` 才開 flex（2026-09-30 補 `gap: --sp-4`：開了 flex 之後欄名與「（選填）」之間的空白字元被吃掉、黏成一串，D340 開賣設定首次出現），避免壓掉一般欄名裡刻意留的空白
 - **大小寫（2026-10-15 目視檢查 C4）**：`.field-source` 自帶 `text-transform: none; letter-spacing: normal`——掛在區塊標題（`.form-section__title` 被 shared.css 設成 uppercase）裡時不再被轉成「BOOKYAY 帶入」，品牌一律小寫 bookyay。站上「bookyay 帶入」來源標記只剩這一支：建立活動票務區塊標題旁與組合包編輯器「組合內容」原本的膠囊 `.badge--neutral` 同輪改用本元件。
+- `.radio-cards .segmented__btn:disabled`（2026-10-27，UI-CHANGES 三百四十九；三百五十一補：`.segmented.radio-cards.segmented--locked` 不再疊 opacity）— 按鈕自己 disabled 的並排選項卡不必包 `.is-source-locked`，一樣吃鎖定樣子：游標 `not-allowed`、未選字 `--locked-field-ink`、已選字 `--view-field-ink`、選中點灰。
 - `.is-source-locked` — 掛在欄位容器；（2026-10-12 補：底色跟著 `.input:disabled` 改吃 `--disabled-field-bg`〔Q133〕；被選中的選項卡 `.segmented__btn--active` 也退成停用樣子——標題與副標 `--view-field-ink`、右上選中點由橘改 `--muted-foreground` 灰，翻掉 2026-08-10「已選維持 default 對比」，UI-CHANGES 二百一十五）**本身不再自己定義表單控件的鎖定樣式**（2026-08-09 第二輪，使用者裁示「整個元件庫只能有一個 disabled 樣子」）——內部的 `.input`／`.textarea`／`.select` 完全吃 [Input §4.8](#input) 的 `.input:disabled`（透明底＋`--locked-field-ink`）；`.segmented__btn`（含建在它上面的 [Radio card](#radio-card)）不是表單控件、吃不到 `:disabled`，鎖定樣式仍由本檔定義——`cursor: not-allowed`＋`pointer-events: none`（不可點），文字對比改由 `.radio-card__title`／`.radio-card__sub` 直接吃 `--locked-field-ink`（**2026-08-09 第三輪**，見下）
 - **不折行（2026-10-15）**：`.field-source` 加 `white-space: nowrap; flex: none`，圖示 `flex: none`——標記放在窄欄（算式列表的左欄，375px 門票彈窗的票價欄）時原本被拆成鎖頭一行、字兩行；標記是一個單位，整顆換到下一行可以、拆開不行。
 
