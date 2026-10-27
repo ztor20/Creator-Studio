@@ -10443,6 +10443,7 @@
     'tc.left':                     { en: '{n} left', zh: '剩 {n} 張' },   // 摘要卡銷售區（ticket-tier-card.css .tier-card__sales）
     'tc.left.sets':                { en: '{n} left', zh: '剩 {n} 組' },
     'tc.ovr':                      { en: '{n} set separately', zh: '{n} 幣別另設' },   // 票價旁「其他幣別另設價格」小標記，滑過列出幣別
+    'event-detail.scanner.bky.tix': { en: 'Ticket scanning', zh: '門票掃碼' },   // 2026-10-27 掃碼器卡（bookyay 活動）第一組小標（三百六十）
     'event-detail.more':           { en: 'More actions', zh: '更多動作' },   // 2026-10-27 設定分頁工具列「⋯」下拉（下架／重新上架、封存）
     'event-detail.unlist.btn':     { en: 'Unlist event', zh: '下架活動' },
     'event-detail.unlist.done':    { en: 'This event is unlisted.', zh: '這場活動已下架。' },   /* D371 起未使用：已下架改顯示重新上架 */
