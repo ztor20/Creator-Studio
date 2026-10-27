@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 2026-10-27 示意頁（不是正式頁）：活動詳情「票務」分頁的票種卡與組合包卡重新規劃。
+     使用者指示：組合包要有圖片、重新規劃卡片 UX 再重做 UI；票種卡也要重新優化，特別是大小和間距。
+     左欄「現況」照正式頁的 .tier-card 結構重畫一次，右欄「新版」是提案；確認後才改 ds-components/ticket-tier-card.css 與 event-detail.html。
+     新版的樣式先寫在本頁 <style>（.ev-card），定案後 promote 成元件。 -->
+<title>Event cards · Lab</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  body { padding: var(--sp-32) var(--sp-24) var(--sp-64); }
+  .lab-cols { display: flex; flex-direction: column; gap: var(--sp-56); max-width: 924px; margin: 0 auto; }   /* 924＝活動詳情內容欄實際寬，上下比較才看得出真實欄數 */
+  .lab-col__title { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0 0 var(--sp-12); }
+  .lab-h { font-size: var(--fs-20); margin: var(--sp-32) 0 var(--sp-16); }
+  .lab-h:first-child { margin-top: 0; }
+  .lab-note { max-width: 924px; margin: 0 auto var(--sp-24); font-size: var(--fs-13); color: var(--muted-foreground); line-height: 1.7; }
+  .lab-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
+
+  /* ── 新版卡片（提案）：票種與組合包同一副骨架 ──────────────────────────
+     1 頭：縮圖 56×75 直式｜名稱＋徽章／價格｜右上「⋯」
+     2 內容（組合包才有）：一行寫完包了什麼
+     3 銷售：量條＋「已售 n / 總量」｜狀態（剩幾張／售完）
+     4 附註（有才出現）：bookyay 原價、佔用票券 */
+  .ev-card { display: flex; flex-direction: column; gap: var(--sp-16); padding: var(--sp-20); cursor: pointer; position: relative; }
+  .ev-card:hover { background: var(--ztu-glass-strong, var(--muted)); }
+  .ev-card__head { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: var(--sp-12); align-items: start; }
+  /* 直式 3:4（門票圖與組合包封面上傳都是直的 upload-tile--portrait；使用者：「圖片應該是直的不是方的」） */
+  .ev-card__thumb { width: 56px; aspect-ratio: 3 / 4; border-radius: var(--radius-md); overflow: hidden; background: var(--muted); display: grid; place-items: center; }
+  .ev-card__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ev-card__id { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-4); padding-top: var(--sp-2); }
+  /* 名稱最多兩行（不截成「General admissi…」）；徽章移到價格那一行，名稱才有整欄寬 */
+  .ev-card__name { margin: 0; font-size: var(--fs-16); font-weight: var(--fw-regular); line-height: 1.35; color: var(--foreground); min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ev-card__price-row { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; }
+  .ev-card__price { font-size: var(--fs-14); color: var(--foreground-muted); font-variant-numeric: tabular-nums; }
+  .ev-card__sub { font-size: var(--fs-12); color: var(--faint-ink); }
+  .ev-card__more { margin: calc(var(--sp-4) * -1) calc(var(--sp-6) * -1) 0 0; }
+  .ev-card__contents { font-size: var(--fs-13); color: var(--muted-foreground); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ev-card__sales { display: flex; flex-direction: column; gap: var(--sp-8); margin-top: auto; }   /* 同一列卡片高度不同時，量條仍對齊在底部 */
+  .ev-card__sales .stock-bar { margin: 0; }
+  .ev-card__sales-row { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--fs-13); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .ev-card__sales-row b { font-weight: var(--fw-regular); font-size: var(--fs-20); line-height: 1; color: var(--foreground); margin: 0 var(--sp-2); }
+  .ev-card__state--out { color: var(--brand-ink); }
+  .ev-card__note { font-size: var(--fs-12); color: var(--faint-ink); border-top: 1px solid var(--border-soft); padding-top: var(--sp-12); margin-top: calc(var(--sp-4) * -1); }
+  .ev-card--off .ev-card__thumb { opacity: .5; }   /* 隱藏中：只淡化縮圖，文字保持可讀，狀態交給「隱藏」徽章 */
+  .ev-card .dropdown__menu { min-width: 160px; }
+
+  /* ── 第二版（2026-10-27 使用者：「票種：現況的版型，但圖片要改直的。加上新版的這個區塊，隱藏標籤也要找位置放；組合包照同樣邏輯再設計一次」）──
+     保留現況 .tier-card 的骨架（縮圖 → 卡標 → 事實列；名稱放圖下面），只改三處：
+       1 縮圖改直式 3:4（48×64），門票圖與組合包封面上傳本來就是直的
+       2 事實列的「張數／銷量」（組合包「已售／剩餘」）收成底部的銷售區：量條＋已售 n / 總量｜剩幾張／售完，量條對齊卡片底部
+       3 「隱藏」徽章放卡標右邊（同現況組合包卡的位置），票種卡也一樣 */
+  .v2 { display: flex; flex-direction: column; position: relative; }
+  /* 右上「⋯」：跟縮圖同一列、貼卡片右上角（使用者：「加上點點下拉」） */
+  .v2 > .v2-more { position: absolute; top: var(--sp-16); right: var(--sp-16); }
+  .v2 .tier-card__head { align-items: flex-start; }
+  .v2 .tier-card__head .badge { flex: none; margin-top: 1px; }
+  /* 圖在最上、名稱在圖下面（使用者：「名字放在圖片下面」） */
+  .v2 .tier-card__thumb { width: 48px; height: auto; aspect-ratio: 3 / 4; margin: 0; }
+  /* 間距（使用者：「調整一下間距」）：圖→名稱 16、名稱→資料列 12、資料列之間 8、資料列→量條至少 24 */
+  .v2 .tier-card__head { margin-top: var(--sp-16); }
+  .v2 .tier-card__facts { margin-top: var(--sp-12); gap: var(--sp-8); }
+  /* 資料列與銷售區之間一條淡分隔線（使用者：「加一條淡淡的分隔線」）：線跟著銷售區貼底，同一列卡片的線也對齊；
+     外層用 margin-top:auto 吃掉多出的高度，線上方至少留 20，線下到數字 16 */
+  /* 線貼齊卡片左右邊（使用者：「要貼邊」）：左右各吃掉卡片內距 20，內容再用同樣的內距推回來 */
+  .v2 .ev-card__sales { margin: auto calc(var(--sp-20) * -1) 0; padding: var(--sp-16) var(--sp-20) 0; border-top: 1px solid var(--border-soft); }
+  .v2 .tier-card__facts { margin-bottom: var(--sp-20); }
+  .v2--off .tier-card__thumb { opacity: .5; }
+  /* 已覆寫幣別不再自佔一行（使用者：「可以用別的方式表達嗎？不用佔一行」）：併進票價那一行，價格左邊一枚小標記＋滑過說明 */
+  .v2-ovr { display: inline-flex; align-items: center; gap: var(--sp-4); margin-right: var(--sp-8); font-size: var(--fs-11); color: var(--faint-ink); }
+  .v2-ovr .ztor-icon { width: 12px; height: 12px; }
+  .v2 .v2-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-8); margin-top: var(--sp-16); padding-top: var(--sp-12); border-top: 1px solid var(--border-soft); }
+</style>
+</head>
+<body>
+<p class="lab-note">示意頁：活動詳情「票務」分頁的票種卡與組合包卡（由上而下：現況、第二版、第一版參考；寬度同正式頁內容欄）。點卡片不會導頁；右上「⋯」可以點開看選單。</p>
+<div class="lab-cols">
+  <div>
+    <p class="lab-col__title">現況</p>
+    <h2 class="lab-h">票種</h2>
+    <div class="tier-grid" id="old-tiers"></div>
+    <h2 class="lab-h">組合包</h2>
+    <div class="tier-grid" id="old-bundles"></div>
+  </div>
+  <div>
+    <p class="lab-col__title">第二版（現況版型＋直式圖＋銷售區＋隱藏徽章）</p>
+    <h2 class="lab-h">票種</h2>
+    <div class="tier-grid" id="v2-tiers"></div>
+    <h2 class="lab-h">組合包</h2>
+    <div class="tier-grid" id="v2-bundles"></div>
+  </div>
+  <div>
+    <p class="lab-col__title">第一版（參考）</p>
+    <h2 class="lab-h">票種</h2>
+    <div class="lab-grid" id="new-tiers"></div>
+    <h2 class="lab-h">組合包</h2>
+    <div class="lab-grid" id="new-bundles"></div>
+  </div>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  var TIERS = [
+    { name: 'Duo pass', img: 'images/projects/nick-i.jpg', price: 'NT$3,554', bky: 'HK$880', qty: 400, sold: 400 },
+    { name: 'General admission', img: 'images/projects/nick-i.jpg', price: 'NT$1,815', bky: 'HK$450', override: true, qty: 700, sold: 509 },
+    { name: 'Standing zone', img: 'images/projects/nick-i.jpg', price: 'NT$2,420', bky: 'HK$600', qty: 350, sold: 254 },
+    { name: 'Reserved seating', img: 'images/projects/nick-r2.jpg', price: 'NT$2,823', bky: 'HK$700', qty: 250, sold: 73, hidden: true }
+  ];
+  var BUNDLES = [
+    { name: 'GA ＋ 巡演官方 Tee', img: 'images/products/tee-black.webp', price: 'NT$2,430', tickets: 'General admission × 1', products: 'REALIVE 白趴 官方 Tee', total: 120, sold: 120, holds: 'General admission 120 張', hidden: true }
+  ];
+  var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
+  function oldTier(t) {
+    return '<div class="card tier-card tier-card--clickable"><div class="tier-card__head"><h4 class="tier-card__name">' + t.name + '</h4></div>' +
+      '<div class="tier-card__thumb"><img src="' + t.img + '" alt=""></div><dl class="tier-card__facts">' +
+      '<div class="tier-card__fact"><dt>票價</dt><dd>' + t.price + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>bookyay 原價</dt><dd>' + t.bky + '</dd></div>' +
+      (t.override ? '<div class="tier-card__fact"><dt>已覆寫幣別</dt><dd>2</dd></div>' : '') +
+      '<div class="tier-card__fact"><dt>張數</dt><dd>' + fmt(t.qty) + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>銷量</dt><dd>' + fmt(t.sold) + '</dd></div></dl></div>';
+  }
+  function oldBundle(b) {
+    return '<div class="card tier-card tier-card--clickable"><div class="tier-card__head"><span class="card__title-icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
+      '<h4 class="tier-card__name">' + b.name + '</h4>' + (b.hidden ? '<span class="badge badge--neutral">隱藏</span>' : '') + '</div>' +
+      '<dl class="tier-card__facts"><div class="tier-card__fact"><dt>組合價</dt><dd>' + b.price + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>內含票券</dt><dd>' + b.tickets + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>內含商品</dt><dd>' + b.products + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>已售</dt><dd>' + b.sold + ' / ' + b.total + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>剩餘</dt><dd>' + (b.total - b.sold) + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>已佔用票券</dt><dd>' + b.sold + '</dd></div></dl>' +
+      '<div class="mt-8 flex-row" style="justify-content:space-between;align-items:center;gap:var(--sp-8)"><a class="card__link" href="#">在電子商店管理 →</a>' +
+      '<span class="flex-row" style="gap:var(--sp-8)"><button type="button" class="btn btn--ghost btn--sm" disabled>庫存設為 0</button><button type="button" class="btn btn--ghost btn--sm">顯示</button></span></div></div>';
+  }
+  function menu(items) {
+    return '<details class="dropdown ev-card__more"><summary class="btn btn--ghost btn--icon btn--sm" aria-label="更多動作"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>' +
+      '<div class="dropdown__menu" role="menu">' + items.map(function (i) {
+        return '<button class="dropdown__item" type="button" role="menuitem"' + (i.off ? ' disabled' : '') + '><i data-lucide="' + i.icon + '" class="ztor-icon"></i><span>' + i.label + '</span></button>';
+      }).join('') + '</div></details>';
+  }
+  function sales(sold, total, unit) {
+    var left = total - sold, pct = total ? Math.round(sold / total * 100) : 0;
+    /* 數字在上、量條在下（使用者：「這個放進度條上面，已售數字大一點」） */
+    return '<div class="ev-card__sales">' +
+      '<div class="ev-card__sales-row"><span>已售 <b>' + fmt(sold) + '</b> / ' + fmt(total) + '</span>' +
+      (left > 0 ? '<span>剩 ' + fmt(left) + ' ' + unit + '</span>' : '<span class="ev-card__state--out">售完</span>') + '</div>' +
+      '<div class="stock-bar"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div></div>';
+  }
+  function badges(x) {
+    return (x.hidden ? '<span class="badge badge--neutral">隱藏</span>' : '');
+  }
+  function newTier(t) {
+    return '<div class="card ev-card' + (t.hidden ? ' ev-card--off' : '') + '" role="link" tabindex="0">' +
+      '<div class="ev-card__head"><div class="ev-card__thumb"><img src="' + t.img + '" alt=""></div>' +
+      '<div class="ev-card__id"><h4 class="ev-card__name">' + t.name + '</h4>' +
+      '<div class="ev-card__price-row"><span class="ev-card__price">' + t.price + '</span>' + badges(t) + '</div><div class="ev-card__sub">bookyay 原價 ' + t.bky + (t.override ? ' · 已覆寫 2 個幣別' : '') + '</div></div>' +
+      menu([{ icon: 'pencil', label: '編輯門票' }, { icon: t.hidden ? 'eye' : 'eye-off', label: t.hidden ? '顯示' : '隱藏' }]) + '</div>' +
+      sales(t.sold, t.qty, '張') +
+      '</div>';
+  }
+  function newBundle(b) {
+    return '<div class="card ev-card' + (b.hidden ? ' ev-card--off' : '') + '" role="link" tabindex="0">' +
+      '<div class="ev-card__head"><div class="ev-card__thumb"><img src="' + b.img + '" alt=""></div>' +
+      '<div class="ev-card__id"><h4 class="ev-card__name">' + b.name + '</h4>' +
+      '<div class="ev-card__price-row"><span class="ev-card__price">' + b.price + '</span>' + badges(b) + '</div></div>' +
+      menu([{ icon: 'external-link', label: '在電子商店管理' }, { icon: b.hidden ? 'eye' : 'eye-off', label: b.hidden ? '顯示' : '隱藏' }, { icon: 'package-x', label: '庫存設為 0', off: b.total - b.sold === 0 }]) + '</div>' +
+      '<div class="ev-card__contents">' + b.tickets + ' ＋ ' + b.products + '</div>' +
+      sales(b.sold, b.total, '組') +
+      '<div class="ev-card__note">佔用 ' + b.holds + '</div>' +
+      '</div>';
+  }
+  function v2Tier(t) {
+    return '<div class="card tier-card tier-card--clickable v2' + (t.hidden ? ' v2--off' : '') + '">' +
+      menu([{ icon: 'pencil', label: '編輯門票' }, { icon: t.hidden ? 'eye' : 'eye-off', label: t.hidden ? '顯示' : '隱藏' }]).replace('ev-card__more', 'v2-more') +
+      '<div class="tier-card__thumb"><img src="' + t.img + '" alt=""></div>' +
+      '<div class="tier-card__head"><h4 class="tier-card__name">' + t.name + '</h4>' + badges(t) + '</div><dl class="tier-card__facts">' +
+      '<div class="tier-card__fact"><dt>票價</dt><dd>' + (t.override ? '<span class="v2-ovr" title="另有 2 個幣別自訂了價格（在預覽與在地化設定）"><i data-lucide="globe" class="ztor-icon"></i>2 幣別另設</span>' : '') + t.price + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>bookyay 原價</dt><dd>' + t.bky + '</dd></div>' +
+      '</dl>' + sales(t.sold, t.qty, '張') + '</div>';
+  }
+  function v2Bundle(b) {
+    return '<div class="card tier-card tier-card--clickable v2' + (b.hidden ? ' v2--off' : '') + '">' +
+      menu([{ icon: 'external-link', label: '在電子商店管理' }, { icon: b.hidden ? 'eye' : 'eye-off', label: b.hidden ? '顯示' : '隱藏' }, { icon: 'package-x', label: '庫存設為 0', off: b.total - b.sold === 0 }]).replace('ev-card__more', 'v2-more') +
+      '<div class="tier-card__thumb"><img src="' + b.img + '" alt=""></div>' +
+      '<div class="tier-card__head"><h4 class="tier-card__name">' + b.name + '</h4>' + badges(b) + '</div><dl class="tier-card__facts">' +
+      '<div class="tier-card__fact"><dt>組合價</dt><dd>' + b.price + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>內含票券</dt><dd>' + b.tickets + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>內含商品</dt><dd>' + b.products + '</dd></div>' +
+      '<div class="tier-card__fact"><dt>已佔用票券</dt><dd>' + b.sold + ' 張</dd></div>' +
+      '</dl>' + sales(b.sold, b.total, '組') + '</div>';
+  }
+  document.getElementById('v2-tiers').innerHTML = TIERS.map(v2Tier).join('');
+  document.getElementById('v2-bundles').innerHTML = BUNDLES.map(v2Bundle).join('');
+  document.getElementById('old-tiers').innerHTML = TIERS.map(oldTier).join('');
+  document.getElementById('old-bundles').innerHTML = BUNDLES.map(oldBundle).join('');
+  document.getElementById('new-tiers').innerHTML = TIERS.map(newTier).join('');
+  document.getElementById('new-bundles').innerHTML = BUNDLES.map(newBundle).join('');
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('details.dropdown[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
+  });
+  if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(document.body);
+  else if (window.applyIcons) window.applyIcons(document.body);
+})();
+</script>
+</body>
+</html>

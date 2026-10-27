@@ -1916,7 +1916,9 @@ html[data-theme="light"] .wizard__top::before {
 .detail-topbar.is-stuck .btn[data-dock-icon]:not([aria-pressed="true"]) > span { display: none; }
 .list-toolbar.is-docked { visibility: hidden; }
 /* 有 dock 的頁面，分頁工具列不再自己 sticky（section-nav.css 那條只留給沒有頂列的頁） */
-.page:has(> .detail-topbar) [data-nav] > .list-toolbar { position: static; }
+/* 2026-10-27 改 static → relative：static 會讓 list-toolbar.css 的 z-index 失效，工具列裡的下拉（活動詳情的「⋯」）
+   被下方卡片蓋住；relative 一樣不黏，但堆疊順序回來了。 */
+.page:has(> .detail-topbar) [data-nav] > .list-toolbar { position: relative; }
 
 @keyframes detail-topbar-in {
   from { transform: translateY(-100%); opacity: 0; }
@@ -2034,13 +2036,7 @@ html[data-theme="light"] .wizard__top::before {
 [data-mode="view"] .textarea:not([data-edit-exempt] *) { resize: none; }   /* 檢視態不給拖拉把手（不可填的框不該能改大小） */
 [data-mode="view"] .rich-body__text:not([data-edit-exempt] *) { pointer-events: none; }
 [data-mode="view"] .tag-input__field:not([data-edit-exempt] *) { background-color: transparent; }
-/* 編輯態：readonly 鎖住的欄位與 :disabled 同一個樣子（全庫唯一的 disabled，Q58；墨色 Q128）；複製用的連結框（.linkf__input）不算 */
-[data-mode="edit"] :is(.input, .textarea)[readonly]:not(.linkf__input) {
-  background-color: var(--disabled-field-bg);
-  color: var(--view-field-ink);
-  cursor: not-allowed;
-}
-[data-mode="edit"] :is(.input, .textarea)[readonly]:not(.linkf__input):focus { box-shadow: 0 0 0 1px var(--border); }
+/* 墓碑 2026-10-27：「編輯態 readonly ＝ :disabled 樣子」這條上收成 input.css 的全站規則（不分有沒有 data-mode），這裡拿掉。 */
 /* 開關、單選卡、單選清單、選擇卡：本來就是「狀態展示」不是可填的框，維持原元件、不可操作
    （Q119 例外清單）。div 做的 .switch／.radio-list 不是 button，上面那條白名單掃不到，這裡關 pointer-events。
    .segmented 只鎖 .radio-cards 那種「單選卡」用法——同一個殼在總覽分頁也拿來當圖表區間切換（data-view-safe），

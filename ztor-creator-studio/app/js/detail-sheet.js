@@ -166,6 +166,8 @@
 
   function onFrameLoad() {
     frame.removeAttribute('data-loading');
+    /* 版本閘由外層 devtools 代套到 iframe（iframe 內的 devtools 不跑版本閘） */
+    try { if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate(); } catch (_) {}
     /* iframe 同源，所以拿得到裡面的標題來補覆蓋層抬頭——
        清單列上的文字有時是縮寫，細節頁自己的 h1 才是完整名稱。 */
     try {

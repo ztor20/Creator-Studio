@@ -4008,7 +4008,7 @@
     'event-detail.doctitle':      { en: 'Event detail',              zh: '活動詳情' },
     'event-detail.crumb.leg':     { en: 'Date {i} · {venue}',        zh: '第 {i} 場 · {venue}' },
     /* 就地編輯（2026-08-06，編輯搬進詳情頁、edit-event.html 撤除） */
-    'event-detail.btn.save':      { en: 'Save changes',              zh: '儲存變更' },
+    'event-detail.btn.save':      { en: 'Save',                      zh: '儲存' },
     /* 規格 5.1.6.2 F12：有變動時儲存鈕要說出動了幾項；F12 的捨棄二次確認與離開防護同段。 */
     'event-detail.btn.save-n':    { en: 'Save {n} changes',          zh: '儲存 {n} 項變更' },
     'event-detail.discard.title': { en: 'Discard changes?',          zh: '要捨棄變更嗎？' },
@@ -10433,6 +10433,17 @@
        已下架時同一處換成重新上架。下架不改階段、不退款、不動已售出的票。 */
     'event-detail.unlist.title':   { en: 'Unlist this event', zh: '下架活動' },
     'event-detail.unlist.sub':     { en: 'Fans see it as unlisted and can’t buy; anything in their carts shows as unavailable. It stays in its current stage, and tickets already sold stay valid.', zh: '粉絲會看到已下架、不能購買，購物車裡的會顯示已失效。活動留在目前的階段，已售出的票照樣有效。' },   /* D415 決定七、八：下架後粉絲端顯示已下架頁、購物車顯示已失效 */
+    'event-detail.hide.btn':       { en: 'Hide from shop', zh: '從商店隱藏' },   // 2026-10-27 「⋯」下拉：隱藏／顯示於商店（publish.shown）
+    'event-detail.show.btn':       { en: 'Show in shop', zh: '顯示於商店' },
+    'event-detail.hide.toast':     { en: 'Hidden from the shop — only people with the event link or QR can get in', zh: '已從商店隱藏，只有拿到活動連結或 QR 的人進得來' },
+    'event-detail.show.toast':     { en: 'Shown in the shop; the old event link stops working', zh: '已顯示於商店，原本的活動連結失效' },
+    'event-detail.shown.dirty':    { en: 'Save or discard your changes first, then change visibility.', zh: '請先儲存或捨棄變更，再切換隱藏／顯示。' },
+    'ed.tix.menu.edit':            { en: 'Edit ticket', zh: '編輯門票' },   // 2026-10-27 票種卡「⋯」（三百五十九）
+    'ed.bd.menu.manage':           { en: 'Manage in e-shop', zh: '在電子商店管理' },   // 組合包卡「⋯」（三百五十九）
+    'tc.left':                     { en: '{n} left', zh: '剩 {n} 張' },   // 摘要卡銷售區（ticket-tier-card.css .tier-card__sales）
+    'tc.left.sets':                { en: '{n} left', zh: '剩 {n} 組' },
+    'tc.ovr':                      { en: '{n} set separately', zh: '{n} 幣別另設' },   // 票價旁「其他幣別另設價格」小標記，滑過列出幣別
+    'event-detail.more':           { en: 'More actions', zh: '更多動作' },   // 2026-10-27 設定分頁工具列「⋯」下拉（下架／重新上架、封存）
     'event-detail.unlist.btn':     { en: 'Unlist event', zh: '下架活動' },
     'event-detail.unlist.done':    { en: 'This event is unlisted.', zh: '這場活動已下架。' },   /* D371 起未使用：已下架改顯示重新上架 */
     'event-detail.unlist.confirm.title': { en: 'Unlist this event?', zh: '確定下架這場活動？' },

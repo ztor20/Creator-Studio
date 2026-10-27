@@ -73,3 +73,13 @@
 .is-source-locked .segmented__btn--active .radio-card__title,
 .is-source-locked .segmented__btn--active .radio-card__sub { color: var(--view-field-ink); }
 .is-source-locked .radio-cards .segmented__btn--active::after { background: radial-gradient(circle at center, var(--muted-foreground) 0 3px, transparent 3.5px); }
+/* 2026-10-27 使用者：「這個 disable 狀態的 style 不對」（活動「早於提前入場時間入場」並排選項，檢視態整排按鈕 disabled，
+   但沒包在 .is-source-locked 裡，字仍是亮白、選中點仍是橘，跟上方停用的輸入框對不上）。
+   按鈕自己 disabled 的並排選項卡吃同一套鎖定樣子，不用再包一層 .is-source-locked：游標 not-allowed、未選字 --locked-field-ink、
+   已選字 --view-field-ink、選中點灰。 */
+.radio-cards .segmented__btn:disabled { cursor: not-allowed; color: var(--locked-field-ink); }
+.radio-cards .segmented__btn--active:disabled { color: var(--view-field-ink); }
+.radio-cards .segmented__btn--active:disabled::after { background: radial-gradient(circle at center, var(--muted-foreground) 0 3px, transparent 3.5px); }
+/* 同一頁的 .segmented--locked（segmented.css 疊 opacity .6）若是並排選項卡，改走上面這套顏色，不再疊透明度——
+   否則發布設定那幾組比「提前入場」那組多暗一層，同頁兩種 disabled（2026-08-09 起「不疊 opacity」同一判斷）。 */
+.segmented.radio-cards.segmented--locked { opacity: 1; }
