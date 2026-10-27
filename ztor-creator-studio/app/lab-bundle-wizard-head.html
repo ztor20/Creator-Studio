@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 2026-10-27 示意頁（不是正式頁）：建立活動「新增組合包」彈窗頂列改版 demo。
+     使用者指示：彈窗第二排的步驟分頁收進標題列，樣式參考建立活動頂列的進度條（progress-stepper--segmented）；
+     底部「粉絲實付」價格區移除。內容區只放各步的佔位卡，欄位本身不在這頁示範。
+     正式彈窗在 js/bundle-editor.js（splitCardHTML／wizTabsHTML），確認後才搬過去。 -->
+<title>Bundle wizard head · Lab</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-preview-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 示意頁專用：彈窗標題列＝標題｜步驟進度條｜關閉，同建立活動頂列的三欄格（shared.css .wizard__top-bar） */
+  .lab-head {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(0, 640px) minmax(min-content, 1fr);
+    align-items: center;
+    gap: var(--sp-16);
+  }
+  .lab-head .progress-stepper { --progress-stepper-tail: var(--sp-16); }
+  .lab-head__close { justify-self: end; }
+  /* 高度對齊（2026-10-27 使用者第二輪，畫線標出）：標題的上緣跟進度條的色條同一條線。
+     標題行高收成 1（字的上緣就是盒子上緣），三欄一律頂端對齊；關閉鈕（36px）往上收半格，讓它的中線落在標題中線上。 */
+  .lab-head { align-items: start; }
+  .lab-head > .payout-dialog__title { margin: 0; line-height: 1; }
+  /* 上方留白（2026-10-27 使用者第四輪）：彈窗標題列的內距維持全站彈窗標準（payout-dialog__head 的 18／20，不覆寫），
+     多出來的上方留白改由標題與進度條這兩塊自己帶（各 padding-top --sp-6），兩塊頂端仍在同一條線上。
+     關閉鈕（36px）中線對齊標題中線（標題盒 6＋24，中線在 18；關閉鈕中線也在 18），不用再位移。 */
+  .lab-head > .payout-dialog__title,
+  .lab-head > .progress-stepper { padding-top: var(--sp-6); }
+  /* 步驟標籤可以點（新增模式點了直接跳到那一步） */
+  .lab-head .progress-stepper__label { cursor: pointer; }
+  /* 底部移除價格區後，按鈕群靠右 */
+  .lab-foot { justify-content: flex-end; }
+  .lab-ph { min-height: 360px; display: flex; flex-direction: column; gap: var(--sp-12); }
+  .lab-ph__t { font-size: var(--fs-16); color: var(--foreground); }
+  .lab-ph__s { font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-note { position: fixed; left: var(--sp-16); bottom: var(--sp-16); font-size: var(--fs-12); color: var(--muted-foreground); z-index: 1; }
+</style>
+</head>
+<body>
+<p class="lab-note">示意頁：彈窗頂列 demo（不是正式流程）</p>
+<div class="payout-modal bd-modal">
+  <section class="payout-dialog payout-dialog--xwide bd-dialog--split" role="dialog" aria-modal="true" aria-labelledby="lab-title">
+    <div class="payout-dialog__head lab-head">
+      <h2 class="payout-dialog__title" id="lab-title">新增組合包</h2>
+      <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="lab-stepper">
+        <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+        <div class="progress-stepper__labels" id="lab-labels"></div>
+      </div>
+      <button class="btn btn--icon lab-head__close" type="button" aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body bd-form">
+      <div class="payout-dialog__split bd-split">
+        <div class="bd-split__main">
+          <section class="bd-sec bd-sec--stack lab-ph" id="lab-body"></section>
+        </div>
+        <aside class="payout-dialog__split-side bd-split__side">
+          <div class="preview-card bpc">
+            <div class="preview-card__media"><i data-lucide="image" class="ztor-icon"></i></div>
+            <div class="preview-card__body"><div class="preview-card__row"><h4 class="preview-card__name">Platinum 前排 × 1</h4></div></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <div class="payout-dialog__foot lab-foot">
+      <div class="bd-foot-actions" id="lab-actions"></div>
+    </div>
+  </section>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  var STEPS = [
+    { t: '選擇組合物', d: '這一步放組合物表（票券列＋商品搜尋）。' },
+    { t: '組合包介紹', d: '這一步放名稱、說明、圖片與影片。' },
+    { t: '販售設定', d: '這一步放價格、數量、購買條件、上架與開賣。' },
+    { t: '其他', d: '這一步放電影關聯。' }
+  ];
+  var at = 0;
+  var stepper = document.getElementById('lab-stepper');
+  var labels = document.getElementById('lab-labels');
+  var body = document.getElementById('lab-body');
+  var actions = document.getElementById('lab-actions');
+  function render() {
+    stepper.style.setProperty('--steps', STEPS.length);
+    stepper.style.setProperty('--at', at + 1);
+    stepper.style.setProperty('--progress', (at / STEPS.length * 100) + '%');
+    labels.innerHTML = STEPS.map(function (s, i) {
+      var cls = i < at ? ' progress-stepper__label--done' : (i === at ? ' progress-stepper__label--current' : '');
+      var st = i < at ? '<i data-lucide="check" class="ztor-icon"></i>已完成' : (i === at ? '編輯中' : '未完成');
+      return '<span class="progress-stepper__label' + cls + '" data-i="' + i + '" role="button" tabindex="0"' + (i === at ? ' aria-current="step"' : '') + '>' +
+        '<span>' + s.t + '</span><span class="progress-stepper__state">' + st + '</span></span>';
+    }).join('');
+    body.innerHTML = '<div class="lab-ph__t">' + STEPS[at].t + '</div><div class="lab-ph__s">' + STEPS[at].d + '</div>';
+    var last = at === STEPS.length - 1;
+    actions.innerHTML =
+      '<button class="btn btn--outline" type="button">取消</button>' +
+      (at > 0 ? '<button class="btn btn--outline" type="button" data-back>上一步</button>' : '') +
+      '<button class="btn btn--primary" type="button" ' + (last ? '' : 'data-next') + '>' + (last ? '完成' : '下一步') + '</button>';
+    if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(document.body);
+    else if (window.applyIcons) window.applyIcons(document.body);
+  }
+  document.addEventListener('click', function (e) {
+    var l = e.target.closest('[data-i]'); if (l) { at = Number(l.getAttribute('data-i')); render(); return; }
+    if (e.target.closest('[data-next]')) { at = Math.min(STEPS.length - 1, at + 1); render(); return; }
+    if (e.target.closest('[data-back]')) { at = Math.max(0, at - 1); render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

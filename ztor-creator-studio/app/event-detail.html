@@ -3891,7 +3891,7 @@
     label.parentElement.classList.toggle('is-source-locked', on);
     const chip = label.querySelector('.field-source');
     if (on && !chip) {
-      label.insertAdjacentHTML('beforeend', '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' + T('ed.src.bky', 'From bookyay') + '</span></span>');
+      label.insertAdjacentHTML('beforeend', '<span class="field-source" role="img" title="' + String(T('ed.src.bky', 'From bookyay')).replace(/"/g, '&quot;') + '" aria-label="' + String(T('ed.src.bky', 'From bookyay')).replace(/"/g, '&quot;') + '"><i data-lucide="lock" class="ztor-icon"></i></span>');
       if (window.ztorIcons) window.ztorIcons.applyIcons(label);
     } else if (!on && chip) chip.remove();
   }
@@ -3937,7 +3937,7 @@
     if (!main) return;
     const chip = main.querySelector('.field-source');
     if (on && !chip) {
-      main.insertAdjacentHTML('beforeend', ' <span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' + T('ed.src.bky', 'From bookyay') + '</span></span>');
+      main.insertAdjacentHTML('beforeend', ' <span class="field-source" role="img" title="' + String(T('ed.src.bky', 'From bookyay')).replace(/"/g, '&quot;') + '" aria-label="' + String(T('ed.src.bky', 'From bookyay')).replace(/"/g, '&quot;') + '"><i data-lucide="lock" class="ztor-icon"></i></span>');
       if (window.ztorIcons) window.ztorIcons.applyIcons(main);
     } else if (!on && chip) chip.remove();
   }
@@ -3945,7 +3945,7 @@
      標籤尾端一枚來源標記（同描述、條款及細則、場次那一枚）。唯讀本身由 applyReadonly／syncPubLock 負責——
      兩者在切換檢視／編輯模式時都會重算，這裡只管標記，不分模式一律掛。 */
   function bkyChipHTML() {
-    return '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' + T('ed.src.bky', 'From bookyay') + '</span></span>';
+    return '<span class="field-source" role="img" title="' + String(T('ed.src.bky', 'From bookyay')).replace(/"/g, '&quot;') + '" aria-label="' + String(T('ed.src.bky', 'From bookyay')).replace(/"/g, '&quot;') + '"><i data-lucide="lock" class="ztor-icon"></i></span>';
   }
   function markBkySource(label, on, box) {
     if (box) box.classList.toggle('is-source-locked', on);
@@ -4363,8 +4363,8 @@
   }
   /* bookyay 帶入的活動：場次的跨日、開放入場與早到處理鎖定（D328；D365），標籤旁掛來源標記——與描述、條款及細則同一枚。 */
   const sessBky = () => typeof isBky === 'function' && isBky();
-  const bkySrcChip = () => '<span class="field-source"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ed.src.bky">' +
-    tixEsc(T('ed.src.bky', 'From bookyay')) + '</span></span>';
+  /* 2026-10-27：bookyay 帶入只留鎖頭 icon，字樣收進 title／aria-label */
+  const bkySrcChip = () => '<span class="field-source" role="img" title="' + tixEsc(T('ed.src.bky', 'From bookyay')) + '" aria-label="' + tixEsc(T('ed.src.bky', 'From bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>';
   function sessBoxHTML(s, i) {
     const multi = edSessions.length > 1;
     const bky = sessBky();
@@ -4454,10 +4454,10 @@
               '<input class="input amount-field__input" type="number" min="0" step="5" placeholder="0" data-sess-f="doorsMin" value="' + tixEsc(mins) + '">' +
               '<span class="amount-field__unit">' + tixEsc(T('ed.min', 'min')) + '</span>' +
             '</span></label>' +
-        '</div>' +
         /* 單選卡是狀態展示（Q119 例外）：標 data-view-safe 讓檢視態看得到選了哪個，
-           不可點由 applyReadonly 的 disabled ＋ shared.css 的 .segmented.radio-cards pointer-events 擋。 */
-        '<div class="rule-sub" data-early-block>' +
+           不可點由 applyReadonly 的 disabled ＋ shared.css 的 .segmented.radio-cards pointer-events 擋。
+           2026-10-27：同建立活動，放進同一個 form-grid 佔滿整列（.form-grid__full），原 .rule-sub 退場 */
+        '<div class="field form-grid__full" data-early-block>' +
           '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before early entry time')) + (bky ? bkySrcChip() : '') + '</div>' +
           '<div class="segmented radio-cards" role="radiogroup"' + (bky ? ' aria-disabled="true"' : '') + '>' +
             ['warn', 'block'].map(v => '<button type="button" class="segmented__btn' +
@@ -4468,6 +4468,7 @@
           /* 墓碑（2026-08-13 使用者指示「刪除」）：「票種可以各自提前入場…」那句退場，
              同 create-event。 */
         '</div>' +
+        '</div>' +   /* form-grid */
         '</div>' +
       '</div>' +
       (multi ? '</div>' : '') +

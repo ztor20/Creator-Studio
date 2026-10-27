@@ -248,15 +248,13 @@
           <div class="form-ask">
             <div class="form-ask__t" data-i18n="cb.lock.q">Lock stock for this bundle?</div>
             <div class="form-ask__s" data-i18n="cb.lock.s">Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</div>
-            <!-- D480：限量時鎖定＝限量 − 已售、跟著限量走：二選一收起、鎖定組數唯讀，改顯示這一句（改限量在「組合設定」的數量卡） -->
-            <div class="field__hint field__hint--fact" data-bd-lock-auto hidden></div>
             <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-bd-lockmode>
               <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-bd-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
               <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-bd-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
             </div>
             <div class="form-ask__body" data-bd-lock-body hidden>
               <div class="form-ask__row form-ask__row--lockset">
-                <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-bd-sets-hint></span></span>
+                <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-bd-sets-hint></span><span class="lockset__sets-hint" data-bd-lock-auto hidden></span></span><!-- D480：限量時鎖定＝限量 − 已售、跟著限量走，二選一收起、鎖定組數唯讀，改顯示這一句（2026-10-27 放在鎖定組數標籤底下） -->
                 <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" id="bd-lock-sets" placeholder="0" data-i18n-aria-label="cb.lock.sets" aria-label="Sets to lock"><span class="amount-field__unit" data-i18n="bd.unit.sets">sets</span></span>
               </div>
               <div class="lockset" id="bd-alloc">
@@ -490,7 +488,6 @@
               <div class="price-ladder__k"><span class="price-ladder__t" data-i18n="cb.sale.percent">Limited-time discount %</span></div>
               <div class="price-ladder__ctl"><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="" id="bd-sale-percent" placeholder="0" aria-label="Limited-time discount %" data-i18n-aria-label="cb.sale.percent"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div>
               <div class="price-ladder__v"><span data-bd-sale-price>—</span><span class="price-ladder__range" data-bd-sale-range hidden></span><small data-i18n="cb.pl.sale.price">During the window</small></div>
-              <p class="field__hint field__hint--warn price-ladder__err" id="bd-sale-pct-hint" hidden></p>
               <div class="price-ladder__dates">
                 <div class="field"><div class="field__label"><span data-i18n="cb.sale.start">Discount start date</span> <span class="field__req">*</span></div><input class="input" type="date" id="bd-discount-start"></div>
                 <div class="field"><div class="field__label"><span data-i18n="cb.sale.end">Discount end date</span> <span class="field__req">*</span></div><input class="input" type="date" id="bd-discount-end"></div>
@@ -1247,6 +1244,7 @@
       const mode = document.querySelector('[data-bd-lockmode]');
       const body = document.querySelector('[data-bd-lock-body]');
       if (mode) mode.hidden = lim;
+      if (mode) mode.closest('.form-ask').querySelectorAll(':scope > .form-ask__t, :scope > .form-ask__s').forEach(el => { el.hidden = lim; });   /* 2026-10-27：限量時問句與說明收起 */
       if (!lim) {
         if (limitAutoOn) {
           bundleModel.lockSets = null; applyLock();
@@ -1494,6 +1492,10 @@
       const b = e.target.closest('[data-bd-lock]'); if (!b || !lockEditing || limitedEdition()) return;
       lockYes = b.dataset.bdLock === 'yes';
       if (!lockYes && setsInput) { setsInput.value = ''; bundleModel.lockSets = null; applyLock(); }
+      if (lockYes && setsInput && setsInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數 */
+        const mx = LS ? LS.bundleMaxSets(bundleModel, productsMap()).max : Infinity, n0 = mx === Infinity ? 100 : Math.min(100, mx);
+        if (n0 >= 1) { setsInput.value = String(n0); bundleModel.lockSets = n0; applyLock(); }
+      }
       paintLockMode();
       refreshAlloc(); syncLockEditing();
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
@@ -2032,7 +2034,7 @@
     /* D463（2026-10-21，最終版 S105）：七種條件、組合包自己的一組，含票券的也一樣（不跟隨所含門票）；限購＝「限購」條件（以組計）。
        uCtx 不給 types＝七種全開；粉絲分級三種照舊掛 S82。讀數以組合包售價回推 %。 */
     const bdUni = () => !!PC && !!PC.uniOn && PC.uniOn();
-    const uCtx = { capUnit: 'set', emptyKey: 'pc.empty.set', featOn: featOnB,
+    const uCtx = { capUnit: 'set', noEmpty: true, featOn: featOnB,
       pctReadout: c => PC.pctText(c, [window.bdFinalNow ? window.bdFinalNow() : 0]) };
     /* 既有資料轉換〔推導，D463 決定 5〕：改版前跟隨所含門票（或已另設）的組合包，把當下推導出來的分級與限時間寫成自己的條件；
        原本的限購值轉成「限購」條件。只做一次（_uSeeded），之後以條件清單為準。換算本體在 js/purchase-conds.js 的 legacyConds（bundle-editor 共用）。
@@ -2343,7 +2345,6 @@
     const saleToggle = document.getElementById('bd-sale-toggle');
     const saleFields = document.querySelector('[data-bd-sale-fields]');
     const bdSalePct = document.getElementById('bd-sale-percent');
-    const bdSalePctHint = document.getElementById('bd-sale-pct-hint');
     /* 最終版（S105）：排程特價轉成購買條件的「限時折扣」（bdUSeed），價格階梯這一列收起、也不再參與算價（2026-10-22 使用者裁決） */
     const bdSaleOn = () => !(window.ztorPurchaseConds && window.ztorPurchaseConds.uniOn()) && !!(saleToggle && saleToggle.getAttribute('aria-checked') === 'true');
     window.bdSaleOn = bdSaleOn;
@@ -2375,7 +2376,7 @@
       const saleLive = bdSaleOn() && sp.ok && memberRows().length > 0;
       const salePriceEl = q('[data-bd-sale-price]'); if (salePriceEl) salePriceEl.textContent = saleLive ? bdMoneyFrom(final * k2) : '—';
       bdSetRange(q('[data-bd-sale-range]'), saleLive ? final * k2 : 0, saleLive ? max * k1 * k2 : 0);
-      if (bdSalePctHint) { const bad = bdSaleOn() && !sp.ok && !sp.empty; bdSalePctHint.hidden = !bad; bdSalePctHint.textContent = bad ? T('cb.price.discount-bad', 'Discount must be 0–100.') : ''; }
+      /* 墓碑 2026-10-27：限時折扣 % 的紅字提示（#bd-sale-pct-hint）退場 */
       /* 粉絲實付：平常＝售價；限時折扣期間另寫一行 */
       const totalEl = q('[data-bd-total]'); if (totalEl) totalEl.textContent = bdMoneyFrom(final);
       bdSetRange(q('[data-bd-total-range]'), final, max * k1);
@@ -2416,7 +2417,7 @@
     const paintSw = (el, on) => { if (!el) return; el.setAttribute('aria-checked', on ? 'true' : 'false'); el.classList.toggle('switch--on', on); };
     paintSw(bdDiscToggle, bdDiscOn);
     if (bdDiscBody) bdDiscBody.hidden = !bdDiscOn;
-    bdWireLadderSwitch(bdDiscToggle, on => { bdDiscOn = on; if (bdDiscBody) bdDiscBody.hidden = !on; bdRecalc(); });
+    bdWireLadderSwitch(bdDiscToggle, on => { bdDiscOn = on; if (bdDiscBody) bdDiscBody.hidden = !on; if (on && bdDisc && bdDisc.value.trim() === '') bdDisc.value = '10'; /* 2026-10-27 預帶示意 10% */ bdRecalc(); });
     /* 限時折扣（排程特價）：初始值讀 discount（{percent, limited:{start,end}|null, stack}｜null）——與單售商品同形狀（D261） */
     {
       const dsc = detail.discount || null;
@@ -2428,7 +2429,18 @@
       if (de) de.value = win && win.end ? win.end : '';
       if (bdSalePct) bdSalePct.value = dsc && dsc.percent != null ? String(dsc.percent) : '';
     }
-    bdWireLadderSwitch(saleToggle, on => { if (saleFields) saleFields.hidden = !on; bdRecalc(); });
+    bdWireLadderSwitch(saleToggle, on => {
+      if (saleFields) saleFields.hidden = !on;
+      if (on) {   /* 2026-10-27 預帶示意值：10%、今天起 7 天（呈現預設，非產品規則） */
+        const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const d0 = new Date(), d1 = new Date(d0.getTime() + 7 * 86400000);
+        const ds = document.getElementById('bd-discount-start'), de = document.getElementById('bd-discount-end');
+        if (bdSalePct && bdSalePct.value.trim() === '') bdSalePct.value = '10';
+        if (ds && !ds.value) ds.value = ymd(d0);
+        if (de && !de.value) de.value = ymd(d1);
+      }
+      bdRecalc();
+    });
     /* 使用優惠碼（D458，原「可與優惠碼疊加」純開關）：開關初始值先看碼端資料層（儲存過就以它為準），沒有紀錄時
        由組合包資料的預設帶入（seed.codesOn 明寫優先，否則沿用舊欄位 discount.stack；選碼不預選）。 */
     const stackToggle = document.getElementById('bd-stack-codes');
@@ -2453,6 +2465,10 @@
     if (eGrid) eGrid.querySelectorAll('[data-bd-edition]').forEach(btn => btn.addEventListener('click', () => {
       if (!bdLadderEditable()) return;
       paintEdition(btn.dataset.bdEdition === 'limited');
+      if (btn.dataset.bdEdition === 'limited' && totalInput && totalInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數 */
+        const mx1 = LS ? LS.bundleMaxSets(bundleModel, productsMap()).max : Infinity, n1 = mx1 === Infinity ? 100 : Math.min(100, mx1);
+        if (n1 >= 1) totalInput.value = String(n1);
+      }
       refreshAlloc();   /* 限量硬上限會壓低組合可售量（§7.14）*/
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
     }));

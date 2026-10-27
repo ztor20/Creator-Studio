@@ -1056,7 +1056,7 @@
       if (!b.conds || !b.conds.conds) b.conds = { conds: {} };
       if (host._pc) { host._pc.refresh(); host._pc.check(); return; }
       host._pc = PC.mount(host, { rules: b.conds, scope: 'bundle', times: function () { var c = tbCtx(b); return c ? c.et : null; },
-        ctx: { capUnit: 'set', emptyKey: 'pc.empty.set', featOn: featOnS, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); } },
+        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnS, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); } },
         onChange: function (r) { b.conds = r; uSyncLimits(b); syncSplit(card, b); onChange(BUNDLES); } });
     }
     function limitsErrCount(b) {
@@ -1895,7 +1895,7 @@
     /* 票券列展開狀態（UI 狀態，不放 b、不進存檔）：第一次畫時還沒勾任何門票就預設展開。 */
     var TIXOPEN = {};
     function tixOpen(b) {
-      if (TIXOPEN[b.id] == null) TIXOPEN[b.id] = !setLines(b).length;
+      if (TIXOPEN[b.id] == null) TIXOPEN[b.id] = !!b.fresh || !setLines(b).length;   /* 2026-10-27：剛按「新增組合包」開出來的一律展開票種 */
       return TIXOPEN[b.id];
     }
     function tixMaxPrice(b) { return setLines(b).reduce(function (m, l) { return Math.max(m, l.price); }, 0); }
@@ -1931,6 +1931,7 @@
             '<span class="member-table__thumb"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
             '<span class="member-table__txt">' +
               '<span class="member-table__t">' + esc(ev.name || T('cpp.bd.sp.tix')) + '</span>' +
+              (lines.length ? '<span class="member-table__s">' + esc(tixNames(b).join('／')) + '</span>' : '') +   /* 2026-10-27：名稱下方灰字列出已選票種 */
             '</span>' +
           '</div>' +
           '<span class="member-table__price">' + esc(price) + (sub ? '<span class="member-table__sub">' + esc(sub) + '</span>' : '') + '</span>' +
@@ -2118,7 +2119,7 @@
         var cw = memberCapWho(b);
         return T('cb.cap.short').replace('{max}', cw.n.toLocaleString('en-US')).replace('{k}', (limitLeft(b) - cw.n).toLocaleString('en-US')).replace('{who}', whoText(cw.who));
       }
-      return T('cpp.bd.sp.cap.hint');
+      return '';   /* 墓碑 2026-10-27：「賣完自動售罄。」一句退場（cpp.bd.sp.cap.hint），只在超過成員供應時才有提示 */
     }
     function saleWhen(v) { return String(v || '').replace(/-/g, '/').replace('T', ' ') || '—'; }
     /* 逐票種分配（5.1.5.4 §4 F4，D296）：鎖了套數、又允許兩種以上票種才出現；合計 ≤ 鎖定套數。 */
@@ -2195,8 +2196,7 @@
             '<div class="price-ladder__dates">' +
               '<div class="field"><label class="field__label">' + esc(T('cb.sale.start')) + '</label><input class="input" type="date" data-bd-sale-f="from" value="' + esc(sl.from || '') + '"></div>' +
               '<div class="field"><label class="field__label">' + esc(T('cb.sale.end')) + '</label><input class="input" type="date" data-bd-sale-f="to" value="' + esc(sl.to || '') + '"></div>' +
-              '<p class="field__error" data-bd-sale-err' + (saleBad(b) ? '' : ' hidden') + '>' + esc(T('cpp.bd.sp.sale.err')) + '</p>' +
-            '</div>' +
+            '</div>' +   /* 墓碑 2026-10-27：日期欄下方的紅字錯誤列 data-bd-sale-err 退場（開關打開時預帶 10%／今天起 7 天，未填完整時由底部「為什麼不能存」說明） */
           '</div>';
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="price">' +
         '<div class="bd-sec__head">' +
@@ -2269,24 +2269,25 @@
               '<span class="form-ask__row-k">' + esc(T('cb.cap.label')) + '</span>' +
               stepperHTML('data-bd-f="cap" aria-label="' + esc(T('cb.cap.label')) + '"' + (capOver(b) ? ' aria-invalid="true"' : ''), b.cap, T('cpp.bd.sp.unit.group'), 1, null, 'bd-disc') +
             '</div>' +
-            '<div class="field__hint' + (capOver(b) ? ' fc-hint--over' : '') + '" data-bd-capmax>' + esc(capHintSplit(b)) + '</div>' +
+            '<div class="field__hint' + (capOver(b) ? ' fc-hint--over' : '') + '" data-bd-capmax' + (capHintSplit(b) ? '' : ' hidden') + '>' + esc(capHintSplit(b)) + '</div>' +
           '</div>' +
         '</div>' +
-        /* 鎖定（D266）：要不要先把庫存鎖給這一組；成員沒有限量時不能鎖（lockHintText 說原因） */
+        /* 鎖定（D266）：要不要先把庫存鎖給這一組；成員沒有限量時不能鎖（lockHintText 說原因）。
+           2026-10-27：限量時鎖定自動跟著上限走，問句與兩段說明退場，只剩「鎖定組數」一列＋一句短說明。 */
         '<div class="form-ask">' +
-          '<div class="form-ask__t">' + esc(T('cb.lock.q')) + '</div>' +
-          '<div class="form-ask__s">' + esc(T('cb.lock.s')) + '</div>' +
-          /* D480：限量時二選一收起、鎖定套數唯讀，改顯示「已自動鎖定 N 套」 */
-          '<div class="field__hint field__hint--fact" data-bd-lock-auto' + (limited ? '' : ' hidden') + '>' + (limited ? esc(limitAutoText(b)) : '') + '</div>' +
-          (limited ? '' : '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cb.lock.q')) + '">' +
-            askCard('data-bd-lock', 'no', !lockOn, 'cb.lock.no', false) +
-            askCard('data-bd-lock', 'yes', lockOn, 'cb.lock.yes', !lockable) +
-          '</div>') +
+          (limited ? '' : '<div class="form-ask__t">' + esc(T('cb.lock.q')) + '</div>' +
+            '<div class="form-ask__s">' + esc(T('cb.lock.s')) + '</div>' +
+            '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cb.lock.q')) + '">' +
+              askCard('data-bd-lock', 'no', !lockOn, 'cb.lock.no', false) +
+              askCard('data-bd-lock', 'yes', lockOn, 'cb.lock.yes', !lockable) +
+            '</div>') +
           (!lockable && !lockOn && !limited ? '<div class="field__hint">' + esc(T('cpp.bd.sp.lock.none')) + '</div>' : '') +
           '<div class="form-ask__body"' + (lockOn ? '' : ' hidden') + '>' +
             '<div class="form-ask__row">' +
               '<span class="lockset__sets-titles"><span class="form-ask__row-k">' + esc(T('cb.lock.sets')) + '</span>' +
-                '<span class="lockset__sets-hint' + (lockOver(b) ? ' is-over' : '') + '" data-bd-lock-hint>' + esc(lockHintText(b)) + '</span></span>' +
+                '<span class="lockset__sets-hint' + (lockOver(b) ? ' is-over' : '') + '" data-bd-lock-hint>' + esc(lockHintText(b)) + '</span>' +
+                /* D480：限量時鎖定唯讀，說明就放在「鎖定組數」標籤底下（限量自動鎖定／先填上限／成員撐不起）；2026-10-27 由整列下方獨立一行移到標籤下 */
+                '<span class="lockset__sets-hint" data-bd-lock-auto' + (limited ? '' : ' hidden') + '>' + (limited ? esc(limitAutoText(b)) : '') + '</span></span>' +
               stepperHTML('data-bd-f="lockSets" aria-label="' + esc(T('cb.lock.sets')) + '"', b.lockSets, T('cpp.bd.sp.unit.group'), 0, null, 'bd-disc', !lockable || limited) +
             '</div>' +
             '<div data-bd-alloc-box>' + allocHTML(b) + '</div>' +
@@ -2587,6 +2588,44 @@
         '</div>' +
       '</nav>';
     }
+    /* ── 新增模式：分步流程（2026-10-27 使用者裁示）──────────────────────────────
+       同一個彈窗分兩種模式：
+         編輯（已存在的組合包，b.fresh＝false）＝整份表單一頁捲動，頂部分頁捲到段（上面的 sectionTabsHTML，不變）；
+         新增（剛按「新增組合包」，b.fresh＝true）＝分步，一次只畫一步的欄位，頂部同一排分頁改當步驟列（點了直接跳到那一步），
+         底部「上一步／下一步」，最後一步才是「完成」。
+       步驟順序跟編輯模式不同：選擇組合物 → 組合包介紹 → 販售設定 →（其他）——先決定賣什麼，名稱才有東西可以自動建議。
+       目前在哪一步記在 b.wstep（UI 狀態，不進快照、不存檔）。 */
+    function wizOn(b) { return !!(SPLIT && b.fresh); }
+    function wizSteps() {
+      var st = ['content', 'intro', 'sale'];
+      if (window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) st.push('more');   /* 「其他」只在有電影選擇器時才有 */
+      return st;
+    }
+    function wizStep(b) { var n = wizSteps().length; var i = Math.floor(num(b.wstep)) || 0; return Math.max(0, Math.min(n - 1, i)); }
+    /* 墓碑 2026-10-27：wizTabsHTML（標題下一排 tabs 當步驟列）退場，改 wizStepperHTML 放進標題列 */
+    /* 2026-10-27：新增模式的步驟改放進標題列（payout-dialog__head--steps＋progress-stepper，同建立活動頂列），
+       原本標題下面那一排分頁（wizTabsHTML）不畫；步驟名稱照樣掛 data-bd-wstep，點了直接跳。 */
+    function wizStepperHTML(b) {
+      var cur = wizStep(b), st = wizSteps(), keyOf = {}; ST_SECTIONS.forEach(function (it) { keyOf[it[0]] = it[1]; });
+      return '<div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" style="--steps:' + st.length + ';--at:' + (cur + 1) + ';--progress:' + (cur / st.length * 100) + '%">' +
+        '<div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>' +
+        '<div class="progress-stepper__labels">' +
+          st.map(function (k, i) {
+            var cls = i < cur ? ' progress-stepper__label--done' : (i === cur ? ' progress-stepper__label--current' : '');
+            var state = i < cur ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(T('wiz.step.done')) : esc(T(i === cur ? 'wiz.step.editing' : 'wiz.step.todo'));   /* 正在編輯的那一步寫編輯中 */
+            return '<span class="progress-stepper__label' + cls + '" role="button" tabindex="0" data-bd-wstep="' + i + '"' + (i === cur ? ' aria-current="step"' : '') + '>' +
+              '<span>' + esc(T(keyOf[k])) + '</span><span class="progress-stepper__state">' + state + '</span></span>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+    }
+    function wizBodyHTML(b) {
+      var k = wizSteps()[wizStep(b)];
+      if (k === 'content') return secContentSplitHTML(b);
+      if (k === 'intro') return secNameSplitHTML(b);
+      if (k === 'sale') return secPriceSplitHTML(b) + secQtySplitHTML(b) + secRulesSplitHTML(b) + secListingSplitHTML(b);
+      return secFilmsSplitHTML(b);
+    }
     function splitCardHTML(b) {
       var groups = ticketGroups();
       var primaryLabel = b.sold > 0 ? T('cpp.bd.sp.savechanges')
@@ -2595,40 +2634,49 @@
       return '' +
       '<div class="payout-modal bd-modal" data-bd-card="' + b.id + '">' +
         '<section class="payout-dialog payout-dialog--xwide bd-dialog--split" role="dialog" aria-modal="true">' +
-          '<div class="payout-dialog__head">' +
+          '<div class="payout-dialog__head' + (wizOn(b) ? ' payout-dialog__head--steps' : '') + '">' +
             '<h2 class="payout-dialog__title">' + esc(b.fresh ? T('cpp.bd.add') : T('cpp.bd.edit')) + '</h2>' +
+            (wizOn(b) ? wizStepperHTML(b) : '') +
             '<button class="btn btn--icon" type="button" data-bd-close aria-label="' + esc(T('cpp.bd.close')) + '">' +
               '<i data-lucide="x" class="ztor-icon"></i></button>' +
           '</div>' +
-          sectionTabsHTML() +
+          (wizOn(b) ? '' : sectionTabsHTML()) +   /* 墓碑 2026-10-27：新增模式標題下的步驟分頁排（wizTabsHTML）退場，步驟收進標題列 */
           '<div class="payout-dialog__body bd-form">' +
             '<div class="payout-dialog__split bd-split">' +
               /* 三大分類：組合包介紹 → 選擇組合物 → 販售設定（價格／數量／購買條件與限購／上架與開賣） */
               '<div class="bd-split__main">' +
-                catHTML('intro', 1) + secNameSplitHTML(b) +
-                catHTML('content', 2) + secContentSplitHTML(b) +
-                catHTML('sale', 3) + secPriceSplitHTML(b) + secQtySplitHTML(b) + secRulesSplitHTML(b) + secListingSplitHTML(b) +
-                (secFilmsSplitHTML(b) ? catHTML('more', 4) + secFilmsSplitHTML(b) : '') +
+                (wizOn(b) ? wizBodyHTML(b) :   /* 新增模式：只畫目前這一步 */
+                  catHTML('intro', 1) + secNameSplitHTML(b) +
+                  catHTML('content', 2) + secContentSplitHTML(b) +
+                  catHTML('sale', 3) + secPriceSplitHTML(b) + secQtySplitHTML(b) + secRulesSplitHTML(b) + secListingSplitHTML(b) +
+                  (secFilmsSplitHTML(b) ? catHTML('more', 4) + secFilmsSplitHTML(b) : '')) +
               '</div>' +
               '<aside class="payout-dialog__split-side bd-split__side">' +
-                '<h3 class="bpc__title">' + esc(T('cpp.bd.sp.fan.title')) + '</h3>' +
+                /* 墓碑 2026-10-27：右欄上方小標「粉絲看到的」退場（使用者：不需要） */
                 '<div data-bd-fan>' + fanHTML(b) + '</div>' +
               '</aside>' +
             '</div>' +
           '</div>' +
           '<div class="payout-dialog__foot">' +
-            '<div class="bd-foot-price">' +
+            /* 2026-10-27：新增模式底部的「粉絲實付」價格區移除（使用者：不需要），只留按鈕；編輯模式照舊 */
+            (wizOn(b) ? '' : '<div class="bd-foot-price">' +
               '<span class="bd-foot-price__k">' + esc(T('cpp.bd.calc.final')) + '</span>' +
               '<span class="bd-foot-price__v">' +
                 '<span data-bd-calc-final>' + esc(hasContent(b) ? moneyFrom(b, finalPrice(b)) : '—') + '</span>' +
               '</span>' +
               '<span class="bd-foot-price__sub" data-bd-foot-sub>' + esc(footSubText(b)) + '</span>' +
-            '</div>' +
-            '<div class="bd-foot-actions">' +
-              '<span class="bd-foot-why" data-bd-why' + (why ? '' : ' hidden') + '>' + esc(why) + '</span>' +
-              '<button class="btn btn--outline" type="button" data-bd-cancel>' + esc(T('cpp.bd.sp.cancel')) + '</button>' +
-              '<button class="btn btn--primary" type="button" data-bd-primary' + (gateOff ? ' disabled' : '') + '>' + esc(primaryLabel) + '</button>' +
-            '</div>' +
+            '</div>') +
+            (function () {
+              /* 新增模式：最後一步才有「完成」與擋存原因；前面幾步是「上一步／下一步」，第一步沒有上一步 */
+              var wiz = wizOn(b), last = !wiz || wizStep(b) === wizSteps().length - 1, first = !wiz || wizStep(b) === 0;
+              return '<div class="bd-foot-actions">' +
+                (last ? '<span class="bd-foot-why" data-bd-why' + (why ? '' : ' hidden') + '>' + esc(why) + '</span>' : '') +
+                '<button class="btn btn--outline" type="button" data-bd-cancel>' + esc(T('cpp.bd.sp.cancel')) + '</button>' +
+                (first ? '' : '<button class="btn btn--outline" type="button" data-bd-wback>' + esc(T('cpp.bd.back')) + '</button>') +
+                (last ? '<button class="btn btn--primary" type="button" data-bd-primary' + (gateOff ? ' disabled' : '') + '>' + esc(primaryLabel) + '</button>'
+                      : '<button class="btn btn--primary" type="button" data-bd-wnext>' + esc(T('cpp.bd.next')) + '</button>') +
+              '</div>';
+            })() +
           '</div>' +
         '</section>' +
       '</div>';
@@ -2659,7 +2707,7 @@
       if (durEl) { durEl.hidden = !(hasS && spS); durEl.textContent = hasS && spS ? T('cb.pl.total.during').replace('{p}', moneyFrom(b, fpS * (1 - spS / 100))) : ''; }
       set('[data-bd-sets-why]', setsWhyText(b));
       var cm = card.querySelector('[data-bd-capmax]');
-      if (cm) { cm.textContent = capHintSplit(b); cm.classList.toggle('fc-hint--over', capOver(b)); }
+      if (cm) { cm.textContent = capHintSplit(b); cm.hidden = !cm.textContent; cm.classList.toggle('fc-hint--over', capOver(b)); }
       var capEl = card.querySelector('[data-bd-f="cap"]');
       if (capEl) { if (capOver(b)) capEl.setAttribute('aria-invalid', 'true'); else capEl.removeAttribute('aria-invalid'); }
       /* 語意句現在是張數欄底下的 hint（方案 A），表尾已退場，不再各自更新一次。 */
@@ -3752,6 +3800,11 @@
       /* ── SPLIT 專屬：取消（還原快照）、預覽卡的選擇器（只影響預覽） ─────── */
       if (SPLIT) {
         if (e.target.closest('[data-bd-cancel]')) { cancel(b); return; }
+        /* 新增模式的步驟切換：下一步／上一步／點步驟列直接跳（不擋：缺的東西在最後一步「完成」旁說明） */
+        if (e.target.closest('[data-bd-wnext]')) { b.wstep = Math.min(wizSteps().length - 1, wizStep(b) + 1); render({ blur: true, top: true }); return; }
+        if (e.target.closest('[data-bd-wback]')) { b.wstep = Math.max(0, wizStep(b) - 1); render({ blur: true, top: true }); return; }
+        var ws = e.target.closest('[data-bd-wstep]');
+        if (ws) { b.wstep = Number(ws.getAttribute('data-bd-wstep')) || 0; render({ blur: true, top: true }); return; }
         /* 2026-10-12 改版（UI-CHANGES 一百八十八）：票券列展開／收起、「看怎麼算」展開、要不要鎖定庫存 */
         if (e.target.closest('[data-bd-tix-open]')) { TIXOPEN[b.id] = !tixOpen(b); render({ blur: true }); return; }
         var ct = e.target.closest('[data-bd-calc-toggle]');
@@ -3766,6 +3819,10 @@
           if (lk.disabled) return;
           b.lockAsk = lk.getAttribute('data-bd-lock');
           if (b.lockAsk === 'no') { b.lockSets = ''; b.alloc = {}; b.itemAlloc = {}; }
+          if (b.lockAsk === 'yes' && !lockN(b)) {   /* 2026-10-27：選鎖定時鎖定組數預帶示意值（100，不超過成員撐得起的套數） */
+            var mx2 = memberCapMax(b);
+            if (mx2 !== Infinity && mx2 >= 1) b.lockSets = String(Math.min(100, mx2));
+          }
           render({ blur: true }); onChange(BUNDLES);
           return;
         }
@@ -3812,7 +3869,15 @@
       /* ── D342（SPLIT）：限時折扣、優惠碼疊加、顯示設定三顆開關；跟隨／另設與購買條件交給 js/ticket-bundle.js ── */
       if (SPLIT && e.target.closest('[data-bd-sale-toggle]')) {
         b.saleOn = !b.saleOn;
-        if (b.saleOn && !b.sale) b.sale = { pct: '', from: '', to: '' };
+        if (b.saleOn) {
+          /* 2026-10-27 預帶示意值：10%、今天起 7 天（呈現預設，非產品規則；填一半的舊值不覆蓋） */
+          var sl0 = b.sale || (b.sale = { pct: '', from: '', to: '' });
+          var d0 = new Date(), d1 = new Date(d0.getTime() + 7 * 86400000);
+          var ymd = function (d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+          if (sl0.pct === '' || sl0.pct == null) sl0.pct = '10';
+          if (!sl0.from) sl0.from = ymd(d0);
+          if (!sl0.to) sl0.to = ymd(d1);
+        }
         render({ blur: true });
         return;
       }
@@ -3829,6 +3894,7 @@
         b.discountOn = !b.discountOn;
         /* 關掉就把值清掉：留著一個看不見卻仍在算的折扣，是畫面與價格對不起來的來源。 */
         if (!b.discountOn) b.discount = '';
+        else if (b.discount === '' || b.discount == null) b.discount = '10';   /* 2026-10-27 預帶示意值 10%（呈現預設，非產品規則） */
         render({ blur: true });
         return;
       }
@@ -3864,6 +3930,11 @@
         /* D480 決定 3：改回不限量＝鎖定全部退回共用庫存，之後可以自己另設 */
         if (SPLIT && b.avail === 'limited' && avail.dataset.bdAvail !== 'limited') { b.lockSets = ''; b.lockAsk = 'no'; b.alloc = {}; b.itemAlloc = {}; }
         b.avail = avail.dataset.bdAvail;
+        /* 2026-10-27：切到限量時販售上限預帶示意值（100，不超過成員撐得起的套數）；鎖定組數跟著上限走（limitSync） */
+        if (SPLIT && b.avail === 'limited' && !capN(b) && (b.cap === '' || b.cap == null)) {
+          var mx = memberCapMax(b);
+          if (mx === Infinity) b.cap = '100'; else if (mx >= 1) b.cap = String(Math.min(100, mx));
+        }
         render({ blur: true });
         return;
       }
@@ -4003,10 +4074,12 @@
          在收合列上仍讀得到「還沒有內容」，比兩張攤開的表單好認）。 */
       BUNDLES.forEach(function (b) { if (SECTIONS || isValid(b)) b.collapsed = true; });
       var nb = newBundle();
-      /* 預帶（2026-09-21 D296，5.1.6.1 §4.6 F20）：`defaultAllTiers` 的活動變體新組合包預設
-         「本活動全部票種都允許、張數 1」，創作者取消勾選來收窄。 */
-      if (opts.defaultAllTiers && getTickets) {
-        tixAdd(nb, (getTickets() || []).map(function (t) { return t.id; }));
+      /* 預帶（2026-09-21 D296，5.1.6.1 §4.6 F20）：`defaultAllTiers` 的活動變體新組合包原本預設「本活動全部票種都允許、張數 1」。
+         2026-10-27 使用者裁示：新增時只預選第一種票（一列票種；跨場次的種類帶它在每場的票），其餘由創作者自己勾；
+         票種一多（九種）全選會把名稱撐成一長串。與規格的「預設全部允許」有差異，見 ASSUMPTIONS 產品變更提案。 */
+      if (getTickets) {
+        var firstKind = kindRows()[0];
+        if (firstKind) tixAdd(nb, firstKind.ids);
       }
       BUNDLES.push(nb);
       render({ blur: true });

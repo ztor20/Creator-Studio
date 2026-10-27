@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 301 條）
+## Tokens（_tokens.css，亮色，共 303 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -76,6 +76,10 @@
 
 ### --faint-*
 - `--faint-ink`: color-mix(in srgb, var(--muted-foreground) 72%, transparent)
+
+### --float-*
+- `--float-glass`: color-mix(in srgb, var(--popover) 72%, transparent)
+- `--float-blur`: var(--ztu-blur-glass)
 
 ### --font-*
 - `--font-display`: 'Poppins', var(--font-cjk), system-ui, sans-serif
@@ -365,7 +369,7 @@
 - `--type-button-label-tracking`: var(--type-label-15-tracking)
 
 ### --view-*
-- `--view-field-ink`: var(--foreground-muted)
+- `--view-field-ink`: var(--faint-ink)
 
 ### --w-*
 - `--w-220`: 220px
@@ -431,7 +435,7 @@
 - `check-card.css` — .check-cards, .check-card__group, .check-card, .check-card__mark, .check-card--on ｜ check-card.css · 多選卡（Cosmos 版型）
 - `checkbox.css` — .zcheck, .zcheck__control, .zcheck__input, .zcheck__box, .zcheck__label ｜ Checkbox — the house choice control
 - `chip.css` — .chip-group, .chip-group--loose, .chip, .chip--active, .chip--static ｜ Chip — clickable filter pill with active state +
-- `code-picker.css` — .code-picker, .code-picker__auto, .code-picker__label, .code-picker__chips, .code-picker__pct ｜ code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458）
+- `code-picker.css` — .code-picker, .code-picker__pct, .chip__tag, .code-picker__field, .code-picker__lock ｜ code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458）
 - `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
@@ -467,7 +471,7 @@
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
 - `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊與標題列讀數（2026-10-12，建立組合包改版；使
-- `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
+- `form-grid.css` — .form-grid, .form-grid--3, .form-grid__full ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--dense, .form-section__actions, .form-section--outlined, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `form-steps.css` — .form-steps ｜ form-steps.css · 同一張表單分步顯示（2026-10-21，建立商品／建立組合包
 - `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）

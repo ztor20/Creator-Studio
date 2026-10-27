@@ -15,6 +15,112 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百三十五）· 進度條：正在編輯的那一步寫「編輯中」（B 反饋 · progress-stepper 消費頁）
+
+**標籤**：release2.3
+
+不同步 release2.2（使用者 2026-10-27 裁示：2.2 不改，只改 2.3 之後）。
+
+使用者指示：進度條上正在編輯的那一步，狀態應該顯示「編輯中」，不是「未完成」。
+
+- 狀態小字由兩種改三種：已完成（打勾）／編輯中（目前這一步）／未完成。新增 i18n `wiz.step.editing`、建立活動字典 `d.step.editing`。
+- 同步全部消費頁：`create-event.html`、`create-product.html`、`create-bundle.html`、`create-project.html`、`js/bundle-editor.js`（新增組合包彈窗）、示意頁 `lab-bundle-wizard-head.html`。
+- DS：`design-system.md` Progress stepper 條目、`design-system.html`／`design-components.html` demo 目前步改「編輯中」。
+
+---
+
+## 2026-10-27（三百三十四）· 新增組合包彈窗：步驟收進標題列、移除底部價格（B 反饋 · payout-modal／bundle-editor）
+
+**標籤**：release2.3
+
+使用者看示意頁 `lab-bundle-wizard-head.html`（四輪調整：放進標題列、對齊色條、內距回彈窗標準）後裁示套進正式。
+
+- 新增模式（`b.fresh`）的步驟由標題下一排分頁改放進標題列：標題｜分段進度條（`progress-stepper--segmented --anystep`，同建立活動頂列，已完成打勾／未完成）｜關閉；點步驟名稱直接跳（`data-bd-wstep`）。`wizTabsHTML` 退場，改 `wizStepperHTML`。
+- 新增模式底部「粉絲實付」價格區移除，只留取消／上一步／下一步（最後一步完成）；編輯模式照舊。
+- 新元件修飾 `payout-modal.css` 的 `.payout-dialog__head--steps`（三欄格；內距維持彈窗標準，標題與進度條各自 `padding-top: --sp-6`，標題 `line-height: 1` 讓字的上緣對齊色條，關閉鈕中線對齊標題）。
+- DS：`design-system.md`（Payout picker & dialog）、`design-system.html` 補 demo。
+
+---
+
+## 2026-10-27（三百三十三）· 提前入場間距照 DS、票種卡等高、disabled 輸入框文字降一階（B 反饋 · form-grid／ticket-tier-card／_tokens）
+
+**標籤**：release2.3
+
+- 場次「提前入場時間」揭示區：「早於提前入場時間入場」二選一卡由接在格子後面的 `.rule-sub`（縮排＋左邊線、上距 12）改成同一個 `form-grid` 裡佔滿整列的 `.field`，列距交給格線 `--sp-28`。新增 `form-grid.css` 的 `.form-grid__full`（`grid-column: 1 / -1`）。`create-event.html`、`event-detail.html` 同步。
+- 票種與票務：同一列的票種卡等高（`.tier-grid` 由 `align-items: start` 改 `stretch`，並加 `grid-auto-rows: 1fr` 讓不同列也等高；有卡在編輯時 `:has(.tier-card--editing)` 才回到 `start`，不讓編輯中的長卡把同列拉長）。
+- disabled 輸入框的值墨色降兩階：`--view-field-ink` 由 `--foreground-muted` 改指 `--faint-ink`（同日先降一階到 `--muted-foreground`，使用者要求再降一階）（STYLE-DECISIONS Q137，改判 Q128 的墨色一項）。全站 `:disabled`、兩段式面板檢視態、編輯態 readonly 一起生效。
+- DS：`design-system.md`（form-grid、token 表）、`design-system.html`／`design-components.html` token 說明同步。
+
+---
+
+## 2026-10-27（三百三十二）· bookyay 來源標記只留鎖頭（B 反饋 · field-source-tag · create-event／event-detail）
+
+**標籤**：release2.3
+
+使用者指示：所有「bookyay 帶入」都只要一個鎖頭 icon。
+
+- `.field-source` 拿掉「bookyay 帶入」字樣，只留小鎖頭；字樣收進 `title`（滑過看得到）與 `aria-label`＋`role="img"`（讀屏唸得到）。
+- 產生處：`create-event.html` 的 `srcChip()`、`event-detail.html` 四處（描述標籤、區塊標題、`bkySrcChip` 等）。
+- DS：`field-source-tag.css` 註解與 anatomy、`design-system.md` 條目、`design-system.html`／`design-components.html` demo 同步。
+
+---
+
+## 2026-10-27（三百三十一）· 粉絲名冊欄位間距改平均分配（B 反饋 · fans-crm）
+
+**標籤**：release2.4
+
+使用者回報名冊欄位都擠在最後面（release2.4 只剩序號、粉絲、分級、忠誠點數、操作五欄）。原因：只有姓名欄是 `1fr`、其餘寫死寬度，多出來的寬度全被姓名欄吃掉。
+
+- 排行榜（完整版與 release2.4 收起版）、名人堂的欄寬改成各欄 `minmax(最小寬, N fr)`：姓名欄 2 份、其餘欄各 1 份，多餘寬度平均分給每一欄；最小寬與窄視窗縮欄、橫向捲動行為不變。
+- 欄寬仍是本頁專屬（各清單欄數不同，比照 events.html）；若要全站清單一致，需另外把「主欄 2 份、其餘 1 份」立成 `product-list` 的共用慣例，待裁決。
+
+---
+
+## 2026-10-27（三百三十一）· 建立活動「新增組合包」改成分步流程（B 反饋 · bundle-editor）
+
+**標籤**：release2.3
+
+使用者指示：組合包彈窗要分「新增」與「編輯」兩種模式，現在的一頁捲動比較像編輯；新增時每一步只顯示那一步的欄位，順序為選擇組合物 → 組合說明（組合包介紹）→ 販售設定 → 其他。
+
+- 新增模式（剛按「新增組合包」，`b.fresh`）：頂部同一排分頁改當步驟列，點了直接跳到那一步；一次只畫那一步的分卡；底部「取消／上一步／下一步」，最後一步才是「完成」與擋存原因（`js/bundle-editor.js` `wizSteps`／`wizTabsHTML`／`wizBodyHTML`，鉤子 `[data-bd-wstep]`、`[data-bd-wnext]`、`[data-bd-wback]`）。
+- 步驟之間不擋：缺的東西照舊由最後一步「完成」旁的原因句說明。目前步驟記在 `b.wstep`，不進快照、不存檔。
+- 「其他」只在有電影選擇器時才有（同原分頁規則）。
+- 編輯模式（已存在的組合包）維持原本整頁捲動＋分頁捲到段，步驟順序仍是組合包介紹在前。
+- 電子商店的 `create-bundle.html` 本來就是頁面級分步精靈，不受影響。
+- DS：`design-system.md`／`design-system.html`／`design-components.html` 的 Bundle editor 條目補兩種模式說明。
+- 同日追加：「＋ 新增組合包」虛線鈕（`.fc-add`）圓角改跟卡片同級（`--radius-xl`），與上方組合包列拉開 `--sp-16`（收進 `bundle-editor.css`；`create-project.html`、`project-detail.html` 的 inline `margin-top: 12` 撤除，全部新增套組／方案鈕一起生效）。
+
+---
+
+## 2026-10-27（三百三十）· 建立活動「新增組合包」六項調整＋多票種假資料（B 反饋 · A 假資料 · bundle-editor／code-picker／price-ladder）
+
+**標籤**：release2.3
+
+使用者看 bky-21 九種票的組合包彈窗後給六點反饋，一併處理，並新增一筆多票種的匯入假資料。
+
+- 假資料：`create-event.html` 匯入清單新增 `bky-21`「ZENITH Fan Fest — 多票種示範」，九種票、九個同時間時段（D440：一時段多種票只帶第一種，所以一票一時段）。
+- 新增組合包時預設展開票種，並只預選第一種（`js/bundle-editor.js` `add()`、`tixOpen()` 剛新增的卡一律展開）；原本活動變體預設「全部票種」。
+- 組合物表的活動列名稱下方加灰字，列出已選票種（`member-table__s`）。
+- 組合折扣開關打開時預帶 10%；限時折扣打開時預帶 10%、今天起 7 天。
+- 限時折扣的開始日、結束日改左右並排（`price-ladder.css` `__dates`）。
+- 限時折扣日期欄下方的紅字錯誤列退場；未填完整仍由底部「為什麼不能存」說明。
+- 優惠碼：已自動適用的全部商店碼改放進「優惠碼」輸入框最前面，鎖定、沒有移除鈕（`code-picker.js`、`code-picker.css` 新增 `__auto-chip`／`__lock`，退場 `__auto`／`__label`／`__chips`）；影響所有用到 Code picker 的頁（商品、組合包）。
+- 電子商店組合包同步（2026-10-27 追加）：`create-bundle.html`、`bundle-detail.html` 的組合折扣與限時折扣開關打開時同樣預帶 10%、今天起 7 天；限時折扣 % 的紅字提示（`#cb-sale-pct-hint`、`#bd-sale-pct-hint`）退場，不合法仍由「為什麼不能存」說明；日期並排與優惠碼自動適用標籤因共用元件自動生效。預選第一種票與票種灰字只屬活動組合包（電子商店組合包沒有活動票種列），不適用。
+- 數量段再調（同日第二輪，使用者六點＋預覽欄）：
+  - 切到限量時販售上限預帶 100（不超過成員撐得起的套數），鎖定組數跟著上限走；選「鎖定」時鎖定組數同樣預帶 100。
+  - 每一題 `.form-ask` 自己一個外框（`form-ask.css`，原本題與題之間一條細線退場）。
+  - 「賣完自動售罄。」一句退場，只在超過成員供應時才出現提示。
+  - 限量時鎖定區的問句與兩段說明收起，只剩「鎖定組數」一列＋一句「限量時自動鎖定，數量跟著販售上限」（`cb.lock.auto*` 三句縮短）。
+  - 預覽欄由 340 收窄為 260（`bundle-editor.css` `--payout-split-side`）：直式預覽圖寬度決定高度，原本一屏只看得到圖。
+  - 同步電子商店組合包 `create-bundle.html`、`bundle-detail.html`（預帶值、限量時收起問句、鎖定說明移到鎖定組數下方）；外框與縮短文案因共用元件與 i18n 自動生效。
+  - 第三輪：限量鎖定那句說明改放在「鎖定組數」標籤正下方（不再獨立一行）；唯讀步進器（`stepper.css`）收起按鈕欄後，單位字貼回右緣，不再留一塊空白（全站唯讀／停用的步進器一起生效）。
+  - 第四輪：購買條件區「還沒有條件：任何人都買得到，照組合包售價賣。」退場（`purchase-conds.js` 的 `noEmpty`，活動組合包、`create-bundle.html`、`bundle-detail.html` 一併）；活動組合包彈窗右欄上方小標「粉絲看到的」退場（`.bpc__title` 元件本身保留，DS demo 仍有）。
+  - 第五輪：`create-bundle.html`／`bundle-detail.html` 限量時鎖定組數輸入框右邊的空格（為對齊鎖定量表預留的右側讓位，`form-ask__row--lockset`）在輸入框停用時取消，輸入框貼齊右緣。
+- 不同步 release2.2（使用者 2026-10-27 裁示）：這批只進 release2.3 與之後，不用 `release-port.sh` 搬進凍結分支。
+- DS 同步：`design-system.md` 4.239／Price ladder 條目、`design-system.html` 與 `design-components.html` 的 Code picker demo。
+
+---
+
 ## 2026-10-27（三百二十九）· 粉絲名冊工具列按鈕：名稱縮短、分級設定改一級（B 反饋 · fans-crm）
 
 **標籤**：release2.4

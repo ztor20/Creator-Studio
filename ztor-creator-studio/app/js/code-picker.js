@@ -3,7 +3,7 @@
    ------------------------------------------------------------
    window.ztorCodePicker.mount(host, opts) → 實例。
    「使用優惠碼」開關由消費頁自己放；開關打開後才顯示 host，host 裡面就是本元件：
-     已自動適用（唯讀）＋「優惠碼」多選＋「建立新的優惠碼」。資料讀寫都走 js/discount-codes-store.js（window.ztorCodes）。
+     「優惠碼」多選（已自動適用的全部商店碼以鎖定標籤放在輸入框最前面）＋「建立新的優惠碼」。資料讀寫都走 js/discount-codes-store.js（window.ztorCodes）。
 
    opts
      pending  （選填）重畫時帶回上次暫存的新碼（活動建立流程的組合包編輯器每次重畫都重新 mount）
@@ -143,15 +143,13 @@
       var C2 = Codes(); if (!C2) return;
       var auto = C2.autoApplied();
       var html = '';
-      if (auto.length) {
-        html += '<div class="code-picker__auto"><div class="code-picker__label">' + esc(T('cpk.auto')) + '</div><div class="code-picker__chips">' +
-          auto.map(function (c) {
-            var s = c.status !== 'active' && STATUS_KEY[c.status] ? ' <span class="chip__tag">' + esc(T(STATUS_KEY[c.status])) + '</span>' : '';
-            return '<span class="chip chip--static"><span>' + esc(c.code) + '</span><span class="code-picker__pct">' + esc(c.pct) + '%</span>' + s + '</span>';
-          }).join('') + '</div><div class="field__hint">' + esc(T('cpk.auto.hint')) + '</div></div>';
-      }
       html += '<div class="code-picker__field"><div class="field__label">' + esc(T('cpk.title')) + '</div>' +
         '<div class="combobox"><div class="tag-input__field" data-cpk-field>' +
+        /* 2026-10-27：已自動適用的全部商店碼放進輸入框最前面，鎖定（沒有移除鈕）；原本欄位上方獨立的「已自動適用」群組退場 */
+        auto.map(function (c) {
+          var s = c.status !== 'active' && STATUS_KEY[c.status] ? '<span class="chip__tag">' + esc(T(STATUS_KEY[c.status])) + '</span>' : '';
+          return '<span class="chip chip--static code-picker__auto-chip" title="' + esc(T('cpk.auto')) + '"><i data-lucide="lock" class="ztor-icon code-picker__lock"></i><span>' + esc(c.code) + '</span><span class="code-picker__pct">' + esc(c.pct) + '%</span>' + s + '</span>';
+        }).join('') +
         st.sel.map(function (code) {
           var i = codeInfo(code), s = statusText(i);
           return '<span class="chip chip--removable"><span>' + esc(i.code) + '</span><span class="code-picker__pct">' + esc(i.pct) + '%</span>' +
@@ -161,7 +159,8 @@
         '<input class="tag-input__entry" type="search" data-cpk-search role="combobox" aria-expanded="false" autocomplete="off" placeholder="' + esc(T('cpk.select.ph')) + '"' + (st.locked || st.ro ? ' disabled' : '') + ' value="' + esc(st.q) + '">' +
         '<i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i></div>' +
         '<div class="combobox__menu" data-cpk-menu' + (st.menu && !st.locked && !st.ro ? '' : ' hidden') + '>' + menuHTML() + '</div></div>' +
-        '<div class="field__hint">' + esc(st.locked ? T('cpk.locked') : T('cpk.hint')) + '</div></div>';
+        '<div class="field__hint">' + esc(st.locked ? T('cpk.locked') : T('cpk.hint')) + '</div>' +
+        (auto.length && !st.locked ? '<div class="field__hint">' + esc(T('cpk.auto.hint')) + '</div>' : '') + '</div>';
       var wasFocus = host.contains(document.activeElement) && document.activeElement.hasAttribute && document.activeElement.hasAttribute('data-cpk-search');
       host.innerHTML = '<div class="code-picker"' + (st.locked || st.ro ? ' data-locked' : '') + '>' + html + '</div>';
       if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(host);

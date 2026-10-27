@@ -63,9 +63,12 @@
        gap 同時由 12→14（沿用 .data-list__row 的 --sp-12，這裡覆寫成 --sp-14），
        這樣即使分級欄短字（如「粉絲」）留下的殘餘空白，也落在跟其他欄距同一個
        量級，不會顯得忽鬆忽緊。 */
-    grid-template-columns: 28px minmax(150px,1fr) minmax(72px,116px) 94px 96px minmax(64px,84px) minmax(96px,104px) minmax(78px,96px) 40px;
+    grid-template-columns: 28px minmax(150px,2.2fr) minmax(72px,1fr) minmax(94px,1fr) minmax(96px,1fr) minmax(64px,1fr) minmax(96px,1.2fr) minmax(78px,1fr) 40px;
     gap: var(--sp-14);
-    /* 國家／消費／升級進度／狀態四欄用 minmax：窄視窗先縮這幾欄，縮到底才由
+    /* 2026-10-27 使用者回報「欄位都擠在最後面」：原本只有姓名欄是 1fr、其餘寫死寬度，多出來的寬度全被姓名欄吃掉，
+       其他欄被推到最右邊；改成所有欄都是 minmax(最小寬, 比例fr)——姓名欄 2 份、其餘 1 份，多餘寬度平均分給每一欄。
+       舊值：姓名 minmax(150px,1fr)，分級／點數等為固定 94／96px。
+       各欄的 minmax 最小寬仍在：窄視窗先縮欄（縮到最小寬），縮到底才由
        .product-list-scroll 橫向捲動（min-width: min-content），不重排成卡片。 */
   }
   /* 欄名一律單行：兩個字的欄名斷行後會比鄰欄矮半行，整條標題列看起來沒對齊。 */
@@ -123,12 +126,12 @@
   /* release2.4（2026-10-23）：國家、消費、升級進度、狀態四欄掛 S118（只在最終版），版本收起時
      表頭與資料列改成五欄（序號｜粉絲｜分級｜忠誠點數｜操作），不留空欄。同 radio-card.css 的 :has() 做法。 */
   .fan-row:has(> .ztd-ver-hidden) {
-    grid-template-columns: 28px minmax(150px,1fr) 94px 96px 40px;
+    grid-template-columns: 28px minmax(150px,2fr) minmax(94px,1fr) minmax(96px,1fr) 40px;
   }
   /* Hall of fame 名人堂列：peak tier + 達成年份（唯讀示意）。同樣拆出國家欄。 */
   .product-list--fans .product-list__head.hof-row,
   .hof-row {
-    grid-template-columns: 36px minmax(150px,1fr) 116px 148px 108px;
+    grid-template-columns: 36px minmax(150px,2fr) minmax(116px,1fr) minmax(148px,1fr) minmax(108px,1fr);
     gap: var(--sp-14);
   }
 
