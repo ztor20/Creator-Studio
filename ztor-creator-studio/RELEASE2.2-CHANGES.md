@@ -1,15 +1,29 @@
-# RELEASE2.3-CHANGES — release2.3 凍結版改版紀錄
+# RELEASE2.2-CHANGES — release2.2 凍結版改版紀錄
 
-這個分支（`release2.3`，原名 `phase1`）是 Creator Studio 原型 **release2.3（E-Shop）交付依據**。日常編修都在 `main`；只有明確要進 release2.3 的修正才會搬進本分支，每搬一次就在這裡加一筆並升版號。開發看這一份就知道凍結版改了什麼、什麼時候改的。
+這個分支（`release2.2`，原名 `phase1`，2026-10-07 改名 `release2.3`，2026-10-27 再改名 `release2.2`）是 Creator Studio 原型 **release2.2（E-Shop）交付依據**。日常編修都在 `main`；只有明確要進 release2.2 的修正才會搬進本分支，每搬一次就在這裡加一筆並升版號。開發看這一份就知道凍結版改了什麼、什麼時候改的。
 
 ## 怎麼看
 
-- 站台檔在 `app/`，開啟後版本鎖死在 release2.3（不可切換、網址參數無效）。
-- 功能範圍以 `app/feature-scope-map.md` 各模組功能表標 🟢 release2.3 的項目為準（切出當時的狀態）。
+- 站台檔在 `app/`，開啟後版本鎖死在 release2.2（不可切換、網址參數無效）。
+- 功能範圍以 `app/feature-scope-map.md` 各模組功能表標 🟢 release2.2 的項目為準（切出當時的狀態）。
 - 固定網址：https://ztor-cs-release2-3.vercel.app（舊網址 https://ztor-cs-phase1.vercel.app 繼續有效，內容相同）
-- 版本標籤：v1.4 起為 `release2.3-vX.Y`；v1.0～v1.3 的舊標籤 `phase1-vX.Y` 保留不動。
+- 版本標籤：v1.5 起為 `release2.2-vX.Y`；v1.4 的 `release2.3-v1.4` 與 v1.0～v1.3 的 `phase1-vX.Y` 保留不動。
+
+> 2026-10-27 序號改名：下方 v1.4 以前的條目保留當時寫法。換算：release2.3＝現 release2.2（E-Shop）、release2.4＝現 release2.3（活動）。
 
 ## 版本
+
+### v1.5 · 2026-10-27
+
+- 內容：改名，畫面與功能範圍不變。
+  - 分支 `release2.3` 改名 `release2.2`（GitHub 會把舊名稱自動轉到新名稱）
+  - 本紀錄檔 `RELEASE2.3-CHANGES.md` 改名 `RELEASE2.2-CHANGES.md`
+  - `app/js/devtools.js` 的鎖定版本代號 `release2.3` 改 `release2.2`，面板說明同步改；鎖定段落標記改 `★ RELEASE2.2 FROZEN`
+  - `app/feature-scope-map.md` 的 Tier 欄 `🟢 release2.3` 改 `🟢 release2.2`、`🔵 release2.4` 改 `🔵 release2.3`，開發版本配置表那一列改 `release2.2`
+  - `CLAUDE.md`、`AGENTS.md`、`README.md` 的分支名與紀錄檔名換新名
+  - 網址不變：https://ztor-cs-release2-3.vercel.app 與 https://ztor-cs-phase1.vercel.app 照舊有效
+- 原因：交付版序號整體往前一號（D484）：E-Shop＝release2.2、活動＝release2.3、粉絲管理＋媒體庫＝release2.4。
+- 工具：搬修正改用 `release-port.sh release2.2`、部署改用 `deploy-release.sh release2.2`（維護者本機的專案根）。
 
 ### v1.4 · 2026-10-07
 
