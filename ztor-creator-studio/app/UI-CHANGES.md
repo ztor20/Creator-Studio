@@ -13,6 +13,19 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百零六）· 訂單詳情「補寄信」改名「重寄訂單信」（B 反饋導入 · D482）
+
+**標籤**：release2.4
+
+使用者覺得「補寄信」看不懂（原話：「補寄信其實就是重新發送訂單信對嗎，請改一個看得懂的名字」），改成直白的「重寄訂單信」。純改名，Admin 才能按、創作者看得到但停用、確認信箱、寄送紀錄、已過期訂單停用等行為都不變。
+
+- `order-detail.html`：頁首按鈕、確認窗標題、註解與 JS 註解同步改名。
+- `js/i18n.js`：`od.resend.btn`、`od.resend.why.admin`、`od.resend.title`、`od.resend.bky`、`od.resend.log`、`od.resend.toast` 的中文改為「重寄…」，英文按鈕與停用提示改為 Resend order email。
+- `feature-scope-map.md` O37、`js/devtools.js` 註解、`ASSUMPTIONS.md`（UIA-253 相關現況句）、`requirements-map.md` 現況句同步；規則手冊 `rulebook/order-detail.html` 同步。
+- 沒有新功能標記（沿用 O37）。「標記出貨／補寄貨品」的出貨補寄是另一件事，不動。
+
+---
+
 ## 2026-10-27（三百零五）· 下架時排程保存但暫停，重新上架時詢問是否恢復；上架中改組合包限量不用先下架（A spec-derived · D481）
 
 **標籤**：release2.4
