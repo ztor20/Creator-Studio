@@ -52,8 +52,6 @@
   /* 2026-10-27 使用者裁示：名冊列表改成與活動列表同一套（.product-list）——表頭小標語彙、
      列的玻璃卡 hover、直線分隔、橫捲＋兩端固定欄與點字拉桿全部由元件提供，本頁只留欄寬。
      舊值：表頭 .table-head＋資料列 .data-list__row（無 hover 浮起、橫捲時沒有固定欄）。 */
-  /* 2026-10-27 使用者裁示：「認識粉絲系統」另起一行（原本黏在說明句最後面）。 */
-  .page-intro__lede .page-intro__help { display: block; width: fit-content; margin: var(--sp-8) 0 0; }
   .product-list--fans .product-list__head,
   .fan-row {
     /* 忠誠點數欄 96px：欄名「Loyalty points」單行需 90px，原本的 78px 會斷成兩行。
@@ -213,11 +211,11 @@
         <div>
           <h1 class="page-intro__title" data-i18n="fans.h1">Fan management</h1>
           <div class="page-intro__lede">
-            <p class="page-intro__sub" data-i18n="fans.sub" data-feat="S118">High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment.</p>
+            <p class="page-intro__sub" data-i18n="fans.sub" data-feat="S118">Fans are ranked by engagement; points come from purchases, event check-ins, interactions and platform activities.</p>
             <p class="page-intro__sub" data-i18n="fans.sub-p0" data-feat-off="S118">Ranked by loyalty points. Sort by points or tier.</p>
-            <a class="page-intro__help" href="fans-guide.html" data-i18n="fans.btn.know">認識粉絲系統</a>
           </div>
         </div>
+        <a class="btn btn--outline page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">認識粉絲系統</a>
       </div>
 
       <!-- Data body (account has fans) — F2 KPIs, F3 Who's who, F4 risk alert,
@@ -237,7 +235,7 @@
         <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label">
           <span data-i18n="fans.kpi.risk">At risk</span>
           <span class="tip fans-tip" tabindex="0" aria-label="Valuable fans whose recent engagement dropped sharply."><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.risk.tip">Valuable fans whose recent engagement dropped sharply (a flag, not a score).</span></span>
-        </div><div class="kpi__value">5</div><div class="kpi__delta kpi__delta--neg" data-i18n="fans.kpi.risk-meta">5 Super Fans &gt;14d quiet</div></div>
+        </div><div class="kpi__value" data-risk-value>5</div><div class="kpi__delta kpi__delta--neg" data-risk-meta data-i18n="fans.kpi.risk-meta">Super Fans · 14d+</div></div>
         <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label" data-i18n="fans.kpi.revenue">Revenue (active)</div><div class="kpi__value">$20,700</div><div class="kpi__meta" data-i18n="fans.kpi.revenue-meta">Trailing 90 days</div></div>
         <div class="kpi bento--span-3"><div class="kpi__label">
           <span data-i18n="fans.kpi.rep">Avg loyalty points</span>
@@ -256,7 +254,7 @@
           <button class="tabs__item" role="tab" data-tab="hof" aria-selected="false" data-feat="S118"><span data-i18n="fans.tab.hof">Hall of fame</span></button>
         </nav>
         <!-- 2026-10-27 使用者裁示：頁首的「粉絲分級設定」「匯出 CSV」併進這排動作群，頁首只剩標題與說明。
-             動作群由左到右＝搜尋、匯出、群發訊息（皆次級）→ 分級設定（一級，2026-10-27 使用者裁示：它是這頁唯一要主動去調的規則）。
+             動作群由左到右＝搜尋、匯出、群發訊息、分級設定，全部次級（2026-10-27 使用者裁示：整排不放一級按鈕；分級設定曾短暫是一級）。
              搜尋、匯出、群發是對「當下這份名單」做的事，只在排行榜分頁出現（逐顆掛 data-tab-actions）；
              分級設定是調整規則、與看哪份名單無關，兩個分頁都留著。
              舊值：頁首 .page-intro__actions 放分級設定＋匯出，動作群只有搜尋＋群發訊息。 -->
@@ -271,13 +269,16 @@
               <button class="btn btn--icon btn--xs search-collapse__close" type="button" id="fans-search-close" aria-label="Close search" title="Close search" data-i18n-aria-label="fans.search.close" data-i18n-title="fans.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
             </label>
           </div>
-          <button class="btn btn--outline btn--sm" type="button" data-feat="S118" data-tab-actions="leaderboard">
-            <i data-lucide="download" class="ztor-icon"></i><span data-i18n="fans.btn.csv">Export</span>
-          </button>
-          <a class="btn btn--outline btn--sm" href="#" data-msg-open data-msg-to="all" data-feat="S118" data-tab-actions="leaderboard">
-            <i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.btn.message">Message segment</span>
-          </a>
-          <button class="btn btn--primary btn--sm when-data" type="button" data-tier-open="settings">
+          <!-- 2026-10-27 使用者裁示：匯出、群發訊息只留 icon，hover 立刻顯示名稱（.tip--btn＋.tip__bubble，不用原生 title 的延遲）。 -->
+          <span class="tip tip--btn" data-feat="S118" data-tab-actions="leaderboard">
+            <button class="btn btn--outline btn--icon btn--sm" type="button" aria-label="Export" data-i18n-aria-label="fans.btn.csv"><i data-lucide="download" class="ztor-icon"></i></button>
+            <span class="tip__bubble" role="tooltip" data-i18n="fans.btn.csv">Export</span>
+          </span>
+          <span class="tip tip--btn" data-feat="S118" data-tab-actions="leaderboard">
+            <a class="btn btn--outline btn--icon btn--sm" href="#" data-msg-open data-msg-to="all" aria-label="Message segment" data-i18n-aria-label="fans.btn.message"><i data-lucide="send" class="ztor-icon"></i></a>
+            <span class="tip__bubble" role="tooltip" data-i18n="fans.btn.message">Message segment</span>
+          </span>
+          <button class="btn btn--outline btn--sm when-data" type="button" data-tier-open="settings">
             <i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="fans.btn.tiers">Tier settings</span>
           </button>
         </div>
@@ -1177,8 +1178,19 @@
   (function () {
     const alert = document.getElementById('fans-risk-alert');
     if (!alert) return;
+    /* demo：?risk=0 看「零風險」狀態（網址參數蓋過 data-has-risk，只為了方便看畫面） */
+    if (new URLSearchParams(location.search).get('risk') === '0') alert.dataset.hasRisk = 'false';
     const hasRisk = alert.dataset.hasRisk === 'true';
     alert.hidden = !hasRisk;
+    /* 流失風險 KPI 卡兩個狀態（2026-10-27，UIA-312）：有風險＝紅色小標「最高風險級別 · 沉默天數」；零風險＝0＋綠色「無」。
+       無資料（新創作者）整排 KPI 本來就退位，不在這裡處理。小標文字一律最短：數字已在上面，不重複寫「N 位」「未互動」。 */
+    const val = document.querySelector('[data-risk-value]'), meta = document.querySelector('[data-risk-meta]');
+    if (val && meta) {
+      val.textContent = hasRisk ? '5' : '0';
+      meta.classList.toggle('kpi__delta--neg', hasRisk);
+      meta.setAttribute('data-i18n', hasRisk ? 'fans.kpi.risk-meta' : 'fans.kpi.risk-none');
+      if (window.i18nT) meta.textContent = window.i18nT(hasRisk ? 'fans.kpi.risk-meta' : 'fans.kpi.risk-none') || meta.textContent;
+    }
   })();
 
   /* 列尾 ⋮ 選單的上下翻轉：清單外框（.product-list-scroll）是自己捲動的容器，會把往下展開的選單在最後幾列切掉

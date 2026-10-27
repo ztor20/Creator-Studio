@@ -6588,11 +6588,13 @@ R 2.2 has 5 canonical page templates. Each composes Pillar 4 components in a spe
 
 All non-wizard pages start with a `.page-intro` block (left: eyebrow + h1 + sub; right: actions). Reserved for top-of-page header — not used mid-page. Eyebrow is `text-transform: uppercase` UI font 11px, title is `font-display` 36px, sub is body 14 muted.
 
-**Actions cluster holds actions only** (2026-07-31 user ruling). `.page-intro__actions` is reserved for controls that change data — save, create, export, discard. Contextual help ("How this works", 8 pages across the Fans module) moved out: a bare link standing next to a primary button reads as a third action when all it does is explain the page. It now lives at the end of the explanatory copy as `.page-intro__help`, an inline accent link inside `.page-intro__lede`.
+**Actions cluster holds actions only** (2026-07-31 user ruling). `.page-intro__actions` is reserved for controls that change data — save, create, export, discard. Contextual help ("Learn how fans work" / 「認識粉絲系統」, 9 pages across the Fans module) lives outside it as `.page-intro__help`.
 
-- `.page-intro__lede` wraps `.page-intro__sub` + `.page-intro__help` and carries the 560px measure (moved off `__sub`, which becomes `display: inline` so the link flows after the final sentence and wraps with it).
-- The link cannot be nested inside `__sub`: `applyI18n` replaces the whole `innerHTML` of any `[data-i18n]` node, so anything written inside would be wiped on language switch. Sibling element, shared parent.
-- Pages whose lede is not a plain sentence use the same idea against their own copy line — `fan-detail.html` puts `.page-intro__help` at the end of `.fan-hero__meta` (the identity line), not in `.fan-hero__actions`.
+**2026-10-27 final ruling (after five same-day iterations — accent link → grey+arrow → white → own line → inline):** `.page-intro__help` is an **outline button** (`<a class="btn btn--outline page-intro__help">`), a **direct child of `.page-intro`** placed after the left text block and before `.page-intro__actions`, pushed to the right by `.page-intro > .page-intro__help { margin-left: auto }`. It is not inside `.page-intro__lede` (so it stays out of the sentence and survives `applyI18n`) and not inside `.page-intro__actions` (so the sticky bottom bar, which copies every button of the actions cluster, never repeats it). The `.page-intro__lede--wide` modifier added earlier the same day was removed.
+
+- `.page-intro__lede` wraps `.page-intro__sub` and carries the 560px measure (moved off `__sub`, which becomes `display: inline`).
+- The link cannot be nested inside `__sub`: `applyI18n` replaces the whole `innerHTML` of any `[data-i18n]` node, so anything written inside would be wiped on language switch.
+- `fan-detail.html` has no `.page-intro` and, since 2026-10-27, no help link at all (its header was redesigned; see UIA-309).
 - `.page-intro__actions` is `flex-wrap: wrap` so an unusually wide control drops to the next line instead of crushing the row.
 
 **Breadcrumb back button** (2026-08-02 user ruling, layout reference Lovable) — the 10 detail pages carry `.page-crumb__back` as the first child of `.page-crumb`, plus the `.page-crumb--back` modifier on the crumb itself.

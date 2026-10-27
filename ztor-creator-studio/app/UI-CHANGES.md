@@ -15,6 +15,99 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百四十八）· 名冊工具列「分級設定」改次級線框按鈕（B 反饋 · fans-crm）
+
+**標籤**：release2.4
+
+- 「分級設定」由 `btn--primary` 改 `btn--outline`（仍帶文字與 icon），整排工具列全部次級，沒有一級按鈕。撤回三百二十九「分級設定用一級」。
+
+---
+
+## 2026-10-27（三百四十七）· 工具列匯出／群發改純 icon＋即時 tooltip；流失風險卡補狀態並縮短文字（B 反饋 · fans-crm · shared）
+
+**標籤**：release2.4
+
+- 工具列「匯出」「群發訊息」改成只有 icon 的 `btn--outline btn--icon btn--sm`，包在新的 `.tip.tip--btn` 裡，hover／鍵盤聚焦**立刻**顯示名稱泡泡（不用原生 `title`，那個要停約一秒才出現）；按鈕帶 `aria-label`。「分級設定」仍是文字一級按鈕。`shared.css` 新增 `.tip--btn`（泡泡置中在按鈕上方、游標一般），沿用既有 `.tip__bubble`。
+- 流失風險 KPI 卡兩個狀態：有風險＝紅色小標縮短為「超級粉絲 · 14 天+」（原「5 位超級粉絲 >14 天未互動」）；零風險＝數字 0＋綠色「無」，警示橫幅同步隱藏；`?risk=0` 預覽零風險。新增 `fans.kpi.risk-none`，改 `fans.kpi.risk-meta`。規格缺口記 ASSUMPTIONS UIA-312。
+
+---
+
+## 2026-10-27（三百四十六）· 「認識粉絲系統」改成線框按鈕、靠右（B 反饋 · D infra · page-intro · 粉絲模組九頁）
+
+**標籤**：release2.4
+
+使用者指示：連結改成線框按鈕，並靠右。（同日前面五次是橘色連結→灰字箭頭→白字→另起一行→接句尾→同色，此為定案。）
+
+- 九頁（粉絲管理、粉絲分析、受眾報告、媒體庫及其彈窗版、粉絲活動、分級權益、分級設定、品牌活動詳情）把 `<a class="page-intro__help">` 從說明段落 `.page-intro__lede` 搬出來，改成 `.page-intro` 的直接子元素 `<a class="btn btn--outline page-intro__help">`，放在左側文字區塊之後、動作列 `.page-intro__actions` 之前。
+- `ds-components/page-intro.css`：移除 `.page-intro__help` 的連結樣式（灰字、箭頭、hover 橘底線）與 `.page-intro__lede--wide`；新增 `.page-intro > .page-intro__help { margin-left: auto }` 把它和後面的動作列一起推到右邊。不放進動作列的理由：吸底動作列會複製動作列裡的所有按鈕，求助按鈕不該出現在吸底列。
+- 按鈕沒有箭頭（線框按鈕本身已是可點的樣子）。`design-system.md` page-intro 說明改寫、`design-system.html`／`design-components.html` 的範例同步。
+
+---
+
+## 2026-10-27（三百四十五）· 「認識粉絲系統」連結與說明句同色（B 反饋 · D infra · page-intro）
+
+使用者指出連結比說明句亮，要一樣的字與顏色。
+
+- `.page-intro__help` 顏色 `--foreground` 改 `--foreground-muted`（與 `.page-intro__sub` 同值），字級 `--fs-15` 已相同；hover 變橘加底線不變。取代三百四十三的白字。`design-system.md` 同步。
+
+---
+
+## 2026-10-27（三百四十四）· 粉絲管理說明句定稿（B 反饋 · fans-crm）
+
+**標籤**：release2.4
+
+- `fans.sub` 改為使用者給的定稿：「粉絲依互動程度排序，以購買、活動報到、互動與全站活動計算點數。」（英文同步）。與上一版相比少了「推薦」；推薦仍是忠誠點數的五個來源之一（點數明細的分類篩選仍有），此句依使用者原文不列。
+
+---
+
+## 2026-10-27（三百四十三）· 「認識粉絲系統」連結改白字、與說明句同字級（B 反饋 · D infra · page-intro）
+
+使用者指示：灰色字改成白色，字體大小和前面的文字段落一樣。
+
+- `ds-components/page-intro.css` 的 `.page-intro__help`：顏色 `--muted-foreground` → `--foreground`、字級 `--fs-13` → `--fs-15`（與 `.page-intro__sub` 同）；箭頭、hover 變橘加底線不變。粉絲模組八頁一起生效。`design-system.md` 同步。
+
+---
+
+## 2026-10-27（三百四十二）· 「認識粉絲系統」連結改回接在說明句後面（B 反饋 · D infra · page-intro）
+
+使用者指示把連結放回說明句後面。
+
+- `ds-components/page-intro.css` 的 `.page-intro__help`：`display:block`＋上距改回 `inline-flex`＋左距 `--sp-8`，接在最後一句後面、跟著句子換行；灰字＋箭頭、hover 變橘加底線（三百四十一）不變。粉絲模組八頁一起生效。三百三十九的「另起一行」撤回。`design-system.md` 同步。
+- 粉絲管理的說明句本身就有 555px，接近 560px 的行寬上限，連結會被擠到下一行；新增修飾詞 `.page-intro__lede--wide`（680px，只給單句說明用）並套在 `fans-crm.html`，連結才排得進同一行。其他七頁的說明較長，連結照常接在句尾、跟著換行。
+
+---
+
+## 2026-10-27（三百四十一）· 「認識粉絲系統」連結改灰字＋箭頭，hover 才變橘加底線（B 反饋 · D infra · page-intro）
+
+使用者指示：換成灰色的字、無底線，右邊有箭頭；hover 上去才變橘色加底線。
+
+- `ds-components/page-intro.css` 的 `.page-intro__help`：平常 `--muted-foreground`、底線透明（保留 1px 不跳動）、`::after` 加「→」；hover／鍵盤聚焦改 `--primary`＋底線。粉絲模組八頁一起生效。`design-system.md` 同步。
+
+---
+
+## 2026-10-27（三百四十）· 粉絲管理說明句改成互動角度（B 反饋 · fans-crm）
+
+**標籤**：release2.4
+
+使用者要求說明句從「依與粉絲的互動排序」的角度寫，並帶到有哪些互動；從五個版本中選定：
+
+- `fans.sub`：「粉絲依互動程度排序，購買、活動報到、互動、推薦與全站活動越多，排名越前面。」（英文同步）。五種互動與忠誠點數的五個來源分類一一對應。取代三百三十九的濃縮版；release2.4 的 `fans.sub-p0` 不動。
+
+---
+
+## 2026-10-27（三百三十九）· 粉絲模組各頁：「認識粉絲系統」另起一行（全模組一致）＋粉絲管理說明濃縮成一句（B 反饋 · D infra）
+
+**標籤**：release2.4
+
+使用者指示其他粉絲模組頁的「系統說明」也改成「認識粉絲系統」並另起一行，保持一致；粉絲管理的說明再濃縮成一句。
+
+- `fans.btn.explain` 文案改「認識粉絲系統」（英文 Learn how fans work），八頁一起換：粉絲分析、媒體庫、媒體庫彈窗、粉絲活動、分級權益、分級設定、受眾報告、品牌活動詳情（頁內寫死的備援字同步）；上一筆（三百三十八）為粉絲管理頁另開的 `fans.btn.know` 撤掉、改回共用鍵。
+- `ds-components/page-intro.css`：`.page-intro__help` 由行內接句尾改成區塊（`display:block`、`width:fit-content`、上距 `--sp-8`），全模組一次到位；連結仍是 `.page-intro__lede` 裡的兄弟元素。粉絲管理頁的頁內覆寫規則移除。`design-system.md` page-intro 說明同步。
+- 粉絲管理說明 `fans.sub` 濃縮成：「一個一個看你的粉絲，依價值排序，並可群發或匯出；整體樣貌在粉絲總覽。」（英文同步；release2.4 的 `fans.sub-p0` 不動）。
+- 驗證：粉絲管理、粉絲分析兩頁實測連結在說明句下方；其餘六頁只換文案、套同一條 CSS，未逐頁開啟。
+
+---
+
 ## 2026-10-27（三百三十八）· 粉絲管理頁首：頁名改「粉絲管理」、說明併成一句、系統說明連結改名另起一行（B 反饋 · fans-crm）
 
 **標籤**：release2.4
