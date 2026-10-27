@@ -13,6 +13,17 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百零七）· 媒體庫下架時下架時間保存但暫停，重新上架時詢問是否恢復（A spec-derived · D483，比照電子商店 D481）
+
+使用者裁決媒體庫比照電子商店 D481（D483）：下架（手動或定時下架到期）不再清除排程，改成保存並暫停、下架期間不觸發；重新上架＝此刻上架，保存的上架時間不列；只有還沒到的下架時間可以恢復，沒有就不問、照原流程。排程屬 S125（⚪，只在最終版），所以不寫交付版標籤；release2.5 行為完全不變。
+
+- `js/vault-store.js`：`unlist()` 在排程開啟（`schedOn()`）時把 `listAt`／`unlistAt` 存進 `v.paused` 再清空生效欄位，排程關閉時照舊直接清掉；新增 `restorableTimes(v)`（只回還沒到的 `unlistAt`，形狀同 `ListingState.restorableTimes`）；`publish()`（立刻或排定）一律清掉 `paused`——恢復與否已由對話框帶進 `opt.unlistAt`。
+- `js/media-vault.js`：重新上架對話框（`openPublish`）有可恢復的下架時間時，在最上面放 `sched-restore` 區塊（沿用 `partials/relist-restore.js` 的 `blockHTML`＋`bindChoice`，自己組 plan，不動電子商店六個入口）；選「恢復」＝下方定時下架開關打開並帶入保存的時間，選「不恢復」＝開關關閉、欄位清空；沒選之前確認鈕不可按。下架確認的第二條改成「會保存並暫停、重新上架時可選擇恢復」，只在有設下架時間時列。
+- 呈現選擇：放在同一個對話框、不先跳一層確認——媒體庫只有下架時間一個能恢復，選了直接反映在下方開關與欄位，創作者看得到結果也還能再改。
+- `media-vault.html`：連入 `sched-restore.css` 與 `partials/relist-restore.js`，對話框加 `data-pub-restore` 容器。`partials/relist-restore.js` 只補檔頭 consumer 清單。`js/i18n.js`：改 `vault.unlist.li2`，新增 `vault.rr.restore.sub`／`vault.rr.keep.sub`（中英）。`design-system.html` sched-restore 條目的使用處補媒體庫。
+
+---
+
 ## 2026-10-27（三百零六）· 訂單詳情「補寄信」改名「重寄訂單信」（B 反饋導入 · D482）
 
 **標籤**：release2.4

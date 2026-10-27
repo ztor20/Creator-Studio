@@ -12,7 +12,9 @@
      ZtorRelistRestore.ask({ title, plan, members, auction, T, onChoose: restore => …, onCancel })   // 自帶 leave-dialog 殼
      // 或在別的殼裡：body += ZtorRelistRestore.blockHTML(plan, { members, auction, T }); 再 ZtorRelistRestore.bindChoice(root, restore => …)
      ZtorRelistRestore.skipOf(plan)(entity) → { key:true }：交給 ListingState.relist／relistBundle 的 skip／skipOf
-   consumer：product-detail.html、bundle-detail.html、auction-detail.html、e-shop.html、event-detail.html、partials/bundle-relist.js。 */
+   consumer：product-detail.html、bundle-detail.html、auction-detail.html、e-shop.html、event-detail.html、partials/bundle-relist.js、
+     media-vault.html（D483，2026-10-27：媒體庫沒有 ListingState，由 js/media-vault.js 用 VaultStore.restorableTimes 自己組 plan，
+     只用 blockHTML＋bindChoice，放進重新上架對話框；不呼叫 plan()／ask()）。 */
 (function () {
   'use strict';
 
