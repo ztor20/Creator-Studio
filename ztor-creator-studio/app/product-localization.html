@@ -222,7 +222,8 @@
       price: isMulti() ? null : { priceObj: prices[0].priceObj, priceKey: prices[0].key },
       variants: variants,
       discountPct: (list > 0 && sale > 0 && sale < list) ? (1 - sale / list) * 100 : 0,
-      stock: item.edition === 'limited' ? num(item.stock) : null,
+      /* 數位限量沒有在庫（UIA-301 第 5 項）：粉絲看到的「還剩幾份」＝剩餘額度（上限 − 已售） */
+      stock: item.edition === 'limited' ? (item.cat === 'digital' ? Math.max(0, num(item.cap) - num(item.sold)) : num(item.stock)) : null,
       sizeGuide: false,
       delivery: item.cat === 'digital'
         ? { icon: 'download', key: 'cp.type.digital-sub', fallback: 'Instant download after purchase' }

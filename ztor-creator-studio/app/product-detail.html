@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時詢問是否恢復排程（D481） -->
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
@@ -1353,6 +1354,7 @@
 <script src="partials/radio-list.js?v=r2.2"></script>
 <!-- listing-state 必須早於 products-store：store 在 IIFE 裡就抓 window.ListingState 做庫存推導。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
+<script src="partials/relist-restore.js?v=r2.2"></script><!-- D481：重新上架時詢問是否恢復下架時保存的排程 -->
 <script src="js/link-field.js?v=r2.2"></script>
 <script src="js/apparel-taxonomy.js?v=r2.2"></script><!-- D360：服飾配件分類／系統屬性／尺寸顏色標準清單（window.ztorApparel） -->
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · S69：需求資料與算法（window.ztorDemand；須在 apparel-taxonomy 之後） -->
@@ -2267,10 +2269,23 @@
     /* 頁首「隱藏／顯示」直接觸發上架卡的顯示開關，不複製一份切換邏輯；沿用該開關現行「不確認」的行為。 */
     document.querySelectorAll('[data-pd-hide],[data-pd-show]').forEach(b => b.addEventListener('click', () => { if (shownToggle) shownToggle.click(); }));
     /* 上架（2026-09-23 使用者裁決）：頁首「上架」鈕與上架開關切開是同一個動作，兩個入口共用這一支——
-       D290：走 ListingState.relist，回來是未開賣、排程全空，開賣卡由 paintSaleCard 重畫。 */
+       D290：走 ListingState.relist，回來是未開賣，開賣卡由 paintSaleCard 重畫。
+       D481（2026-10-27）：下架時保存、還沒過的排程先問「恢復原本的排程／不恢復」（partials/relist-restore.js）；
+       沒有任何還沒過的時間就不問、直接上架（〔推導 5〕）。確認被取消＝不上架，開關由 pdPaintListingCard 畫回資料的樣子。 */
     function pdRelist() {
-      window.ListingState.relist(product);
-      if (window.pdPaintSaleCard) window.pdPaintSaleCard();
+      const L = window.ListingState, RR = window.ZtorRelistRestore;
+      const done = () => {
+        if (window.pdPaintSaleCard) window.pdPaintSaleCard();
+        if (window.ProductsStore && window.ProductsStore.commit) window.ProductsStore.commit(product);
+        if (window.pdPaintListingCard) window.pdPaintListingCard();
+      };
+      const plan = RR ? RR.plan([{ entity: product, name: product.name }]) : { any: false };
+      if (!plan.any) { L.relist(product); done(); return; }
+      RR.ask({
+        title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', product.name || ''), plan, T,
+        onChoose: restore => { L.relist(product, restore ? { restore: true, skip: RR.skipOf(plan)(product) } : null); done(); },
+        onCancel: () => { if (window.pdPaintListingCard) window.pdPaintListingCard(); }
+      });
     }
     /* 切開＝上架；切關由 initArchiveState 攔下先確認 */
     bindSwitch(listedToggle, () => product.listed !== false, on => { if (on) pdRelist(); else product.listed = false; });
@@ -2630,10 +2645,11 @@
         const lt = document.getElementById('pd-listing-time'); if (lt) lt.value = product.listAt ? String(product.listAt).slice(0, 16) : '';
         const ut = document.getElementById('pd-unlist-time'); if (ut) ut.value = product.unlistAt ? String(product.unlistAt).slice(0, 16) : '';
         paintSchedToggle('pd-unlist-toggle', '[data-pd-unlist-fields]', !!product.unlistAt);
-        if (window.pdPaintSaleCard) window.pdPaintSaleCard();   /* D290：下架清了開賣時間、退回未開賣，開賣卡跟著重畫 */
+        if (window.pdPaintSaleCard) window.pdPaintSaleCard();   /* D290：下架退回未開賣（D481 起排程保存但暫停、生效欄位清空），開賣卡跟著重畫 */
         syncListingCard();
         applyArchived();
       }
+      window.pdPaintListingCard = paintListingCard;   /* D481：pdRelist（上架開關與頁首「上架」）在恢復排程的確認之後才重畫 */
       /* 確認彈窗：同 e-shop 的三種內容之二（封存／擋下），殼在 </body> 前 */
       /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
       const getDialog = () => document.querySelector('[data-pd-confirm-dialog]');
@@ -2703,7 +2719,7 @@
          paintListingCard() 把開關、排程欄、徽章與未開賣提醒一起畫回資料的樣子，頁首那顆也跟著換成「封存」（反向連動）。 */
       if (btnRelist) btnRelist.addEventListener('click', () => {
         if (L.isArchived(product) || !L.isUnlisted(product)) return;
-        pdRelist(); commit(); paintListingCard();
+        pdRelist();   /* D481：commit 與重畫在 pdRelist 裡（有恢復排程的確認時，選完才做） */
       });
       /* 封存只看「已下架」、單純確認，不再檢查組合包（D288 修正 D284 裁決四） */
       if (btnArchive) btnArchive.addEventListener('click', () => {
@@ -3468,6 +3484,8 @@
           if (product.variant === 'multiple' && MODEL.variants.length) {
             product.cap = String(MODEL.variants.reduce(function (n, v) { return n + (Number(v.cap) || 0); }, 0));
           } else if (MODEL.cap !== '') product.cap = String(MODEL.cap);
+          /* 數位限量沒有在庫（UIA-301 第 5 項）：池只承載剩餘額度＝上限 − 已售，改上限就跟著重算（同 products-store poolTotal） */
+          if (product.cat === 'digital' && product.pool) product.pool.total = Math.max(0, (Number(product.cap) || 0) - (Number(product.sold) || 0));
         }
       }
       if (window.pdRefreshStock) window.pdRefreshStock();
@@ -3822,11 +3840,23 @@
       var ecap = document.querySelector('[data-pd-edit-cap]'), esold = document.querySelector('[data-pd-cap-sold]');
       if (ecap) ecap.value = m.cap || '';
       if (esold) esold.textContent = T('product-detail.edition.sold', '{n} sold').replace('{n}', m.sold || '0');
+      /* 數位限量（UIA-301 第 5 項，5.1.5.2「限量僅設上限、無在庫」）：沒有庫存分頁，事實句改寫上限下的三個數——
+         已售、保留（有才寫）、剩餘額度＝上限 − 已售 − 保留；上限的下限＝已售＋保留（capExtraSingle，數位不鎖） */
+      fillDigitalLeft(m);
       checkCaps(m);
+    }
+    function fillDigitalLeft(m) {
+      var esold = document.querySelector('[data-pd-cap-sold]');
+      if (esold && product && product.cat === 'digital' && product.edition === 'limited') {
+        var dHold = window.ListingState ? window.ListingState.holdOf(product, 'free') : 0;
+        var dLeft = Math.max(0, (Number(m.cap) || 0) - (Number(m.sold) || 0) - dHold);
+        esold.textContent = T(dHold > 0 ? 'product-detail.edition.digital-left-held' : 'product-detail.edition.digital-left', '{s} sold · {r} left')
+          .replace('{s}', m.sold || '0').replace('{h}', dHold).replace('{r}', dLeft);
+      }
     }
     (function () {
       var ecap = document.querySelector('[data-pd-edit-cap]');
-      if (ecap) ecap.addEventListener('input', function () { if (DRAFT) { DRAFT.cap = num(ecap.value); checkCaps(DRAFT); } });
+      if (ecap) ecap.addEventListener('input', function () { if (DRAFT) { DRAFT.cap = num(ecap.value); checkCaps(DRAFT); if (product && product.cat === 'digital') fillDigitalLeft(DRAFT); } });
     }());
     function applyReadonly(ro) {
       if (!settingsPanel) return;
@@ -4101,6 +4131,8 @@
       rows.push({ g: 'ops', go: 'pricing', key: 'cp.edition', fb: 'Edition',
         v: !limited ? T('cp.edition.unlimited', 'Unlimited edition')
           : multi ? T('product-detail.setov.edition.per-variant', 'Limited · per variation')
+          : digital ? T('product-detail.setov.edition.digital-left', 'Limited · {n} total · {r} left').replace('{n}', MODEL.cap || '—')
+              .replace('{r}', Math.max(0, (Number(MODEL.cap) || 0) - (Number(MODEL.sold) || 0) - (window.ListingState ? window.ListingState.holdOf(product, 'free') : 0)))   /* UIA-301 第 5 項：數位限量帶剩餘額度 */
           : T('product-detail.setov.edition.limited-total', 'Limited · {n} total').replace('{n}', MODEL.cap || '—') });
       if (window.pdConds && window.pdConds.on()) rows.push({ g: 'pricing', go: 'rules', key: 'cpk.title', fb: 'Discount codes', v: on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : T('product-detail.setov.off', 'Off') });   /* D463（最終版）：折扣併進購買條件，這一列只剩優惠碼 */
       else rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',

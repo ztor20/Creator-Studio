@@ -126,6 +126,10 @@
       var freeEl = row.querySelector('[' + at('free') + ']'), hf = (p && !multi && LS.holdOf) ? LS.holdOf(p, 'free') : 0;
       if (freeEl && hf > 0 && free !== Infinity) { freeEl.textContent = free + '/' + LS.unlockedQty(p); freeEl.title = Tfb(T, 'stock.hold.title', '{n} reserved — awaiting payment').replace('{n}', hf); }
       else if (freeEl) freeEl.removeAttribute('title');
+      /* 2026-10-27（UIA-301 第 5 項）：數位成員沒有在庫（5.1.5.2），成員庫存與未鎖定兩格不寫數字（限量時池裡是剩餘額度、不是在庫），寫「—」 */
+      if (LS.isStocklessMember && LS.isStocklessMember(p)) {
+        [row.querySelector('[' + at('stock') + ']'), freeEl].forEach(function (el) { if (el) { el.removeAttribute('data-i18n'); el.removeAttribute('title'); el.textContent = '—'; } });
+      }
       var cell = row.querySelector('[' + at('lockcell') + ']');
       if (cell) {
         if (LS.isStocklessMember && LS.isStocklessMember(p)) {

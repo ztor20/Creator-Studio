@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- 封存態／因成員封存而下架的說明（D284） -->
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時詢問是否恢復排程（D481） -->
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
@@ -313,8 +314,8 @@
           <div class="alert alert--row alert--info mt-16" data-bd-stockonly-note data-feat="S81.1" role="note" hidden>
             <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
             <div class="alert__body">
-              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only locked sets and listing and sale times can change</div>
-              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab. Listing, unlisting, sale start and sale end times change under Edit bundle. To edit anything else — contents, price, sales cap, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
+              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only locked sets, sales cap and listing and sale times can change</div>
+              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab. Under Edit bundle you can raise or lower the sales cap and switch between limited and unlimited (never below the sets sold plus reserved; raising it needs enough member stock to lock), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
             </div>
             <button class="btn btn--outline btn--sm" type="button" data-view-safe data-bd-stockonly-unlist data-i18n="bd.stockonly.go">Unlist bundle</button>
           </div>
@@ -794,6 +795,7 @@
 <script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 create-bundle 共用） -->
+<script src="partials/relist-restore.js?v=r2.2"></script><!-- D481：重新上架時詢問是否恢復下架時保存的排程 -->
 <script src="partials/bundle-relist.js?v=r2.2"></script><!-- 組合包上架的成員閘門（D289／D298），與電子商店清單共用 -->
 <script>
   /* bundle-detail 互動：定價模式切換 + See as fan 分割預覽（§6.7 同源）。display-only demo。 */
@@ -922,6 +924,7 @@
         /* D391 第 13 題〔推導〕：允許的門票都隨場次刪除＝整組不能賣，開賣狀態當作未開賣（不顯示販售中） */
         saleStart: tbEff.saleStart || null, saleEnd: tbEff.saleEnd || null, onSale: !b.stopped && !(EV.goneAllOf && EV.goneAllOf(ev, b)),
         sched: Object.assign({}, b.sched || {}), rules: b.rules ? JSON.parse(JSON.stringify(b.rules)) : null,
+        paused: b.paused ? JSON.parse(JSON.stringify(b.paused)) : null,   /* D481：下架時保存但暫停的排程（含另設的格子 sched），bdEvPersist 寫回 */
         lowThreshold: 0, draft: ev.status === 'draft', archived: false,
         unlistReason: ev.status === 'ended' ? { type: 'event-ended', eventName: evName } : null,   /* D457：event-cancelled 退場 */
         eventEnded: ev.status === 'ended',
@@ -1100,6 +1103,7 @@
       saleStart: (seed && seed.saleStart) || null,
       saleEnd: (seed && seed.saleEnd) || null,
       onSale: seed ? seed.onSale !== false : true,   /* 開賣設定（D290）：false＝未開賣；缺值＝上架即開賣 */
+      paused: (seed && seed.paused) ? JSON.parse(JSON.stringify(seed.paused)) : null,   /* D481：下架時保存但暫停的排程（ListingState.pauseSchedule） */
       lowThreshold: (seed && seed.lowThreshold) || 0,
       draft: !!(seed && seed.draft),   /* 草稿：ListingState 讀 entity.draft，頁首徽章顯示「草稿」 */
       archived: !!(seed && seed.archived),   /* 已封存（D284）：優先於其他所有徽章；整頁唯讀 */
@@ -1856,12 +1860,13 @@
       /* D438 決定二（2026-10-16，UIA-269 第 3 條缺口修正）：另設的上架、下架、開賣、停售時間寫回同一組 bundle 的 sched
          （形狀同 events-store 示範：{ listAt, unlistAt, saleStart, saleEnd }，格子缺／null＝跟隨活動，只存另設的格子）。
          只在檢視態寫——編輯中的輸入是工作副本，按「儲存變更」切回檢視態時 renderTB → tbApply → mirror 才寫；取消時還原後寫回原值。
-         下架清除排程（D290）：askUnlist 把 bundleModel.sched 清成全部跟隨，這裡寫回時一併刪掉 sched。 */
+         下架（D481 起排程保存但暫停）：ListingState.unlist 把另設的格子搬進 bundleModel.paused.sched、sched 清成全部跟隨，這裡寫回 sched 與 paused。 */
       const spEl = document.querySelector('.tab-panel[data-panel="settings"]');
       if (bo && !bo.draft && !(spEl && spEl.getAttribute('data-mode') === 'edit')) {
         const s = {};
         Object.keys(bundleModel.sched || {}).forEach(k => { const v = bundleModel.sched[k]; if (typeof v === 'string' && v) s[k] = v; });
         put('sched', s, {});
+        put('paused', bundleModel.paused || null, null);   /* D481：下架時保存但暫停的排程；重新上架（本頁或活動詳情 D448 彈窗）時讀它問要不要恢復 */
         /* D447：限量總量（cap；null＝不限量）也寫回——活動詳情「庫存設為 0」把總量收到已售後，這裡調高總量或改回不限量才會留住 */
         put('cap', (bundleModel.cap === undefined ? null : bundleModel.cap), null);
       }
@@ -2901,8 +2906,9 @@
          （[data-bd-listing]／[data-bd-sale-lctl] 所在的 form-section，含四個時間與開賣開關）可改；其他各節掛 data-mode="view"
          （沿用檢視態的樣子與按鈕白名單，不另做第三種鎖定外觀）、欄位逐一設唯讀。各節重畫（renderTB／renderLimits／成員表）後
          由 bdStockLockApply() 補鎖。下架後照現行規則全部開放。 */
-      /* D452／D447 決定三、四（2026-10-19）：「數量」卡（data-nav-sec="qty"）也放行——庫存設為 0 之後要恢復販售（調高販售上限、改回不限量）
-         屬營運動作、上架中不必下架（是 D435「販售上限要先下架才能改」的例外）。下限＝已售套數（syncCapOver 擋、儲存前也擋）。 */
+      /* D452／D447 決定三、四（2026-10-19）：「數量」卡（data-nav-sec="qty"）也放行。
+         D481（2026-10-27，修訂 D435）：組合包的販售上限（限量）視同庫存，上架中可以直接調高、調低、切換限量與不限量，不再是 D435 的例外——
+         調低下限＝已售＋保留套數、調高上限＝成員還能鎖的套數（D480，syncCapOver 擋、儲存前也擋）。純商品組合包與含票券的組合包一樣。 */
       const bdStockFreeSec = sec => !!(sec.querySelector('[data-bd-listing]') || sec.querySelector('[data-bd-sale-lctl]') || sec.getAttribute('data-nav-sec') === 'qty');
       function bdStockLockApply() {
         const lock = sp.getAttribute('data-mode') === 'edit' && bdStockOnly();
@@ -3089,7 +3095,7 @@
       const PRUNE = '[data-bd-editmode],[data-bd-edit-cancel],[data-bd-lock-edit],[data-bd-lock-actions]';
       let observer = null;
       const prune = () => document.querySelectorAll(PRUNE).forEach(el => { el.hidden = true; });
-      const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; seed.saleStart = bundleModel.saleStart; seed.saleEnd = bundleModel.saleEnd; seed.onSale = bundleModel.onSale; if (store && store.commit && !seed.isEventBundle) store.commit(seed); if (seed.isEventBundle && window.bdEvPersist) window.bdEvPersist(); } };   /* 活動組合包不寫進 products-store 的工作階段（它的資料源在 events-store，改由 bdEvPersist 寫回） */   /* D290：開賣三欄一併鏡射 */
+      const mirror = () => { if (seed) { seed.archived = bundleModel.archived; seed.listed = bundleModel.listed; seed.listAt = bundleModel.listAt; seed.unlistAt = bundleModel.unlistAt; seed.unlistReason = bundleModel.unlistReason; seed.saleStart = bundleModel.saleStart; seed.saleEnd = bundleModel.saleEnd; seed.onSale = bundleModel.onSale; seed.paused = bundleModel.paused || null; if (store && store.commit && !seed.isEventBundle) store.commit(seed); if (seed.isEventBundle && window.bdEvPersist) window.bdEvPersist(); } };   /* 活動組合包不寫進 products-store 的工作階段（它的資料源在 events-store，改由 bdEvPersist 寫回） */   /* D290：開賣三欄一併鏡射 */
       window.bdMirror = mirror;
       /* 事件層閘門（partials/archived-gate.js）：main[data-archived] 時擋掉所有會改資料的控件；「解除封存」永遠放行 */
       if (window.ZtorArchivedGate) window.ZtorArchivedGate.install(main, { block: PRUNE + ',[data-bd-lock-actions] button,[data-bd-alloc-row] button,[data-bd-alloc-group] button', allow: '[data-bd-unarchive],[data-bd-delete]' });   /* D307：已封存態「刪除」與「解除封存」都放行 */
@@ -3233,9 +3239,9 @@
           title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', bname()),
           body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are cleared; set the sale again after relisting.'),
           okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
-          /* D290：下架清除四個排程時間。活動組合包的時間是逐格「跟隨活動／另設」（bundleModel.sched），
-             清除＝另設的格子全部回到跟隨（D438 決定二同批，ASSUMPTIONS UIA-270）；paint() → mirror → evBundlePersist 寫回 events-store。 */
-          onConfirm: () => { LS.unlist(bundleModel); if (seed && seed.isEventBundle) bundleModel.sched = {}; paint(); }
+          /* D481（修訂 D290 的清除）：四個排程時間保存但暫停（ListingState.unlist → bundleModel.paused）。活動組合包的時間是逐格「跟隨活動／另設」，
+             另設的格子一併搬進 paused.sched、生效值回到跟隨（UIA-303，取代 UIA-270 的清除）；paint() → mirror → evBundlePersist 寫回 events-store。 */
+          onConfirm: () => { LS.unlist(bundleModel); paint(); }
         });
       }
       /* 重新上架（D288 不變式＋D289 做法）：判斷與三種彈窗都在共用的 partials/bundle-relist.js——
@@ -3249,6 +3255,8 @@
           bundle: bundleModel,
           getProduct: productOf,   /* 2026-10-16：先查本頁假商品（票券成員 tix:、活動組合包對不到的商品 evp:）再查 store——原本只查 store，活動組合包的成員查不到就被當成已封存 */
           name: bname(), askConfirm, T,
+          checkOf: restoreCheckOf,   /* D481〔推導 4〕：恢復照既有時間檢查（活動組合包另設的時間要落在活動上架區間內、定時下架或停售不得讓活動沒有可賣的東西） */
+          onCancel: () => paint(),   /* 恢復排程的確認取消＝不上架，上架開關畫回關 */
           commit: e => { if (store && store.commit && e !== bundleModel) store.commit(e); },   /* 組合包自己由 paint() 的 mirror() 寫回 */
           onDone: () => {
             paint();
@@ -3256,6 +3264,20 @@
             syncMemberBadges();
           }
         });
+      }
+      /* D481〔推導 4〕：恢復視同重新設定這些時間，照既有時間檢查——只有活動組合包有額外的檢查（純商品組合包與成員商品回 null）：
+         另設的格子用 js/ticket-bundle.js 的 schedErrors（要落在活動上架區間內、停售不晚於活動停售）；
+         下架、停售時間另看 hasOtherSellable（到那個時間活動不能沒有可賣的東西，同 schedBlocked）。不通過的不恢復、確認裡寫原因。 */
+      function restoreCheckOf(entity) {
+        if (entity !== bundleModel || !seed || !seed.isEventBundle) return null;
+        return (key, at) => {
+          const bo = evBoundsOf(); if (!bo || !TB) return null;
+          const p = bundleModel.paused || {}, custom = p.sched && p.sched[key];
+          if (custom) { const e = TB.schedErrors({ sched: { [key]: custom } }, TB.times(bo.ev), T); if (e[key]) return e[key]; }
+          if ((key === 'unlistAt' || key === 'saleEnd') && window.ztorEvents && window.ztorEvents.hasOtherSellable &&
+              !window.ztorEvents.hasOtherSellable(bo.ev, { exceptBundleId: bundle && bundle.id, at: at })) return T('rr.why.last', 'when this time comes the event would have nothing on sale');
+          return null;
+        };
       }
       if (btnUnlist) btnUnlist.addEventListener('click', () => askUnlist('header'));
       /* 頁首「上架」＝上架開關切開，同一支函式；paint() 會把開關、排程欄與頁首動作一起畫回資料的樣子（反向連動） */

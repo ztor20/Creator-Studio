@@ -755,7 +755,12 @@
            活動發布後，組合包下架了才能改庫存以外的資料（D435）；尚未售出，所以允許的門票與張數也還能改（D433）。 */
         { id: 'bd-tc-floor-tee', name: 'Standing zone ＋ 巡演官方 Tee', desc: '站區票加一件巡演官方 Tee，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 3413, sold: 0, cap: 100, lockSets: 100, listed: false },
+          disc: 10, price: 3413, sold: 0, cap: 100, lockSets: 100, listed: false, stopped: true,
+          /* D481 示範（2026-10-27）：下架前另設了開賣與停售時間，下架時保存但暫停（paused；sched＝另設的格子）。
+             組合商品細節頁按「上架」、或活動下架再重新上架時的 D448 彈窗，會列出這兩個時間問要不要恢復；
+             停售時間超出活動上架期間，恢復時照既有檢查不通過、不恢復並寫原因（〔推導 4〕）。 */
+          paused: { listAt: null, unlistAt: null, saleStart: '2026-11-01T12:00', saleEnd: '2026-11-25T12:00', onSale: true,
+                    sched: { saleStart: '2026-11-01T12:00', saleEnd: '2026-11-25T12:00' } } },
         /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200、美元覆寫 */
         { id: 'bd-tc-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],

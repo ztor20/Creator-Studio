@@ -117,6 +117,7 @@
 <link rel="stylesheet" href="ds-components/status-axes.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/embed-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/product-post-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
@@ -743,6 +744,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#restock-modal">Restock table</a>
     <a class="toc__link toc__link--sub" href="#embed-modal">Embed modal</a>
     <a class="toc__link toc__link--sub" href="#leave-dialog">Leave dialog</a>
+    <a class="toc__link toc__link--sub" href="#sched-restore">Schedule restore</a>
     <a class="toc__link toc__link--sub" href="#spec-row">Spec row</a>
     <a class="toc__link toc__link--sub" href="#entry-list">Entry list</a>
     <a class="toc__link toc__link--sub" href="#message-modal">Message composer</a>
@@ -1722,6 +1724,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#status-axes">Status axes</a></td><td>🟡</td><td><span data-en>Two independent order tracks — fulfilment vs payment (Orders / Order detail §2.2)</span><span data-zh>訂單兩條獨立狀態軸 — 履約 vs 付款（訂單／詳情 §2.2）</span></td><td><code>status-axes.css</code></td></tr>
           <tr><td><a href="#embed-modal">Embed modal</a></td><td>🟠</td><td><span data-en>Full-screen popup hosting another page in an iframe (E-Shop → Store settings, D065)</span><span data-zh>全螢幕 popup 以 iframe 內嵌另一頁（電子商店 → 商店設定，D065）</span></td><td><code>embed-modal.css</code></td></tr>
           <tr><td><a href="#leave-dialog">Leave dialog</a></td><td>🟠</td><td><span data-en>Confirm-before-leaving dialog for create / edit flows — two states (asks to save vs plain leave), §5.2.4</span><span data-zh>建立／編輯流程的返回離開確認彈窗 — 兩態（問儲存／純離開），§5.2.4</span></td><td><code>leave-dialog.css</code></td></tr>
+          <tr><td><a href="#sched-restore">Schedule restore</a></td><td>🟡</td><td><span data-en>Relist confirm content — paused schedules that haven’t come yet, plus Restore / Don’t restore (D481)</span><span data-zh>重新上架確認的內容——暫停中、還沒到的排程，加「恢復原本的排程／不恢復」（D481）</span></td><td><code>sched-restore.css</code></td></tr>
           <tr><td><a href="#spec-row">Spec row</a></td><td>🟡</td><td><span data-en>Repeatable spec name + value row (Specifications, 5.1.5.2 §4.1② / 5.1.5.1 §2.3)</span><span data-zh>可重複的規格名稱＋規格值列（詳細規格，5.1.5.2 §4.1② / 5.1.5.1 §2.3）</span></td><td><code>spec-row.css</code></td></tr>
           <tr><td><a href="#entry-list">Entry list</a></td><td>🟡</td><td><span data-en>Single-column list of same-kind short entries, add and remove per row (cast and crew, 5.1.2.2.1 §4)</span><span data-zh>單欄的同質短文字清單，逐列可增可刪（演職人員，5.1.2.2.1 §4）</span></td><td><code>entry-list.css</code></td></tr>
           <tr><td><a href="#info-sections">Info sections ✝</a></td><td>🟡</td><td><span data-en>Retired 2026-10-05 (D354) — replaced by Rich body’s untitled, draggable description blocks</span><span data-zh>2026-10-05 退場（D354）——由 Rich body 無標題、可拖動的描述區塊取代</span></td><td><code>info-sections.css</code>（墓碑）</td></tr>
@@ -9315,6 +9318,42 @@ Letterpress cover, uncoated stock.</textarea></div>
     <p class="field-text"><code>ds-components/leave-dialog.css</code> · <code>partials/wizard-chrome.js</code></p>
   </div>
   </details>
+</section>
+
+<section class="sub" id="sched-restore">
+  <div class="sub__head">
+    <h3 class="sub__title">4.77a Schedule restore</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="sub__desc" data-en><strong>2026-10-27 (D481)</strong>: when an unlisted sales channel is listed again, the schedules saved (and paused) at unlist time that haven’t come yet are listed one per row — kind of time plus date — and the creator picks <em>Restore the original schedule</em> or <em>Don’t restore</em>; List stays disabled until one is picked. Times already past are not listed; with none left the confirm is skipped. A time that fails the existing checks gets a “Won’t be restored: reason” line and a struck-through date. A bundle relist puts the members listed with it in the same block; several channels are grouped by name. Content block only — it sits inside the <code>leave-dialog</code> shell (product / bundle / auction detail, e-shop rows; <code>partials/relist-restore.js</code> <code>ask()</code>) and inside event detail’s D448 relist dialog (<code>blockHTML()</code>). The two choices are a plain <code>.radio-list</code>.</p>
+  <p class="sub__desc" data-zh><strong>2026-10-27（D481）</strong>：已下架的販售管道重新上架時，下架時保存（暫停）、還沒到的排程一列一個——哪一種時間＋日期與時間——創作者選「恢復原本的排程」或「不恢復」，沒選之前「上架」不可按。已過的時間不列；一個都沒有就不跳確認。沒通過既有時間檢查的那一列多一句「不會恢復：原因」、日期加刪除線。組合包上架時，一起上架的成員放在同一塊；多個販售管道依名稱分組。只是內容區塊——放在 <code>leave-dialog</code> 殼裡（商品／組合包／拍賣細節頁、電子商店清單列；<code>partials/relist-restore.js</code> 的 <code>ask()</code>），也放在活動詳情 D448 重新上架彈窗裡（<code>blockHTML()</code>）。兩個選項就是一般的 <code>.radio-list</code>。</p>
+  <div class="demo" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+    <div class="leave-dialog__card" style="position:relative;box-shadow:var(--shadow-card)">
+      <button class="leave-dialog__close" type="button" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+      <h2 class="leave-dialog__title">要重新上架「後台茶水組」嗎？</h2>
+      <p class="leave-dialog__body">下架時暫停的排程還沒到。</p>
+      <div class="sched-restore">
+        <p class="sched-restore__label">一起上架的成員</p>
+        <ul class="sched-restore__list"><li class="sched-restore__item"><i data-lucide="package" class="ztor-icon"></i><span class="sched-restore__text">九龍夜行 杯墊組</span></li></ul>
+        <p class="sched-restore__label">暫停中的排程</p>
+        <p class="sched-restore__group">後台茶水組</p>
+        <ul class="sched-restore__list">
+          <li class="sched-restore__item"><i data-lucide="clock" class="ztor-icon"></i><span class="sched-restore__text"><span class="sched-restore__what">開賣</span><span class="sched-restore__when">2026/10/31 12:00</span></span></li>
+          <li class="sched-restore__item sched-restore__item--skip"><i data-lucide="clock" class="ztor-icon"></i><span class="sched-restore__text"><span class="sched-restore__what">停售</span><span class="sched-restore__when">2026/12/16 23:00</span><span class="sched-restore__note">不會恢復：要落在活動上架期間內</span></span></li>
+        </ul>
+        <p class="sched-restore__group">九龍夜行 杯墊組</p>
+        <ul class="sched-restore__list"><li class="sched-restore__item"><i data-lucide="clock" class="ztor-icon"></i><span class="sched-restore__text"><span class="sched-restore__what">停售</span><span class="sched-restore__when">2026/12/26 23:00</span></span></li></ul>
+        <div class="radio-list sched-restore__choice" role="radiogroup">
+          <button type="button" class="radio-list__item radio-list__item--active" role="radio" aria-checked="true"><span class="radio-list__dot"></span><span class="radio-list__text"><span class="radio-list__title">恢復原本的排程</span><span class="radio-list__sub">時間到了照常生效。</span></span></button>
+          <button type="button" class="radio-list__item" role="radio" aria-checked="false"><span class="radio-list__dot"></span><span class="radio-list__text"><span class="radio-list__title">不恢復</span><span class="radio-list__sub">上架後是未開賣，要再設開賣。</span></span></button>
+        </div>
+      </div>
+      <div class="leave-dialog__actions">
+        <button class="btn btn--primary" type="button">全部上架</button>
+        <button class="btn btn--outline" type="button">取消</button>
+      </div>
+    </div>
+  </div>
 </section>
 <section class="sub" id="spec-row">
   <div class="sub__head">

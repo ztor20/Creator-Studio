@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2"><!-- D481：D448 彈窗的恢復排程兩個選項 -->
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- D481：重新上架時詢問是否恢復排程 -->
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
@@ -2193,6 +2195,8 @@
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/orders-store.js?v=r2.2"></script><!-- D416：交易明細匯出借用訂單的付款／履約狀態字樣（訂單資料層，不渲染） -->
 <script src="js/csv-export.js?v=r2.2"></script><!-- D416：匯出確認視窗＋CSV 產生 -->
+<script src="js/listing-state.js?v=r2.2"></script><!-- D481：組合包下架時保存的排程（restorableTimes／relist） -->
+<script src="partials/relist-restore.js?v=r2.2"></script><!-- D481：D448 彈窗的恢復排程內容 -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：售票期間須落在活動上架區間內（共用比對規則） -->
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購的輔助說明（purchase-conds 的限購條件卡借用），要先於 purchase-conds 載入；D427 起只剩每人總限購 -->
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D388：購買條件編輯器，與建立流程 create-event 共用同一套 -->
@@ -3336,22 +3340,54 @@
         const back = window.ztorEvents.relistBundlesOf ? window.ztorEvents.relistBundlesOf(ev.id) : [];
         if (!back.length) { relist(); return; }
         const escR = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        /* D481〔推導 8〕：彈窗裡的組合包有下架時保存、還沒到的排程時，同一個彈窗加「恢復原本的排程／不恢復」，一個選擇套用到全部；
+           選了才能按「同時上架活動與組合包」（「只上架活動」不用選）。恢復照既有時間檢查（〔推導 4〕）：另設的格子要落在活動上架區間內
+           （js/ticket-bundle.js schedErrors）、下架與停售時間到了活動不能沒有可賣的東西（hasOtherSellable）；不通過的不恢復、寫原因。
+           組合包資料住在 events-store：b.paused（bundle-detail 下架時寫回）、b.sched（另設的格子）、b.stopped（未開賣）。
+           套用時借一個 ListingState 實體算（relist 的恢復規則只寫一份），再寫回這三欄。 */
+        const LSx = window.ListingState, RR = window.ZtorRelistRestore, TBx = window.ZtorTicketBundle;
+        const proxyOf = b => ({ id: b.id, name: b.name, listed: false, paused: b.paused ? JSON.parse(JSON.stringify(b.paused)) : null, sched: Object.assign({}, b.sched || {}), onSale: !b.stopped });
+        const proxies = back.map(proxyOf);
+        const checkFor = px => (key, at) => {
+          const custom = px.paused && px.paused.sched && px.paused.sched[key];
+          if (custom && TBx) { const e = TBx.schedErrors({ sched: { [key]: custom } }, TBx.times(ev), T); if (e[key]) return e[key]; }
+          if ((key === 'unlistAt' || key === 'saleEnd') && window.ztorEvents.hasOtherSellable && !window.ztorEvents.hasOtherSellable(ev, { exceptBundleId: px.id, at: at }))
+            return T('rr.why.last', 'when this time comes the event would have nothing on sale');
+          return null;
+        };
+        const rp = (LSx && RR) ? RR.plan(proxies.map(px => ({ entity: px, name: px.name, check: checkFor(px) }))) : { any: false, groups: [] };
+        let rrChoice = null;
         openConfirm({
           title: T('event-detail.relist.bundles.title', 'Relist the bundles too?'),
           body: '<p>' + T('event-detail.relist.bundles.body', 'These unlisted bundles include this event’s tickets. They don’t come back on their own — relist them together with the event, or relist only the event and bring them back one by one later.') + '</p>' +
             '<div class="data-list mt-8">' + back.map(b =>
               '<div class="data-list__row"><div class="data-list__row-main"><span>' + escR(b.name) + '</span></div></div>').join('') + '</div>' +
-            '<p class="text-sub mt-16">' + T('event-detail.relist.bundles.note', 'Bundles relisted here go back to listed but not on sale — set each one’s sale start for fans to buy.') + '</p>',
+            (rp.any
+              ? '<p class="text-sub mt-16">' + T('event-detail.relist.bundles.note-rr', 'Choose once for every bundle relisted here.') + '</p>' + RR.blockHTML(rp, { T })
+              : '<p class="text-sub mt-16">' + T('event-detail.relist.bundles.note', 'Bundles relisted here go back to listed but not on sale — set each one’s sale start for fans to buy.') + '</p>'),
           okLabel: T('event-detail.relist.bundles.ok', 'Relist event and bundles'),
           altLabel: T('event-detail.relist.bundles.alt', 'Relist event only'),
+          blocked: rp.any,   /* D481：要先選恢復或不恢復 */
           onOk: () => {
             const ids = back.map(b => b.id);   /* relistBundlesOf() 回的是 get() 另取的資料，要改頁面持有的 ev.bundles 那份再存 */
-            (ev.bundles || []).forEach(b => { if (ids.indexOf(b.id) >= 0) b.listed = true; });
+            const skip = RR ? RR.skipOf(rp) : () => null;
+            (ev.bundles || []).forEach(b => {
+              if (ids.indexOf(b.id) < 0) return;
+              const px = proxies[ids.indexOf(b.id)];
+              if (LSx) LSx.relist(px, rrChoice ? { restore: true, skip: skip(px) } : null);
+              b.listed = true;
+              /* 恢復＝另設的格子放回、開賣時間未到就恢復為定時開賣；不恢復＝全部跟隨、未開賣（D290 的上架後狀態） */
+              const sc = {}; Object.keys((px && px.sched) || {}).forEach(k => { if (px.sched[k]) sc[k] = px.sched[k]; });
+              if (Object.keys(sc).length) b.sched = sc; else delete b.sched;
+              if (px && px.onSale) delete b.stopped; else b.stopped = true;
+              delete b.paused;
+            });
             window.ztorEvents.saveEdits(ev.id, { bundles: ev.bundles });
             relist();
           },
           onAlt: relist
         });
+        if (rp.any && RR) RR.bindChoice($('#ed-cf-body'), restore => { rrChoice = restore; const okB = $('#ed-cf-ok'); if (okB) okB.disabled = false; });
       }
       return;
     }

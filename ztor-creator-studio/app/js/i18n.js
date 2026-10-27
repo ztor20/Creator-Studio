@@ -2933,16 +2933,35 @@
        單售仍在上架中組合包裡時列出組合包、主鈕「一同下架這些組合包」。組合包重新上架擋下＝列出未上架成員、只有一顆「知道了」。 */
     'e-shop.unlist.title':      { en: 'Unlist “{n}”?',                     zh: '要下架「{n}」嗎？' },
     /* D290（2026-09-18）：下架清四個排程時間、開賣退回未開賣——彈窗多一句讓人知道重新上架後要再設開賣 */
-    'e-shop.unlist.body':       { en: 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are cleared; set the sale again after relisting.', zh: '粉絲會看到它的頁面已下架、不能購買，購物車裡的會顯示已失效。下架會清除上架與開賣排程，重新上架後需再設定開賣。' },   /* D415 決定七、八（取代 D284 下架即無粉絲端頁面） */
+    'e-shop.unlist.body':       { en: 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are paused; when you list it again you can restore the ones that haven’t come yet.', zh: '粉絲會看到它的頁面已下架、不能購買，購物車裡的會顯示已失效。上架與開賣排程會暫停，重新上架時可以選擇恢復還沒到的時間。' },   /* D415 決定七、八（取代 D284 下架即無粉絲端頁面） */
     'e-shop.unlist.confirm':    { en: 'Unlist',                            zh: '下架' },
     'e-shop.unlist.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
-    'e-shop.unlist.blocked-body':  { en: 'Listing and sale schedules are cleared; set the sale again after relisting. Unlisting it also unlists these bundles:', zh: '下架會清除上架與開賣排程，重新上架後需再設定開賣。下架後這些組合包也會一同下架：' },
+    'e-shop.unlist.blocked-body':  { en: 'Listing and sale schedules are paused; when you list it again you can restore the ones that haven’t come yet. Unlisting it also unlists these bundles:', zh: '上架與開賣排程會暫停，重新上架時可以選擇恢復還沒到的時間。下架後這些組合包也會一同下架：' },
     'e-shop.unlist.blocked-confirm': { en: 'Unlist these bundles too',     zh: '一同下架這些組合包' },
     /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下。
        2026-09-22 · D298 起這組只由 bundle-detail 的上架開關（已下架→上架）觸發，e-shop 的已封存列改走解除封存、不再進這裡。 */
     'e-shop.relist.title':         { en: 'Relist “{n}”?',                  zh: '要重新上架「{n}」嗎？' },
     'e-shop.relist.members-body':  { en: 'These unlisted items are relisted with it:', zh: '這些已下架的成員會一起重新上架：' },   /* D290：重新上架不等於開賣，英文原句 go back on sale 改掉 */
     'e-shop.relist.members-confirm': { en: 'Relist all',                   zh: '一併重新上架' },
+    /* 重新上架時詢問是否恢復排程（D481，2026-10-27；partials/relist-restore.js，商品／組合包／拍賣細節頁、電子商店清單、活動詳情 D448 彈窗共用） */
+    'rr.body':          { en: 'These schedules were paused when it was unlisted and haven’t come yet.', zh: '下架時暫停的排程還沒到。' },
+    'rr.members':       { en: 'Listed with it',                 zh: '一起上架的成員' },
+    'rr.times':         { en: 'Paused schedules',               zh: '暫停中的排程' },
+    'rr.k.unlistAt':    { en: 'Unlist time',                    zh: '下架時間' },
+    'rr.k.saleStart':   { en: 'Sale start',                     zh: '開賣時間' },
+    'rr.k.saleEnd':     { en: 'Sale end',                       zh: '停售時間' },
+    'rr.k.auctionStart': { en: 'Auction start',                 zh: '開拍時間' },
+    'rr.k.auctionEnd':  { en: 'ends {t}',                       zh: '結標 {t}' },
+    'rr.skip':          { en: 'Won’t be restored: {why}',       zh: '不會恢復：{why}' },
+    'rr.restore':       { en: 'Restore the original schedule',  zh: '恢復原本的排程' },
+    'rr.restore.sub':   { en: 'Each time takes effect when it comes.', zh: '時間到了照常生效。' },
+    'rr.keep':          { en: 'Don’t restore',                  zh: '不恢復' },
+    'rr.keep.sub':      { en: 'It goes back listed but not on sale — set the sale start again.', zh: '上架後是未開賣，要再設開賣。' },
+    'rr.keep.sub.auction': { en: 'It goes back listed but not started — set the auction start again.', zh: '上架後是未開拍，要再設開拍。' },
+    'rr.ok':            { en: 'List',                           zh: '上架' },
+    'rr.ok.all':        { en: 'List all',                       zh: '全部上架' },
+    'rr.cancel':        { en: 'Cancel',                         zh: '取消' },
+    'rr.why.last':      { en: 'when this time comes the event would have nothing on sale', zh: '到這個時間活動會沒有可賣的東西' },
     'e-shop.relist.confirm':       { en: 'Relist',                         zh: '重新上架' },
     'e-shop.relist.blocked-title': { en: '“{n}” has archived items',       zh: '「{n}」有成員已封存' },
     'e-shop.relist.blocked-body':  { en: 'Unarchive these items first, then list the bundle:', zh: '先解除封存這些成員，再上架組合包：' },   /* D298：成員已封存要先解除封存（回到已下架），組合包上架時再連帶拉上來；解除封存不連動組合包 */
@@ -3085,6 +3104,8 @@
     'e-shop.row.instock':     { en: 'In stock',                            zh: '庫存充足' },
     'e-shop.restock':         { en: 'Restock',                             zh: '補貨' },
     'e-shop.stocktip.currentstock': { en: 'Current stock',                 zh: '目前庫存' },
+    'e-shop.stocktip.digital-left': { en: 'Left to sell', zh: '剩餘額度' },
+    'e-shop.stocktip.digital-unlimited': { en: 'Unlimited edition', zh: '不限量' },
     'e-shop.edit':            { en: 'Edit',                                zh: '編輯' },
     'e-shop.delete':          { en: 'Delete',                              zh: '刪除' },
     'e-shop.a.publish':       { en: 'Publish',                             zh: '上架商品' },
@@ -3222,6 +3243,7 @@
     'e-shop.a8.name':         { en: 'Handwritten setlist sheet',            zh: '手寫演出曲目單' },
     'e-shop.a8.meta':         { en: 'Good · All fans',                      zh: '良好 · 全部粉絲' },
     'e-shop.a8.bid':          { en: 'From $120',                            zh: '起標 $120' },
+    'e-shop.a8.activity':     { en: '0 bids · Not started', zh: '0 次出價 · 尚未開拍' },
     /* 2026-10-20 D455 B3：有出價但最高出價未達保留價 → 流標的示範列 */
     'e-shop.a9.name':         { en: 'Signed tour patch set',                zh: '巡演親簽布章組' },
     'e-shop.a9.meta':         { en: 'Like new · All fans',                  zh: '近全新 · 全部粉絲' },
@@ -3425,10 +3447,14 @@
     /* 庫存版本 Edition（2026-09-21，spec 5.1.5.1 §2.10／§7.2）：建立後鎖定只呈現；上限可改但不得低於已售 */
     'product-detail.edition.sub':        { en: 'Fixed after creation — the cap can still change, but never below what\'s sold.', zh: '建立後不可切換；上限仍可改，但不得低於已售數。' },
     'product-detail.edition.sold':       { en: '{n} sold',                                    zh: '已售 {n}' },
+    /* 2026-10-27 UIA-301 第 5 項：數位限量只設上限、沒有在庫——上限底下寫已售與剩餘額度（剩餘額度＝上限 − 已售 − 保留） */
+    'product-detail.edition.digital-left':      { en: '{s} sold · {r} left',              zh: '已售 {s} · 剩餘額度 {r}' },
+    'product-detail.edition.digital-left-held': { en: '{s} sold · {h} reserved · {r} left', zh: '已售 {s} · 保留 {h} · 剩餘額度 {r}' },
     'product-detail.edition.cap-err':    { en: 'Can\'t be lower than units sold ({n})',       zh: '不可低於已售數（{n}）' },
     'product-detail.edition.cap-err-row': { en: '{v}: can\'t be lower than units sold ({n})', zh: '{v}：不可低於已售數（{n}）' },
     'product-detail.edition.multi-hint': { en: 'Caps are set per variation in the pricing table below.', zh: '各選項組合的上限在下方定價表填寫。' },
     'product-detail.setov.edition.limited-total': { en: 'Limited · {n} total',    zh: '限量 · 上限 {n}' },
+    'product-detail.setov.edition.digital-left':  { en: 'Limited · {n} total · {r} left', zh: '限量 · 上限 {n} · 剩餘額度 {r}' },   /* UIA-301 第 5 項 */
     'product-detail.setov.edition.per-variant':   { en: 'Limited · per variation', zh: '限量 · 逐選項設定' },
     'product-detail.edit.locks-hint': { en: 'Blank means the channel shares whatever is unlocked', zh: '留空＝這個販售管道與其他沒鎖定的販售管道共用未鎖定的量' },
     /* 商品選項卡（多選項才有）：價格卡在多選項時不出現，價格逐組合填在庫存表，這句告訴使用者去哪裡改。 */
@@ -5832,7 +5858,7 @@
     'ca.start.off':        { en: 'Not started',                     zh: '未開拍' },
     'ca.start.off-sub':    { en: 'Bidding stays closed until you set a start', zh: '出價未開放，設定開拍後才會開始' },
     'ad.sale.relist-note': { en: 'Relisted without a start — set one to open bidding.', zh: '重新上架後未開拍，請設定開拍。' },
-    'ad.unlist.body':      { en: 'Fans see its page as unlisted and can’t bid or buy; anything in their carts shows as unavailable. Listing schedule and start time are cleared; set the start again after relisting.', zh: '粉絲會看到它的頁面已下架、不能出價或購買，購物車裡的會顯示已失效。下架會清除上架排程與開拍時間，重新上架後需再設定開拍。' },   /* D415 決定七、八 */
+    'ad.unlist.body':      { en: 'Fans see its page as unlisted and can’t bid or buy; anything in their carts shows as unavailable. Listing schedule and start time are paused; when you list it again you can restore the start if it hasn’t come yet.', zh: '粉絲會看到它的頁面已下架、不能出價或購買，購物車裡的會顯示已失效。上架排程與開拍時間會暫停，重新上架時可以選擇恢復還沒到的開拍時間。' },   /* D415 決定七、八 */
     'ca.start.time':        { en: 'Start time',                       zh: '開拍時間' },
     'ca.start.end':         { en: 'Ends',                             zh: '結標時間' },
     'ca.start.end-hint':    { en: 'Start time + duration; set automatically', zh: '開拍時間＋競標時長，由系統算出' },
@@ -6080,7 +6106,7 @@
     'cp.qc.delivery':       { en: 'Delivery method',                  zh: '取貨方式' },   /* D470：至少勾一種 */
     'cp.qc.limit':          { en: 'Purchase limit',                   zh: '限購上限' },   /* D427：原「至少一種限購上限」 */
     'cp.qc.cover':          { en: 'Cover art',                        zh: '封面' },
-    'cp.qc.digicap':        { en: 'Total quantity & copies',          zh: '上限數量與剩餘份數' },
+    'cp.qc.digicap':        { en: 'Total quantity',                   zh: '上限數量' },   /* 2026-10-27 UIA-301 第 5 項：數位限量只收上限 */
     'cp.show':              { en: 'Show in my shop',                  zh: '上架開關' },
     'cp.show.sub':          { en: 'Visible to fans in your storefront', zh: '粉絲在你的商店看得到' },
     /* 折扣設定 → 排程特價（spec 5.1.5.2 §4.4 F13 / 5.1.5.1 §2.15 · D144；商品有絕對特價可填）*/
@@ -10411,6 +10437,8 @@
     'event-detail.relist.bundles.title': { en: 'Relist the bundles too?', zh: '要同時上架組合包嗎？' },
     'event-detail.relist.bundles.body':  { en: 'These unlisted bundles include this event’s tickets. They don’t come back on their own — relist them together with the event, or relist only the event and bring them back one by one later.', zh: '這些已下架的組合包含有這場活動的門票，不會自己回來：可以跟活動一起上架，或只上架活動、之後再各自上架。' },
     'event-detail.relist.bundles.note':  { en: 'Bundles relisted here go back to listed but not on sale — set each one’s sale start for fans to buy.', zh: '這裡一起上架的組合包會回到「上架、未開賣」，要各自再設開賣，粉絲才買得到。' },
+    /* D481（2026-10-27）：有組合包保存著還沒到的排程時，note 換成這句、下方接恢復排程的選擇（partials/relist-restore.js），一個選擇套用到全部 */
+    'event-detail.relist.bundles.note-rr': { en: 'Choose once for every bundle relisted here.', zh: '這裡一起上架的組合包都套用同一個選擇。' },
     'event-detail.relist.bundles.ok':    { en: 'Relist event and bundles', zh: '同時上架活動與組合包' },
     'event-detail.relist.bundles.alt':   { en: 'Relist event only', zh: '只上架活動' },
     /* D375 決定三：bookyay 狀態同步上下架 */
@@ -10702,7 +10730,7 @@
     'ed.tm.ro.view': { en: 'Select Edit to change this ticket.', zh: '按「編輯」後才能修改這張門票。' },
     'ed.tm.ro.stock': { en: 'This event is listed — only the quantity and single-sale lock can change. Unlist the event to edit anything else.', zh: '活動上架中，只能改張數與鎖給單售；其他欄位要先下架活動才能修改。' },
     'ed.stockonly.title': { en: 'This event is listed — only stock can change right now', zh: '活動上架中，目前只能改庫存' },
-    'ed.stockonly.body': { en: "You can change ticket quantities and each bundle's locked sets (in the bundle's Stock tab). A ticket's quantity can't go below what's sold, plus what's locked for single sales and bundles, plus what's reserved in unlocked stock. To edit anything else, unlist the event first. After you save, relist it yourself.", zh: '上架中可以直接改門票張數與組合包的鎖定套數（在組合包的「組合庫存」分頁）。門票張數不能少於已售、鎖給單售與各組合包鎖定的張數，再加上未鎖定裡保留中的張數。其他資料要先下架才能修改；改完儲存後，再自行重新上架。' },
+    'ed.stockonly.body': { en: "You can change ticket quantities and each bundle's locked sets and sales cap (in the bundle's page). A ticket's quantity can't go below what's sold, plus what's locked for single sales and bundles, plus what's reserved in unlocked stock. To edit anything else, unlist the event first. After you save, relist it yourself.", zh: '上架中可以直接改門票張數，以及組合包的鎖定套數與販售上限（在組合商品細節頁）。門票張數不能少於已售、鎖給單售與各組合包鎖定的張數，再加上未鎖定裡保留中的張數。其他資料要先下架才能修改；改完儲存後，再自行重新上架。' },
     'sd.confirm.title.some': { en: 'Sync to {n} of {m} dates?', zh: '要同步到 {m} 場中的 {n} 場嗎？' },
     'sd.confirm.title.none': { en: 'No dates can be synced yet', zh: '目前沒有可以同步的場次' },
     'sd.confirm.body.listed': { en: 'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.', zh: '下面 {n} 場上架中，不會套用這次變更；要先下架這些場次才能同步，同步後再自行重新上架。' },
@@ -10713,7 +10741,7 @@
     'ed.notif.listed.body': { en: 'To change them, unlist the event first. After you save, relist it yourself.', zh: '要修改請先下架活動；改完儲存後，再自行重新上架。' },
     'event-detail.relist.dirty': { en: 'Save or discard your changes first, then relist the event.', zh: '請先儲存或捨棄變更，再重新上架。' },
     'bd.stockonly.title': { en: 'This bundle is listed — only locked sets, sales cap and listing and sale times can change', zh: '組合包上架中，只能改鎖定套數、販售上限與上架、開賣時間' },
-    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Under Edit bundle you can raise the sales cap or switch back to unlimited to restock (never below the sets already sold), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；按「編輯組合」可調高販售上限或改回不限量來恢復庫存（不得低於已售套數），也能改上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
+    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Under Edit bundle you can raise or lower the sales cap and switch between limited and unlimited (never below the sets sold plus reserved; raising it needs enough member stock to lock), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；按「編輯組合」可調高或調低販售上限、切換限量與不限量（不得低於已售加保留中的套數，調高要成員還鎖得到），也能改上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
     'bd.tix.min1': { en: 'Keep at least one ticket.', zh: '至少要留一種門票。' },
     'bd.loc.listed': { en: 'This bundle is listed — its translations and prices are view-only until you unlist it.', zh: '組合包上架中，翻譯與價格只能檢視，要先下架這個組合包才能修改。' },   // D455
     'bd.cap.under': { en: 'Can’t go below the {n} sets already sold', zh: '不得低於已售出的 {n} 套' },

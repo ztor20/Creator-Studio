@@ -19,8 +19,13 @@
 //     saleEnd     string|null   停售日期與時間。null＝不自動停售
 //     onSale      boolean       開賣設定（2026-09-18 · D290）。缺值視為 true（沿用 D241「上架即開賣」）；
 //                               false＝「未開賣」——上架、顯示都照舊，只是還沒開放結帳。下架（手動、定時到期、組合包連動、
-//                               成員連動）一律把它退回 false 並清掉四個排程時間；重新上架後維持 false，要販售須再設開賣。
+//                               成員連動）一律把它退回 false；四個排程時間 D481（2026-10-27）起不清除、改存進 paused（見下）。
 //                               推導：上架＋顯示＋未開賣 → coming（即將開賣，不帶日期）。拍賣同欄位＝「未開拍」。
+//     paused      { listAt, unlistAt, saleStart, saleEnd, onSale, sched? } | null
+//                               下架時保存但暫停的排程（2026-10-27 · D481，修訂 D290「下架清除」；主規格 §7.14「重新上架時詢問是否恢復排程」）。
+//                               下架當下把四個生效中的時間（與當時的開賣設定）搬進這裡、生效欄位清空——下架期間任何推導都讀不到它，
+//                               所以一律不觸發。重新上架時 restorableTimes() 列出還沒過的（上架時間不列、〔推導〕），
+//                               relist(entity, { restore:true }) 把它們搬回生效欄位；不恢復＝清掉。活動組合包另把逐格另設（sched）一併暫停。
 //     lowThreshold number       低庫存門檻（0＝不提醒）
 //     archived    boolean       已封存（2026-09-18 · D284，§7.14「封存與不可刪除」）。三開關之外的一態：
 //                               只有已下架的可以封存；封存＝離開主清單、細節頁唯讀、三開關與排程不可調；
@@ -498,17 +503,65 @@
       封存只看「已下架」，不檢查組合包（D288 修正 D284 裁決四）：成員的連動在下架時已處理（unlistWithBundles）。 */
   function archive(entity) {
     if (!entity) return entity;
+    pauseSchedule(entity);   /* D481〔推導 10〕：排定上架未到就封存的，生效中的下架、開賣、停售時間照下架的做法保存但暫停 */
     entity.archived = true;
     entity.listed = false;
     entity.listAt = null;
     entity.unlistAt = null;
+    if (entity.paused) entity.paused.listAt = null;   /* 上架時間（保存的或排定未到的）一律取消；其餘保存的時間封存期間不觸發、解除封存不改 */
     return entity;
   }
 
   /** 開賣設定（D290）：缺值視為開賣（舊資料與 seed 沿用 D241「上架即開賣」）。 */
   function isOnSale(entity) { return flag(entity && entity.onSale, true); }
 
-  /* 開賣退回「未開賣」＋四個排程時間清空（D290）。下架與重新上架共用：兩邊之後都是「沒有任何排程、未開賣」。 */
+  /* ── 下架時保存但暫停的排程（2026-10-27 · D481，主規格 §7.14「重新上架時詢問是否恢復排程」）────────
+     下架當下把生效中的四個時間搬進 entity.paused、生效欄位清空：下架期間沒有任何推導讀得到它們，等於暫停、不觸發。
+     重新上架時由呼叫端（細節頁、清單、組合包閘門、活動詳情 D448 彈窗；共用確認在 partials/relist-restore.js）
+     先問「恢復原本的排程／不恢復」再呼叫 relist。 */
+  var PAUSE_KEYS = ['listAt', 'unlistAt', 'saleStart', 'saleEnd'];
+  /** 把生效中的時間搬進 paused。已經下架（總閘門關著）且有保存的時間、或生效欄位全空時不動——已下架的再封存不會把保存的時間洗掉
+      （活動組合包下架後生效欄位會被重填成跟隨活動的值，不能拿它覆寫）。 */
+  function pauseSchedule(entity) {
+    if (!entity) return entity;
+    if (entity.paused && entity.listed === false) return entity;
+    var live = PAUSE_KEYS.some(function (k) { return !!entity[k]; });
+    var sched = (entity.sched && typeof entity.sched === 'object') ? entity.sched : null;
+    var hasSched = !!sched && Object.keys(sched).some(function (k) { return !!sched[k]; });
+    if (!live && !hasSched) return entity;
+    var p = { onSale: isOnSale(entity) };
+    PAUSE_KEYS.forEach(function (k) { p[k] = entity[k] || null; });
+    /* 活動組合包：時間逐格「跟隨活動／另設」，另設的格子（sched）一起暫停、生效值回到跟隨（UIA-303） */
+    if (sched) { p.sched = {}; Object.keys(sched).forEach(function (k) { if (sched[k]) p.sched[k] = sched[k]; }); entity.sched = {}; }
+    entity.paused = p;
+    return entity;
+  }
+  function hasPaused(entity) { return !!(entity && entity.paused); }
+  /**
+   * 重新上架時要問「恢復嗎」的時間：下架時保存、而且還沒過的（每個時間各自判斷，〔推導 3〕）。
+   * 上架時間不列（按「上架」就是此刻上架，〔推導 2〕）；開賣時間只有原本是定時開賣（當時開賣設定為開）才算，
+   * 立即開賣、跟著上架一起開賣沒有時間，不在恢復範圍（〔推導 1〕）。拍賣：saleStart＝開拍時間，附跟著恢復的結標時間 end（〔推導 9〕）；
+   * 拍賣不存 saleEnd（結標由開拍＋時長導出），不另列。回 [{ key, at, end? }]，順序固定：下架 → 開賣（開拍）→ 停售。
+   */
+  function restorableTimes(entity, now) {
+    var p = entity && entity.paused, at = nowMs(now), out = [];
+    if (!p) return out;
+    var auction = isAuctionEntity(entity);
+    /* 活動組合包（paused.sched 存在）：下架、停售時間只列組合包自己另設的格子——跟隨活動的那兩格是活動的時間，
+       不恢復也照樣跟著活動，列出來會讓「不恢復」看起來沒作用（UIA-303）。開賣時間照列：它決定上架後是不是定時開賣。 */
+    var own = function (k) { return !p.sched || !!p.sched[k]; };
+    if (own('unlistAt') && future(p.unlistAt, at)) out.push({ key: 'unlistAt', at: p.unlistAt });
+    if (p.onSale !== false && future(p.saleStart, at)) {
+      var it = { key: 'saleStart', at: p.saleStart };
+      if (auction) { var days = num(entity.duration); if (days > 0) it.end = new Date(time(p.saleStart) + days * 86400000).toISOString(); }
+      out.push(it);
+    }
+    if (!auction && own('saleEnd') && future(p.saleEnd, at)) out.push({ key: 'saleEnd', at: p.saleEnd });
+    return out;
+  }
+
+  /* 開賣退回「未開賣」＋生效中的四個排程時間清空（D290）。下架與重新上架共用：兩邊之後都是「沒有生效中的排程、未開賣」
+     ——下架前的時間 D481 起已先由 pauseSchedule 存進 paused。 */
   function resetSale(entity) {
     entity.listAt = null;
     entity.unlistAt = null;
@@ -520,7 +573,7 @@
   }
 
   /** 解除封存（Unarchive，2026-09-22 · D298 修訂 D284／D289）：已封存 → 已下架。只把 archived 放回 false、listed 維持 false，
-      其他一律不動——排程與開賣在下架時已依 D290 清掉並退回未開賣，顯示沿用；不自動上架，要販售再走 relist。
+      其他一律不動——開賣在下架時已依 D290 退回未開賣、下架時保存的排程（paused，D481）原樣不動，顯示沿用；不自動上架，要販售再走 relist。
       不連動組合包（成員解除封存不會把含它的組合包拉上來；組合包解除封存也不動成員）。 */
   function unarchive(entity) {
     if (!entity || !isArchived(entity)) return entity;
@@ -531,21 +584,39 @@
 
   /** 重新上架（Relist）：已下架 → 上架；顯示沿用。D298（2026-09-22）起只服務已下架——已封存的要先 unarchive，
       這裡對已封存一律不動（回原物件），不再順手解除封存。
-      D290（2026-09-18）：不恢復開賣——回來是「上架＋顯示（沿用）＋未開賣」，四個排程時間維持空，要販售須再設開賣。 */
-  function relist(entity) {
+      D290（2026-09-18）：回來是「上架＋顯示（沿用）＋未開賣」。
+      D481（2026-10-27）：opts.restore＝創作者在確認裡選「恢復原本的排程」——restorableTimes() 列出的時間搬回生效欄位
+      （opts.skip＝{ key:true }：沒通過既有時間檢查、不恢復的那幾個，〔推導 4〕）；開賣時間恢復＝定時開賣（onSale 回 true），
+      拍賣恢復開拍＝定時開拍、結標由開拍＋時長自然導出（〔推導 1、9〕）；活動組合包只把有恢復的格子放回另設（sched）。
+      不恢復（省略 opts）＝保存的時間清除（〔推導 6〕），沿用 D290 的上架後狀態。 */
+  function relist(entity, opts) {
     if (!entity || isArchived(entity)) return entity;
+    var o = opts || {}, p = entity.paused;
+    var items = (o.restore && p) ? restorableTimes(entity, o.now) : [];
     entity.listed = true;
     entity.unlistReason = null;
     resetSale(entity);
+    items.forEach(function (it) {
+      if (o.skip && o.skip[it.key]) return;
+      entity[it.key] = it.at;
+      if (it.key === 'saleStart') entity.onSale = true;
+      if (p.sched && p.sched[it.key]) {
+        if (!entity.sched || typeof entity.sched !== 'object') entity.sched = {};
+        entity.sched[it.key] = p.sched[it.key];
+      }
+    });
+    entity.paused = null;
     return entity;
   }
 
-  /** 下架（Unlist）：總閘門關上；D290：四個排程時間（listAt／unlistAt／saleStart／saleEnd）清空、開賣退回未開賣。
+  /** 下架（Unlist）：總閘門關上；開賣退回未開賣（D290）。四個排程時間（listAt／unlistAt／saleStart／saleEnd）D481 起
+      保存但暫停（pauseSchedule 搬進 paused、生效欄位清空，下架期間不觸發），重新上架時詢問是否恢復。
       顯示／隱藏、內容、價格、庫存、鎖定等其他設定保留。reason 給「一同下架」的組合包記原因用（可省略）。
       連動（unlistWithBundles）、定時到期（scheduledUnlistCascade／expireScheduled）都走這裡，規則只寫一次。
-      拍賣同一支：清上架排程與開拍時間（saleStart），重新上架後為未開拍。 */
+      拍賣同一支：上架排程與開拍時間（saleStart）同樣保存但暫停，不恢復時重新上架後為未開拍。 */
   function unlist(entity, reason) {
     if (!entity) return entity;
+    pauseSchedule(entity);
     entity.listed = false;
     entity.unlistReason = reason || null;
     resetSale(entity);
@@ -626,12 +697,14 @@
    *   否則已下架的成員連帶重新上架（呼叫端已拿使用者確認過「這些單售會一起重新上架」才呼叫），再 relist 組合包，
    *   回 { ok:true, relisted:[product…] }。反方向不連動：單售重新上架不會把組合包拉上來。
    */
-  function relistBundle(bundle, productsById, now) {
+  /* D481〔推導 8〕：opts＝{ restore, skipOf(entity) }——連帶上架的成員套用同一個選擇；skipOf 回該實體不通過檢查、不恢復的時間（可省略）。 */
+  function relistBundle(bundle, productsById, now, opts) {
     var plan = bundleRelistPlan(bundle, productsById, now);
     if (plan.blocked.length) return { ok: false, blockers: plan.blocked, relisted: [] };
-    var relisted = [];
-    plan.unlisted.forEach(function (m) { if (m.product) { relist(m.product); relisted.push(m.product); } });
-    relist(bundle);
+    var o = opts || {}, relisted = [];
+    var optsOf = function (e) { return o.restore ? { restore: true, now: now, skip: (typeof o.skipOf === 'function' ? o.skipOf(e) : null) } : null; };
+    plan.unlisted.forEach(function (m) { if (m.product) { relist(m.product, optsOf(m.product)); relisted.push(m.product); } });
+    relist(bundle, optsOf(bundle));
     return { ok: true, blockers: [], relisted: relisted };
   }
 
@@ -659,7 +732,7 @@
 
   /**
    * 定時下架到期的落實（D290，2026-09-18）：unlistAt 已過的上架中東西，原本只靠 isUnlisted() 推導成「已下架」、
-   * 欄位不動；D290 要求到期下架也清四個時間、退回未開賣，所以載入時把它真的 unlist() 一次（呼叫端寫回工作階段）。
+   * 欄位不動；D290 要求到期下架也退回未開賣（D481 起四個時間改為保存但暫停），所以載入時把它真的 unlist() 一次（呼叫端寫回工作階段）。
    * 要在 scheduledUnlistCascade 之後跑——連動判斷靠「成員 listed 且 unlistAt 已過」找出觸發的成員。
    * entities：商品／組合包／拍賣任一清單。回傳被落實的實體陣列。
    */
@@ -995,6 +1068,10 @@
     unarchive: unarchive,
     relist: relist,
     unlist: unlist,
+    /* 下架時保存但暫停的排程（D481） */
+    pauseSchedule: pauseSchedule,
+    hasPaused: hasPaused,
+    restorableTimes: restorableTimes,
     listedBundlesUsing: listedBundlesUsing,
     unlistWithBundles: unlistWithBundles,
     unlistedMembers: unlistedMembers,

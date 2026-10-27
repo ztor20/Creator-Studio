@@ -1,0 +1,58 @@
+/* ----------------------------------------------------------------
+   Schedule restore — 重新上架時「恢復原本的排程／不恢復」的確認內容
+   spec 0-設計規格書 §7.14「重新上架時詢問是否恢復排程」（D481，2026-10-27）
+
+   一段可塞進任何確認殼的內容區塊：
+     · 一起上架的成員（選配，組合包連帶上架時，D289）
+     · 暫停中的排程：每個還沒過的時間一列（哪一種時間＋日期與時間），
+       多個販售管道時依名稱分組；沒通過既有時間檢查的那一列多一句「不會恢復：原因」
+     · 兩個選項：radio-list 的「恢復原本的排程」「不恢復」（一定要選一個，確認鈕才可按）
+   殼：leave-dialog（partials/relist-restore.js 的 ask() 注入，商品／組合包／拍賣細節頁與電子商店清單共用）
+       與活動詳情的 #ed-confirm（D448 彈窗把同一段內容放進 body）。
+   markup 與行為：partials/relist-restore.js（blockHTML／bindChoice），頁面不自己拼。
+   全值引用 _tokens.css 的設計 token。
+
+   anatomy
+     .sched-restore
+       .sched-restore__label            段落小標（一起上架的成員／暫停中的排程）
+       .sched-restore__group            分組名稱（多個販售管道時才出現）
+       ul.sched-restore__list
+         li.sched-restore__item (--skip)
+           .ztor-icon
+           .sched-restore__text
+             .sched-restore__what       哪一種時間
+             .sched-restore__when       日期與時間
+             .sched-restore__note       不會恢復：原因（--skip 才有）
+       .radio-list.sched-restore__choice
+   ---------------------------------------------------------------- */
+
+.sched-restore { display: flex; flex-direction: column; margin: 0 0 var(--sp-20); }
+
+.sched-restore__label {
+  margin: 0 0 var(--sp-6);
+  font-size: var(--fs-12); color: var(--muted-foreground);
+}
+.sched-restore__group {
+  margin: var(--sp-8) 0 0;
+  font-size: var(--fs-13); color: var(--foreground);
+}
+
+.sched-restore__list {
+  list-style: none; margin: 0 0 var(--sp-16); padding: 0;
+  border-top: 1px solid var(--border);
+}
+.sched-restore__group + .sched-restore__list { margin-top: var(--sp-4); }
+.sched-restore__item {
+  display: flex; align-items: flex-start; gap: var(--sp-8);
+  padding: var(--sp-8) 0; border-bottom: 1px solid var(--border);
+  font-size: var(--fs-14); color: var(--foreground);
+}
+.sched-restore__item .ztor-icon { flex: none; margin-top: var(--sp-2); color: var(--muted-foreground); }
+.sched-restore__text { display: flex; flex-wrap: wrap; column-gap: var(--sp-8); row-gap: var(--sp-2); min-width: 0; }
+.sched-restore__what { color: var(--muted-foreground); }
+.sched-restore__when { font-variant-numeric: tabular-nums; }
+.sched-restore__note { flex-basis: 100%; font-size: var(--fs-12); color: var(--status-warning-ink); line-height: var(--lh-comfy); }
+/* 不會恢復的那一列：時間轉灰（說明句維持警示色），一眼分得出哪些會恢復 */
+.sched-restore__item--skip .sched-restore__when { color: var(--muted-foreground); text-decoration: line-through; }
+
+.sched-restore__choice { margin-top: var(--sp-4); }
