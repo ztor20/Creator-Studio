@@ -13,6 +13,37 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百零五）· 下架時排程保存但暫停，重新上架時詢問是否恢復；上架中改組合包限量不用先下架（A spec-derived · D481）
+
+**標籤**：release2.4
+
+使用者裁決 D481（「都照推薦」，做法 1）：下架時四個排程時間（上架、下架、開賣、停售；拍賣的開拍）不再清除，改成保存但暫停、下架期間不觸發；按「上架」時列出還沒過的時間，讓創作者選「恢復原本的排程」或「不恢復」。另外組合包的限量（販售上限）視同庫存，上架中可以直接改。原型照主規格 §7.14「重新上架時詢問是否恢復排程」的 11 條〔推導〕落地。
+
+- `js/listing-state.js`：新增 `pauseSchedule()`／`hasPaused()`／`restorableTimes()`；`unlist()` 先把生效中的時間存進 `paused` 再清空生效欄位（開賣照舊退回未開賣）；`relist(entity, { restore, skip })` 恢復還沒過、通過檢查的時間（開賣未到＝定時開賣、拍賣開拍未到＝定時開拍），不恢復＝清掉；`relistBundle` 加第 4 個參數讓連帶成員套用同一個選擇；`archive()` 取消上架時間、其餘保存。活動組合包的另設格子（`sched`）一併暫停與恢復。
+- `partials/relist-restore.js`（新）：列時間、分組、檢查原因、兩個選項與自帶的 `leave-dialog` 確認殼（`plan`／`ask`／`blockHTML`／`bindChoice`／`skipOf`）；沒有任何還沒過的時間時呼叫端直接上架、不跳確認。`ds-components/sched-restore.css`（新元件，design-system.html §4.77a、design-system.md 同步）。
+- `product-detail.html`、`auction-detail.html`：頁首「上架」與上架開關走同一支 `pdRelist`／`doRelist`，先問再上架，取消時開關畫回關。`e-shop.html`：單售、組合包、拍賣三類列的「上架」同樣先問。
+- `partials/bundle-relist.js`：組合包或連帶成員有還沒到的時間時，「一起上架的成員」與恢復選擇在同一個確認（新增 `checkOf`、`onCancel`）。`bundle-detail.html`：下架改由 `ListingState.unlist` 保存另設格子，`bdEvPersist` 寫回 `paused`；活動組合包恢復前照既有時間檢查（`schedErrors`、`hasOtherSellable`），不通過的寫原因、不恢復。
+- `event-detail.html`：D448 重新上架彈窗有組合包保存著還沒到的時間時，接同一個恢復區塊，一個選擇套用到全部組合包；「同時上架活動與組合包」要先選。
+- 組合包限量：`bundle-detail.html` 上架中「數量」卡本來就可改（D447），說明句與註解改成可調高、調低、切換限量與不限量（下限已售＋保留、上限成員還能鎖的套數，D480 檢查不變）；`ed.stockonly.body` 補「販售上限」。
+- `js/i18n.js`：新增 `rr.*` 18 個鍵與 `event-detail.relist.bundles.note-rr`（中英）；改寫 `e-shop.unlist.body`、`e-shop.unlist.blocked-body`、`ad.unlist.body`（「清除」→「暫停、重新上架時可選擇恢復」）、`bd.stockonly.body`、`ed.stockonly.body`。
+- 示範資料：`js/products-store.js` membership、backstage-set＋coaster、setlist-sheet 帶保存的排程；`js/events-store.js` bd-tc-floor-tee 帶另設的開賣與停售（停售超出活動上架期間，不會恢復）。工作階段欄位加 `paused`。
+- 沒有新功能標記（上架與下架流程的行為改動，兩個版本都有；拍賣本身 ⚪ 只在最終版）。媒體庫庫房下架（D477）不動。文件：ASSUMPTIONS 新增 UIA-303（並在 UIA-155、UIA-270 加修訂註記）；BUILD-SPEC、requirements-map 同步。截圖 `screenshots/r2.3/d481-*.png`。
+
+## 2026-10-27（三百零四）· 限量數位商品只設上限、沒有在庫：清單與商品細節頁改寫剩餘額度，建立商品拿掉「剩餘份數」欄（A spec-derived · 5.1.5.2 類型差異表、D480 決定 4）
+
+**標籤**：release2.4
+
+5.1.5.2 類型差異表寫明數位商品「庫存版本不限量／限量（限量僅設上限、無在庫）」，D480 決定 4 數位成員不鎖。原型原本讓限量數位商品帶一個在庫數（doc-guide `stock: '237'`），並在建立商品多收一欄必填「剩餘份數」；改成只帶上限與已售，剩餘額度由系統算（ASSUMPTIONS UIA-301 第 5 項收案、UIA-302 記細節頁庫存區的規格缺口）。
+
+- `js/products-store.js`：示範資料 doc-guide（上限 300、已售 63）與 nick-doc（上限 500、已售 210）拿掉 `stock`；`poolTotal()` 數位商品不讀 `stock`——不限量＝`'unlimited'`、限量＝剩餘額度（上限 − 已售，新增 `digitalLeft()`），保留由 ListingState 的未鎖定格保留另扣；nick 清單列初值 `stockText()` 數位限量改寫「剩餘額度 / 上限」。
+- `e-shop.html`：庫存欄口徑不變（剩餘 / 上限，與組合包限量同一個格式器），數字改從上限 − 已售來；`syncRowActions()` 數位列一律收起「補貨」（nick 的數位列是從實體列複製來的，原本帶著補貨項）。
+- `product-detail.html`：數位商品本來就沒有「庫存」分頁（在庫、補貨、單售鎖定、鎖給組合都在那裡）；限量時商品設定的上限欄底下事實句改寫「已售 N · 剩餘額度 M」（有保留時多一段「保留 K」），改上限時即時重算，下限維持已售＋保留；總覽「庫存版本」一列改寫「限量 · 上限 N · 剩餘額度 M」；儲存上限後池跟著改成新的剩餘額度。
+- `create-product.html`：數位限量的「剩餘份數」必填欄撤除（墓碑留在原位），只收「上限數量」；就緒檢查、預覽的「還剩幾份」、嵌入回傳的量都改讀上限。
+- `create-bundle.html`：挑成員清單的數位候選寫「剩 N」，不寫「N 件庫存」。`js/lock-alloc.js`：成員鎖定表裡數位成員的「成員庫存」「未鎖定」兩格寫「—」（鎖定格原本就寫「數位，不鎖」）。
+- `product-localization.html`：數位限量給粉絲看的「還剩幾份」改成上限 − 已售（原本讀不到 `stock` 會變成 0、誤顯示售完）。
+- `js/i18n.js`：新增 `product-detail.edition.digital-left`、`product-detail.edition.digital-left-held`、`product-detail.setov.edition.digital-left`（中英）；`cp.qc.digicap` 改成只講上限數量。
+- 沒有新元件、沒有新功能標記（限量沿用 S45 🔵 release2.4）。實體商品的在庫、補貨、鎖定不受影響。截圖 `screenshots/r2.3/digital-limited-*.png`。
+
 ## 2026-10-23（三百零三）· 組合包設成限量就自動鎖定成員庫存，鎖定＝限量 − 已售（A spec-derived · D480）
 
 **標籤**：release2.4

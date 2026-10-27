@@ -523,11 +523,8 @@
             <input class="input" placeholder="0" id="cp-stock">
             <div class="field__hint" data-i18n="cp.stock.pool-hint">Locking stock for single sale or a bundle happens on the product page and in the bundle flow.</div>
           </div>
-          <!-- 數位限量：剩餘份數（數位不限量＝無上限下載，無此欄）-->
-          <div class="field" data-cp-show="digital" data-when-edition="limited">
-            <div class="field__label"><span data-i18n="cp.stock.digital">Copies remaining</span> <span class="field__req">*</span></div>
-            <input class="input" placeholder="0" id="cp-dcopies">
-          </div>
+          <!-- 墓碑 2026-10-27（UIA-301 第 5 項）：數位限量原有「剩餘份數」必填欄（#cp-dcopies）。5.1.5.2 類型差異表寫明
+               數位商品「限量僅設上限、無在庫」，剩餘份數＝上限 − 已售由系統算，建立時就等於上限，不另收；只留上方「上限數量」。 -->
         </div>
       </div>
 
@@ -1117,7 +1114,6 @@
   const fPrice = document.getElementById('cp-price');
   const fTotal = document.getElementById('cp-total');
   const fStock = document.getElementById('cp-stock');
-  const fDCopies = document.getElementById('cp-dcopies');
   const fShipWeight = document.getElementById('cp-ship-weight');
   /* 限購（D398；D427 起只剩每人總限購）：開關打開才算；那一欄是 1 以上的整數就算填好（D428 定案，5.1.5.2 §4.6） */
   const PL = window.ztorPurchaseLimits;
@@ -1462,7 +1458,7 @@
     if (!tot || !st) return false;
     return Number(tot) >= Number(st);
   }
-  function digitalCapOk() { return has(fTotal) && has(fDCopies); }
+  function digitalCapOk() { return has(fTotal); }   /* 數位限量只收上限（UIA-301 第 5 項） */
   /* D148（2026-07-21）：物流配送四欄只有重量必填——尺寸與寄件地改選填、不列入就緒檢查
      （寄件地沿用商店設定 F5 預設，尺寸多為同批商品共用，逐件強制填會卡住建立流程）。 */
   function shippingOk() {
@@ -1504,7 +1500,7 @@
       { id: 'desc',  labelKey: 'cp.qc.desc',  step: CP_STEP.info,  k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
       { id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price',                done: () => has(fPrice) },
     ];
-    if (state.edition === 'limited') a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity & copies', done: () => digitalCapOk() });
+    if (state.edition === 'limited') a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity', done: () => digitalCapOk() });
     if (!cpUni() && state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
     if (cpUni() && cpCondsAny()) a.push({ id: 'conds', labelKey: 'pc.qc', step: CP_STEP.conds, k: 'Purchase conditions', done: () => cpCondsOk() });   /* D463（S105） */
     return a;
@@ -1628,7 +1624,7 @@
     const cat = apparelCatLabel() || ((catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '');
     let stock = 'unlimited';
     if (state.edition === 'limited') {
-      stock = ((fStock && fStock.value.trim()) || (fTotal && fTotal.value.trim()) || (fDCopies && fDCopies.value.trim()) || '0');
+      stock = ((fStock && fStock.value.trim()) || (fTotal && fTotal.value.trim()) || '0');
     }
     let variants = 0;
     if (state.type === 'physical' && state.varMode === 'multiple') {
@@ -1804,7 +1800,7 @@
   /* 庫存：限量才給「目前還剩幾件」（前台只在 ≤10 件時提示）；不限量或沒填＝null */
   function stageStock() {
     if (state.edition !== 'limited') return null;
-    if (state.type === 'digital') return has(fDCopies) ? numVal(fDCopies.value) : null;
+    if (state.type === 'digital') return has(fTotal) ? numVal(fTotal.value) : null;   /* 數位限量：建立時剩餘額度＝上限（尚無已售） */
     if (isMulti()) {
       const ks = activeCombos().filter(k => ((varData[k] || {}).stock || '').trim() !== '');
       return ks.length ? ks.reduce((sum, k) => sum + numVal(varData[k].stock), 0) : null;

@@ -1,5 +1,9 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-10-27 · D481 下架保存排程、重新上架詢問是否恢復（UI-CHANGES 三百零五、ASSUMPTIONS UIA-303）**：新增元件 `ds-components/sched-restore.css`（`.sched-restore` 內容區塊：`__label`／`__group`／`__list`／`__item`（`--skip`）／`__what`／`__when`／`__note`／`__choice`，兩個選項沿用 `.radio-list`），行為與 markup 集中在 `partials/relist-restore.js`（`plan`／`ask`／`blockHTML`／`bindChoice`／`skipOf`）；`ask()` 自帶 `leave-dialog` 殼、只注入一次，沒選選項前主鈕停用；活動詳情 D448 彈窗用 `blockHTML()` 放進既有 `#ed-confirm`、主鈕以 `blocked` 停用到選完。狀態層：`ListingState.unlist` 把生效中的四個時間存進 `entity.paused`（活動組合包連另設格子 `sched`），`relist(entity, { restore, skip })` 依 `restorableTimes()` 恢復；products-store 工作階段欄位加 `paused`、events-store 組合包記錄加 `paused`。消費者：product-detail／bundle-detail／auction-detail／e-shop／event-detail、`partials/bundle-relist.js`。
+
+> **2026-10-27 · 限量數位商品只設上限（UI-CHANGES 三百零四、ASSUMPTIONS UIA-301 第 5 項、UIA-302）**：沒有新元件。資料形狀：數位商品不帶 `stock`，`ProductsStore.poolTotal()` 對數位商品回剩餘額度（上限 − 已售）或 `'unlimited'`，清單與組合包可售量照讀池；商品細節頁沿用既有 `field__hint--fact`（`[data-pd-cap-sold]`）寫「已售 · 剩餘額度」、總覽設定概覽一列加剩餘額度；電子商店 `syncRowActions()` 數位列收起補貨；`js/lock-alloc.js` 數位成員的庫存與未鎖定格寫「—」；建立商品撤除 `#cp-dcopies`。
+
 > **2026-10-23 · D480 組合包限量就自動鎖定（UI-CHANGES 三百零三、ASSUMPTIONS UIA-301）**：沒有新元件。建立組合包與建立活動第 6 步彈窗的數量節把販售上限問句移到鎖定問句之前；限量時鎖定問句的 `segmented.radio-cards` 收起、鎖定組數 `zstep` 停用，改顯示一列 `field__hint--fact`（`[data-cb-lock-auto]`／`[data-bd-lock-auto]`）；組合商品細節頁「組合庫存」分頁同一列說明。成員鎖定量表（`js/lock-alloc.js`）數位成員的已鎖定格沿用 `.lockset__nolock` 寫「數位商品，不鎖定」。數字一律問 `ListingState`（`bundleLimitLock`、`bundleMaxSets`、`bundleQty` 改以 cap − 已售 − 保留為剩餘上限）。
 
 > **2026-10-23 · D478 組合包修改成員的條件（UI-CHANGES 二百九十九、ASSUMPTIONS UIA-297）**：沒有新元件。`bundle-detail.html` 成員節沿用 `[data-bd-members-locked]` 說明列（`info-banner`），`memberEditBlock()` 決定原因（sold／listed／checkout），`syncMembersLock` 依原因換文案並停用加入區、移除鈕、每套用量與允許門票勾選表；`bdStockSync` 在上架、下架後重跑成員鎖。結帳中筆數讀 `bundleModel.pendingCheckout`（缺值以 `holdSets` 代替）。
@@ -457,7 +461,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | 庫存版本 | 不限量／限量 | 不可改（對買家的限量承諾） | 上限欄與「/ N」分母 |
 | 取貨方式 | 物流配送／現場 QR 領取 | 可改 | 交付與取貨分頁的欄位；**僅實體** |
 
-> 數位商品一律不限量、沒有補貨、沒有取貨方式。另依 D251，數位的影視類與音樂類共 7 個次分類
+> 數位商品沒有在庫、沒有補貨、沒有取貨方式；庫存版本可選不限量或限量，限量只設上限，剩餘額度＝上限 − 已售 − 保留（5.1.5.2；2026-10-27 UIA-302）。另依 D251，數位的影視類與音樂類共 7 個次分類
 > 不進電子商店，所以這一頁實際會遇到的數位次分類只有 **文檔、會員卡、IP 資產**。
 
 **區塊出現條件**（2026-09-11 重組：分頁是「總覽」「商品庫存」「商品設定」「關聯」四個；商品設定＝建立商品的整頁，

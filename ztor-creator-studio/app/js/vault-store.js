@@ -517,15 +517,41 @@
       Object.keys(now).forEach(function (k) { it.history[k] = 1; });
     });
   }
-  /* 累計解開過這一件的人數。判定方式待確認的行動任務回 null（不知道誰完成了）。 */
-  function itemEverSet(vault, item) {
-    if (!taskJudgeable(taskOf(item))) return null;
+  /* release2.5 讀紀錄時的兩個過濾（UIA-300；只在讀取時做，種子與 item.history 不動）：
+       · 沒有鑰匙（S123 關閉）→ 只能靠鑰匙進庫的粉絲（持有過這座庫房的鑰匙、含已撤銷，
+         但不符合任何進庫方法）在這個版本裡從沒進過庫，他們的紀錄不算。
+       · 六種行動任務不在版本內（S122 關閉）→ 那幾件當「不設任務」，累計數要跟同一座庫房裡
+         原本就不設任務的內容同一個口徑：所有此刻不設任務的內容共用一份「曾靠條件進過庫的人」。
+     最終版兩個開關都開著，這裡什麼都不做，數字與修改前相同。 */
+  function keyOnlyFans(vault) {
+    var out = {};
+    if (keysOn()) return out;
+    (vault.keys || []).forEach(function (k) {
+      (k.claimed || []).forEach(function (idx) {
+        if (!ruleMatches(vault, FANS[idx])) out[idx] = 1;
+      });
+    });
+    return out;
+  }
+  function itemEverRaw(vault, item, skip) {
     var set = {};
-    Object.keys((item && item.history) || {}).forEach(function (k) { set[k] = 1; });
+    Object.keys((item && item.history) || {}).forEach(function (k) { if (!skip[k]) set[k] = 1; });
     if (vault.status === "listed") {
       var now = itemNowSet(vault, item);
       Object.keys(now || {}).forEach(function (k) { set[k] = 1; });
     }
+    return set;
+  }
+  /* 累計解開過這一件的人數。判定方式待確認的行動任務回 null（不知道誰完成了）。 */
+  function itemEverSet(vault, item) {
+    if (!taskJudgeable(taskOf(item))) return null;
+    var skip = keyOnlyFans(vault);
+    if (moreActionsOn() || taskOf(item)) return itemEverRaw(vault, item, skip);
+    var set = {};
+    (vault.items || []).forEach(function (it) {
+      if (taskOf(it)) return;
+      Object.keys(itemEverRaw(vault, it, skip)).forEach(function (k) { set[k] = 1; });
+    });
     return set;
   }
   function itemEver(vault, item) {

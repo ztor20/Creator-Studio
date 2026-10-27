@@ -1832,6 +1832,7 @@
     if (isAdded(row)) bits.push(esc(T('cb.tix.added', 'Added')));
     else if (row.dataset.blocked) bits.push(esc(T('cb.member.unlisted', 'List it first to add')));
     else if (row.dataset.stock === 'unlimited') bits.push(esc(T('cb.stock.unlimited', 'Unlimited')));
+    else if (row.dataset.digital) bits.push(esc(T('cb.mt.left', '{n} left').replace('{n}', row.dataset.stock)));
     else {
       const txt = esc(row.dataset.stock + ' ' + T('cb.meta.instock', 'in stock'));
       bits.push(Number(row.dataset.stock) === 0 ? '<span class="text-error">' + txt + '</span>' : txt);
@@ -1882,6 +1883,7 @@
       row.dataset.catEn = parts[0] || '';
       row.dataset.catZh = parts[1] || parts[0] || '';
       row.dataset.stock = (p.pool && p.pool.total !== undefined) ? String(p.pool.total) : 'unlimited';
+      if (p.cat === 'digital') row.dataset.digital = '1';   /* 數位沒有在庫（UIA-301 第 5 項）：限量時池＝剩餘額度，meta 寫「剩 N」不寫「在庫」 */
       if (p.variants && p.variants.length) row.dataset.variants = String(p.variants.length);
       if (blocked) row.dataset.blocked = '1';
       let end = '';
