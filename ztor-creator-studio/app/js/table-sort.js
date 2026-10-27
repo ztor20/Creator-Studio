@@ -110,7 +110,7 @@
   }
 
   function gridAdapter(root) {
-    var head = root.querySelector(".table-head");
+    var head = root.querySelector(".table-head, .product-list__head");
     var list = root.querySelector("[data-sort-rows]") || root.querySelector(".data-list");
     if (!head || !list) return null;
     return {

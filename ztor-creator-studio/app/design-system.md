@@ -286,6 +286,8 @@ Ztor Creator Studio · R 2.2 runs on a **clean white canvas with neutral light-g
 | `--ztu-glass-bg` | `rgba(255,255,255,0.07)` | 玻璃卡半透明底 | `.card`／`.kpi`／`.alert--bar`／`.readiness`／`.preview-card`／`.form-section--outlined`／`.list-toolbar`／`.app-topbar`／`.wizard__top::before`（頂列膠囊）／filter-tabs 已選殼 等（13 處；`.wizard__bottom` 2026-09-23 改同色遮色片後不再吃玻璃） |
 | `--ztu-glass-strong` | `rgba(255,255,255,0.12)` | 玻璃 hover 加強 | 上述玻璃卡的浮層內排除補丁 hover、`.field-pill:hover`、`.chip:hover`、`.upload-tile:hover` 等（6 處） |
 | `--ztu-glass-rim` | `rgba(255,255,255,0.15)` | 頂緣內光／浮層邊框色 | `.dropdown__menu`／`.zselect__panel`／`.preview-panel__sheet`／`.payout-dialog` 的 `border`、breadcrumb hover 圓鈕的 inset 邊 等（9 處） |
+| `--float-glass` | `color-mix(in srgb, var(--popover) 72%, transparent)` | 浮層玻璃底（2026-10-27，Q78 修訂） | 下拉選單、選擇器、popover、提示框、彈窗共用；`.payout-dialog` 也吃它（不掛 backdrop-filter） |
+| `--float-blur` | `var(--ztu-blur-glass)`（24px） | 浮層背景模糊（2026-10-27，Q78 修訂） | 與 `--float-glass` 成對使用；沒有模糊的半透明浮層會讓底下的字透上來 |
 | `--ztu-film` | `rgba(255,255,255,0.06)` | 巢狀薄膜——卡中卡、控件凹槽、縮圖框、中性徽章共用的「疊上去的一層」，比玻璃低一階、刻意不帶 `backdrop-filter` | `.card--muted`／`.kpi.card--muted`／`.nest`／form-section 巢狀內層／`.input`／`.textarea`／`.select`／`.field-pill`／`.upload-tile`／`.badge`／`.stock-bar` 軌道／`.chip`／側欄項 hover 等（全站最多消費者，29 處） |
 
 **Foundation · App shell 檯面與外殼**
@@ -732,7 +734,7 @@ E0–E4 管「抬多高」（陰影），`--layer-*` 管「疊上去該多亮」
 | L3 線框 | `--layer-3-surface` | `transparent` | 第三層起不再疊填色（待採用：L3 用例都只寫線、不寫底，這支目前無消費者） |
 | L3 線 | `--layer-line` | `--border` | L3 的 1px 框：`.bd-pick`／`.bd-tbl`／`.variant-option`／`.control-group`／`.control-row`／`.album-tracks__list`／`.rowdis__frame` 等 9 支（Q64 第一批已遷）；Q63 選 B＝現行線色收進系統、不覆議亮度 |
 
-規則不變：疊上去要比父層亮（Q66）、填色只疊兩層（Q24）、浮層不透明（Q78）、玻璃裡不套玻璃（Q108）。Q64 遷移（2026-09-15）後 `--nest-surface`（4%）在產品 CSS 已無消費者（只剩 `design-layers.html` 對照組與本文件色票），L2 只剩 8.5% 一種濃度；`--nest-surface` 保留為退役中的 token，新寫法一律 `--layer-2-surface`。清單「不確定」的 9 支（`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 的 `--ztu-canvas` 效果用法、`list-toolbar`／`.detail-bar` 的黏頂玻璃、`.lockset`／`.scanner-count` 的線框）判定為材質或效果、不屬層級系統，維持原 token。逐支清單：`docs/Q64-表面階層遷移清單-2026-09-15.md`。
+規則不變：疊上去要比父層亮（Q66）、填色只疊兩層（Q24）、浮層玻璃＋模糊（Q78，2026-10-27 修訂）、玻璃裡不套玻璃（Q108）。Q64 遷移（2026-09-15）後 `--nest-surface`（4%）在產品 CSS 已無消費者（只剩 `design-layers.html` 對照組與本文件色票），L2 只剩 8.5% 一種濃度；`--nest-surface` 保留為退役中的 token，新寫法一律 `--layer-2-surface`。清單「不確定」的 9 支（`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 的 `--ztu-canvas` 效果用法、`list-toolbar`／`.detail-bar` 的黏頂玻璃、`.lockset`／`.scanner-count` 的線框）判定為材質或效果、不屬層級系統，維持原 token。逐支清單：`docs/Q64-表面階層遷移清單-2026-09-15.md`。
 
 ### 2.6 Cross-component rules
 
@@ -779,6 +781,8 @@ Principles every component obeys (not a token scale; html 版各附 live 示例)
 | `--shadow-float` / `--shadow-overlay` | soft dark drop | stronger alpha (0.5 / 0.6) + white rim (0.10 / 0.12) | 深底陰影失效，提高濃度＋亮框補輪廓 |
 
 ### 3.2 Translucent surface pitfall
+
+> **2026-10-27 再反轉（使用者裁示，Q78 修訂）：浮層改回半透明玻璃＋背景模糊，全站同一個配方。** 底＝`--float-glass`（`--popover` 的 72%）、模糊＝`--float-blur`（＝`--ztu-blur-glass`，24px），兩個 token 定義在 `_tokens.css`。套用範圍：`.dropdown__menu`、`.zselect__panel`、`.combobox__menu`、`.app-topbar__dropdown`、`.app-sidebar__lang-panel`、`.preview-panel__sheet`、`.owner-lookup__results`、`.src-status__panel`、`.readiness__pop .readiness`、`.vault-rulemenu`、`.list-dock` 貼頂篩選浮層、`.stock-tip__pop`、`.chart-tip`／`.fin-tip`（提示框）；彈窗 `.payout-dialog` 本來就是 72%（2026-09-01），改吃同一個 `--float-glass`，**不掛** `backdrop-filter`（遮罩 `.payout-modal` 已帶模糊、是背景根）。下面「Wave 2a 起」那段與 Q78「浮層一律不透明」的敘述已被取代，留著當歷史；**模糊是這個配方成立的條件**——沒有模糊的半透明浮層會讓底下的字原樣浮上來（Q78 當初擔心的看穿兩層玻璃），有模糊透過來的只是糊掉的色塊。釘在底的動作列（`.sticky-actions`／`.ss-actionbar`）不是浮層，沒動。
 
 > **ztorUI 換裝反轉了本節的結論（2026-08-28，Wave 2a §3.6）**：換裝前的規則是「浮層一律吃毛玻璃」；換裝後的規則正好相反——**內容卡片改玻璃、彈出層改實色**。以下先記錄現況，換裝前的舊規則留在小節末尾備查。
 
@@ -5226,6 +5230,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 - `.sort-th__ind` — 固定尺寸的指示井，caret 淡入淡出零位移
 - `[data-sort-state]` × `[data-sort-first]` — 決定顯示 ▼ 或 ▲：看的是「這一欄第一次點是遞增還是遞減」，不是單純的排序方向——文字欄第一次點是遞增、數字欄第一次點是遞減，兩者卻都顯示 ▼
 - `.table-head` — grid 表格家族的表頭列（與資料列共用同一組 `grid-template-columns`）
+- `.product-list__head` — 2026-10-27 起 `js/table-sort.js` 也認它當表頭（`.table-head, .product-list__head` 擇一）：資料列用 `.product-list__row`、列容器標 `[data-sort-rows]`，即可在 `.product-list` 清單上點欄名排序（首個消費頁：fans-crm.html 排行榜／名人堂）
 - `.table-scroll` — 寬表格在窄螢幕橫向捲動而非重排成卡片
 
 **Dependencies** — `js/table-sort.js`（執行期把 `<th data-sort>` 或 `<span data-sort>` 包裝成 `<button class="sort-th">`，也負責實際排序邏輯）；兩種表格家族 `.ztor-table`（真 `<table>`）與 `.data-list`/`.msg-history`（grid 列）。

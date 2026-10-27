@@ -707,6 +707,13 @@
   --ztu-shell-solid:   #1c1c1b;                     /* 外殼玻璃疊在檯面上算出來的實色等價：7% 白疊 #0a0a09。
                                                        給「必須是實色、但要跟外殼看起來同一階」的填色用（例如徑向漸層雕的凹角）。 */
   --ztu-blur-glass:    24px;
+  /* 浮層玻璃（2026-10-27 使用者裁示，取代 Q78「浮層一律不透明」）：下拉選單、選擇器、popover、提示框、彈窗共用同一個配方——
+     底＝--popover 的 72%（與 .payout-dialog 2026-09-01 的配方同值）＋背景模糊 --ztu-blur-glass。模糊是關鍵：沒有它，
+     半透明浮層會讓底下的字原樣浮上來（Q78 當初擔心的「看穿兩層玻璃」）；有它，透過來的只是糊掉的色塊。
+     用法：background: var(--float-glass); backdrop-filter: blur(var(--float-blur));（Safari 要再寫 -webkit- 前綴）。
+     彈窗 .payout-dialog 例外：它的遮罩 .payout-modal 已經帶模糊、本身是背景根，裡面再掛 backdrop-filter 取不到東西，所以只吃 --float-glass。 */
+  --float-glass:       color-mix(in srgb, var(--popover) 72%, transparent);
+  --float-blur:        var(--ztu-blur-glass);
   --ztu-blur-heavy:    50px;   /* 2026-08-31 調參器定案（docs/sheet-button-tuner.html），舊值 40px */
   --ztu-shadow-card:   0 24px 60px rgba(0, 0, 0, 0.45);
   --ztu-shadow-pop:    0 12px 40px rgba(0, 0, 0, 0.5);
