@@ -155,12 +155,12 @@
                取消訂單品項的唯一路徑是 §2.8 作廢（見下方品項列的作廢鈕）。 -->
           <!-- 純數位訂單沒有出貨動作（§2.5「數位商品呈現下載／存取權限的交付狀態」）：
                同一顆按鈕改叫「數位交付」、開的是唯讀的交付狀態彈窗 -->
-          <!-- §2.2 補寄信（D411）：只有 Admin 代管態能按；創作者本人看得到但停用、title 說明要聯繫 Admin（同 §2.8 撤銷）。
+          <!-- §2.2 重寄訂單信（D411）：只有 Admin 代管態能按；創作者本人看得到但停用、title 說明要聯繫 Admin（同 §2.8 撤銷）。
                停用與否由頁末 renderResend() 依 adminScope() 決定；按下開 #od-resend-modal 確認收件信箱 -->
           <!-- §2.8 整單撤銷（D414）：只有 Admin 代管態能按；創作者本人看得到但停用。停用原因寫在 title（同品項撤銷鈕）：
                有品項已完成履約／已撤銷、含門票品項、訂單已取消、非 Admin。狀態由頁末 renderWhole() 依 S.wholeVoidState() 與 adminScope() 決定 -->
           <button class="btn btn--soft btn--destructive" type="button" id="od-void-whole-open" data-feat="O38"><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="od.void.whole.btn">Void whole order</span></button>
-          <button class="btn btn--outline" type="button" id="od-resend-open" data-feat="O37"><i data-lucide="mail" class="ztor-icon"></i><span data-i18n="od.resend.btn">Resend email</span></button>
+          <button class="btn btn--outline" type="button" id="od-resend-open" data-feat="O37"><i data-lucide="mail" class="ztor-icon"></i><span data-i18n="od.resend.btn">Resend order email</span></button>
           <button class="btn btn--primary" id="od-ship-open" data-i18n="od.btn.ship">Mark shipped</button>
         </div>
       </div>
@@ -266,7 +266,7 @@
               <div class="field__label" data-i18n="od.info.source">Source</div>
               <div class="field-readout" data-i18n="od.info.source.ztor">ztor storefront</div>
             </div>
-            <!-- §2.2 補寄信的寄送紀錄（D411）：寄出後留一筆（時間、執行的 Admin、收件信箱）；沒有紀錄時整列不出現 -->
+            <!-- §2.2 重寄訂單信的寄送紀錄（D411）：寄出後留一筆（時間、執行的 Admin、收件信箱）；沒有紀錄時整列不出現 -->
             <div class="field" data-feat="O37" data-od-mail-field hidden>
               <div class="field__label" data-i18n="od.resend.log">Email resent</div>
               <div class="text-sub" style="font-size: var(--fs-13)" data-od-mail-log></div>
@@ -435,7 +435,7 @@
      ＋ .btn--destructive 組成，沒有新的 modal CSS；組裝規則寫在 design-system.md §5.1.11 pattern 卡。
      內容順序＝先確認動的是哪一項 → 前置提醒（金流在平台外）→ 會發生什麼 → 不可逆，
      讓人在按下去之前就把後果讀完。 -->
-<!-- §2.2 補寄信確認 popup（D411）：Admin 專屬。寄出前確認收件信箱（預填買家的聯絡信箱、可改），
+<!-- §2.2 重寄訂單信確認 popup（D411）：Admin 專屬。寄出前確認收件信箱（預填買家的聯絡信箱、可改），
      列出會重寄哪幾封（訂單確認信；含門票時加購票成功信＋電子門票）；寄出後在「訂單資訊」留一筆寄送紀錄。
      殼沿用 canonical 對話框（.payout-modal／.payout-dialog），沒有新 CSS。 -->
 <div class="payout-modal" id="od-resend-modal" hidden>
@@ -1549,7 +1549,7 @@
     document.addEventListener('i18n:applied', () => { window.renderWholeVoid(); });
   })();
 
-  /* §2.2 補寄信（D411）：Admin 專屬——創作者本人看得到但停用，title 說明要聯繫 Admin（同 §2.8 撤銷、活動詳情撤銷的同一句做法）。
+  /* §2.2 重寄訂單信（D411）：Admin 專屬——創作者本人看得到但停用，title 說明要聯繫 Admin（同 §2.8 撤銷、活動詳情撤銷的同一句做法）。
      Admin：開確認窗 → 確認收件信箱（預填買家聯絡信箱、可改、要是合法信箱）→ 寄出 → 「訂單資訊」留一筆寄送紀錄＋toast。
      原型不真的寄信；紀錄只存在這一頁的記憶體（重新整理即消失）。 */
   (function () {
@@ -1562,7 +1562,7 @@
     const to = document.getElementById('od-resend-to');
     const err = modal.querySelector('[data-od-resend-err]');
     const isAdmin = () => !!(window.ztorCreator && window.ztorCreator.adminScope && window.ztorCreator.adminScope());
-    /* D424 決定 1：已過期訂單沒有可補寄的信（訂單沒成立）——事實先於身分，不論誰看都停用並說明 */
+    /* D424 決定 1：已過期訂單沒有可重寄的信（訂單沒成立）——事實先於身分，不論誰看都停用並說明 */
     const expired = order.pay === 'expired';
     function renderBtn() {
       const ok = !expired && isAdmin();
@@ -1572,7 +1572,7 @@
         const k = expired ? 'od.expired.why' : 'od.resend.why.admin';
         btn.setAttribute('aria-disabled', 'true');
         btn.setAttribute('data-i18n-title', k);
-        btn.setAttribute('title', expired ? T(k, 'This order expired before payment — there is nothing to fulfil, void or resend.') : T(k, 'Only an Admin can resend emails. Contact an Admin.'));
+        btn.setAttribute('title', expired ? T(k, 'This order expired before payment — there is nothing to fulfil, void or resend.') : T(k, 'Only an Admin can resend order emails. Contact an Admin.'));
       }
     }
     function renderLog() {

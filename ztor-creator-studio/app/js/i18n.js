@@ -7816,12 +7816,12 @@
     'od.void.whole.why.voided':    { en: 'An item is already voided — void the remaining items one by one', zh: '有品項已撤銷，請改為逐一撤銷其餘品項' },
     'od.void.whole.why.cancelled': { en: 'This order is already cancelled', zh: '訂單已取消' },
     'od.void.record.whole':    { en: 'Whole-order void',        zh: '整單撤銷' },
-    /* D424 決定 1：已過期訂單——付款區說明、主操作／撤銷／補寄信停用原因、金額拆解底下一句 */
+    /* D424 決定 1：已過期訂單——付款區說明、主操作／撤銷／重寄訂單信停用原因、金額拆解底下一句 */
     'od.pay.expired':          { en: 'Not paid before the payment deadline, so the order expired.', zh: '付款期限內未付款，訂單已過期' },
-    'od.expired.why':          { en: 'This order expired before payment — there is nothing to fulfil, void or resend.', zh: '訂單已過期（付款期限內未付款），沒有可履約、撤銷或補寄的內容' },
+    'od.expired.why':          { en: 'This order expired before payment — there is nothing to fulfil, void or resend.', zh: '訂單已過期（付款期限內未付款），沒有可履約、撤銷或重寄訂單信的內容' },
     'od.amt.expired':          { en: 'Expired orders don’t count toward revenue, and the reserved stock went back on sale where it was ordered from.', zh: '已過期訂單不計入收入，保留的庫存已釋回下單的那一格' },
     'od.pay.free':             { en: 'Free order — no payment is taken.', zh: '免費訂單，不經金流' },
-    /* D411（2026-10-13，5.1.5.3.1 §2.2／§2.2.1／§2.3.4）：訂單類型與來源、補寄信、付款資訊、門票資料 */
+    /* D411（2026-10-13，5.1.5.3.1 §2.2／§2.2.1／§2.3.4）：訂單類型與來源、重寄訂單信、付款資訊、門票資料 */
     'od.info.type':         { en: 'Order type',              zh: '訂單類型' },
     'od.info.source':       { en: 'Source',                  zh: '訂單來源' },
     'od.info.source.ztor':  { en: 'ztor storefront',         zh: 'ztor 前台' },
@@ -7854,20 +7854,20 @@
     'od.tk.note.event':     { en: 'Ticket voiding happens in the event.', zh: '門票在活動詳情撤銷。' },
     'od.tk.note.bundle':    { en: 'These tickets came in a bundle — void the bundle item above.', zh: '這些門票來自組合包，請在上方撤銷組合包品項。' },
     'od.tk.note.bky':       { en: 'This event was imported from bookyay — void tickets in the bookyay back office.', zh: '這場活動從 bookyay 匯入，門票請到 bookyay 後台撤銷。' },
-    'od.resend.btn':        { en: 'Resend email',            zh: '補寄信' },
-    'od.resend.why.admin':  { en: 'Only an Admin can resend emails. Contact an Admin.', zh: '只有 Admin 能補寄信，請聯繫 Admin。' },
-    'od.resend.title':      { en: 'Resend order email',      zh: '補寄訂單信' },
+    'od.resend.btn':        { en: 'Resend order email',      zh: '重寄訂單信' },
+    'od.resend.why.admin':  { en: 'Only an Admin can resend order emails. Contact an Admin.', zh: '只有 Admin 能重寄訂單信，請聯繫 Admin。' },
+    'od.resend.title':      { en: 'Resend order email',      zh: '重寄訂單信' },
     'od.resend.what':       { en: 'Emails to resend',        zh: '會重寄的信' },
     'od.resend.what.order': { en: 'Order confirmation',      zh: '訂單確認信' },
     'od.resend.what.tickets': { en: 'Ticket confirmation with e-tickets', zh: '購票成功信（含電子門票）' },
     'od.resend.to':         { en: 'Send to',                 zh: '收件信箱' },
     'od.resend.to.hint':    { en: 'Check the address first. The emails go to this address only.', zh: '寄出前先確認信箱，信只會寄到這個地址。' },
     'od.resend.to.err':     { en: 'Enter a valid email address.', zh: '請輸入正確的電子郵件地址。' },
-    'od.resend.bky':        { en: 'This event was imported from bookyay. This order was sold on ztor, so ztor resends it.', zh: '這場活動從 bookyay 匯入；這筆訂單在 ztor 賣出，由 ztor 補寄。' },
+    'od.resend.bky':        { en: 'This event was imported from bookyay. This order was sold on ztor, so ztor resends it.', zh: '這場活動從 bookyay 匯入；這筆訂單在 ztor 賣出，由 ztor 重寄。' },
     'od.resend.send':       { en: 'Send',                    zh: '寄出' },
-    'od.resend.log':        { en: 'Email resent',            zh: '補寄紀錄' },
+    'od.resend.log':        { en: 'Email resent',            zh: '重寄紀錄' },
     'od.resend.log.row':    { en: '{at} · {who} · to {to}',  zh: '{at} · {who} · 寄至 {to}' },
-    'od.resend.toast':      { en: 'Email resent to {to}',    zh: '已補寄至 {to}' },
+    'od.resend.toast':      { en: 'Email resent to {to}',    zh: '已重寄至 {to}' },
     'od.void.why.redeemed': { en: "Already picked up — can't be voided", zh: '已取貨，不可撤銷' },
     /* 2026-09-09（D253 擴大可撤銷範圍到出貨型／數位）：兩種型態各自的「已完成履約」
        停用原因，與 od.void.why.redeemed（取貨型／組合）並列，見 order-detail.html
