@@ -2658,14 +2658,8 @@
             '</div>' +
           '</div>' +
           '<div class="payout-dialog__foot">' +
-            /* 2026-10-27：新增模式底部的「粉絲實付」價格區移除（使用者：不需要），只留按鈕；編輯模式照舊 */
-            (wizOn(b) ? '' : '<div class="bd-foot-price">' +
-              '<span class="bd-foot-price__k">' + esc(T('cpp.bd.calc.final')) + '</span>' +
-              '<span class="bd-foot-price__v">' +
-                '<span data-bd-calc-final>' + esc(hasContent(b) ? moneyFrom(b, finalPrice(b)) : '—') + '</span>' +
-              '</span>' +
-              '<span class="bd-foot-price__sub" data-bd-foot-sub>' + esc(footSubText(b)) + '</span>' +
-            '</div>') +
+            /* 墓碑 2026-10-27：底部「粉絲實付」價格區（.bd-foot-price）在分段彈窗退場——先移新增模式，同日使用者裁示編輯模式也移除；
+               價格在販售設定的價格階梯與右欄預覽卡都看得到。.bd-foot-price 元件仍由 create-bundle.html 與 sections 版型使用。 */
             (function () {
               /* 新增模式：最後一步才有「完成」與擋存原因；前面幾步是「上一步／下一步」，第一步沒有上一步 */
               var wiz = wizOn(b), last = !wiz || wizStep(b) === wizSteps().length - 1, first = !wiz || wizStep(b) === 0;

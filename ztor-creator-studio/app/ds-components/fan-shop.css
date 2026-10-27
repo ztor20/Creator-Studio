@@ -106,7 +106,7 @@
   --container-max: 1280px;
   --container-padding-x: 48px;
   --header-height: 64px;
-  --space-section: clamp(64px, 9vw, 100px);
+  --space-section: clamp(64px, 9cqi, 100px);
   --lg-fill-orange: rgba(var(--brand-rgb), 0.22);
   --lg-blur: 8px;
   --lg-sat: 1.5;
@@ -136,6 +136,13 @@
 
 /* ── 2. 前台 shop-item 兩頁實際命中的規則（原樣、加前綴） ───────────────────── */
 .fep-shop { scrollbar-gutter: stable; }
+/* 斷點看預覽區自己的寬度（2026-10-27 使用者：「實際斷點應該要抓 content 的寬度，扣掉右邊選項 section；某些寬度下 UI 會破掉」）：
+   前台用視窗寬度（@media）切版，鏡像卻塞在宿主的預覽欄裡（右邊還有語言／幣別側欄），視窗寬、預覽窄時會誤套寬版。
+   根節點設成容器 `fep`，本檔所有寬度斷點（原 @media (min|max-width)）一律改 @container fep，數字照前台不變；
+   vw 換 cqi（跟著預覽區寬）。hover／pointer／reduced-motion 這類不是寬度的 @media 照舊。
+   原本只有第 7 段（活動頁）自己掛容器、再用 @container 把第 1–3 段的 @media 改回窄版——補不完，中段寬度仍會漏；
+   現在四個鏡像（商品、組合包、專案、活動）同一套。 */
+.fep-shop { container: fep / inline-size; }
 .fep-shop { --ztor-mark-disc: var(--bg-tertiary); --ztor-mark-ink: var(--neutral-300); }
 .fep-shop *, .fep-shop ::before, .fep-shop ::after { box-sizing: border-box; }
 .fep-shop main { display: flex; flex-direction: column; min-height: calc(100vh - var(--header-height)); }
@@ -143,7 +150,7 @@
 .fep-shop button { font-family: inherit; cursor: pointer; }
 .fep-shop img { max-width: 100%; display: block; }
 .fep-shop .container { max-width: var(--container-max); margin: 0px auto; padding-left: var(--container-padding-x); padding-right: var(--container-padding-x); }
-.fep-shop .section { position: relative; padding-block: clamp(64px, 9vw, 100px); }
+.fep-shop .section { position: relative; padding-block: clamp(64px, 9cqi, 100px); }
 @keyframes section-link-beckon { 
   0% { transform: translateX(0px); animation-timing-function: var(--ease-out); }
   6.9% { transform: translateX(6px); animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1); }
@@ -214,7 +221,7 @@
 .fep-shop .status-tag--cat { background: rgba(0, 0, 0, 0.6); border-color: rgba(255, 255, 255, 0.18); color: var(--text-secondary); }
 @media (prefers-reduced-transparency: reduce) { .fep-shop .btn--ghost, .fep-shop .btn--yellow-ghost, .fep-shop .btn--destructive, .fep-shop .btn--quiet, .fep-shop .icon-btn { backdrop-filter: none; background: rgba(20, 20, 20, 0.95); } }
 @media (prefers-reduced-motion: reduce) { .fep-shop *, .fep-shop ::before, .fep-shop ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
-@media (max-width: 768px) { .fep-shop .section { padding-block: clamp(48px, 12vw, 72px); } }
+@container fep (max-width: 768px) { .fep-shop .section { padding-block: clamp(48px, 12cqi, 72px); } }
 @keyframes hp-burst { 
   0% { opacity: 0.9; transform: scale(0.7); }
   100% { opacity: 0; transform: scale(1.3); }
@@ -318,12 +325,12 @@
   0% { opacity: 0; transform: translateY(18px); }
 }
 .fep-shop .shop-buybar { display: none; }
-@media (max-width: 767.98px) { .fep-shop .shop-buybar { display: flex; align-items: center; gap: var(--space-3); position: fixed; left: 0px; right: 0px; bottom: 0px; z-index: var(--z-fab, 400); padding-top: var(--space-3); padding-right: var(--space-4); padding-left: var(--space-4); padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); background: var(--glass-fill); backdrop-filter: var(--glass-backdrop); border-top: var(--glass-border); transform: translateY(120%); opacity: 0; pointer-events: none; transition: transform 280ms var(--ease-out), opacity 200ms var(--ease-out); } }
-@media (max-width: 767.98px) { .fep-shop .shop-buybar__info { display: flex; flex-direction: column; min-width: 0px; flex: 1 1 auto; } }
-@media (max-width: 767.98px) { .fep-shop .shop-buybar__name { font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
-@media (max-width: 767.98px) { .fep-shop .shop-buybar__price { font-family: var(--font-latin); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--text-primary); font-variant-numeric: tabular-nums; } }
-@media (max-width: 767.98px) { .fep-shop .shop-buybar__add { flex: 0 0 auto; min-height: 44px; } }
-@media (max-width: 767.98px) { .fep-shop .pdp { padding-bottom: calc(var(--space-section) + 64px); } }
+@container fep (max-width: 767.98px) { .fep-shop .shop-buybar { display: flex; align-items: center; gap: var(--space-3); position: fixed; left: 0px; right: 0px; bottom: 0px; z-index: var(--z-fab, 400); padding-top: var(--space-3); padding-right: var(--space-4); padding-left: var(--space-4); padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); background: var(--glass-fill); backdrop-filter: var(--glass-backdrop); border-top: var(--glass-border); transform: translateY(120%); opacity: 0; pointer-events: none; transition: transform 280ms var(--ease-out), opacity 200ms var(--ease-out); } }
+@container fep (max-width: 767.98px) { .fep-shop .shop-buybar__info { display: flex; flex-direction: column; min-width: 0px; flex: 1 1 auto; } }
+@container fep (max-width: 767.98px) { .fep-shop .shop-buybar__name { font-family: var(--font-cjk-text); font-size: var(--fs-caption); color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+@container fep (max-width: 767.98px) { .fep-shop .shop-buybar__price { font-family: var(--font-latin); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--text-primary); font-variant-numeric: tabular-nums; } }
+@container fep (max-width: 767.98px) { .fep-shop .shop-buybar__add { flex: 0 0 auto; min-height: 44px; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp { padding-bottom: calc(var(--space-section) + 64px); } }
 @media (prefers-reduced-motion: reduce) { .fep-shop .shop-buybar { transition: opacity 180ms; transform: translateY(0px); } }
 @media (prefers-reduced-motion: reduce) { .fep-shop .shop-buybar:not(.is-shown) { transform: translateY(120%); } }
 .fep-shop .pdp { padding-block: var(--space-10) 0; }
@@ -334,11 +341,11 @@
 .fep-shop .page-head__crumb-sep { color: var(--text-disabled); }
 .fep-shop .page-head__crumb-cur { color: var(--text-secondary); max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fep-shop .pdp__grid { display: grid; grid-template-columns: 1fr; gap: var(--space-8); align-items: start; margin-bottom: var(--space-section); }
-@media (min-width: 768px) { .fep-shop .pdp__grid { grid-template-columns: minmax(0px, 1.1fr) minmax(0px, 1fr); gap: var(--space-12); } }
+@container fep (min-width: 768px) { .fep-shop .pdp__grid { grid-template-columns: minmax(0px, 1.1fr) minmax(0px, 1fr); gap: var(--space-12); } }
 .fep-shop .pdp-gallery { display: grid; grid-template-columns: 1fr; grid-template-areas: "stage"; gap: var(--space-3); min-width: 0px; }
-@media (min-width: 768px) { .fep-shop .pdp-gallery { grid-template-columns: 68px minmax(0px, 1fr); grid-template-areas: "strip stage"; gap: var(--space-3); align-items: start; } }
+@container fep (min-width: 768px) { .fep-shop .pdp-gallery { grid-template-columns: 68px minmax(0px, 1fr); grid-template-areas: "strip stage"; gap: var(--space-3); align-items: start; } }
 .fep-shop .pdp-gallery__strip { display: none; grid-area: strip; flex-direction: column; gap: var(--space-2); overflow-y: auto; scrollbar-width: none; max-height: min(560px, -160px + 100vh); }
-@media (min-width: 768px) { .fep-shop .pdp-gallery__strip { display: flex; } }
+@container fep (min-width: 768px) { .fep-shop .pdp-gallery__strip { display: flex; } }
 .fep-shop .pdp-gallery__stage { grid-area: stage; position: relative; display: flex; flex-direction: column; gap: var(--space-3); min-width: 0px; }
 .fep-shop .pdp-gallery__frame { position: relative; display: block; width: min(100%, calc(min(560px, 100vh - 160px) * 2 / 3)); aspect-ratio: 2 / 3; height: auto; margin-inline: auto; padding: 0px; border: 1px solid var(--border-subtle); border-radius: var(--radius-2xl); background: var(--bg-secondary); overflow: hidden; cursor: zoom-in; }
 .fep-shop .pdp-gallery__img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -358,14 +365,14 @@
 .fep-shop .pdp-gallery__strip .pdp-gallery__thumb { width: 100%; aspect-ratio: 2 / 3; }
 .fep-shop .pdp-gallery__thumbs-mobile { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; scroll-snap-type: x; padding-bottom: var(--space-1); }
 .fep-shop .pdp-gallery__thumbs-mobile .pdp-gallery__thumb { width: 60px; scroll-snap-align: start; }
-@media (min-width: 768px) { .fep-shop .pdp-gallery__thumbs-mobile { display: none; } }
+@container fep (min-width: 768px) { .fep-shop .pdp-gallery__thumbs-mobile { display: none; } }
 .fep-shop .pdp-buy { display: flex; flex-direction: column; min-width: 0px; }
-@media (min-width: 768px) { .fep-shop .pdp-buy { position: sticky; top: var(--space-10); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-buy { position: sticky; top: var(--space-10); } }
 .fep-shop .pdp-buy__meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
 .fep-shop .pdp-buy__badge { align-self: flex-start; margin-bottom: var(--space-3); }
 .fep-shop .pdp-buy__meta .pdp-buy__badge, .fep-shop .pdp-buy__meta .pdp-buy__eyebrow { margin-bottom: 0px; }
 .fep-shop .pdp-buy__title { margin: 0 0 var(--space-4); font-family: var(--font-cjk-display); font-weight: var(--fw-bold); font-size: var(--fs-h3); line-height: var(--lh-tight, 1.25); letter-spacing: -0.01em; color: var(--text-primary); }
-@media (min-width: 768px) { .fep-shop .pdp-buy__title { font-size: var(--fs-h2); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-buy__title { font-size: var(--fs-h2); } }
 @keyframes pdp-shake { 
   0%, 100% { transform: translateX(0px); }
   25% { transform: translateX(-4px); }
@@ -380,7 +387,7 @@
 .fep-shop .pdp-details__inner { }
 .fep-shop .pdp-details__heading { margin: 0 0 var(--space-8); font-family: var(--font-cjk-display); font-size: var(--fs-h4); font-weight: var(--fw-bold); color: var(--text-primary); letter-spacing: var(--ls-h4); }
 .fep-shop .pdp-details__cols { display: grid; grid-template-columns: 1fr; gap: var(--space-10); }
-@media (min-width: 768px) { .fep-shop .pdp-details__cols { grid-template-columns: 1fr 1fr; gap: var(--space-12); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-details__cols { grid-template-columns: 1fr 1fr; gap: var(--space-12); } }
 .fep-shop .pdp-details__sub-heading { margin: 0 0 var(--space-4); font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); font-weight: var(--fw-bold); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; }
 .fep-shop .pdp-details__sub-heading--icon { display: flex; align-items: center; gap: var(--space-2); }
 .fep-shop .pdp-details__sub-heading--icon .ds-icon { width: 16px; height: 16px; }
@@ -391,10 +398,10 @@
 .fep-shop .pdp-recs__inner { }
 .fep-shop .pdp-recs__heading { margin: 0 0 var(--space-6); font-family: var(--font-cjk-display); font-size: var(--fs-h4); font-weight: var(--fw-bold); color: var(--text-primary); }
 .fep-shop .pdp-recs__rail { display: grid; grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: var(--space-5); }
-@media (min-width: 768px) { .fep-shop .pdp-recs__rail { grid-template-columns: repeat(4, minmax(0px, 1fr)); } }
-@media (max-width: 767.98px) { .fep-shop .page-head__crumbs a { padding-block: 8px; margin-block: -8px; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-recs__rail { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; gap: var(--space-4); padding-bottom: var(--space-2); } }
-@media (max-width: 767.98px) { .fep-shop .pdp-rec-card { flex: 0 0 200px; scroll-snap-align: start; } }
+@container fep (min-width: 768px) { .fep-shop .pdp-recs__rail { grid-template-columns: repeat(4, minmax(0px, 1fr)); } }
+@container fep (max-width: 767.98px) { .fep-shop .page-head__crumbs a { padding-block: 8px; margin-block: -8px; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-recs__rail { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; gap: var(--space-4); padding-bottom: var(--space-2); } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-rec-card { flex: 0 0 200px; scroll-snap-align: start; } }
 .fep-shop .pdp-rec-card { display: flex; flex-direction: column; border-radius: var(--radius-xl); background: var(--bg-secondary); border: 1px solid var(--border-subtle); overflow: hidden; transition: transform 180ms var(--ease-out), border-color 180ms var(--ease-out); text-decoration: none; }
 .fep-shop .pdp-rec-card:hover { transform: translateY(-3px); border-color: var(--border-default); }
 .fep-shop .pdp-rec-card__media { aspect-ratio: 2 / 3; overflow: hidden; background: var(--bg-tertiary); }
@@ -460,11 +467,11 @@
 .fep-shop .pdp-gallery { max-width: 600px; }
 .fep-shop .pdp-gallery__frame { max-height: min(620px, -140px + 100vh); background: radial-gradient(120% 120% at 50% 38%, var(--bg-tertiary), var(--bg-secondary)); }
 .fep-shop .pdp { padding-block: var(--space-12) 0; }
-@media (min-width: 768px) { .fep-shop .pdp__grid { gap: var(--space-12); } }
+@container fep (min-width: 768px) { .fep-shop .pdp__grid { gap: var(--space-12); } }
 .fep-shop .pdp-details { padding-block: var(--space-section); background: transparent; border-top: 1px solid var(--border-subtle); }
 .fep-shop .pdp-details__inner { padding-block: 0px; }
 .fep-shop .pdp-details__lead { font-family: var(--font-cjk-display); font-size: var(--fs-body); font-weight: 400; line-height: 1.7; color: var(--text-secondary); max-width: 62ch; margin-bottom: var(--space-8); }
-@media (min-width: 768px) { .fep-shop .pdp-details__lead { max-width: calc((100% - var(--space-12)) / 2); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-details__lead { max-width: calc((100% - var(--space-12)) / 2); } }
 .fep-shop .pdp-tier--info .pdp-tier__main { flex: 1 1 auto; }
 .fep-shop .pdp-tier--info .pdp-tier__buy { flex: 0 0 auto; margin-left: var(--space-1); }
 .fep-shop .pdp-tier--info.is-oos .pdp-tier__buy:disabled { opacity: 1; }
@@ -480,7 +487,7 @@
 @keyframes ztor-cart-line-out { 
   100% { opacity: 0; transform: translateX(16px); }
 }
-@media (max-width: 767.98px) { .fep-shop.rf-shop .section--flush-top { padding-top: 16px; } }
+@container fep (max-width: 767.98px) { .fep-shop.rf-shop .section--flush-top { padding-top: 16px; } }
 @keyframes rf-ping { 
   0% { box-shadow: rgba(34, 197, 94, 0.5) 0px 0px 0px 0px; }
   70%, 100% { box-shadow: rgba(34, 197, 94, 0) 0px 0px 0px 7px; }
@@ -502,28 +509,28 @@
   35% { transform: scale(1.02); }
   100% { transform: none; }
 }
-@media (max-width: 767.98px) { .fep-shop main { padding-bottom: 0px; } }
+@container fep (max-width: 767.98px) { .fep-shop main { padding-bottom: 0px; } }
 @keyframes m-ptr-spin { 
   100% { transform: rotate(360deg); }
 }
 @keyframes m-skeleton-sheen { 
   100% { transform: translateX(100%); }
 }
-@media (max-width: 767.98px) { .fep-shop .pdp { padding-block: 0px; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp { padding-block: 0px; } }
 /* 2026-10-17 修正：前台 width:100% 再被 max-height 620 截高，600–767 寬時圖框被壓成近正方形；改成寬度封頂、維持 2:3、置中（同第 7 段活動頁，ASSUMPTIONS UIA-272 第 14 條） */
-@media (max-width: 767.98px) { .fep-shop .pdp-gallery__frame, .fep-shop .pdp-gallery__video-wrap, .fep-shop .pdp-gallery__thumbs-mobile { width: min(100%, calc(min(620px, 100vh - 140px) * 2 / 3)); height: auto; margin-inline: auto; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0px 16px; position: sticky; top: 0px; z-index: 200; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar > * { position: relative; z-index: 1; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar::before { content: ""; position: absolute; inset: 0px 0px -24px; z-index: 0; pointer-events: none; background: linear-gradient(rgba(23, 23, 23, 0.7) 0%, rgba(23, 23, 23, 0) 100%); backdrop-filter: blur(12px); mask-image: linear-gradient(rgb(0, 0, 0) 0%, rgb(0, 0, 0) 66%, rgba(0, 0, 0, 0.96) 74%, rgba(0, 0, 0, 0.82) 81%, rgba(0, 0, 0, 0.58) 88%, rgba(0, 0, 0, 0.28) 94%, rgba(0, 0, 0, 0) 100%); } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar::before { animation-duration: auto; animation-timing-function: linear; animation-delay: 0s; animation-iteration-count: 1; animation-direction: normal; animation-fill-mode: both; animation-play-state: running; animation-name: header-veil-in; animation-timeline: scroll(root); animation-range: 0px 120px; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar__back { display: inline-flex; align-items: center; gap: 16px; text-decoration: none; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar__backlabel { font-family: var(--font-cjk-text); font-size: 14px; font-weight: var(--fw-medium); color: var(--text-primary); } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar__spacer { flex: 1 1 0%; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar .icon-btn svg { width: 20px; height: 20px; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar__cart { position: relative; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-topbar__badge { position: absolute; top: -5px; right: -7px; min-width: 17px; height: 17px; padding: 0px 4px; display: none; align-items: center; justify-content: center; border-radius: var(--radius-pill); background: var(--yellow-500); color: var(--yellow-ink); font-family: var(--font-latin); font-size: 11px; font-weight: var(--fw-bold); line-height: 1; } }
-@media (max-width: 767.98px) { .fep-shop .pdp-buy__heart { display: none; } }
-@media (min-width: 768px) { .fep-shop .pdp-topbar { display: none; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-gallery__frame, .fep-shop .pdp-gallery__video-wrap, .fep-shop .pdp-gallery__thumbs-mobile { width: min(100%, calc(min(620px, 100vh - 140px) * 2 / 3)); height: auto; margin-inline: auto; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0px 16px; position: sticky; top: 0px; z-index: 200; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar > * { position: relative; z-index: 1; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar::before { content: ""; position: absolute; inset: 0px 0px -24px; z-index: 0; pointer-events: none; background: linear-gradient(rgba(23, 23, 23, 0.7) 0%, rgba(23, 23, 23, 0) 100%); backdrop-filter: blur(12px); mask-image: linear-gradient(rgb(0, 0, 0) 0%, rgb(0, 0, 0) 66%, rgba(0, 0, 0, 0.96) 74%, rgba(0, 0, 0, 0.82) 81%, rgba(0, 0, 0, 0.58) 88%, rgba(0, 0, 0, 0.28) 94%, rgba(0, 0, 0, 0) 100%); } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar::before { animation-duration: auto; animation-timing-function: linear; animation-delay: 0s; animation-iteration-count: 1; animation-direction: normal; animation-fill-mode: both; animation-play-state: running; animation-name: header-veil-in; animation-timeline: scroll(root); animation-range: 0px 120px; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar__back { display: inline-flex; align-items: center; gap: 16px; text-decoration: none; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar__backlabel { font-family: var(--font-cjk-text); font-size: 14px; font-weight: var(--fw-medium); color: var(--text-primary); } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar__spacer { flex: 1 1 0%; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar .icon-btn svg { width: 20px; height: 20px; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar__cart { position: relative; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-topbar__badge { position: absolute; top: -5px; right: -7px; min-width: 17px; height: 17px; padding: 0px 4px; display: none; align-items: center; justify-content: center; border-radius: var(--radius-pill); background: var(--yellow-500); color: var(--yellow-ink); font-family: var(--font-latin); font-size: 11px; font-weight: var(--fw-bold); line-height: 1; } }
+@container fep (max-width: 767.98px) { .fep-shop .pdp-buy__heart { display: none; } }
+@container fep (min-width: 768px) { .fep-shop .pdp-topbar { display: none; } }
 .fep-shop .pdp-gallery__arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 42px; height: 42px; display: grid; place-items: center; padding: 0px; border: 0px; background: transparent; border-radius: var(--radius-pill); color: rgb(255, 255, 255); cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 200ms var(--ease-out), transform 160ms var(--ease-out); }
 .fep-shop .pdp-gallery__arrow svg { position: relative; z-index: 1; width: 18px; height: 18px; }
 .fep-shop .pdp-gallery__arrow--prev { left: var(--space-3); }
@@ -550,7 +557,7 @@
 .fep-shop .pdp-recs__headrow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .fep-shop .pdp-recs__headlink { color: var(--yellow-500); text-decoration: none; font-family: var(--font-cjk-text); font-size: var(--fs-body-sm); white-space: nowrap; }
 .fep-shop .pdp-recs__headlink:hover { text-decoration: underline; }
-@media (min-width: 768px) { .fep-shop .pdp-recs--bundles .pdp-recs__rail { grid-template-columns: repeat(3, minmax(0px, 1fr)); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-recs--bundles .pdp-recs__rail { grid-template-columns: repeat(3, minmax(0px, 1fr)); } }
 .fep-shop .pdp-recs--bundles .pdp-rec-card__body { flex: 1 1 auto; }
 .fep-shop .pdp-recs--bundles .pdp-rec-card__price { margin-top: auto; padding-top: var(--space-2); }
 .fep-shop .pdp-rec-card__cta { align-self: flex-start; margin-top: var(--space-3); }
@@ -588,7 +595,7 @@
 /* 描述夾帶的圖片與影片（D335）：前台沒有對應區塊，最小做法＝照先後畫在描述文字下方，寬度跟 lead 同一欄、
    圖片整張不裁（ASSUMPTIONS UIA-187）。 */
 .fep-shop .pdp-details__media { margin: 0 0 var(--space-8); max-width: 62ch; }
-@media (min-width: 768px) { .fep-shop .pdp-details__media { max-width: calc((100% - var(--space-12)) / 2); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-details__media { max-width: calc((100% - var(--space-12)) / 2); } }
 .fep-shop .pdp-details__media img,
 .fep-shop .pdp-details__media video { display: block; width: 100%; height: auto; border-radius: var(--radius-md); }
 /* 內文（D340；D354 起＝描述的區塊）：文字區塊含粗體、斜體、連結、清單、分隔線，圖片影片各自一塊、照區塊順序（js/fan-event-page.js richBody）。
@@ -719,7 +726,7 @@
 .fep-shop .pdp-bundle { margin-top: var(--space-section); }
 .fep-shop .pdp-bundle__title { margin: 0 0 var(--space-6); font-size: var(--fs-h4); color: var(--text-primary); }
 .fep-shop .pdp-bundle__grid { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
-@media (min-width: 768px) { .fep-shop .pdp-bundle__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-bundle__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); } }
 .fep-shop .pdp-bundle-item { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); background: var(--bg-secondary); }
 .fep-shop .pdp-bundle-item__media { position: relative; aspect-ratio: 2 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-tertiary); }
 .fep-shop .pdp-bundle-item__img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -733,7 +740,7 @@
 /* 剩 N 張：前台用 --warning-500，本檔第 1 段沒有這支 token，改用同為提醒語氣的品牌橘（同 .pdp-stock） */
 .fep-shop .pdp-tier__low { font-style: normal; color: var(--brand-500); white-space: nowrap; }
 .fep-shop .pdp-perks__list { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
-@media (min-width: 768px) { .fep-shop .pdp-perks__list { grid-template-columns: repeat(2, 1fr); } }
+@container fep (min-width: 768px) { .fep-shop .pdp-perks__list { grid-template-columns: repeat(2, 1fr); } }
 .fep-shop .pdp-perks__item { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--white-alpha-4); }
 /* 前台是 mask 圖示（icons/star_outline.svg）＋黃底；站上改包 lucide star，顏色走 currentColor */
 .fep-shop .pdp-perks__icon { width: 20px; height: 20px; flex: none; color: var(--yellow-500); }
@@ -767,7 +774,7 @@
 .fep-shop .cocreate-detail .detail-hero__inner { padding-top: 0; }
 .fep-shop .detail-head { display: flex; gap: 40px; align-items: flex-start; padding-top: 8px; }
 .fep-shop .detail-head__poster { flex: 0 0 240px; width: 240px; aspect-ratio: 2 / 3; border-radius: var(--radius-lg); object-fit: cover; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); box-shadow: 0 24px 60px color-mix(in srgb, var(--neutral-900) 50%, transparent); }
-@media (min-width: 1025px) { .fep-shop .cocreate-detail .detail-head__poster { flex-basis: 352px; width: 352px; } }
+@container fep (min-width: 1025px) { .fep-shop .cocreate-detail .detail-head__poster { flex-basis: 352px; width: 352px; } }
 /* 還沒放主視覺：前台 onerror 會掛品牌磚，站上沒有那支樣式，改空框＋置中 icon（同第 3 段的空圖庫框） */
 .fep-shop .detail-head__poster--empty { display: grid; place-items: center; color: var(--text-disabled); }
 .fep-shop .detail-head__poster--empty .ztor-icon { width: 40px; height: 40px; }
@@ -794,7 +801,7 @@
 .fep-shop .detail-desc { margin: 0; max-width: 920px; font-family: var(--font-cjk-text); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-secondary); }
 .fep-shop .detail-desc__text { white-space: pre-line; }
 /* 募資面板 */
-.fep-shop .cocreate-fund { display: flex; flex-direction: column; gap: var(--space-3); padding: clamp(16px, 1.8vw, 24px); border-radius: var(--radius-xl); background: var(--white-alpha-4); border: 1px solid var(--border-default); backdrop-filter: var(--glass-blur); font-family: var(--font-cjk-text); }
+.fep-shop .cocreate-fund { display: flex; flex-direction: column; gap: var(--space-3); padding: clamp(16px, 1.8cqi, 24px); border-radius: var(--radius-xl); background: var(--white-alpha-4); border: 1px solid var(--border-default); backdrop-filter: var(--glass-blur); font-family: var(--font-cjk-text); }
 .fep-shop .cocreate-fund__amount-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
 .fep-shop .cocreate-fund__amount { font-family: var(--font-latin); font-size: calc(var(--fs-h2) - 4px); line-height: 1; font-weight: var(--fw-bold); color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
 .fep-shop .cocreate-fund__goal { font-size: var(--fs-body-sm); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
@@ -877,7 +884,7 @@
 .fep-shop .media-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* 交付時程（D322：原 F10 併入前台預覽）：里程碑沿用前台 .project-timeline 三段殼；前台的階段色是依
    [data-project-state] 算第幾段，這裡改由每段自帶的 .is-done／.is-current 決定（里程碑三態＝已完成／進行中／未開始）。 */
-.fep-shop .project-timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); padding: clamp(20px, 2.2vw, 32px); padding-top: var(--space-12); border-radius: var(--radius-xl); background: var(--bg-secondary); border: 1px solid var(--border-subtle); }
+.fep-shop .project-timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); padding: clamp(20px, 2.2cqi, 32px); padding-top: var(--space-12); border-radius: var(--radius-xl); background: var(--bg-secondary); border: 1px solid var(--border-subtle); }
 .fep-shop .project-timeline__phase { position: relative; display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-10); }
 .fep-shop .project-timeline__phase::before { content: ''; position: absolute; top: 7px; left: 0; right: 0; height: 2px; background: var(--border-default); }
 .fep-shop .project-timeline__phase:first-child::before { left: 7px; border-radius: var(--radius-pill) 0 0 var(--radius-pill); }
@@ -911,12 +918,12 @@
 .fep-shop .media-card:hover .media-card__play { background: color-mix(in srgb, var(--neutral-900) 45%, transparent); }
 .fep-shop .media-card__play-btn { display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--neutral-900) 55%, transparent); border: 1px solid color-mix(in srgb, var(--text-primary) 70%, transparent); color: var(--text-primary); backdrop-filter: blur(6px); }
 .fep-shop .media-card__play-btn .ztor-icon { width: 22px; height: 22px; }
-@media (max-width: 1024px) {
+@container fep (max-width: 1024px) {
   .fep-shop .detail-castwrap { flex-direction: column; gap: 28px; align-items: stretch; }
   .fep-shop .detail-crew { grid-template-columns: auto 1fr; padding-right: 0; }
 }
 /* 窄寬收合（前台行動版另有一整份 rwd css，這裡只做到不擠爆：海報上疊、方案與圖例改一欄／兩欄） */
-@media (max-width: 900px) {
+@container fep (max-width: 900px) {
   .fep-shop .detail-head { flex-direction: column; gap: var(--space-6); }
   .fep-shop .reward-tiers, .fep-shop .project-timeline { grid-template-columns: 1fr; }
   .fep-shop .budget-split__legend, .fep-shop .media-grid { grid-template-columns: repeat(2, 1fr); }
@@ -928,8 +935,8 @@
    全部掛 `.fep-shop--event`（js/fan-event-page.js 的根節點才有這個 modifier）——商品頁、組合包頁、專案頁三個鏡像
    （第 4–6 段）與它們共用的第 1–3 段一律不動。
    兩個例外（不是前台原樣，寫在這裡讓下次重抓時知道要保留）：
-     ① 容器查詢（D443 決定七）：前台用視窗寬度（@media）切版，預覽卻塞在側欄旁邊，寬度遠小於視窗。本段把
-        `.fep-shop--event` 設成容器 `fep`，斷點數字照前台（640／768／1024），判斷的是預覽區自己的寬度。
+     ① 容器查詢（D443 決定七；2026-10-27 起整檔都是）：前台用視窗寬度（@media）切版，預覽卻塞在側欄旁邊，寬度遠小於視窗。
+        `.fep-shop` 根節點是容器 `fep`（見第 1 段尾），斷點數字照前台（640／768／1024），判斷的是預覽區自己的寬度。
         第 1–3 段的 @media 規則在「視窗寬、預覽區窄」時會誤套寬版——本段在 @container (max-width: 767.98px) 裡
         把那些規則改回窄版的值、並補上前台窄版才有的規則（同前台 @media (max-width: 767.98px) 的內容）。
      ② 看詳情彈窗只蓋預覽區（D443 決定五）：前台 .ds-modal 是 position:fixed 蓋整個視窗；這裡改 absolute 蓋住

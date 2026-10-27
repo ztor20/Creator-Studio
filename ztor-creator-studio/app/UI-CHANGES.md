@@ -15,6 +15,20 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百三十六）· 前台鏡像的斷點改看預覽區寬度（D infra · fan-shop.css）
+
+**標籤**：release2.3
+
+使用者指出：預覽的斷點應該抓內容區寬度（扣掉右邊選項側欄），某些寬度下 UI 會破掉。
+
+- 原因：`fan-shop.css` 照前台用視窗寬度（`@media`）切版，只有活動頁（第 7 段）自己掛容器、再把部分規則補回窄版，補不完。實測視窗 1100（預覽區 688）時有 23 條規則判斷錯：寬版的圖庫、標題、購買欄、雙欄格照樣套用，手機版的返回頂欄、圖庫、內距沒套。
+- 修法：`.fep-shop` 根節點設成容器 `fep`，全檔 49 條寬度斷點 `@media (min|max-width)` 改成 `@container fep`，數字照前台不變；`vw` 換 `cqi`。hover／pointer／reduced-motion 這類 `@media` 照舊。商品頁、組合包頁、專案頁、活動頁四個鏡像一起生效。
+- 實測（建立活動「預覽與發布」）：視窗 1440／1180／1100／1024，預覽區 1028／768／688／612，各自套到對應的桌機、平板、手機版，沒有元素超出預覽區。DS 頁四個鏡像 demo 也量過，只有本來就設計成橫向捲動的卡片列與被裁切的背景圖超出。
+- 已知、未處理：手機版底部購買列在預覽裡從來不會出現（沒有顯示邏輯，前台是捲過購票鈕才浮出），本輪不動。
+- DS：`design-system.md` Fan event page 例外說明改寫。
+
+---
+
 ## 2026-10-27（三百三十五）· 進度條：正在編輯的那一步寫「編輯中」（B 反饋 · progress-stepper 消費頁）
 
 **標籤**：release2.3
@@ -36,7 +50,7 @@
 使用者看示意頁 `lab-bundle-wizard-head.html`（四輪調整：放進標題列、對齊色條、內距回彈窗標準）後裁示套進正式。
 
 - 新增模式（`b.fresh`）的步驟由標題下一排分頁改放進標題列：標題｜分段進度條（`progress-stepper--segmented --anystep`，同建立活動頂列，已完成打勾／未完成）｜關閉；點步驟名稱直接跳（`data-bd-wstep`）。`wizTabsHTML` 退場，改 `wizStepperHTML`。
-- 新增模式底部「粉絲實付」價格區移除，只留取消／上一步／下一步（最後一步完成）；編輯模式照舊。
+- 底部「粉絲實付」價格區移除，只留取消／上一步／下一步（最後一步完成）。先移新增模式，同日使用者裁示編輯既有組合包的彈窗也移除（`.bd-foot-price` 元件仍由 `create-bundle.html` 與 sections 版型使用）。
 - 新元件修飾 `payout-modal.css` 的 `.payout-dialog__head--steps`（三欄格；內距維持彈窗標準，標題與進度條各自 `padding-top: --sp-6`，標題 `line-height: 1` 讓字的上緣對齊色條，關閉鈕中線對齊標題）。
 - DS：`design-system.md`（Payout picker & dialog）、`design-system.html` 補 demo。
 
@@ -62,6 +76,19 @@
 - `.field-source` 拿掉「bookyay 帶入」字樣，只留小鎖頭；字樣收進 `title`（滑過看得到）與 `aria-label`＋`role="img"`（讀屏唸得到）。
 - 產生處：`create-event.html` 的 `srcChip()`、`event-detail.html` 四處（描述標籤、區塊標題、`bkySrcChip` 等）。
 - DS：`field-source-tag.css` 註解與 anatomy、`design-system.md` 條目、`design-system.html`／`design-components.html` demo 同步。
+
+---
+
+## 2026-10-27（三百三十二）· 「活躍粉絲」KPI 加回 release2.4（A 新增 · fans-crm · 版本範圍）
+
+**標籤**：release2.4
+
+使用者裁示「活躍粉絲」可以加回 release2.4（2026-10-23 的 UIA-299 曾因需求站 P0 沒提而放在 S118、只在最終版）。
+
+- `feature-scope-map.md`：新增 S126「粉絲名冊『活躍粉絲』KPI」🟣 release2.4，自 S118 拆出；S118 描述註明拆出；功能總數 208→209、🟣 11→12。`js/devtools.js` 的 `FEAT_TIER` 後備補 `S126: 'release2.4'`。
+- `fans-crm.html`：第一張 KPI 卡 `data-feat` 由 `S118` 改 `S126`。流失風險、活躍粉絲收入兩張仍是 S118（只在最終版）。
+- release2.4 預覽的 KPI 排由「只有平均忠誠點數」變成「活躍粉絲＋平均忠誠點數」兩張；最終版、release2.3 預覽不變。
+- 規格面：5.1.7 F2「活躍粉絲」指標在 release2.4 的範圍歸屬需同步，見 ASSUMPTIONS UIA-311。
 
 ---
 
