@@ -353,7 +353,7 @@
              rules    購買條件與限購（null＝跟隨所含門票）——2026-10-12 起只剩購買條件
              limits   限購（2026-10-12，UI-CHANGES 一百八十八；js/purchase-limits.js）：null＝不限、{ person }＝自己設的上限（D456）
              conds    D463（2026-10-21，最終版 S105）：組合包自己的七種購買條件 { conds: {…} }（js/purchase-conds.js），預設空；
-                      不跟隨所含門票。「限購」條件同步寫回 limits（以組計）；release2.4 不用這格 */
+                      不跟隨所含門票。「限購」條件同步寫回 limits（以組計）；release2.3 不用這格 */
         media: [], films: [], shown: true, saleOn: false, sale: null, stack: false, codes: [], codesNew: [], alloc: {}, itemAlloc: {}, sched: {}, rules: null, limits: null, conds: { conds: {} },
       };
       if (seed) {
@@ -399,7 +399,7 @@
     /* 舊 rules／limits → conds（D463 決定 5〔推導〕，最終版用；2026-10-22 補，同 bundle-detail 的 bdUSeed）：
        種子還沒有自己的條件（conds 空）時，把舊資料推導成組合包自己的條件——rules 另設的分級／限時間照抄，rules 為 null（跟隨所含門票）
        改讀當下由所含門票推導的預設（tbCtx(b).def：取最嚴）；限購 limits 轉成「限購」條件。換算本體是 js/purchase-conds.js 的 legacyConds。
-       資料層的轉換、不看版本：release2.4 不讀 conds（照舊讀 rules／limits），所以兩個版本都安全。示範資料目前沒有舊值，轉換照樣寫好。 */
+       資料層的轉換、不看版本：release2.3 不讀 conds（照舊讀 rules／limits），所以兩個版本都安全。示範資料目前沒有舊值，轉換照樣寫好。 */
     function legacyToConds(b, seed) {
       var PC = window.ztorPurchaseConds;
       if (!PC || !PC.legacyConds) return;
@@ -1213,7 +1213,7 @@
        加入與移除全部停用；折扣、鎖定套數、上限照常可改。 */
     function isLocked(b) { return SPLIT && b.sold > 0; }
     /* 墓碑 2026-10-16（D429）：srcFix()（bookyay 套票自動建立的組合包 `fix`，D329／D330：票券成員、每套張數、組合折扣、鎖定套數、
-       限時折扣整組鎖定、不能加商品、不能刪除）與 discFix()（D417 決定五：組合折扣與限時折扣只在 release2.4 鎖定）隨自動組合包退場。 */
+       限時折扣整組鎖定、不能加商品、不能刪除）與 discFix()（D417 決定五：組合折扣與限時折扣只在 release2.3 鎖定）隨自動組合包退場。 */
     /* 票券這一群（允許票種、張數、場次對應）的鎖＝已售出鎖。 */
     function tixLocked(b) { return isLocked(b); }
     function tixQtyFieldHTML(b) {
@@ -2352,7 +2352,7 @@
     function secFilmsSplitHTML(b) {
       var films = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker;
       return films
-        /* 2026-10-15 D422 決定二：電影關聯從 S64 拆出、改掛 S97（🔵 release2.4）——建立活動的票務商品在 release2.4 也提供電影關聯；S64 其餘欄位維持 ⚪ */
+        /* 2026-10-15 D422 決定二：電影關聯從 S64 拆出、改掛 S97（🔵 release2.3）——建立活動的票務商品在 release2.3 也提供電影關聯；S64 其餘欄位維持 ⚪ */
         ? '<section class="bd-sec bd-sec--stack" data-bd-sec="films" data-feat="S97">' +
             '<div class="bd-sec__head"><h3 class="bd-sec__title">' + esc(T('cp.films')) + '</h3></div>' +
             '<div class="field"><div class="field__hint">' + esc(T('cb.films.sub')) + '</div><div data-bd-films></div></div>' +

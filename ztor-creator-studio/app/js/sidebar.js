@@ -48,7 +48,7 @@
      新頁又必須同時在「平台優惠之後」與「影片上架審核之前」，所以一起移到最後。 */
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
-    /* D373（2026-10-08）：創作者活動管理屬 release2.4（S84 🔵），入口掛 data-feat，release2.3 預覽藏起來 */
+    /* D373（2026-10-08）：創作者活動管理屬 release2.3（S84 🔵），入口掛 data-feat，release2.2 預覽藏起來 */
     { href: "admin-creator-events.html", key: "admin.creator-events", icon: "download", feat: "S84" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
     { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
@@ -141,24 +141,24 @@
   const BOOKYAY_EVENTS = [
     { id: "bky-1", name: "REALIVE World Tour — Taipei", date: "2026-09-12", venue: "台北小巨蛋",               organizer: "嘉立音樂工作室" },
     /* D390（稽核第一節原型第 16 條）：bky-2 的創作者端草稿＝events-store `mirror-khh-draft`（Gary Lin 的活動清單草稿列）。
-       D440（2026-10-16）：bookyay 三個時段帶入合成同一場、三張門票——草稿改成一場，release2.4 照常列出、Admin 不再標不支援（slots 只記來源時段數）。 */
+       D440（2026-10-16）：bookyay 三個時段帶入合成同一場、三張門票——草稿改成一場，release2.3 照常列出、Admin 不再標不支援（slots 只記來源時段數）。 */
     { id: "bky-2", name: "MIRROR LIVE 2026 高雄", date: "2026-10-02", venue: "高雄流行音樂中心 海音館", organizer: "鏡光娛樂製作", slots: 3, draftId: "mirror-khh-draft" },
     { id: "bky-3", name: "城市之聲 2026 巡迴演唱會 — 台北站", date: "2026-11-08", venue: "大佳河濱公園",             organizer: "草地派對有限公司" },
     { id: "bky-4", name: "迴響 限量黑膠巡迴演唱會 — 台中站", date: "2026-12-06", venue: "Legacy Taichung",          organizer: "綺音工作室" },
     { id: "bky-5", name: "冬季特別公演 — 台南",          date: "2027-01-17", venue: "台南文化中心 演藝廳",      organizer: "南風演藝經紀", ship: "pickup" },
     /* D384 決定三（2026-10-09）：補一場重覆活動（create-event BKY 的 bky-11，每週六共 3 場），待對應創作者——
-       讓創作者活動管理在 release2.4 三種不支援的原因（多時段 bky-2、重覆 bky-11、到店自取 bky-5）各有一列可看。
-       D440（2026-10-16）起多時段、重覆不再擋（多個時段帶入合成同一場），release2.4 只剩到店自取 bky-5 標不支援；repeat 只記來源。 */
+       讓創作者活動管理在 release2.3 三種不支援的原因（多時段 bky-2、重覆 bky-11、到店自取 bky-5）各有一列可看。
+       D440（2026-10-16）起多時段、重覆不再擋（多個時段帶入合成同一場），release2.3 只剩到店自取 bky-5 標不支援；repeat 只記來源。 */
     { id: "bky-11", name: "週末巡迴演唱會 — 台北站", date: "2026-11-07", venue: "小白兔唱片行",             organizer: "小白兔唱片", repeat: true },
     /* D374（2026-10-08）：bky-12＝活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`）。
        已對應周湯豪、已存草稿：在活動清單刪掉這份草稿＝解除對應，這一場回到待對應創作者。
        id 從 12 起跳：create-event 的 BKY 已用到 bky-11（bky-6～8 是「已帶過」的示範）。 */
     { id: "bky-12", name: "Kaohsiung countdown concert",  date: "2026-12-31", venue: "Kaohsiung Pier-2",          organizer: "港都跨年製作", draftId: "khh-countdown-draft" },
     /* D386 決定三（2026-10-09）：bky-14＝順豐運費示範（events-store `hsinchu-vinyl-sf`，已排程；create-event BKY 的已帶過列 bky-14）。
-       單一時段、不重覆、取票方式順豐寄送（ship: "sf"）＝release2.4 能帶入，不標「release2.4 不支援」。已對應周湯豪、已發布。 */
+       單一時段、不重覆、取票方式順豐寄送（ship: "sf"）＝release2.3 能帶入，不標「release2.3 不支援」。已對應周湯豪、已發布。 */
     { id: "bky-14", name: "Vinyl release concert — Hsinchu", date: "2026-12-12", venue: "The Wall Hsinchu",          organizer: "風城唱片", ship: "sf" },
     /* D390（2026-10-09，稽核第一節原型第 16 條；ASSUMPTIONS UIA-237）：建立流程 BKY 正本裡有、這份投影原本沒有的三場，補齊並對應給周湯豪（待設定）。
-       值同 create-event 的 BKY：bky-9 免費入場、bky-10 不設門票（線上）、bky-13 二人套票單一時段。三場都是單一時段、非到店自取＝release2.4 能帶入。 */
+       值同 create-event 的 BKY：bky-9 免費入場、bky-10 不設門票（線上）、bky-13 二人套票單一時段。三場都是單一時段、非到店自取＝release2.3 能帶入。 */
     { id: "bky-9",  name: "社區快閃演唱會 — 台北站", date: "2026-11-21", venue: "華山 1914 中 4B",           organizer: "社區音樂推廣協會" },
     { id: "bky-10", name: "創作者線上演唱會之夜", date: "2026-12-12", venue: "線上",                     organizer: "ztor 創作者社群" },
     { id: "bky-13", name: "Duo Night — 雙人限定場",       date: "2026-11-28", venue: "Legacy Taipei",            organizer: "傳音娛樂" },
@@ -175,9 +175,9 @@
      （唯讀、不帶入活動資料）。示範資料：bky-1～3 已對應 Gary Lin，bky-4、bky-5 待對應創作者，bky-12 已對應周湯豪且已存草稿（D374）。
      D375 決定六（2026-10-08）四值各至少一筆：已發布 bky-1／bky-14（D386）、草稿 bky-2／bky-12、待設定（已對應、還沒存過）bky-3、待對應創作者 bky-4／bky-5。
      自動匯入與更新檢查是整份清單一組，最後檢查時間也只有一個。
-     D384 決定三（2026-10-09）：摘要投影多帶三個判斷「release2.4 能不能帶入」用的欄位，值與 create-event 的 BKY 正本一致——
+     D384 決定三（2026-10-09）：摘要投影多帶三個判斷「release2.3 能不能帶入」用的欄位，值與 create-event 的 BKY 正本一致——
      `slots`（時段數，>1＝多時段）、`repeat`（重覆活動）、`ship`（取票方式，'pickup'＝到店自取）；沒寫＝單一時段、不重覆、非到店自取。
-     D440（2026-10-16）起只有 `ship` 還用來判斷 release2.4 能不能帶入；`slots`、`repeat` 只記來源（多個時段帶入後合成同一場）。 */
+     D440（2026-10-16）起只有 `ship` 還用來判斷 release2.3 能不能帶入；`slots`、`repeat` 只記來源（多個時段帶入後合成同一場）。 */
   const BOOKYAY_LAST_CHECKED = "2026-10-08 09:40";
   /* 2026-09-02（D233 建、D238 收成兩值）：這四欄就是創作者活動管理頁表格要的全部——
      規格 5.1.0.6 F3 只要求「每一筆至少呈現活動名稱、日期與場地」，狀態不是資料欄位
@@ -541,7 +541,7 @@
      比照平台優惠設定進本清單（devtools.js 同名清單同步）。 */
   const FULL_ROUTES = new Set([
     "index.html", "dashboard-classic.html", "admin-platform-promotions.html", "admin-platform-loyalty.html", "projects.html", "project-detail.html", "create-project.html",
-    "create-campaign.html", "funding-simulate.html", "edit-event.html",   /* 2026-10-07 release2.4：活動三頁移出（S72），與 devtools.js 同步 */
+    "create-campaign.html", "funding-simulate.html", "edit-event.html",   /* 2026-10-07 release2.3：活動三頁移出（S72），與 devtools.js 同步 */
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
@@ -551,9 +551,9 @@
     /* 2026-10-09 D383：系列活動母頁（S88 ⚪），與 devtools.js 同名清單同步。 */
     "series-detail.html"
   ]);
-  /* 2026-10-23 release2.5：清單裡「依功能放行」的頁——該功能在目前版本內才顯示入口（問 devtools 的 featInVersion，
+  /* 2026-10-23 release2.4：清單裡「依功能放行」的頁——該功能在目前版本內才顯示入口（問 devtools 的 featInVersion，
      不看 showFuture）。與 devtools.js FULL_ROUTES 裡值寫成功能 ID 的那幾頁必須一致。
-     粉絲名冊／粉絲詳情屬 🟣 release2.5：release2.5 看得到粉絲總覽，release2.4 照舊整個 Fans 群組收起。 */
+     粉絲名冊／粉絲詳情屬 🟣 release2.4：release2.4 看得到粉絲總覽，release2.3 照舊整個 Fans 群組收起。 */
   /* 2026-10-23：媒體庫（S120 🟣，需求網址 MVP 範圍）同樣依功能放行。 */
   const TIER_ROUTES = { "fans-crm.html": "S115", "fan-detail.html": "S117", "media-vault.html": "S120" };
   function fullVersion() {

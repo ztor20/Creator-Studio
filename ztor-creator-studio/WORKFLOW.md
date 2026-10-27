@@ -4,9 +4,9 @@
 
 > 2026-07-26 起同步機制改成真正的 `git merge`（原本是自製的檔案比對＋整包覆蓋，兩人並行會靜默還原對方的工作）。詳見 §4。
 >
-> 2026-09-24 起：站台資料夾固定叫 `app/`（不再隨版本改名）；已交付的階段凍結成 monorepo 的分支（目前 `release2.3`），修正怎麼搬過去見 §5。
+> 2026-09-24 起：站台資料夾固定叫 `app/`（不再隨版本改名）；已交付的階段凍結成 monorepo 的分支（目前 `release2.2`），修正怎麼搬過去見 §5。
 >
-> 2026-10-07 起：凍結分支改用 release 編號（原 `phase1` 改名 `release2.3`，內容是 E-Shop），`main` 版本面板的預覽選項改名 release2.4；`UI-CHANGES.md` 每筆紀錄標交付版標籤，見 §5。
+> 2026-10-07 起：凍結分支改用 release 編號（原 `phase1` 改名 `release2.3`，內容是 E-Shop），`main` 版本面板的預覽選項改名 release2.4；2026-10-27 序號改名：release2.3→release2.2、release2.4→release2.3、release2.5→release2.4；`UI-CHANGES.md` 每筆紀錄標交付版標籤，見 §5。
 
 ---
 
@@ -149,39 +149,39 @@ flowchart TD
 
 ## 5. 交付版凍結（release）
 
-已交給開發的階段不留在 `main` 的切換面板上，改成 monorepo 裡一條**凍結分支**：版本鎖死、有自己的網址、只收明確要進去的修正。目前只有 release2.3（E-Shop 交付範圍，原名 Phase 1），下一版是 release2.4。「release2.3」是交付版，跟設計換裝世代「r2.3」是兩回事，別混用。
+已交給開發的階段不留在 `main` 的切換面板上，改成 monorepo 裡一條**凍結分支**：版本鎖死、有自己的網址、只收明確要進去的修正。目前只有 release2.2（E-Shop 交付範圍，原名 Phase 1），下一版是 release2.3。「release2.2」是交付版，跟設計換裝世代「r2.3」是兩回事，別混用。
 
-| 項目 | release2.3（E-Shop） |
+| 項目 | release2.2（E-Shop） |
 |---|---|
-| 分支 | `ztor20/Creator-Studio` 的 `release2.3`（原名 `phase1`，2026-10-07 改名；GitHub 會把舊名稱自動轉到新名稱） |
+| 分支 | `ztor20/Creator-Studio` 的 `release2.2`（原名 `phase1`，2026-10-07 改名 `release2.3`，2026-10-27 再改名 `release2.2`；GitHub 會把舊名稱自動轉到新名稱） |
 | 網址 | `https://ztor-cs-release2-3.vercel.app`（主要）<br>`https://ztor-cs-phase1.vercel.app`（舊網址，保留繼續有效） |
 | 部署目標 | repo `lern2317/ztor-cs-phase1`、Vercel 專案 `ztor-cs-phase1`（名稱不變，改名會斷自動部署） |
-| 改版紀錄 | 分支裡的 `ztor-creator-studio/RELEASE2.3-CHANGES.md` |
-| 版本標籤 | 每次升版打標籤 `release2.3-vX.Y`，目前 v1.4<br>舊標籤 `phase1-v1.0`～`phase1-v1.3` 保留不動，從 `release2.3-v1.4` 起用新名稱 |
+| 改版紀錄 | 分支裡的 `ztor-creator-studio/RELEASE2.2-CHANGES.md` |
+| 版本標籤 | 每次升版打標籤 `release2.2-vX.Y`，目前 v1.5<br>舊標籤 `phase1-v1.0`～`phase1-v1.3` 保留不動，`release2.3-v1.4`（2026-10-27 改名前打的）也保留不動，下一版起用 `release2.2-vX.Y` |
 | 本機 | **沒有**凍結版的檔案；本機 `site/` 永遠只放 `main` |
 
-### 把一筆修正搬進 release2.3
+### 把一筆修正搬進 release2.2
 
 `release-port.sh`、`deploy-release.sh` 在維護者本機的專案根（`site/` 的上一層），不在 monorepo 裡。
 
 ```mermaid
 flowchart TD
-    A["先照 §4 把改動發進 main"] --> B{{"⭐ 使用者說：這筆要進 release2.3"}}
-    B --> C["../release-port.sh release2.3 &lt;commit&gt; --check<br/>先試套，確認不衝突"]
-    C --> D["../release-port.sh release2.3 &lt;commit&gt; 說明<br/>patch 套到 release2.3（內建排除三份紀錄檔）<br/>→ 開 port/ 分支 → PR（base＝release2.3，自動掛同名標籤）"]
-    D --> E["在同一個 PR 補 RELEASE2.3-CHANGES.md 升版條目"]
+    A["先照 §4 把改動發進 main"] --> B{{"⭐ 使用者說：這筆要進 release2.2"}}
+    B --> C["../release-port.sh release2.2 &lt;commit&gt; --check<br/>先試套，確認不衝突"]
+    C --> D["../release-port.sh release2.2 &lt;commit&gt; 說明<br/>patch 套到 release2.2（內建排除三份紀錄檔）<br/>→ 開 port/ 分支 → PR（base＝release2.2，自動掛同名標籤）"]
+    D --> E["在同一個 PR 補 RELEASE2.2-CHANGES.md 升版條目"]
     E --> F{{"⭐ 問使用者 → Merge"}}
-    F --> G["打標籤 release2.3-vX.Y"]
-    G --> H{{"⭐ 問使用者 → ../deploy-release.sh release2.3"}}
+    F --> G["打標籤 release2.2-vX.Y"]
+    G --> H{{"⭐ 問使用者 → ../deploy-release.sh release2.2"}}
     H --> I(["約 1 分鐘後凍結版網址更新"])
 
     classDef gate fill:#FFDB29,stroke:#171717,stroke-width:3px,color:#171717;
     class B,F,H gate;
 ```
 
-- `release-port.sh <release> <commit> ["說明"] [--check]`：例如 `../release-port.sh release2.3 3f2a1bc --check`。預設排除 `ASSUMPTIONS.md`、`UI-CHANGES.md`、`requirements-map.md` 三份已分歧的紀錄檔，只搬程式與設計系統文件。
-- `deploy-release.sh <release> ["說明"]`：例如 `../deploy-release.sh release2.3`。新交付版要在腳本裡的 `release_target` 補一筆部署目標。
-- 凍結分支上有幾處「鎖版本」的改動：`devtools.js` 標 `★ RELEASE2.3 FROZEN` 的段落，以及 `feature-scope-map.md` 開發版本配置表只留 `release2.3` 一列。搬修正時這些段落要保留，不要被 `main` 的內容蓋掉。
+- `release-port.sh <release> <commit> ["說明"] [--check]`：例如 `../release-port.sh release2.2 3f2a1bc --check`。預設排除 `ASSUMPTIONS.md`、`UI-CHANGES.md`、`requirements-map.md` 三份已分歧的紀錄檔，只搬程式與設計系統文件。
+- `deploy-release.sh <release> ["說明"]`：例如 `../deploy-release.sh release2.2`。新交付版要在腳本裡的 `release_target` 補一筆部署目標。
+- 凍結分支上有幾處「鎖版本」的改動：`devtools.js` 標 `★ RELEASE2.2 FROZEN` 的段落，以及 `feature-scope-map.md` 開發版本配置表只留 `release2.2` 一列。搬修正時這些段落要保留，不要被 `main` 的內容蓋掉。
 - 試套失敗代表凍結版和 `main` 已經長得不一樣，要手動改寫那筆修正，不要硬套。
 
 ### 版本切換面板與功能表 tier
@@ -189,41 +189,41 @@ flowchart TD
 `main` 的版本切換面板只有四個選項：
 
 - 最終版
-- release2.4（版本鍵 `release2.4`，規則 `tier:release2.3,release2.4`）
+- release2.3（版本鍵 `release2.3`，規則 `tier:release2.2,release2.3`）
 - funding-test
 - Deck for Sony
 
 `app/feature-scope-map.md` 的 Tier 欄分四種：
 
-- `🟢 release2.3`：已交付
-- `🔵 release2.4`：下一版
+- `🟢 release2.2`：已交付
+- `🔵 release2.3`：下一版
 - `⚪ TBD`：未排定
 - `⚫ 退場`
 
 ### 每期輪替步驟
 
-1. 把要做的功能在 `app/feature-scope-map.md` 標 `🔵 release2.4`。
-2. 用面板的「release2.4」確認畫面。
-3. 從 `main` 切 `release2.4` 分支鎖版本。
+1. 把要做的功能在 `app/feature-scope-map.md` 標 `🔵 release2.3`。
+2. 用面板的「release2.3」確認畫面。
+3. 從 `main` 切 `release2.3` 分支鎖版本。
 4. 開部署 repo 與 Vercel 專案，在 `deploy-release.sh` 的 `release_target` 補一筆，開新網址。
-5. 交付後把那批功能改標 `🟢 release2.4`；`main` 的下一版改成 release2.5（`feature-scope-map.md` 開發版本配置表，加上 `devtools.js` 的 `VERSIONS` 後備、`TIER_EMOJI` 的 🔵 改對到 release2.5；新標 🔵 的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.4` 值不用改）。
+5. 交付後把那批功能改標 `🟢 release2.3`；`main` 的下一版改成 release2.4（`feature-scope-map.md` 開發版本配置表，加上 `devtools.js` 的 `VERSIONS` 後備、`TIER_EMOJI` 的 🔵 改對到 release2.4；新標 🔵 的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.3` 值不用改）。
 
 ### 新功能的規則
 
-做出來的當下就掛 `data-feat` 標記並登記在 `feature-scope-map.md`（預設 ⚪ 未排定）。沒掛標記的東西每個版本都會出現，`main` 的 release2.4 預覽就會多顯示不在範圍的功能。
+做出來的當下就掛 `data-feat` 標記並登記在 `feature-scope-map.md`（預設 ⚪ 未排定）。沒掛標記的東西每個版本都會出現，`main` 的 release2.3 預覽就會多顯示不在範圍的功能。
 
 ### UI-CHANGES 的交付版標籤
 
-`app/UI-CHANGES.md` 每筆紀錄標題下一行寫標籤，標出這筆改動會進哪個交付版。格式是 `**標籤**：release2.3`、`**標籤**：release2.4`，或 `**標籤**：release2.3、release2.4`；只進最終版的不寫這一行。判斷依 `feature-scope-map.md` 的 Tier 欄：
+`app/UI-CHANGES.md` 每筆紀錄標題下一行寫標籤，標出這筆改動會進哪個交付版。格式是 `**標籤**：release2.2`、`**標籤**：release2.3`，或 `**標籤**：release2.2、release2.3`；只進最終版的不寫這一行。判斷依 `feature-scope-map.md` 的 Tier 欄：
 
 | 改到的功能 | 標籤 | 要不要先問使用者 |
 |---|---|---|
-| `🟢 release2.3`（E-Shop） | 選同步：`release2.3、release2.4`<br>選不同步：`release2.4` | **要**：問要不要同步改進凍結的 release2.3 |
-| `🔵 release2.4` | `release2.4` | release2.4 凍結後要，凍結前不用 |
+| `🟢 release2.2`（E-Shop） | 選同步：`release2.2、release2.3`<br>選不同步：`release2.3` | **要**：問要不要同步改進凍結的 release2.2 |
+| `🔵 release2.3` | `release2.3` | release2.3 凍結後要，凍結前不用 |
 | `⚪ TBD` 或沒掛功能標記 | 不寫標籤行 | 不用 |
 
-- 選同步的條目，發進 `main` 後用 `release-port.sh` 搬進 release2.3。
-- 選不同步的條目，只改在 release2.4 與最終版。
+- 選同步的條目，發進 `main` 後用 `release-port.sh` 搬進 release2.2。
+- 選不同步的條目，只改在 release2.3 與最終版。
 - `collab.sh` 開 PR 時讀這次新增條目的標籤，貼成 GitHub PR 標籤，PR 內文列出新增條目的標題。標到已凍結的交付版時，結尾提醒用 `release-port.sh` 搬。
 
 > 另一條線（不在此圖）：`documents/`、`requirement/` 等 `site/` 以外的內容，是一般 `git push`，**無 PR、無 merge 關卡**。

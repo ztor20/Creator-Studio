@@ -478,7 +478,7 @@
               <p class="field__hint field__hint--warn price-ladder__err" id="bd-disc-hint" hidden></p>
             </div>
 
-            <!-- 限時折扣（排程特價 F7）：最終版（S105）＝購買條件的「限時折扣」條件（2026-10-22 使用者裁決），這兩列收起不重複；release2.4 照舊 -->
+            <!-- 限時折扣（排程特價 F7）：最終版（S105）＝購買條件的「限時折扣」條件（2026-10-22 使用者裁決），這兩列收起不重複；release2.3 照舊 -->
             <div class="price-ladder__step" data-feat-off="S105">
               <div class="price-ladder__k">
                 <span class="price-ladder__t"><span data-i18n="cb.pl.sale">Limited-time discount</span></span>
@@ -562,7 +562,7 @@
           </div>
           <!-- D463（2026-10-21，最終版 S105）：所有組合包（純商品、含票券）都用同一份七種條件，是組合包自己的一組——不跟隨所含門票、不沿用成員；
                限購併進來成為其中一種（以組計）。JS 在最終版把條件清單畫進 [data-bd-conds]（所有組合包都顯示）、收起跟隨所含門票那一列與獨立的限購列；
-               release2.4 照舊（含門票＝跟隨、純商品＝限時購買／限粉絲分級購買、限購另一列）。 -->
+               release2.3 照舊（含門票＝跟隨、純商品＝限時購買／限粉絲分級購買、限購另一列）。 -->
           <!-- 2026-10-21（UI-CHANGES 二百八十二）：購買條件與限購整併成一個群組 .rules-group（ds-components/rules-group.css，同建立組合、建立活動組合包彈窗）：
                條件列（含門票＝跟隨所含門票；純商品＝條件清單）→ 限購列 → 底部一句彙總；原本的「誰可以買」小標與兩個獨立線框退場。 -->
           <div class="rules-group" data-bd-rules-group>
@@ -2081,7 +2081,7 @@
       const n = cap && PL ? PL.posInt(cap.person) : null;
       bundleModel.limits = n ? { person: String(n) } : null;
     }
-    /* devtools.js 最後才載入：版本確定（或切換）後重畫購買條件那一節（最終版／release2.4 畫法不同） */
+    /* devtools.js 最後才載入：版本確定（或切換）後重畫購買條件那一節（最終版／release2.3 畫法不同） */
     document.addEventListener('ztor:devstate-changed', () => { try { if (window.bdSyncEventBounds) window.bdSyncEventBounds(); bdCondsApi = null; renderLimits(); if (window.bdRenderTB) window.bdRenderTB(); } catch (_) { /* 頁面還在初始化 */ } });
     const bdUEt = () => { const c = bundleModel.members.some(m => m.kind === 'ticket') ? tbCtx() : null; return c ? c.et : bdEt(); };
     const bdUTr = k => bundleModel.members.some(m => m.kind === 'ticket') ? T(k, k) : bdTr(k);
@@ -2100,7 +2100,7 @@
         bdUSeed(!!(editing && bdCondsApi && host._bdUni));
         box.hidden = false;
         const kLab = box.querySelector('.rules-group__k'); if (kLab) kLab.hidden = true;   /* 「誰可以買」小標不適用（七種含限購與折扣），節標題已是「購買條件」 */
-        if (!host._bdUni) { host._bdUni = true; bdCondsApi = null; }   /* 從 release2.4 的畫法切過來：重新掛 */
+        if (!host._bdUni) { host._bdUni = true; bdCondsApi = null; }   /* 從 release2.3 的畫法切過來：重新掛 */
         if (editing) {
           if (!bdCondsApi) bdCondsApi = PC.mount(host, { rules: bundleModel.conds, scope: 'bundle', ctx: uCtx, times: bdUEt, tr: bdUTr,
             onChange: r => { bundleModel.conds = r; bdUSyncLimits(); bdSaleFromConds(); bdSyncRulesSum(); renderBdSettingsOverview(); } });
@@ -2127,7 +2127,7 @@
     }
     const condsErrCount = () => bdUni() ? PC.errCount(bundleModel.conds, bdUEt(), bdUTr)
       : (PC && !bundleModel.members.some(m => m.kind === 'ticket')) ? Object.keys(PC.periodErrs(bdOnlyTypes(bundleModel.conds, condsCtx.types), bdEt(), bdTr)).length : 0;
-    /* release2.4 只看自己開放的兩種（最終版轉進來的限時折扣等不算進 release2.4 的擋存） */
+    /* release2.3 只看自己開放的兩種（最終版轉進來的限時折扣等不算進 release2.3 的擋存） */
     function bdOnlyTypes(r, types) { const cs = (r && r.conds) || {}, o = {}; types.forEach(k => { if (cs[k]) o[k] = cs[k]; }); return { conds: o }; }
     window.bdLimitsText = () => bdUni() ? PC.summary(bundleModel.conds, 'set') : (PL ? PL.text(bundleModel.limits, 'set', T) : '');
     /* 群組底部一句彙總（2026-10-21）：購買條件一句讀數＋限購。含門票＝跟隨所含門票（或另設後的設定），版本沒開 S63 時沒有這一列；純商品＝條件清單的現況 */

@@ -40,9 +40,9 @@
    限購三欄的輔助說明（D398）借 js/purchase-limits.js 的 hintHTML()——要先於本檔載入（create-event、event-detail）。
 
    ctx（呼叫端提供）：{ esc, featOn(id), srcChip(), pctReadout(c, scope), typeFeat }
-   粉絲分級三種（feat S82，⚪ 未排定）掛 data-feat，release2.4 由 devtools 的 regate() 收起（D366 決定五／D367 決定三）。
+   粉絲分級三種（feat S82，⚪ 未排定）掛 data-feat，release2.3 由 devtools 的 regate() 收起（D366 決定五／D367 決定三）。
    ctx.typeFeat（2026-10-20 D461）：呼叫端另外給某幾種條件掛的 feat——門票傳 TIX_FEAT（限時購買、限購＝S104 ⚪），
-   release2.4 的門票只剩折扣與限時折扣可加；組合包不傳，限時購買與限購照舊。bookyay 帶入的條件（bky）不掛（帶入資料照樣顯示）。
+   release2.3 的門票只剩折扣與限時折扣可加；組合包不傳，限時購買與限購照舊。bookyay 帶入的條件（bky）不掛（帶入資料照樣顯示）。
    ============================================================ */
 (function () {
   const TYPES = [

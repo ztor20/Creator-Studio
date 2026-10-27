@@ -295,7 +295,7 @@
     var e = {}, r = st && st.rules, buyOnly = !!(opts && opts.buyOnly);
     if (!def || !def.count) return e;
     /* D463（2026-10-21，最終版 S105）：組合包不沿用所含門票的條件——跟隨、取最嚴、只能收窄、交集為空都失效，
-       購買條件改由 js/purchase-conds.js 的七種條件（組合包自己的一組）檢查；release2.4 照舊 */
+       購買條件改由 js/purchase-conds.js 的七種條件（組合包自己的一組）檢查；release2.3 照舊 */
     var PCx = window.ztorPurchaseConds;
     if (PCx && PCx.uniOn && PCx.uniOn()) return e;
     var short = buyOnly ? {} : shortErrors(def, T);

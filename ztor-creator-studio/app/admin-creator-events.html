@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="S84"><!-- D373：創作者活動管理屬 release2.4（S84 🔵） -->
+<html lang="zh-Hant" data-theme="dark" data-page-feat="S84"><!-- D373：創作者活動管理屬 release2.3（S84 🔵） -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -347,14 +347,14 @@
     if (C.bookyayStats(c).doneIds.indexOf(e.id) !== -1) return 'done';
     return (c.bookyayDrafts || []).indexOf(e.id) !== -1 ? 'draft' : 'pending';
   }
-  /* D384 決定三（2026-10-09，只動版本範圍）：release2.4 不能帶入的活動——到店自取（S89 不在版本內）——
-     在清單先標「release2.4 不支援」並寫原因，不用點進繼續設定才知道。
+  /* D384 決定三（2026-10-09，只動版本範圍）：release2.3 不能帶入的活動——到店自取（S89 不在版本內）——
+     在清單先標「release2.3 不支援」並寫原因，不用點進繼續設定才知道。
      判斷與 create-event 匯入清單的 bkyVerBlock() 同一套；最終版標記開，標示不出現。
      墓碑 2026-10-16（D440 決定四）：多時段、重覆活動（多場次 S87）不再標不支援——bookyay 多個時段帶入後合成同一場。 */
   function featOn(id) { var d = window.ztorDevState; return !d || !d.featOn || d.featOn(id); }
   function verBlock(e) {
     if (!featOn('S89') && e.ship === 'pickup') return 'pickup';
-    if (!featOn('S102') && e.ship === 'sf') return 'sf';   // 2026-10-20：順豐寄送不在 release2.4
+    if (!featOn('S102') && e.ship === 'sf') return 'sf';   // 2026-10-20：順豐寄送不在 release2.3
     return '';
   }
   /* ztor 端的名稱：events-store 裡帶著這個 bky id 的活動（草稿或已發布，含 Admin 第一次儲存產生的草稿）的名稱 */
@@ -412,7 +412,7 @@
           + esc(tx('ace.map.title', 'Map creator')) + '</button>';
       } else if (st === 'pending' || st === 'draft') {
         /* F4 繼續設定：走 create-event 既有的 ?import= 深連結，以這位創作者的身分接著設。
-           D390 決定二十四（5.1.0.6 F4「交付版不支援的列」）：標「release2.4 不支援」的列停用繼續設定，原因寫在鈕的提示與名稱欄下方。 */
+           D390 決定二十四（5.1.0.6 F4「交付版不支援的列」）：標「release2.3 不支援」的列停用繼續設定，原因寫在鈕的提示與名稱欄下方。 */
         var vb0 = verBlock(e);
         act = '<button type="button" class="btn btn--outline btn--sm" data-continue="' + esc(e.id) + '"'
           + (vb0 ? ' disabled aria-disabled="true" title="' + esc(tx('ace.r24.' + vb0, '')) + '"' : '') + '>'
@@ -428,7 +428,7 @@
            還沒在 ztor 落地（待對應、待設定）＝ztor 名稱就是帶入時的 bookyay 名稱 */
         + '<td class="ace-name">' + esc(ztorName(e))
         + (ztorRec(e) ? '<div class="text-sub">' + esc(tx('ace.bky.orig', 'bookyay: {name}').replace('{name}', e.name)) + '</div>' : '')
-        + (vb ? ' <span class="badge badge--neutral">' + esc(tx('ace.r24.tag', 'Not in release2.4')) + '</span>'
+        + (vb ? ' <span class="badge badge--neutral">' + esc(tx('ace.r24.tag', 'Not in release2.3')) + '</span>'
               + '<div class="text-sub">' + esc(tx('ace.r24.' + vb, '')) + '</div>' : '')
         + '</td>'
         + '<td class="ace-date">' + esc(e.date) + '</td>'
@@ -629,7 +629,7 @@
     var um = e.target.closest('[data-unmap]');
     if (um) { askUnmap(um.getAttribute('data-unmap')); return; }
     var go = e.target.closest('[data-continue]');
-    if (!go || go.disabled) return;   /* D390 決定二十四：release2.4 不支援的列停用 */
+    if (!go || go.disabled) return;   /* D390 決定二十四：release2.3 不支援的列停用 */
     var id = go.getAttribute('data-continue');
     var c = ownerOf(id);
     if (!c) return;   /* 沒對應就不能進入設定（D372 決定二） */
@@ -649,7 +649,7 @@
     renderRows();
   });
   document.addEventListener('i18n:applied', function () { renderOwner(); renderRows(); renderSync(); });
-  /* D384：切換版本時「release2.4 不支援」標示跟著重算（verBlock 讀目前版本的功能標記） */
+  /* D384：切換版本時「release2.3 不支援」標示跟著重算（verBlock 讀目前版本的功能標記） */
   document.addEventListener('ztor:devstate-changed', function () { renderRows(); });
 
   renderOwner();

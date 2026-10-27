@@ -182,7 +182,7 @@
     var f = vault();
     var info = taskInfo(V.taskOf(it));
     var start = info ? tagHtml(tone, null, info.icon, info.text, info.full, "S86") : "";
-    /* 大彩蛋屬 S121（⚪，release2.5 不放）：小標掛 S121，畫完 regate 收起。 */
+    /* 大彩蛋屬 S121（⚪，release2.4 不放）：小標掛 S121，畫完 regate 收起。 */
     var end = it.grand ? tagHtml(tone, "grand", "sparkles", tx("Grand surprise", "大彩蛋"), tx("Marked as a grand surprise — it does not change how this item unlocks", "標為大彩蛋——只是標記，不影響解開"), "S121") : "";
     var lz = lens();
     if (lz.kind !== "none") {
@@ -401,7 +401,7 @@
 
   function taskSectionHtml(it) {
     var f = vault();
-    var task = V.taskOf(it);   /* release2.5 下，用到不在版本內那六種行動任務的內容當成不設任務（UIA-300） */
+    var task = V.taskOf(it);   /* release2.4 下，用到不在版本內那六種行動任務的內容當成不設任務（UIA-300） */
     var type = task ? task.type : "none";
     var types = [
       ["none",   tx("No task", "不設任務"),       tx("Anyone who gets into the vault sees it.", "進得了庫就看得到。")],
@@ -439,7 +439,7 @@
     var out = '<div class="vault-task__params">' +
       '<div class="field"><label class="field__label" for="vt-kind">' + tx("Type", "種類") + "</label>" +
         '<select class="select" id="vt-kind" data-task-kind>' +
-          /* release2.5（S122 不在版本內）只列追蹤創作者、加入社群、分享庫房頁面三種。 */
+          /* release2.4（S122 不在版本內）只列追蹤創作者、加入社群、分享庫房頁面三種。 */
           V.actionTaskList().map(function (a) {
             return '<option value="' + a.id + '"' + (a.id === task.kind ? " selected" : "") +
               (V.isMvpAction(a.id) ? "" : ' data-feat="S122"') + ">" + esc(V.t(a.label)) + "</option>";
@@ -2454,7 +2454,7 @@
     });
 
     document.addEventListener("i18n:applied", function () { lastReach = null; render(); });
-    /* 2026-10-23 release2.5 範圍切分（UIA-300）：切版本時 JS 畫的內容（任務選單、鑰匙與排程字句、
+    /* 2026-10-23 release2.4 範圍切分（UIA-300）：切版本時 JS 畫的內容（任務選單、鑰匙與排程字句、
        大彩蛋小標、人數）要照新版本重畫；單件設定開著就一起重畫。 */
     document.addEventListener("ztor:devstate-changed", function () {
       if (!els.main) return;
