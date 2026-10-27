@@ -4551,9 +4551,9 @@
     'ee.delete.confirm.sold': { en: 'Delete this event? {n} people hold tickets — void them first, one by one or all at once. Deleting does not refund anyone. This cannot be undone.', zh: '確定刪除這場活動？有 {n} 人持票，請先逐票或整場撤銷。刪除不會退款給任何人，且無法復原。' },
 
     /* ─── Fans CRM page ───────────────────────────────────── */
-    'fans.h1':               { en: 'Your fans, ranked.',                    zh: '你的粉絲，依價值排序' },
+    'fans.h1':               { en: 'Fan management',                        zh: '粉絲管理' },   // 2026-10-27 使用者裁示：頁名改「粉絲管理」（原「你的粉絲，依價值排序」，那句併進說明句）
     'fans.crumb.self':       { en: 'Fans',                                  zh: '粉絲' },
-    'fans.sub':              { en: 'High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment. This is the roster — one person at a time; for the whole picture, see Fan overview.', zh: '依價值排序，可用消費、忠誠點數、近期活躍或分級排序，並對任一族群群發或匯出。這頁是名冊——一個一個看；整體樣貌（多少人、在哪裡、走到哪）在粉絲總覽。' },
+    'fans.sub':              { en: 'Your fans, ranked by value. Re-sort by spend, loyalty points, recency or tier, and message or export any segment — this roster is one fan at a time; the whole picture is in Fan overview.', zh: '你的粉絲依價值排序，也可改用消費、忠誠點數、近期活躍或分級排序，並對任一族群群發或匯出；這頁是名冊，一個一個看，整體樣貌（多少人、在哪裡、走到哪）在粉絲總覽。' },
     'fans.sub-p0':           { en: 'Ranked by loyalty points. Sort by points or tier.', zh: '依忠誠點數排名，可改依點數或分級排序。' },   // 2026-10-23 release2.4（S118 收起時的頁首說明）
     'fans.btn.csv':          { en: 'Export',                                zh: '匯出' },
     'fans.btn.tiers':        { en: 'Tier settings',                         zh: '分級設定' },
@@ -5097,6 +5097,17 @@
     'fep.venue':            { en: 'Venue',                            zh: '場館' },
     'fep.language':         { en: 'Language',                         zh: '語言' },
     'fep.priority':         { en: 'Early access',                     zh: '優先購' },
+    /* 2026-10-27 照前台補齊：時長「約 1 小時 45 分」、限購一列（單票逐張／套組逐組）、描述收合 */
+    'fep.dur.hm':           { en: 'About {h} h {m} min',              zh: '約 {h} 小時 {m} 分' },
+    'fep.dur.h':            { en: 'About {h} h',                      zh: '約 {h} 小時' },
+    'fep.dur.m':            { en: 'About {m} min',                    zh: '約 {m} 分' },
+    'fep.limit.tix':        { en: 'Tickets',                          zh: '單票' },
+    'fep.limit.set':        { en: 'Bundles',                          zh: '套組' },
+    'fep.limit.each':       { en: 'Limit per person',                 zh: '每人限購' },
+    'fep.limit.n.tix':      { en: '{n}',                              zh: '{n} 張' },
+    'fep.limit.n.set':      { en: '{n}',                              zh: '{n} 組' },
+    'fep.more':             { en: 'Show all',                         zh: '展開全部' },
+    'fep.less':             { en: 'Show less',                        zh: '收合' },
     'fep.limit':            { en: 'Limit',                            zh: '限購' },   /* D427（2026-10-16）：改讀每人總限購，英文標籤由 Per order 改 Limit */
     'fep.tiers.n':          { en: '{n} ticket types',                 zh: '{n} 種票' },
     'fep.bundles.n':        { en: '{n} bundles',                      zh: '{n} 組組合方案' },
@@ -5104,7 +5115,7 @@
     'fep.link.ticket':      { en: 'Tickets only',                     zh: '只買票' },
     'fep.cta.buy':          { en: 'Buy tickets',                      zh: '購票' },
     'fep.cta.bundle':       { en: 'Choose a bundle',                  zh: '選擇組合' },
-    'fep.sec.about':        { en: 'About',                            zh: '活動介紹' },
+    'fep.sec.about':        { en: 'Event details', zh: '活動詳情' },
     /* D340：說明區塊內文太長時的收合 */
     /* 墓碑 2026-10-05（D354）：fep.info.more／fep.info.less（粉絲頁說明區塊的展開全文／收合）隨說明區塊退場 */
     'fep.sec.lineup':       { en: 'Lineup',                           zh: '卡司陣容' },
@@ -5132,7 +5143,7 @@
     'fep.status.soon':      { en: 'Coming soon',                      zh: '即將開賣' },
     'fep.status.ended':     { en: 'Ended',                            zh: '已結束' },
     'fep.status.cancelled': { en: 'Cancelled',                        zh: '已取消' },
-    'fep.pickup.eticket':   { en: 'E-ticket (QR)',                    zh: '電子門票（QR）' },
+    'fep.pickup.eticket':   { en: 'E-ticket · sent to your account and email, show the QR at entry', zh: '電子票券 · 寄到你的帳戶與 Email，入場出示 QR' },
     'fep.pickup.sf':        { en: 'SF Express delivery',              zh: '順豐寄送' },
     'fep.pickup.pickup':    { en: 'In-store pickup',                  zh: '到店自取' },
     'fep.limit.person':     { en: 'Up to {n} per person',             zh: '每人最多 {n} 張' },   /* D427：取代 fep.limit.order（每筆最多 {n} 張，墓碑） */
@@ -8523,6 +8534,7 @@
 
     /* Fans CRM — tabs / Pareto / list ops / Recovered / load-more (5.1.7 F1–F6) */
     'fans.btn.explain':      { en: 'How this works', zh: '系統說明' },
+    'fans.btn.know':         { en: 'Learn how fans work', zh: '認識粉絲系統' },   // 2026-10-27 粉絲管理頁專用文案（其他頁仍用 fans.btn.explain）
     'fans.kpi.active.tip':     { en: 'Fans active in the trailing 90 days.', zh: '近 90 天內活躍的粉絲。' },
     'fans.kpi.risk.tip':       { en: 'Valuable fans whose recent engagement dropped sharply (a flag, not a score).', zh: '近期互動驟降的有價值粉絲（布林旗標，非機率分數）。' },
     'fans.kpi.rep.tip': { en: 'Loyalty points are a fan’s overall value score, credited the moment they earn them.', zh: '忠誠點數是粉絲的整體價值分，即時入帳。' },

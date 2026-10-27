@@ -15,6 +15,31 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-27（三百三十八）· 粉絲管理頁首：頁名改「粉絲管理」、說明併成一句、系統說明連結改名另起一行（B 反饋 · fans-crm）
+
+**標籤**：release2.4
+
+- 頁名 `fans.h1`「你的粉絲，依價值排序」改「粉絲管理」（英文 Fan management）。
+- 說明 `fans.sub` 把原頁名那句併進來、去掉重複的「依價值排序」，合成一句：「你的粉絲依價值排序，也可改用消費、忠誠點數、近期活躍或分級排序，並對任一族群群發或匯出；這頁是名冊，一個一個看，整體樣貌（多少人、在哪裡、走到哪）在粉絲總覽。」release2.4 的簡短說明 `fans.sub-p0` 不動。
+- 「系統說明」連結改「認識粉絲系統」（新鍵 `fans.btn.know`，僅本頁使用）並另起一行（頁內樣式把 `.page-intro__help` 設 `display:block`）。其他粉絲模組頁（粉絲分析、媒體庫等）仍是「系統說明」接在說明句後面，與本頁暫不一致，待使用者決定是否一併改。
+
+---
+
+## 2026-10-27（三百三十七）· 活動預覽照前台補齊五項（B 反饋 · fan-event-page／fan-shop.css）
+
+**標籤**：release2.3
+
+使用者要求對照前台活動頁（ztor.vercel.app/shop-item.html?id=ev-soundtrack-unplugged，2026-10-27 重新抓）補齊缺口。
+
+- 資訊表「限購」一列：原本建立活動從沒把限購交給預覽，整列不出現。現在列每張門票自己的每人總限購（逐張小字「Platinum 前排 2 張」）與每組組合包自己的限購（「套組 名稱 n 組」），結構照前台 `.pdp-limit-row`；第一行寫「單票 每人限購」（前台那裡是活動總限購，我們沒有活動層限購，見 ASSUMPTIONS UIA-312）。`create-event.html`、`event-localization.html` 兩個宿主都傳。
+- 長描述收合：描述包進 `.pdp-story[data-read-more]`，超過 960px（再多 160 才收）收起並漸隱，後接「展開全部／收合」，照前台 c-read-more.js（UIA-196「照長度展開」退場）。
+- 時長改「約 3 小時」「約 1 小時 45 分」（新 model 欄 `durationMin`，i18n `fep.dur.*`）。
+- 詳情標題「活動介紹」→「活動詳情」（`fep.sec.about`）。
+- 取票（電子門票）文案改前台的「電子票券 · 寄到你的帳戶與 Email，入場出示 QR」（`fep.pickup.eticket`，只用在粉絲頁預覽）。
+- CSS：`fan-shop.css` 第 7 段補 `.pdp-limit-row__*`、`[data-read-more]`、`.read-more__toggle`（鏡像左欄是直排 flex，按鈕加 `align-self: flex-start` 維持內容寬）。
+
+---
+
 ## 2026-10-27（三百三十六）· 前台鏡像的斷點改看預覽區寬度（D infra · fan-shop.css）
 
 **標籤**：release2.3
