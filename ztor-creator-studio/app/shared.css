@@ -2220,6 +2220,15 @@ html[data-theme="light"] .wizard__top::before {
   transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing);
 }
 .tip:hover .tip__bubble, .tip:focus-visible .tip__bubble { opacity: 1; transform: translateY(0); }
+/* .tip--btn（2026-10-27 使用者裁示）：只有 icon 的按鈕，hover／鍵盤聚焦立刻顯示名稱。
+   結構：<span class="tip tip--btn"><button class="btn btn--icon" aria-label="名稱">…</button><span class="tip__bubble">名稱</span></span>。
+   為什麼不用 title：原生提示要停留約一秒才出現，圖示鈕的名稱是「必須立刻看到」的資訊；
+   與 .tip（資訊 icon，右緣對齊、cursor:help）的差別是泡泡置中在按鈕上方、游標維持一般點擊。
+   按鈕本身要有 aria-label（泡泡是 role=tooltip，讀屏不一定唸）。 */
+.tip--btn { cursor: default; color: inherit; }
+.tip--btn:hover, .tip--btn:focus-within { color: inherit; }
+.tip--btn .tip__bubble { right: auto; left: 50%; transform: translate(-50%, 4px); white-space: nowrap; }
+.tip--btn:hover .tip__bubble, .tip--btn:focus-within .tip__bubble { opacity: 1; transform: translate(-50%, 0); }
 
 /* Card view — responsive grid of project cards (alternative to the data-list view) */
 .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-20); }

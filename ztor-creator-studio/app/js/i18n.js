@@ -4553,7 +4553,7 @@
     /* ─── Fans CRM page ───────────────────────────────────── */
     'fans.h1':               { en: 'Fan management',                        zh: '粉絲管理' },   // 2026-10-27 使用者裁示：頁名改「粉絲管理」（原「你的粉絲，依價值排序」，那句併進說明句）
     'fans.crumb.self':       { en: 'Fans',                                  zh: '粉絲' },
-    'fans.sub':              { en: 'Your fans, ranked by value. Re-sort by spend, loyalty points, recency or tier, and message or export any segment — this roster is one fan at a time; the whole picture is in Fan overview.', zh: '你的粉絲依價值排序，也可改用消費、忠誠點數、近期活躍或分級排序，並對任一族群群發或匯出；這頁是名冊，一個一個看，整體樣貌（多少人、在哪裡、走到哪）在粉絲總覽。' },
+    'fans.sub':              { en: 'Fans are ranked by engagement; points come from purchases, event check-ins, interactions and platform activities.', zh: '粉絲依互動程度排序，以購買、活動報到、互動與全站活動計算點數。' },   // 2026-10-27 使用者定稿
     'fans.sub-p0':           { en: 'Ranked by loyalty points. Sort by points or tier.', zh: '依忠誠點數排名，可改依點數或分級排序。' },   // 2026-10-23 release2.4（S118 收起時的頁首說明）
     'fans.btn.csv':          { en: 'Export',                                zh: '匯出' },
     'fans.btn.tiers':        { en: 'Tier settings',                         zh: '分級設定' },
@@ -4561,7 +4561,8 @@
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
     'fans.kpi.active-meta':  { en: 'of 1,840 total',                        zh: '共 1,840 位' },
     'fans.kpi.risk':         { en: 'At risk',                               zh: '流失風險' },
-    'fans.kpi.risk-meta':    { en: '5 Super Fans &gt;14d quiet',             zh: '5 位超級粉絲 >14 天未互動' },
+    'fans.kpi.risk-meta':    { en: 'Super Fans · 14d+',                      zh: '超級粉絲 · 14 天+' },   // 2026-10-27 縮短（原「5 位超級粉絲 >14 天未互動」：數字已在卡上，不重複）
+    'fans.kpi.risk-none':    { en: 'None',                                  zh: '無' },   // 2026-10-27 零風險狀態
     'fans.kpi.revenue':      { en: 'Revenue (active)',                      zh: '活躍粉絲收入' },
     'fans.kpi.revenue-meta': { en: 'Trailing 90 days',                      zh: '近 90 天' },
     'fans.kpi.rep':          { en: 'Avg loyalty points',                    zh: '平均忠誠點數' },
@@ -8533,8 +8534,7 @@
     'ip-market.coldstart.text':     { en: 'The marketplace is just getting started. Be the first creator to list your IP for others to license.', zh: '市場剛起步。成為第一個上架 IP 供他人授權的創作者。' },
 
     /* Fans CRM — tabs / Pareto / list ops / Recovered / load-more (5.1.7 F1–F6) */
-    'fans.btn.explain':      { en: 'How this works', zh: '系統說明' },
-    'fans.btn.know':         { en: 'Learn how fans work', zh: '認識粉絲系統' },   // 2026-10-27 粉絲管理頁專用文案（其他頁仍用 fans.btn.explain）
+    'fans.btn.explain':      { en: 'Learn how fans work', zh: '認識粉絲系統' },   // 2026-10-27 使用者裁示：粉絲模組各頁統一改名（原「系統說明」）並另起一行
     'fans.kpi.active.tip':     { en: 'Fans active in the trailing 90 days.', zh: '近 90 天內活躍的粉絲。' },
     'fans.kpi.risk.tip':       { en: 'Valuable fans whose recent engagement dropped sharply (a flag, not a score).', zh: '近期互動驟降的有價值粉絲（布林旗標，非機率分數）。' },
     'fans.kpi.rep.tip': { en: 'Loyalty points are a fan’s overall value score, credited the moment they earn them.', zh: '忠誠點數是粉絲的整體價值分，即時入帳。' },
