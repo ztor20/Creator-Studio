@@ -461,7 +461,7 @@
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer
 - `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗）
 - `fact-list.css` — .fact-list, .fact-list__item ｜ Fact list · 唯讀事實列（2026-08-19）
-- `fan-phone.css` — .fan-phone ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
+- `fan-phone.css` — .fan-phone, .preview-col--tall ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
 - `fan-shop.css` — .fep-shop, .fep-shop--event ｜ fan-shop.css · 前台活動頁鏡像（發布前預覽確認的預覽檢視，D305 使用者裁決 2
 - `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ fan-store.css · 粉絲端創作者頁的手機版鏡像（See-as-fan 預覽）
 - `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide

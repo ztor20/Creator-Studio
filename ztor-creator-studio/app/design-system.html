@@ -184,7 +184,7 @@
 <link rel="stylesheet" href="ds-components/detail-overview.css?v=r2.2">
 <!-- 2026-09-22：D305 粉絲視角活動頁改為前台 shop-item 鏡像（fan-shop.css，使用者裁決「預覽 UI 與前台一模一樣」）；fan-event-page.css 已墓碑化 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- §4.243 Fan phone（#394） -->
+<link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- §4.243 Fan phone（UI-CHANGES 394） -->
 <!-- 2026-09-22：D310 發布前預覽確認改為全頁畫面（publish-stage.css，§4.216） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -13180,22 +13180,24 @@ Letterpress cover, uncoated stock.</textarea></div>
   <div class="sub__head"><h3 class="sub__title">4.243 Fan phone <span class="field-note">(create-flow phone mirror)</span></h3><span class="layer layer--molecule">🟡 molecule</span></div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
   <p class="sub__desc" data-en><strong>2026-10-28 (#394, user: “the narrowest design we have is the phone layout — the product preview and event preview in the create flows’ right rail should both look like it”).</strong> The event preview on create-event steps 2/3/4/7 is no longer the small Event preview card: it is the <strong>phone layout of the fan event page</strong>, drawn by the same renderer as step 8 (<a href="#fan-event-page">Fan event page</a>) and set up exactly like create-product’s <a href="#pdp-preview">PDP preview</a> — 270px rail, an outlined form section with the title inside, the page zoomed to 3/4. This frame only shrinks the page; the page switches itself to its phone layout through its own container query.</p>
-  <p class="sub__desc" data-zh><strong>2026-10-28（#394，使用者：「現在最窄的設計就是手機版，右側欄的商品預覽、活動預覽都要做得像他一樣的設計」）。</strong>建立活動第 2／3／4／7 步的活動預覽不再是小張的 Event preview card，改成<strong>粉絲端活動頁的手機版</strong>：與第 8 步同一支渲染器（<a href="#fan-event-page">Fan event page</a>），擺法與建立商品的 <a href="#pdp-preview">PDP preview</a> 完全相同——270px 右欄、標題在卡內的 outlined 區塊、整頁 zoom 3/4。本框只負責縮小；粉絲頁靠自己的容器查詢切成手機版型。</p>
-  <p class="field-label" data-en>Rendered preview <span class="field-note">(a 236px frame = what is left inside the 270 rail’s outlined section)</span></p>
-  <p class="field-label" data-zh>視覺展示 <span class="field-note">（236px 框＝270 右欄扣掉 outlined 區塊內距後的實際寬度）</span></p>
+  <p class="sub__desc" data-zh><strong>2026-10-28（UI-CHANGES 394，使用者：「現在最窄的設計就是手機版，右側欄的商品預覽、活動預覽都要做得像他一樣的設計」）。</strong>建立活動第 2／3／4／7 步的活動預覽不再是小張的 Event preview card，改成<strong>粉絲端活動頁的手機版</strong>：與第 8 步同一支渲染器（<a href="#fan-event-page">Fan event page</a>），擺法與建立商品的 <a href="#pdp-preview">PDP preview</a> 完全相同——270px 右欄、標題在卡內的 outlined 區塊、整頁 zoom 3/4。本框只負責縮小；粉絲頁靠自己的容器查詢切成手機版型。</p>
+  <p class="sub__desc" data-en><strong>2026-10-28 (UI-CHANGES 397, user: “1 and 2 weren’t changed — and no outline” / “3: no outline”).</strong> create-product (replacing the simplified <a href="#pdp-preview">PDP preview</a>) and create-bundle (replacing the bundle preview card) now use this frame too, each drawing its own fan page with the same renderer as its “Preview &amp; publish” step. All three drop the outlined section: the <code>.preview-col__head</code> title and the frame sit straight in the right rail, now a full 270px (= the 360px phone layout at 3/4). The stand-in api and redraw timing live in <code>partials/fan-phone.js</code>, shared by all three hosts.</p>
+  <p class="sub__desc" data-zh><strong>2026-10-28（UI-CHANGES 397，使用者：「1,2,沒改啊，另外不用外匡」「3,不用外匡」）。</strong>建立商品（取代簡化的 <a href="#pdp-preview">PDP preview</a>）與建立組合包（取代組合包預覽卡）也改用本框，各自畫「預覽與發布」那一步同一支渲染器的粉絲頁。三處都拿掉 outlined 外框：<code>.preview-col__head</code> 標題與本框直接放在右欄，框寬因此是完整的 270（＝360 手機版型 × 3/4）。替身 api 與重畫時機收進 <code>partials/fan-phone.js</code>，三個宿主共用。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(a 270px frame = the rail width, outline removed 2026-10-28)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（270px 框＝右欄寬，2026-10-28 拿掉外框後）</span></p>
   <div class="demo">
-    <div style="width:236px;height:560px;overflow:auto"><div class="fan-phone" data-ds-fan-phone-demo></div></div>
+    <div style="width:270px;height:560px;overflow:auto"><div class="fan-phone" data-ds-fan-phone-demo></div></div>
   </div>
   <details class="sub__spec"><summary>Spec</summary>
   <div class="sub__spec-body">
     <p class="field-label">Anatomy</p>
-    <p class="field-text"><code>.wizard-split.wizard-split--narrow.wizard-split--phone</code>（右欄 <code>var(--preview-col-w, 270px)</code>）&gt; <code>aside.wizard-split__rail</code> &gt; <code>section.form-section.form-section--outlined</code> &gt; <code>.form-section__head</code>（活動預覽／粉絲看到的活動樣子）＋ <code>.fan-phone[data-ce-phone]</code> &gt; <code>.fep-shop</code>（<code>js/fan-event-page.js</code> 輸出）。</p>
+    <p class="field-text">右欄（建立活動 <code>.wizard-split--narrow.wizard-split--phone</code> 的 <code>aside.wizard-split__rail</code>；建立商品／組合包 <code>.preview-split--phone</code> 的 <code>aside.preview-col.preview-col--tall</code>）&gt; <code>.preview-col__head</code>（標題＋副標，無外框）＋ <code>.fan-phone</code> &gt; <code>.fep-shop</code>（<code>js/fan-event-page.js</code> 輸出）。</p>
     <p class="field-label">Behavior</p>
     <p class="field-text">zoom <code>var(--fan-phone-zoom, 0.75)</code>（與 <code>.pdp-pv</code> 同一組數字）；<code>position: relative</code> 讓看詳情彈窗只蓋這一框；<code>overflow: hidden</code>；手機版前台的 <code>.shop-buybar</code> 是 <code>position: fixed</code>，在框裡會跑到整個視窗底部，所以不畫。宿主只畫目前步驟那一份，輸入時合併到下一個畫格重畫。</p>
     <p class="field-label">Token usage</p>
     <p class="field-text">本框沒有視覺值；頁面本體用 <code>fan-shop.css</code> 的前台 token（見 §4.215 的已註記例外）。</p>
     <p class="field-label">Consumers</p>
-    <p class="field-text"><code>create-event.html</code> 第 2／3／4／7 步右欄（第 4 步只在共看派對出現；第 5 步票務的預覽 2026-10-28 #371 已移除、第 6 步組合包沒有右欄）。</p>
+    <p class="field-text"><code>create-event.html</code> 第 2／3／4／7 步右欄（<code>[data-ce-phone]</code>；第 4 步只在共看派對出現；第 5 步票務的預覽已移除、第 6 步組合包沒有右欄）；<code>create-product.html</code> 右欄（<code>[data-cp-phone]</code>，粉絲商品頁）；<code>create-bundle.html</code> 右欄（<code>[data-cb-fan]</code>，粉絲組合包頁）。後兩頁的 <code>.preview-col</code> 加 <code>--tall</code>：頁面比視窗長，框在欄內自己捲、標題留在上面。共用 <code>partials/fan-phone.js</code>（<code>window.ztorFanPhone.render(host, opts)</code>／<code>scheduler(fn)</code>）。</p>
   </div>
   </details>
 </section>
@@ -15793,7 +15795,7 @@ Letterpress cover, uncoated stock.</textarea></div>
       if (open) open.click();
     });
   }
-  /* §4.243 Fan phone：同一份示範資料畫進 236 寬的手機框（#394） */
+  /* §4.243 Fan phone：同一份示範資料畫進 236 寬的手機框（UI-CHANGES 394） */
   var fphHost = document.querySelector('[data-ds-fan-phone-demo]');
   if (fphHost && window.ztorFanEventPage && typeof fepApi !== 'undefined') window.ztorFanEventPage.render(fphHost, ppDemoModel(), fepApi);
   /* §4.218 Fan product page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，

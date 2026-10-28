@@ -4522,6 +4522,8 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 
 ### 4.54b PDP preview（粉絲端商品頁鏡像）
 
+**2026-10-28（UI-CHANGES 397）**：create-product 右欄改用 §4.243 Fan phone（粉絲端商品頁手機版），本元件不再被任何頁面畫出（`create-product.html` 只剩 CSS 連結）——**退場候選**，依治理流程待使用者確認後走墓碑。
+
 **`_layer`** · organism ｜ **source tier** · SiteSpecific ｜ **surface 層** · 不畫底色也不畫外框，坐在 `.preview-col` 裡；深淺底皆可。
 
 **為什麼有這一支（2026-09-04 · D248）** — 建立商品右欄那句「買家在 Ztor 看到的樣子」，本來配的是 Studio 自己畫的一張小卡（縮圖＋名稱＋價格＋一句描述），跟粉絲端實際長相沒有關係。使用者裁示把**粉絲端商品頁（`ztor.vercel.app/shop-item.html`）手機版的版型**搬進來，資料接建立流程當下的欄位——那句話才是真的。原本的 `preview-card`（§4.54）留給其他建立流程。
@@ -7753,11 +7755,11 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 本框不畫底；裡面是前台鏡像自帶的近黑檯面，坐在 outlined 區塊上。
 
-**Anatomy**
-- `.wizard-split.wizard-split--narrow.wizard-split--phone` — `--phone` 只改右欄寬：`var(--preview-col-w, 270px)`（與 `.preview-split--phone` 同一個變數同一個預設）
-  - `aside.wizard-split__rail` > `section.form-section.form-section--outlined`
-    - `.form-section__head`（`ce.preview.heading` 活動預覽／`ce.preview.title` 粉絲看到的活動樣子）
-    - `.fan-phone[data-ce-phone]` — 宿主把 `js/fan-event-page.js` 畫進來
+**Anatomy**（2026-10-28 UI-CHANGES 397 起無外框）
+- 建立活動：`.wizard-split.wizard-split--narrow.wizard-split--phone`（`--phone` 只改右欄寬：`var(--preview-col-w, 270px)`，與 `.preview-split--phone` 同一個變數同一個預設）> `aside.wizard-split__rail`
+- 建立商品／組合包：`.preview-split.preview-split--phone` > `aside.preview-col.preview-col--tall`
+  - `.preview-col__head`（`__title`＋`__sub`；活動 `ce.preview.heading`／`ce.preview.title`、商品 `cp.preview.heading`／`cp.preview.title`、組合包 `cpp.bd.sp.fan.title`）
+  - `.fan-phone`（`[data-ce-phone]`／`[data-cp-phone]`／`[data-cb-fan]`）— 宿主經 `partials/fan-phone.js` 把對應的粉絲頁畫進來
 
 **Behavior** — zoom `var(--fan-phone-zoom, 0.75)`；`position: relative`（看詳情彈窗只蓋這一框）；`overflow: hidden`；`.shop-buybar` 不畫（前台手機版是 `position: fixed`，在框裡會跑到整個視窗底部）。宿主（`create-event.html` 的 `renderPreview`／`renderPhone`）只畫目前步驟那一份、其餘清空，輸入時合併到下一個畫格重畫；model 用第 8 步同一份 `buildFanModel()`，替身 api 固定介面語言與創作者幣別、不開 inline 編輯。共看派對同樣走這支（與第 8 步一致）。
 
@@ -7766,5 +7768,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 **Dependencies** — Fan event page（§4.215）、Form section（outlined）、Wizard split（`--narrow`＋`--phone`）。
 
 **Consumers** — `create-event.html` 第 2／3／4／7 步右欄（第 4 步只在共看派對出現；第 5 步票務的預覽 2026-10-28 #371 已移除、第 6 步組合包沒有右欄）。
+
+**2026-10-28（UI-CHANGES 397，使用者：「1,2,沒改啊，另外不用外匡」「3,不用外匡」）** — 建立商品（取代 §4.54b 的簡化鏡像 `.pdp-pv`）與建立組合包（取代組合包預覽卡 `.preview-card.bpc`）也改用本框，各畫「預覽與發布」那一步同一支渲染器的粉絲頁（`js/fan-product-page.js`／`js/fan-bundle-page.js`，model `buildFanProductModel()`／`buildFanBundleModel()`）。三處都拿掉 `form-section--outlined` 外框：`.preview-col__head`（`__title`＋`__sub`）與本框直接放在右欄，框寬＝右欄 270。建立商品／組合包的 `.preview-col` 加 `--tall`（載 `partials/preview-col.js`），`.preview-col--tall > .fan-phone` 在欄內自己捲、捲軸藏起。替身 api 與重畫時機收進 `partials/fan-phone.js`（`window.ztorFanPhone.render(host, opts)`＝宿主的 `buildStageOpts()`；`scheduler(fn)` 合併到下一個畫格、畫的期間丟掉自己 `applyI18n` 引發的重算，避免 `i18n:applied` 互相觸發的無限迴圈）。Consumers 增加：`create-product.html` `[data-cp-phone]`、`create-bundle.html` `[data-cb-fan]`（右欄改 `.preview-split--phone`）。
 
 **CSS** — [`fan-phone.css`](./ds-components/fan-phone.css)
