@@ -67,6 +67,7 @@
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角組合包頁（前台 shop-item 組合分支鏡像，第 5 段；只給 js/fan-bundle-page.js 用） -->
+<link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- UI-CHANGES 397：右欄的粉絲頁手機版鏡像 -->
 <link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2"><!-- 2026-10-12：本頁大綱的列尾記號改用 progress-mark --><!-- 2026-10-12（UI-CHANGES 一百七十七）：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js），比照建立商品 -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 「預覽與發布」全頁版型（主區預覽＋右側側欄） -->
@@ -131,7 +132,7 @@
     </div>
   </header>
 
-  <div class="wizard__body wizard__body--form wizard__body--narrow preview-split">
+  <div class="wizard__body wizard__body--form wizard__body--narrow preview-split preview-split--phone">
     <!-- 2026-10-28 四步驟（使用者反饋，接 2026-10-21 D464 三步驟）：.form-steps＋data-at＝目前顯示第幾步（ds-components/form-steps.css）；每張分卡標 data-form-step。
          第一步「選擇組合商品」＝組合物；第二步「組合包設定」＝組合資訊、圖片與影片、定價、數量、限購、電影關聯；
          第三步「上架與販售」＝上架與開賣、取貨、購買條件、優惠；第四步「預覽與發布」＝下方 [data-cb-stage] 全頁畫面。
@@ -571,14 +572,15 @@
     <!-- §4 F6 即時預覽欄：右欄「粉絲看到的」（第 1 批的 bundle-preview-card，第二個消費者）。
          外殼維持 2026-09-04 裁示的 form-section--outlined（建立商品／拍賣／組合三頁預覽欄同款），
          卡內容改成組合包預覽卡：內含清單 → 選擇器可點 → 售價收斂 → 剩 N 組 → 加入購物車示意。 -->
-    <aside class="preview-col">
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="cpp.bd.sp.fan.title">What fans see</h3>
-        </div>
-        <div data-cb-fan></div>
-        <p class="bpc__note" data-i18n="cpp.bd.sp.fan.note">The pickers on this card work — see how the price settles once a fan chooses. Picking here only affects this card.</p>
-      </section>
+    <aside class="preview-col preview-col--tall">
+      <!-- 2026-10-28（UI-CHANGES 397，使用者：「不用外匡」）：拿掉外框（form-section--outlined 的框線與底色），標題與手機畫面直接放在右欄。
+           2026-10-28（UI-CHANGES 397，使用者：「1,2,沒改啊」）：粉絲預覽卡（.preview-card.bpc，右欄 320）換成粉絲端組合包頁的手機版——
+           「預覽與發布」那一步同一支 js/fan-bundle-page.js、同一份 buildFanBundleModel()，縮在 .fan-phone 裡、右欄 270
+           （.preview-split--phone），與建立商品、建立活動同一套。卡下那句「卡上的選擇可以按」隨卡退場。 -->
+      <div class="preview-col__head">
+        <h3 class="preview-col__title" data-i18n="cpp.bd.sp.fan.title">What fans see</h3>
+      </div>
+      <div class="fan-phone" data-cb-fan></div>
     </aside>
 
     <!-- 第 3 步「預覽與發布」全頁畫面（D321，D310 組合側，2026-09-23，比照建立商品）：按「下一步」（D464）→ 擋關通過 → 本容器由
@@ -1295,10 +1297,16 @@
       '</div>' +
     '</div>';
   }
+  /* 2026-10-28（UI-CHANGES 397）：右欄改畫粉絲端組合包頁手機版（「預覽與發布」同一支渲染器與 model，經 partials/fan-phone.js）；
+     全頁畫面開著時右欄收起，不畫。墓碑：fanHTML() 的預覽卡與下方卡上選擇的點擊處理已不再呼叫（留作沿革，可隨元件巡檢清掉）。 */
+  const fanDraw = () => {
+    if (!fanHost || stage || !window.ztorFanPhone || !window.ztorFanBundlePage) return;
+    window.ztorFanPhone.render(fanHost, buildStageOpts());
+  };
+  let fanSched = null;
   function renderFan() {
-    if (!fanHost) return;
-    fanHost.innerHTML = fanHTML();
-    if (window.ztorIcons) window.ztorIcons.applyIcons(fanHost);
+    if (!fanSched && window.ztorFanPhone) fanSched = window.ztorFanPhone.scheduler(fanDraw);
+    if (fanSched) fanSched();
   }
   if (fanHost) fanHost.addEventListener('click', e => {
     const tier = e.target.closest('[data-cb-fan-tier]');
@@ -2681,6 +2689,8 @@
 <script src="js/currency.js?v=r2.2"></script>   <!-- D316：基準幣別＝創作者幣別（window.ztorCurrency.CREATOR），供 cbBaseCurrency() 讀 -->
 <script src="js/publish-stage.js?v=r2.2"></script>   <!-- D310 組合側：第 2 步「預覽與發布」全頁畫面 -->
 <script src="js/fan-bundle-page.js?v=r2.2"></script>   <!-- D310 組合側：粉絲視角組合包頁渲染（前台 shop-item 組合分支鏡像） -->
+<script src="partials/fan-phone.js?v=r2.2"></script>   <!-- UI-CHANGES 397：右欄的粉絲頁手機版鏡像 -->
+<script src="partials/preview-col.js?v=r2.2"></script>   <!-- UI-CHANGES 397：右欄限高（手機版頁面比視窗長，在框內自己捲） -->
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>

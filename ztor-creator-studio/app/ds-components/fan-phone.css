@@ -1,7 +1,7 @@
 /* ============================================================
    fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
    ------------------------------------------------------------
-   2026-10-28（#394，使用者：「現在最窄的設計就是手機版，CS 在創建商品與活動的流程中，
+   2026-10-28（UI-CHANGES 394，使用者：「現在最窄的設計就是手機版，CS 在創建商品與活動的流程中，
    右側欄的商品預覽、活動預覽都要做得像他一樣的設計」）：建立活動第 2／3／4／7 步右欄的
    「活動預覽」從粉絲端活動卡（event-preview-card）改成粉絲端活動頁的手機版鏡像，
    與建立商品的「商品預覽」（pdp-preview.css，D248）同一套做法：
@@ -10,8 +10,11 @@
    本框只負責「把一整頁粉絲頁縮成手機畫面放進窄欄」；頁面本體由宿主交給
    js/fan-event-page.js 畫（與第 8 步發布前預覽同一支，樣式 fan-shop.css），
    粉絲頁自己用容器查詢（.fep-shop 的 container fep）依框寬切成手機版型。
+   2026-10-28（UI-CHANGES 397，使用者：「1,2,沒改啊，另外不用外匡」「3,不用外匡」）：建立商品（取代 pdp-preview 的簡化鏡像）與
+   建立組合包（取代 bundle-preview-card）也改用本框；三處都拿掉外面那張 form-section--outlined，標題（.preview-col__head）
+   與本框直接放在右欄。替身 api 與畫的時機收進 partials/fan-phone.js，三個宿主共用。
    anatomy
-     .fan-phone            （zoom 3/4 的顯示框；宿主 [data-ce-phone] 把粉絲頁畫進來）
+     .fan-phone            （zoom 3/4 的顯示框；宿主 [data-ce-phone]／[data-cp-phone]／[data-cb-fan] 把粉絲頁畫進來）
        .fep-shop …         （js/fan-event-page.js 的輸出）
    ============================================================ */
 
@@ -25,3 +28,12 @@
 /* 底部購買列：手機版前台是 position:fixed 黏在視窗底，放在窄欄裡會跑到整個 Studio 視窗底部，
    預覽不畫它（前台捲過購買區才浮出，靜態預覽本來就看不到）。 */
 .fan-phone .shop-buybar { display: none; }
+
+/* 限高欄（.preview-col--tall，建立商品／建立組合包）：頁面比視窗長，框在欄內自己捲、標題留在上面；
+   捲軸藏起（同 preview-column.css 的 --tall 卡：手機本來就沒有看得見的捲軸）。 */
+.preview-col--tall > .fan-phone {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.preview-col--tall > .fan-phone::-webkit-scrollbar { display: none; }

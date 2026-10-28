@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-28 建立商品、建立組合包右欄預覽改手機版、三流程預覽去外框（UI-CHANGES 三百九十七、ASSUMPTIONS UIA-314；E-Shop 🟢 release2.2 是否同步待使用者決定，先標 release2.3）**：5.1.5.2／5.1.5.4 即時預覽 → `create-product.html`、`create-bundle.html` 右欄改畫粉絲端商品頁／組合包頁手機版（`partials/fan-phone.js`、`ds-components/fan-phone.css`）；`create-event.html` 一併去外框。呈現變更、規格不動。
+
 > **2026-10-28 建立活動右欄預覽改手機版（UI-CHANGES 三百九十四、ASSUMPTIONS UIA-313；S72 🔵 release2.3）**：5.1.6.1 §5.2.5 即時預覽 → `create-event.html` 第 2／3／4／7 步右欄改畫粉絲端活動頁手機版（`ds-components/fan-phone.css`、`wizard-split.css` `--phone`、`js/fan-event-page.js`），呈現變更、規格不動。
 
 > **2026-10-28 D486 原型同步（UI-CHANGES 三百八十七；tier 🔵 release2.3）**：商品端「使用優惠碼」總開關移除（修訂 D458）——`create-product.html`、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js`（建立活動組合包）的開關列與收合退場，選碼欄（`js/code-picker.js`，`hideLabel`）常駐；全店碼 chip 標「全店」；`js/discount-codes-store.js` 的 `applicable()` 不再依開關排除；`store-settings.html` 範圍浮卡不再標「不適用」。規格 5.1.5.2 F13（唯一定義處）、5.1.5.1 §2.15、5.1.5.4 F7、5.1.5.9 §2.3、5.1.5.5 F8.2、5.1.6.1／5.1.6.2／5.1.6.3、5.1.7.2、5.1.0.7、主規格 §8.22 與規則手冊 7 頁同步。

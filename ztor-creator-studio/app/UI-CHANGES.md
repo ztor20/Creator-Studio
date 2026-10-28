@@ -15,6 +15,22 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-28（三百九十七）· 建立商品、建立組合包右欄也改成粉絲頁手機版；三個建立流程的預覽都拿掉外框（B 反饋導入）
+
+**標籤**：release2.3
+
+使用者看了線上版回饋：「1,2,沒改啊，另外不用外匡」「3,不用外匡」（1＝建立商品「商品預覽」、2＝建立組合包「粉絲看到的」、3＝建立活動「活動預覽」，三百九十四已改成手機版）。
+
+- 建立商品：右欄的簡化商品頁鏡像（`.pdp-pv`，D248）換成粉絲端商品頁手機版——「預覽與發布」那一步同一支 `js/fan-product-page.js` 與 `buildFanProductModel()`，畫進 `.fan-phone[data-cp-phone]`；舊的逐塊綁定（`bindText`／`renderPv*`）退場，交付說明用的 `pvDeliveryKey()` 保留。
+- 建立組合包：右欄的組合包預覽卡（`.preview-card.bpc`，欄寬 320）換成粉絲端組合包頁手機版——`js/fan-bundle-page.js` 與 `buildFanBundleModel()`，畫進 `.fan-phone[data-cb-fan]`；右欄改 `.preview-split--phone`（270），卡下「卡上的選擇可以按」那句隨卡退場。
+- 三個預覽拿掉外框：`form-section--outlined` 撤掉，`.preview-col__head`（標題＋副標）與手機畫面直接放在右欄；手機框因此是完整的 270 寬（＝360 手機版型 × 3/4）。建立商品與組合包的右欄加 `.preview-col--tall`，頁面比視窗長時在框內自己捲、標題留在上面。
+- 新共用腳本 `partials/fan-phone.js`：替身 api（介面語言、基準幣別、不開翻譯編輯）與「合併到下一個畫格重畫」收在一處，三頁共用；建立活動三百九十四的頁內版本改呼叫它。順手擋掉一個無限迴圈（畫預覽時的 `applyI18n` 會發 `i18n:applied`，建立商品在那個事件上又叫預覽）。
+- `pdp-preview.css`（§4.54b）不再被任何頁面畫出，標為退場候選，待使用者確認。
+- 交付版：建立商品與建立組合包屬 🟢 release2.2（E-Shop，已凍結）。要不要同步搬進凍結版還沒問到使用者，先只標 release2.3；決定同步就改標 `release2.2、release2.3`，發進 `main` 後用 `release-port.sh` 搬。
+- 實測（1440 寬）：三頁右欄都是 270、沒有外框；建立商品輸入名稱，手機頁標題即時更新，每次輸入只重畫一次、無 console 錯誤；建立組合包空狀態畫出「未命名組合包」的手機頁；建立活動第 2 步照常。截圖 `screenshots/create-product-phone-preview-noframe-1440.png`、`create-bundle-phone-preview-noframe-1440.png`、`create-event-phone-preview-noframe-1440.png`。
+
+---
+
 ## 2026-10-28（三百九十六）· 優惠碼選擇改成卡片列表＋新增彈窗，全站同流程一起套用（B 反饋導入；lab-code-popup.html）
 
 **標籤**：release2.3
