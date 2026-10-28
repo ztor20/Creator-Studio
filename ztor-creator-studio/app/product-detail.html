@@ -853,23 +853,14 @@
       <!-- §2.15 優惠碼總開關（D458，2026-10-20；取代原「可與優惠碼疊加」純開關，同建立商品 5.1.5.2 F13 唯一定義處）：
            關閉＝本商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、或建立新碼
            （選碼＝把本商品加進該碼的特定商品範圍，資料在優惠碼端）。與排程特價開不開無關，所以獨立成段。
-           開關 id 沿用 pd-stack-codes（快照／概覽都讀它）；選擇欄元件 js/code-picker.js，儲存才寫回碼端。 -->
+           開關 id 沿用 pd-stack-codes（快照／概覽都讀它）；選擇欄元件 js/code-picker.js，儲存才寫回碼端。
+           〔D486（2026-10-28）起開關移除，以上「關閉／開啟」為歷史敘述〕 -->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
         </div>
-        <div class="control-group">
-          <div class="control-row">
-            <div>
-              <div class="control-row__main" data-i18n="cp.discount.stack">Use discount codes</div>
-              <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</div>
-            </div>
-            <div class="switch" role="switch" aria-checked="false" tabindex="0" id="pd-stack-codes"></div>
-          </div>
-          <div class="control-group__body" data-pd-codes-body hidden>
-            <div data-pd-codes-host></div>
-          </div>
-        </div>
+        <!-- 2026-10-28 D486：總開關（#pd-stack-codes）與收合的 control-group 退場；選碼欄常駐、不重複欄位標籤（hideLabel） -->
+        <div data-pd-codes-host></div>
       </section>
 
       <!-- §3-6 · 低庫存提醒設定（僅實體）：自庫存卡拆出——它是通知設定，不是庫存本身 -->
@@ -2179,7 +2170,7 @@
     };
     revealToggle('pd-discount-toggle', '[data-pd-discount-fields]');
     revealToggle('pd-sale-toggle', '[data-pd-sale-fields]');
-    revealToggle('pd-stack-codes', '[data-pd-codes-body]');   /* D458：優惠碼總開關——打開才露出選擇欄 */
+    /* 墓碑 2026-10-28（D486）：revealToggle('pd-stack-codes') 優惠碼總開關退場 */
     /* 單一規格折扣：折扣價 ↔ 折扣 % 雙向連動（2026-09-22，UIA-060 補套；與 create-product 同一段算法——以定價欄為基準、
        最後編輯為準；程式設值不觸發 input 故無迴圈）。多選項商品只有 % 欄（折扣價欄由 data-when-var 收起），% 套到每個組合。 */
     (function () {
@@ -2477,16 +2468,13 @@
       paintSwitch('pd-sale-toggle', !!(d && d.limited), '[data-pd-sale-fields]');
       setInput('pd-sale-start', d && d.limited ? d.limited.start : '');
       setInput('pd-sale-end', d && d.limited ? d.limited.end : '');
-      /* 優惠碼總開關（D458）：開關值先看碼端資料層（儲存過就以它為準），沒有紀錄時由商品資料的預設帶入——
-         p.codesOn 明寫優先，否則沿用舊欄位 discount.stack（既有「開啟疊加」→ 開、其餘 → 關；選碼不預選）。 */
+      /* 優惠碼選擇欄（D458；D486 起沒有總開關、常駐）：選碼讀碼端資料層的特定商品範圍；全店碼一律列在最前面 */
       (function () {
-        const key = p.id || 'zine', C = window.ztorCodes;
-        const on = C ? C.switchOn(key, p.codesOn != null ? !!p.codesOn : !!(d && d.stack)) : !!(d && d.stack);
-        paintSwitch('pd-stack-codes', on, '[data-pd-codes-body]');
+        const key = p.id || 'zine';
         const host = document.querySelector('[data-pd-codes-host]');
         if (window.ztorCodePicker && host) {
           if (window.pdCodes) { window.pdCodes.setKey(key); window.pdCodes.reset(); }
-          else window.pdCodes = window.ztorCodePicker.mount(host, { key: key, label: () => (p.name || key) });
+          else window.pdCodes = window.ztorCodePicker.mount(host, { key: key, hideLabel: true, label: () => (p.name || key) });
           window.pdCodes.setReadonly(true);
         }
       })();
@@ -3978,11 +3966,9 @@
       DRAFT.options = DRAFT.options.map(function (o) { return { name: o.name || '', values: o.values.filter(function (v) { return String(v).trim() !== ''; }) }; }).filter(function (o) { return o.values.length; });
       regen(DRAFT);
       MODEL = DRAFT; DRAFT = null;
-      /* D458：優惠碼總開關與選碼隨儲存寫回碼端的特定商品範圍（關閉不清已選的碼，只是不適用） */
+      /* D458：選碼隨儲存寫回碼端的特定商品範圍（D486 起沒有總開關，不再寫 setSwitch） */
       if (window.pdCodes && window.ztorCodes) {
         var cKey = (window.pdProduct && window.pdProduct.id) || 'zine';
-        var cSw = document.getElementById('pd-stack-codes');
-        window.ztorCodes.setSwitch(cKey, !!(cSw && cSw.getAttribute('aria-checked') === 'true'));
         window.pdCodes.commit(cKey, (window.pdProduct && window.pdProduct.name) || cKey);
       }
       if (window.pdLimits && !(window.pdConds && window.pdConds.on())) window.pdLimits.commit();   /* 限購寫回商品記錄（D398；D427 起只剩每人總限購） */
@@ -4096,6 +4082,14 @@
       return lo === hi ? money(lo) : money(lo) + '–' + money(hi);
     }
     function setovRows() {
+      /* D486：優惠碼概覽＝全店碼（一律適用）＋這個商品選的碼；都沒有寫 — */
+      var pdCodesText = function () {
+        var C = window.ztorCodes;
+        var auto = C ? C.autoApplied().map(function (c) { return c.code; }) : [];
+        var sel = window.pdCodes ? window.pdCodes.get().codes : [];
+        var list = auto.concat(sel.filter(function (c) { return auto.indexOf(c) < 0; }));
+        return list.length ? list.join('、') : '—';
+      };
       var digital = product && product.cat === 'digital';
       var multi = product && product.variant === 'multiple';
       var rows = [];
@@ -4134,11 +4128,11 @@
           : digital ? T('product-detail.setov.edition.digital-left', 'Limited · {n} total · {r} left').replace('{n}', MODEL.cap || '—')
               .replace('{r}', Math.max(0, (Number(MODEL.cap) || 0) - (Number(MODEL.sold) || 0) - (window.ListingState ? window.ListingState.holdOf(product, 'free') : 0)))   /* UIA-301 第 5 項：數位限量帶剩餘額度 */
           : T('product-detail.setov.edition.limited-total', 'Limited · {n} total').replace('{n}', MODEL.cap || '—') });
-      if (window.pdConds && window.pdConds.on()) rows.push({ g: 'pricing', go: 'rules', key: 'cpk.title', fb: 'Discount codes', v: on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : T('product-detail.setov.off', 'Off') });   /* D463（最終版）：折扣併進購買條件，這一列只剩優惠碼 */
+      if (window.pdConds && window.pdConds.on()) rows.push({ g: 'pricing', go: 'rules', key: 'cpk.title', fb: 'Discount codes', v: pdCodesText() });   /* 2026-10-28 D486：列出全店碼＋選取的碼，取代「使用優惠碼／關」 */   /* D463（最終版）：折扣併進購買條件，這一列只剩優惠碼 */
       else rows.push({ g: 'pricing', go: 'rules', key: 'cp.discount.title', fb: 'Discount settings',
         v: on('pd-discount-toggle')
-          ? join([multi ? '' : money(num($v('pd-sale-price'))), $v('pd-sale-percent') ? '-' + $v('pd-sale-percent') + '%' : '', on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : '', on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : ''])
-          : join([T('product-detail.setov.off', 'Off'), on('pd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : '']) });
+          ? join([multi ? '' : money(num($v('pd-sale-price'))), $v('pd-sale-percent') ? '-' + $v('pd-sale-percent') + '%' : '', on('pd-sale-toggle') ? join([$v('pd-sale-start'), $v('pd-sale-end')], ' – ') : ''])
+          : T('product-detail.setov.off', 'Off') });   /* D486：優惠碼不再是開關，折扣列不再附「使用優惠碼」 */
       if (!digital) {
         var pct = $v('pd-threshold-pct') || '10';
         rows.push({ g: 'ops', go: 'rules', key: 'product-detail.threshold.title', fb: 'Low-stock alert', v: on('pd-lowstock-toggle') ? pct + '%' : T('product-detail.setov.off', 'Off') });

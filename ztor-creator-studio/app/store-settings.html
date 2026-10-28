@@ -1443,13 +1443,13 @@
       /* ── D458：清單與優惠碼資料層（js/discount-codes-store.js）同步 ──
          商品端「使用優惠碼」選擇欄選碼＝把商品加進該碼的「特定商品」範圍，資料存在這一邊；
          所以範圍欄從資料層重畫（含商品端新增的商品、商品端新建的碼會長出新列）。
-         商品的優惠碼開關為關閉時，該商品在範圍浮卡裡標「不適用」。 */
+         墓碑 2026-10-28（D486）：商品的優惠碼開關為關閉時在範圍浮卡裡標「不適用」——開關已移除，這個標示不再出現。 */
       (function syncFromStore() {
         const C = window.ztorCodes; if (!C) return;
         const P = window.ProductsStore;
         const kindOf = key => (P && P.getBundle && P.getBundle(key)) || /^evbundle:/.test(key) ? 'bundle' : 'product';
         const itemsOf = c => c.items.map(it => typeof it === 'string'
-          ? { id: it, name: C.labelFor(it), kind: kindOf(it), off: !C.switchOn(it) }
+          ? { id: it, name: C.labelFor(it), kind: kindOf(it), off: false }   /* 2026-10-28 D486：商品端總開關移除，不再有「不適用」的商品 */
           : { name: it.label, kind: it.kind });
         const rowOf = code => [...rows.querySelectorAll('tr')].find(tr => ((tr.querySelector('.ss-code-cell__code') || {}).textContent || '').trim() === code);
         const BADGE = { active: ['success', 'active'], scheduled: ['info', 'scheduled'], ended: ['neutral', 'ended'], disabled: ['neutral', 'disabled'], exhausted: ['warning', 'exhausted'] };

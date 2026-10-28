@@ -6143,7 +6143,16 @@
     'cp.discount.stack-sub':{ en: 'Off means no store discount code can be used here', zh: '關閉時，任何商店優惠碼都不能用在這裡' },
     /* 商品端優惠碼選擇欄（js/code-picker.js · ds-components/code-picker.css） */
     'cpk.title':            { en: 'Discount codes',                 zh: '優惠碼' },
-    'cpk.auto':             { en: 'Applied automatically',          zh: '已自動適用' },
+    'cpk.auto':             { en: 'Whole-store code · applies automatically', zh: '全店優惠碼，自動適用' },   // 2026-10-28 D486：全店碼 chip 的滑過說明
+    'cpk.chip.all':         { en: 'Whole store',                    zh: '全店' },   // 2026-10-28 D486：全店碼 chip 尾端的小字（取代鎖頭）
+    'cpk.col.code':         { en: 'Code',                           zh: '優惠碼' },   // 2026-10-28 選碼改勾選表的欄名
+    'cpk.col.scope':        { en: 'Applies to',                     zh: '適用範圍' },
+    'cpk.col.pct':          { en: 'Off',                            zh: '折扣' },
+    'cpk.col.period':       { en: 'Period',                         zh: '期間' },
+    'cpk.col.status':       { en: 'Status',                         zh: '狀態' },
+    'cpk.scope.all':        { en: 'Whole store',                    zh: '全店' },
+    'cpk.scope.items':      { en: 'Specific items',                 zh: '特定商品' },
+    'cpk.status.active':    { en: 'Active',                         zh: '進行中' },
     'cpk.auto.hint':        { en: 'Codes for the whole store apply without picking', zh: '範圍是全部商店的碼，不必另外選' },
     'cpk.select.ph':        { en: 'Pick codes…',                    zh: '選擇優惠碼…' },
     'cpk.empty':            { en: 'No more codes to add',           zh: '沒有可加入的優惠碼' },

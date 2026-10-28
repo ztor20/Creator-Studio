@@ -810,7 +810,7 @@
 
     <!-- §4.4 F13 優惠碼總開關（D458，2026-10-20；spec 5.1.5.2 §4.4 F13「可與優惠碼疊加」唯一定義處）：
          取代 2026-09 起放在折扣群組內的「可與優惠碼疊加」純開關（原「關閉＝折扣與優惠碼擇一」）。
-         關閉（預設）＝這個商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、
+         〔D486 起開關移除、以下「關閉／開啟」為歷史敘述〕關閉（預設）＝這個商品不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選「特定商品」範圍的碼、
          或建立新碼（選碼＝把本商品加進該碼的特定商品範圍，資料在優惠碼端）。與排程特價開不開無關（D458 決定 4），
          所以獨立成段、不再收進折扣群組；單一規格與多選項共用這一段（一個商品只有一個總開關）。
          按「開始販售」時才 commit：新碼與選取結果隨商品儲存一併建立綁定（D458 推導 9／11）。 -->
@@ -818,18 +818,10 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
       </div>
-      <div class="control-group">
-        <div class="control-row">
-          <div>
-            <div class="control-row__main" data-i18n="cp.discount.stack">Use discount codes</div>
-            <div class="control-row__sub" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</div>
-          </div>
-          <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cp-codes-toggle"></div>
-        </div>
-        <div class="control-group__body" data-cp-codes-body hidden>
-          <div data-cp-codes-host></div>
-        </div>
-      </div>
+      <!-- 2026-10-28 D486（使用者：「全店優惠碼一定會套用所有商品，這樣開關是否就不需要，只要有添加欄位就行」）：
+           「使用優惠碼」總開關與收合的 control-group 退場（墓碑 #cp-codes-toggle／[data-cp-codes-body]）。
+           分卡標題已是「優惠碼」，選碼欄直接常駐、不再重複欄位標籤（hideLabel）：全店碼唯讀列在最前面標「全店」，後面選特定商品範圍的碼或建立新碼。 -->
+      <div data-cp-codes-host></div>
     </section>
 
     <!-- §4.1 F4 取貨方式 Delivery method（僅實體；步驟 2，開賣設定之後、購買條件之前）· spec 5.1.5.2 F4 / D470（2026-10-22）。
@@ -1684,11 +1676,9 @@
     const nm = ((document.getElementById('cp-f-name') || {}).value || '').trim();
     let pr = ((document.getElementById('cp-price') || {}).value || '').trim();
     if (pr && !/\$/.test(pr)) pr = '$' + pr;
-    /* D458：商品儲存時一併寫入優惠碼端——開關開啟才綁（選取與暫存的新碼）；建立流程還沒有商品 id，用暫時 key */
+    /* D458：商品儲存時一併寫入優惠碼端（選取與暫存的新碼）；建立流程還沒有商品 id，用暫時 key。D486 起沒有總開關，一律 commit */
     if (cpCodes) {
       const key = 'new-' + Date.now().toString(36);
-      const on = cpCodesToggle && cpCodesToggle.getAttribute('aria-checked') === 'true';
-      if (window.ztorCodes) window.ztorCodes.setSwitch(key, on);
       cpCodes.commit(key, nm || key);
     }
     const q = new URLSearchParams({ posted: '1' });
@@ -2401,15 +2391,14 @@
   wireReveal('cp-sale-toggle', '[data-cp-sale-fields]');
   wireReveal('cp-vdiscount-toggle', '[data-cp-vdiscount-fields]');   /* 多規格折扣（折扣%）*/
   wireReveal('cp-vsale-toggle', '[data-cp-vsale-fields]');
-  /* 優惠碼總開關（F13 · D458）：開關打開才顯示選擇欄（js/code-picker.js）；單一規格與多選項共用這一顆。
+  /* 優惠碼選擇欄（F13 · D458；D486 起沒有總開關、常駐）：js/code-picker.js；單一規格與多選項共用這一段。
      選取結果與新碼先留在元件裡，按「開始販售」（doPublishNew）才 commit 進碼端範圍。
-     墓碑 2026-10-20：原 data-cp-stack／data-cp-vstack 兩顆「可與優惠碼疊加」純開關與 wireSwitchOnly 退場。 */
-  const cpCodesToggle = document.getElementById('cp-codes-toggle');
+     墓碑 2026-10-20：原 data-cp-stack／data-cp-vstack 兩顆「可與優惠碼疊加」純開關與 wireSwitchOnly 退場。
+     墓碑 2026-10-28（D486）：#cp-codes-toggle 總開關與 wireReveal 收合退場。 */
   const cpCodesHost = document.querySelector('[data-cp-codes-host]');
   let cpCodes = null;
-  if (cpCodesToggle && cpCodesHost && window.ztorCodePicker) {
-    cpCodes = window.ztorCodePicker.mount(cpCodesHost, { key: null, label: () => ((document.getElementById('cp-f-name') || {}).value || '').trim() });
-    wireReveal('cp-codes-toggle', '[data-cp-codes-body]');
+  if (cpCodesHost && window.ztorCodePicker) {
+    cpCodes = window.ztorCodePicker.mount(cpCodesHost, { key: null, hideLabel: true, label: () => ((document.getElementById('cp-f-name') || {}).value || '').trim() });
   }
   /* 單一規格折扣：折扣價 ↔ 折扣% 雙向連動（以定價 cp-price 為基準、最後編輯為準；程式設值不觸發 input 故無迴圈）*/
   (function () {
