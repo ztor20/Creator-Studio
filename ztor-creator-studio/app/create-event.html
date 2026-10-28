@@ -86,6 +86,7 @@
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2"><!-- partials/publish-preview.js 的通用預覽節點用 .preview-card，check 15 補抓（2026-09-11） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D305：發布前預覽的粉絲視角活動頁（前台 shop-item 鏡像，2026-09-22 使用者裁決；只給 js/fan-event-page.js 用） -->
+<link rel="stylesheet" href="ds-components/preview-dock.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- UI-CHANGES 394：第 2／3／4／7 步右欄的手機版活動頁鏡像 -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310：第 8 步「預覽與發布」的全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
@@ -171,6 +172,9 @@
   /* 每一場開哪些票：一場一組，組內一行一個票種（勾選｜票種名｜價格｜張數） */
   /* 票種清單：一列一種（票種名｜預設價格｜預設張數｜移除），沿用場次列的節奏。
      2026-09-23（D316）：預設手續費那一欄隨「手續費加價由粉絲負擔」整條退場，三欄變兩欄。 */
+  /* 2026-10-28（使用者：「轉到下一步驟，整個都位移」）：有些步驟頁面夠長出現捲軸、有些不出現，捲軸出現時整頁內容被擠左約 8px，
+     換步驟時版面左右晃動。預留捲軸位置（內容短也留空位），各步驟左右位置一致。 */
+  .wizard__sheet { scrollbar-gutter: stable; }
   .ce-types { display:flex; flex-direction:column; gap: var(--sp-8); }
   .ce-types__head, .ce-types__row {
     display:grid; gap: var(--sp-8); align-items:center;
@@ -308,11 +312,7 @@
         </div>
       </div>
       <div class="wizard__top-actions">
-        <span class="wizard__save-status" id="ce-save-status" data-state="saved">
-          <span class="wizard__save-status__dot"></span>
-          <span id="ce-save-status-text" data-i18n="ce.save.saved">Saved · just now</span>
-        </span>
-        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
+        <button class="wizard__save-status" type="button" id="ce-save-status" data-wizard-savedraft data-state="saved"><i class="wizard__save-status__dot"></i><svg class="wizard__save-status__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span id="ce-save-status-text" data-i18n="ce.save.saved">Saved · just now</span><span class="wizard__save-status__hover" data-i18n="wiz.save.now">Save now</span></button>
       </div>
     </div>
   </header>
@@ -336,15 +336,11 @@
            空白往上推、看起來沒對齊）。 -->
       <div class="wizard__step-head">
         <div class="wizard__step-head-titles">
-          <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s2.h1">Make them feel it</h1>
+          <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s2.h1">Basics</h1>
           <p class="wizard__step-sub" data-hide-type="watchparty" data-i18n="ce.s2.sub">What will fans experience?</p>
           <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s2.h1" hidden>Pick what you'll watch</h1>
           <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s2.sub" hidden>Choose a video and name the room.</p>
         </div>
-        <button type="button" class="btn btn--outline" id="ce-type-switch" data-feat="S74" data-i18n-aria-label="ce.type.switch" aria-label="Switch event type">
-          <i data-lucide="switch-horizontal" class="ztor-icon"></i>
-          <span id="ce-type-switch-label"></span>
-        </button>
       </div>
 
       <!-- 常駐預覽側欄（2026-08-09 使用者指示）：預覽卡從「預覽」鈕開的覆蓋面板搬成
@@ -373,9 +369,15 @@
 
       <!-- 共看派對分支（D149 §4.7）：F13 播放內容 ＋ F14 房間名稱。整段照 create-event.html 原樣搬過來。 -->
       <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.wp.content">Watch content</h3>
-          <p class="form-section__sub" data-i18n="ce.wp.content.sub">Pick one video for everyone to watch together.</p>
+        <div class="form-section__head form-section__head--actions">
+          <div class="form-section__head-titles">
+            <h3 class="form-section__title" data-i18n="ce.wp.content">Watch content</h3>
+            <p class="form-section__sub" data-i18n="ce.wp.content.sub">Pick one video for everyone to watch together.</p>
+          </div>
+          <button type="button" class="btn btn--outline btn--sm" data-ce-type-switch data-feat="S74" data-i18n-aria-label="ce.type.switch" aria-label="Switch event type">
+            <i data-lucide="switch-horizontal" class="ztor-icon"></i>
+            <span data-ce-type-switch-label></span>
+          </button>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.wp.film">Select video</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
@@ -401,8 +403,13 @@
            2026-10-12 使用者指示「這兩個要加主標題」：兩張卡各掛一個主標題（基本資訊／活動描述），與同一步其他區段（演出陣容、活動圖片、條款）一致；
            取代此前「不掛標題」的做法（Q132，反轉 Q125 對這一步兩張卡的處理）。 -->
       <div class="form-section form-section--outlined" data-hide-type="watchparty" data-ce-group="basic">
-        <div class="form-section__head">
+        <!-- 2026-10-28（使用者指著頁首右上的「演唱會」：「移到這」）：換活動類型鈕從頁首搬進這張卡的標題列右側 -->
+        <div class="form-section__head form-section__head--actions">
           <h3 class="form-section__title" data-i18n="ce.basic.title">Basic info</h3>
+          <button type="button" class="btn btn--outline btn--sm" data-ce-type-switch data-feat="S74" data-i18n-aria-label="ce.type.switch" aria-label="Switch event type">
+            <i data-lucide="switch-horizontal" class="ztor-icon"></i>
+            <span data-ce-type-switch-label></span>
+          </button>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
@@ -1351,6 +1358,7 @@
 <script src="partials/venue-map.js?v=r2.2"></script>   <!-- D369：活動地點地圖（第 3 步預覽、js/fan-event-page.js 粉絲頁共用） -->
 <!-- 墓碑 2026-10-05（D354）：partials/info-sections.js（說明區塊）退場，排序搬進 rich-body.js -->
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
+<script src="partials/preview-dock.js?v=r2.2"></script>
 <!-- D310（2026-09-22）：發布前預覽確認由浮層改為全頁畫面，本頁的宿主改走 js/publish-stage.js；
      partials/publish-preview.js（浮層）已於 2026-09-23（D317／D321／D322／D323）在 create-product／
      create-bundle／create-project／publish-work 全部退場，僅剩 design-system.html／design-components.html
@@ -1724,8 +1732,7 @@
       b.classList.toggle("segmented__btn--active", on);
       b.setAttribute("aria-checked", String(on));
     });
-    const swLabel = document.getElementById("ce-type-switch-label");
-    if (swLabel) swLabel.textContent = typeLabel();
+    document.querySelectorAll("[data-ce-type-switch-label]").forEach(l => { l.textContent = typeLabel(); });
   }
   function chooseType(t) {
     eventType = t || "";
@@ -1768,7 +1775,7 @@
     renderBkyList();
     window.scrollTo({ top: 0, behavior: "instant" });
   }
-  document.getElementById("ce-type-switch")?.addEventListener("click", showGate);
+  document.querySelectorAll("[data-ce-type-switch]").forEach(b => b.addEventListener("click", showGate));
   document.querySelectorAll("[data-gate-type]").forEach(b =>
     b.addEventListener("click", () => {
       chooseType(b.dataset.gateType);
@@ -1812,7 +1819,7 @@
   function markSaved() {
     if (!saveStatus) return;
     saveStatus.dataset.state = "saved";
-    if (saveText) { saveText.removeAttribute("data-i18n"); saveText.textContent = T("ce.save.saved", "Saved · just now"); }
+    if (saveText) { saveText.removeAttribute("data-i18n"); saveText.textContent = T("ce.save.saved", "Saved"); }
   }
   function scheduleSave() {
     markSaving();
@@ -4989,7 +4996,7 @@
        固定的上限會讓軌底端落到底部動作列後面，捲到底也看不到最後一張卡。改成每次捲動／縮放／換步驟時，
        把（動作列上緣 − 漸層 − 軌上緣 − 16）寫進 --wizard-rail-max（wizard-split.css 有寫就用它）。 */
     const fitRails = () => {
-      const limit = (foot ? foot.getBoundingClientRect().top : window.innerHeight) - 56 - 16;
+      const limit = (foot ? foot.getBoundingClientRect().top : window.innerHeight) - 20;   /* 2026-10-28：下緣離動作列 20px（原 72），右欄預覽再長一點 */
       document.querySelectorAll(".wizard-split__rail").forEach(r => {
         if (!r.offsetParent) return;
         const top = r.getBoundingClientRect().top;

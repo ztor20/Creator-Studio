@@ -38,7 +38,7 @@
         return;
       }
       status.dataset.state = state;
-      if (statusText) statusText.textContent = state === 'saving' ? T('wiz.saving', 'Saving…') : T('wiz.saved.now', 'Saved · just now');
+      if (statusText) statusText.textContent = state === 'saving' ? T('wiz.saving', 'Saving…') : T('wiz.saved.now', 'Saved');
     }
     function saving() { state = 'saving'; renderStatus(); }
     function saved() { state = 'saved'; renderStatus(); }

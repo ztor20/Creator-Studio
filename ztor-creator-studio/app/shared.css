@@ -1378,6 +1378,16 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   box-shadow: var(--shadow-card), var(--shadow-edge-top);
   pointer-events: none;
 }
+/* 遮色層（使用者：「上面也和 footer 一樣」，同 .wizard__bottom::after 的鏡像）：頂列上緣到膠囊下緣上 16px 完全不透明，
+   往下 24px 淡出到透明——內容捲到頂列後面時，膠囊上半與四周縫隙完全看不到內容，只有最下緣一小段透出。 */
+.wizard__top::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: calc(-1 * var(--sp-24));
+  background: linear-gradient(to top, transparent 0, var(--wizard-mask) calc(var(--sp-24) + var(--wizard-top-pad-b) + var(--sp-16)));
+  pointer-events: none;
+  z-index: -2;
+}
 /* 淺色主題同 .list-toolbar：白底＋卡片陰影撐出層次。 */
 html[data-theme="light"] .wizard__top::before {
   background: var(--card);
@@ -1399,10 +1409,11 @@ html[data-theme="light"] .wizard__top::before {
   grid-template-columns: minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr);
   align-items: center;
   gap: var(--sp-16);
+  /* 2026-10-28（使用者：「左邊和上下的間距要一樣」）：左內距 24 → 6，返回鈕 hover 膠囊離頂列膠囊左緣 26 → 8，與上下的 8 一致（標題與箭頭整體往左移 20px）。
   /* 膠囊內距（2026-09-23）：外面已經有 .wizard__top 的一圈外距，上下由 20 收成 12；
      左邊多 4 是給返回鈕 hover 膠囊的負外距留位，同 .list-toolbar 左右不對稱的理由。
      舊值：padding: var(--sp-20) var(--sp-28)（2026-06-23 使用者指定加大）。 */
-  --wh-pad-l: var(--sp-24); --wh-pad-r: var(--sp-20); --wh-pad-b: var(--sp-12);   /* 2026-10-28：內距拆成變數，窄寬度的第二排底板要用同一組負外距貼到膠囊邊 */
+  --wh-pad-l: var(--sp-6); --wh-pad-r: var(--sp-20); --wh-pad-b: var(--sp-12);   /* 2026-10-28：內距拆成變數，窄寬度的第二排底板要用同一組負外距貼到膠囊邊 */
   padding: var(--sp-12) var(--wh-pad-r) var(--wh-pad-b) var(--wh-pad-l);
 }
 /* 頂列下面還有一排（分節分頁）時，兩排之間一條淡分隔線，橫跨整顆膠囊。 */
@@ -1466,8 +1477,27 @@ html[data-theme="light"] .wizard__top::before {
 .wizard__top-sub { font-size: var(--fs-13); color: var(--foreground-muted); line-height: var(--lh-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 /* 自動儲存狀態（各 wizard 頁共用）。兩態：saved（綠點＋已儲存）／saving（轉圈＋儲存中…）。
    fallback：沒有 autosave 的頁面（.wizard[data-autosave="false"]）→ 渲染成可點的「儲存」鈕（--button）。 */
-.wizard__save-status { display: inline-flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-12); color: var(--foreground-muted); white-space: nowrap; font-family: inherit; }
+/* 2026-10-28（UI-CHANGES 401，使用者：「全部改成 B」；lab-save-merge.html）：狀態與「儲存為草稿」合成同一顆狀態鈕——
+   原本「已儲存 · 剛剛」（只是報告）與「儲存為草稿」（按了沒有新結果）並排，兩個訊號重複。現在 .wizard__save-status 是一顆 <button>：
+   平常顯示狀態點＋狀態字；滑過（儲存中除外）狀態點換成存檔圖示、字改「立即儲存」；點一下就存，沒有選單。
+   四態 data-state：saved（綠點「已儲存」）／saving（轉圈「儲存中…」，滑過不變、避免重複送出）／failed（紅「儲存失敗」）／offline（黃點「未儲存」）。
+   failed／offline 目前只在 design-system.html 的 demo 出現（原型沒有失敗與離線的觸發點）。 */
+.wizard__save-status { display: inline-flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13); color: var(--foreground); white-space: nowrap; font-family: inherit;
+  border: 0; cursor: pointer; padding: 7px var(--sp-12); border-radius: var(--radius-md); box-shadow: 0 0 0 1px var(--border); background: var(--ztu-film); }
+.wizard__save-status:is(:hover, .is-hover) { background: var(--ztu-glass-strong); }   /* .is-hover＝design-system.html 的靜態「滑過」示範用 */
+.wizard__save-status:disabled { opacity: 1; cursor: default; }
 .wizard__save-status__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--status-success); flex: 0 0 auto; }
+.wizard__save-status__ico { width: 14px; height: 14px; flex: none; display: none; }
+.wizard__save-status__hover { display: none; }
+.wizard__save-status[data-state="failed"] { color: var(--status-error); }
+.wizard__save-status[data-state="failed"] .wizard__save-status__dot { background: var(--status-error); }
+.wizard__save-status[data-state="offline"] .wizard__save-status__dot { background: var(--status-warning); }
+.wizard__save-status:not([data-state="saving"]):not(:disabled):is(:hover, .is-hover) { color: var(--foreground); }
+.wizard__save-status:not([data-state="saving"]):not(:disabled):is(:hover, .is-hover) .wizard__save-status__dot,
+.wizard__save-status:not([data-state="saving"]):not(:disabled):is(:hover, .is-hover) [data-wizard-save-text],
+.wizard__save-status:not([data-state="saving"]):not(:disabled):is(:hover, .is-hover) #ce-save-status-text { display: none; }
+.wizard__save-status:not([data-state="saving"]):not(:disabled):is(:hover, .is-hover) .wizard__save-status__ico,
+.wizard__save-status:not([data-state="saving"]):not(:disabled):is(:hover, .is-hover) .wizard__save-status__hover { display: inline-block; }
 .wizard__save-status[data-state="saving"] { color: var(--foreground-muted); }
 .wizard__save-status[data-state="saving"] .wizard__save-status__dot {
   width: 12px; height: 12px; background: transparent;
@@ -1484,7 +1514,6 @@ html[data-theme="light"] .wizard__top::before {
 .wizard__save-status--button:hover { background: var(--ztu-glass-strong); }   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--accent) */
 .wizard__save-status--button .wizard__save-status__dot { display: none; }
 /* 自動儲存狀態與預覽鈕之間加大間距（2026-06-23 使用者指定）：在 8px gap 外再補右邊距 */
-.wizard__top-actions .wizard__save-status,
 .wizard__top-actions .ce-save-status { margin-inline-end: var(--sp-12); }
 /* 手機版頂列（2026-10-15，375px 實測整頁橫向溢出約 128px）：三欄 grid 的左欄下限 180px＋右欄 min-content
    （儲存狀態＋「儲存為草稿」鈕）在 375px 就已超寬，中欄進度條還被擠成 0 寬、標籤疊在儲存狀態上。
@@ -1596,13 +1625,15 @@ html[data-theme="light"] .wizard__top::before {
    跟背後的內容卡接得起來；沒有邊線、沒有玻璃。上緣用 ::before 做一段漸層淡出，
    內容捲到底列前先淡掉，而不是被一刀切齊（使用者指定）。
    舊值：in-flow、玻璃底＋模糊＋border-top 1px --border＋inset 內光。 */
+/* 2026-10-28（UI-CHANGES 404，使用者：「這一塊 footer 改成（頂列）的 layer」）：底列也改成浮起的磨砂圓角膠囊，材質與 .wizard__top::before 同一組配方
+   （玻璃底＋模糊＋1px 邊＋卡片陰影＋--radius-xl），取代 2026-09-23 的「同色遮色片」。膠囊畫在 ::before、左右 --sp-28、離視窗底 --sp-16；
+   內容仍在 footer 自己的 padding 裡（膠囊內距 --sp-20）。上緣的漸層淡出改放 ::after，內容捲到底列前先淡掉的行為不變。
+   舊值：background: inherit＋background-attachment: fixed（遮色片）、::before 做漸層。 */
 .wizard__bottom {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   z-index: 20;
-  padding: var(--sp-16) var(--sp-28);
-  background: inherit;
-  background-attachment: fixed;
+  padding: var(--sp-12) calc(var(--sp-28) + var(--sp-20)) calc(var(--sp-16) + var(--sp-12));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1610,10 +1641,26 @@ html[data-theme="light"] .wizard__top::before {
 .wizard__bottom::before {
   content: "";
   position: absolute;
-  left: 0; right: 0; bottom: 100%;
-  height: var(--sp-56);
-  background: linear-gradient(to bottom, transparent, var(--wizard-mask));
+  inset: 0 var(--sp-28) var(--sp-16);
+  z-index: -1;
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
   pointer-events: none;
+}
+html[data-theme="light"] .wizard__bottom::before { background: var(--card); box-shadow: var(--shadow-card); }
+/* 遮色層（使用者：「應該從這裡就完全消失就好，上面的部分還是要透過去」）：從底列上方 24px 開始淡入，到膠囊上緣下 16px 處完全不透明，
+   所以膠囊的上半仍透出後面的內容，下半與膠囊四周的縫隙完全看不到內容。 */
+.wizard__bottom::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: calc(-1 * var(--sp-24)); bottom: 0;
+  background: linear-gradient(to bottom, transparent 0, var(--wizard-mask) calc(var(--sp-24) + var(--sp-16)));
+  pointer-events: none;
+  z-index: -2;
 }
 /* 只有右側一組動作時（沒有左側的次要動作，如「儲存並離開」）靠右收齊。
    2026-08-09 收斂：站上九個 wizard footer 各自寫著同一段 inline
@@ -1898,12 +1945,39 @@ html[data-theme="light"] .wizard__top::before {
      讓內容「淡掉」而不是「被切斷」，不依賴 backdrop-filter。預設高度 0＝不啟用。
 
      四個變數都可以在 `docs/detail-topbar-tuner.html` 裡調，那頁會把定案值印成可貼的 CSS。 */
+  /* 2026-10-29（使用者：「這種 fix 在上面的，可以改成創建頁那種 style」）：黏住態改成與建立流程頂列（.wizard__top）同一種浮起的磨砂圓角膠囊——
+     列本身透明，膠囊畫在 ::before（玻璃底＋模糊＋1px 邊＋卡片陰影＋--radius-xl），左右離邊 --sp-12、上下各留 --sp-12。
+     舊值：background: var(--detail-bar-bg, var(--ztu-glass-bg))＋backdrop-filter＋border-bottom 1px --border-soft（整條貼邊的玻璃帶）。 */
+  background: transparent;
+  animation: detail-topbar-in 180ms ease-out;
+}
+/* 彈窗內（html[data-embed]，detail-sheet 裡的 iframe）維持原本整條貼邊的玻璃帶（使用者：「如果是 popup 中的就保持原本的設計」）：
+   浮起膠囊只給全頁。 */
+html[data-embed] .pd-detail__topbar.is-stuck,
+html[data-embed] .detail-topbar.is-stuck {
   background: var(--detail-bar-bg, var(--ztu-glass-bg));
   backdrop-filter: blur(var(--detail-bar-blur, var(--ztu-blur-glass)));
   -webkit-backdrop-filter: blur(var(--detail-bar-blur, var(--ztu-blur-glass)));
   border-bottom: 1px solid var(--border-soft);
-  animation: detail-topbar-in 180ms ease-out;
 }
+html:not([data-embed]) .pd-detail__topbar.is-stuck::before,
+html:not([data-embed]) .detail-topbar.is-stuck::before {
+  content: "";
+  position: absolute;
+  inset: var(--sp-12);   /* 左右只縮 12（建立流程頂列是 28）：返回鍵要整顆放進膠囊裡，見下方 .detail-topbar__back 的覆寫 */
+  z-index: -1;
+  background: var(--detail-bar-bg, var(--ztu-glass-bg));
+  backdrop-filter: blur(var(--detail-bar-blur, var(--ztu-blur-glass)));
+  -webkit-backdrop-filter: blur(var(--detail-bar-blur, var(--ztu-blur-glass)));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  pointer-events: none;
+}
+html[data-theme="light"]:not([data-embed]) .pd-detail__topbar.is-stuck::before,
+html[data-theme="light"]:not([data-embed]) .detail-topbar.is-stuck::before { background: var(--card); box-shadow: var(--shadow-card); }
+html:not([data-embed]) .pd-detail__topbar.is-stuck,
+html:not([data-embed]) .detail-topbar.is-stuck { min-height: calc(64px + var(--sp-24)); }   /* 膠囊 64 ＋上下各 12 的透明外距 */
 /* 下緣的漸層淡出（預設關閉：高度 0）。不用 backdrop-filter，所以它在浮層裡一定會生效。 */
 .pd-detail__topbar.is-stuck::after,
 .detail-topbar.is-stuck::after {
@@ -1932,11 +2006,15 @@ html[data-theme="light"] .wizard__top::before {
 .detail-topbar__tabs { display: none; min-width: 0; flex: 1 1 auto; overflow-x: auto; scrollbar-width: none; }
 .detail-topbar__tabs::-webkit-scrollbar { display: none; }
 .detail-topbar.is-stuck.has-tabs .detail-topbar__tabs { display: flex; align-items: stretch; align-self: stretch; }
+html:not([data-embed]) .detail-topbar.is-stuck.has-tabs .detail-topbar__tabs { margin-block: var(--sp-12); }
 .detail-topbar__tabs .tabs { flex-wrap: nowrap; height: 100%; }
-.detail-topbar__tabs .tabs__item { min-height: 0; height: 100%; }
+.detail-topbar__tabs .tabs__item { min-height: 0; height: 100%; white-space: nowrap; flex: none; }   /* 2026-10-29（使用者：「如果寬度不夠，不要把 tab 的字換行」）：字不換行，擠不下時整排在容器內橫向捲 */
 .detail-topbar.is-stuck { flex-wrap: nowrap; }
+/* 返回鍵放進膠囊（原本用負外距掛在內容欄左邊的溝裡，膠囊的左緣會從它中間切過去）：離膠囊左緣 --sp-8。 */
+html:not([data-embed]) .detail-topbar.is-stuck .detail-topbar__back { margin-left: calc(var(--sp-20) - var(--detail-bar-pl, 0px)); }
 /* 有 tabs 時列高由 tabs 撐（上下內距歸零），跟沒 tabs 時同高，切分頁不會跳 */
 .detail-topbar.is-stuck.has-tabs { padding-block: 0; min-height: 64px; }
+html:not([data-embed]) .detail-topbar.is-stuck.has-tabs { min-height: calc(64px + var(--sp-24)); }
 /* 身分槽：黏住且有 tabs 時吃固定寬度（＝內容欄左緣到列左緣，JS 量），名稱太長截斷 */
 .detail-topbar.is-stuck .detail-topbar__mini { flex: 0 1 auto; min-width: 0; }
 .detail-topbar.is-stuck.has-tabs .detail-topbar__mini { flex: 0 0 var(--dock-id-w, auto); padding-right: var(--sp-16); }

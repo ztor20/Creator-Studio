@@ -3055,7 +3055,7 @@
     'link.reset':             { en: 'Reset link',                         zh: '重置連結' },
     'link.reset-hint':        { en: 'The old link stops working immediately', zh: '舊連結立即失效' },
     /* 庫存池與鎖定分配（stock-allocation 元件的欄位名與提示）。 */
-    'stock.pool':             { en: 'Goods in stock',                     zh: '目前在庫' },
+    'stock.pool':             { en: 'Stock quantity',                     zh: '庫存量' },
     'stock.lock':             { en: 'Locked',                             zh: '鎖定量' },
     'stock.free':             { en: 'Unlocked',                           zh: '未鎖定' },
     'stock.channel-single':   { en: 'Single sale',                        zh: '單售' },
@@ -5353,9 +5353,17 @@
     'wiz.save':             { en: 'Save and come back anytime',       zh: '儲存草稿稍後再回來' },
     'wiz.savelater':        { en: 'Save for later',                   zh: '稍後再存' },
     'wiz.autosaved':        { en: 'Saved',                            zh: '已儲存' },
-    'wiz.saved.now':        { en: 'Saved · just now',                 zh: '已儲存 · 剛剛' },
+    'wiz.saved.now':        { en: 'Saved',                            zh: '已儲存' },
+    'wiz.save.now':         { en: 'Save now',                         zh: '立即儲存' },
+    'wiz.save.failed':      { en: 'Save failed',                      zh: '儲存失敗' },
+    'wiz.save.unsaved':     { en: 'Not saved',                        zh: '未儲存' },
     'wiz.saving':           { en: 'Saving…',                          zh: '儲存中…' },
     'wiz.back':             { en: 'Back',                             zh: '上一步' },
+    'pstage.device':        { en: 'Preview size',                     zh: '預覽尺寸' },
+    'pstage.device.desktop': { en: 'Desktop',                         zh: '桌機' },
+    'pstage.device.mobile': { en: 'Mobile',                           zh: '手機' },
+    'wiz.preview':          { en: 'Preview',                          zh: '預覽' },
+    'wiz.preview.close':    { en: 'Close preview',                    zh: '關閉預覽' },
     'wiz.continue':         { en: 'Continue',                         zh: '下一步' },
     'wiz.next':             { en: 'Next',                             zh: '下一步' },   // 2026-10-21 D464：建立商品／建立組合包步驟 1、2 的主按鈕一律只寫「下一步」
     /* 返回離開確認彈窗 */
@@ -5402,7 +5410,7 @@
     'ce.type.watchparty':   { en: 'Watch Party',                      zh: '共看派對' },
     'ce.type.watchparty-sub': { en: 'Watch a video together, in sync', zh: '同步共看一支影片' },
     /* Step 2 · Details */
-    'ce.s2.h1':             { en: 'Make them feel it',                zh: '讓粉絲有感' },
+    'ce.s2.h1':             { en: 'Basics',                           zh: '基本資料' },
     'ce.s2.sub':            { en: 'What will fans experience?',       zh: '粉絲會體驗到什麼？' },
     'ce.name':              { en: 'Event name',                       zh: '活動名稱' },
     'ce.name.ph':           { en: 'The name on the ticket',           zh: '票券上顯示的名稱' },
@@ -5665,6 +5673,7 @@
     'cp.gate.sub':          { en: 'This decides which settings you\'ll see.', zh: '這會決定接下來看到哪些設定。' },
     'cp.gate.back':         { en: 'Leave',                            zh: '離開' },
     'cp.type.switch':       { en: 'Switch type',                      zh: '換一種' },
+    'cp.media.product':     { en: 'Product images',                   zh: '商品圖片' },   // 2026-10-28：建立商品的素材區標題（原「展示它」；建立拍賣仍用 cp.media.title）
     'cp.media.title':       { en: 'Show it off',                      zh: '展示它' },
     'cp.media.sub':         { en: "Buyers can't touch it. Your photos and videos do that job.", zh: '買家摸不到，照片與影片替你做事。' },
     'cp.media.hero-physical':{ en: 'Hero shot\nThe first thing buyers see', zh: '主視覺\n買家第一眼看到的' },
@@ -5954,7 +5963,7 @@
     'cp.price.avg':         { en: 'Posters &amp; prints average on Ztor: $45', zh: '海報與印刷在 Ztor 的均價：$45' },
     'cp.cost':              { en: 'Cost',                             zh: '成本價' },
     'cp.cost.note':         { en: 'Optional',                     zh: '選填' },
-    'cp.stock':             { en: 'Goods in stock',                   zh: '目前在庫' },
+    'cp.stock':             { en: 'Stock quantity',                   zh: '庫存量' },
     /* D241：建立流程只收目前在庫，鎖定量不在這裡收（spec §7.14）。 */
     'cp.stock.pool-hint':   { en: 'Locking stock for single sale or a bundle happens on the product page and in the bundle flow.', zh: '鎖定給單售或組合包的量在商品細節頁與建立組合流程設定。' },
     'cp.stock.digital':     { en: 'Copies remaining',                 zh: '剩餘份數' },
@@ -6023,7 +6032,7 @@
     'cp.edition.limited-hint':   { en: 'Hard cap — fans see how many remain.', zh: '設定總量上限，看得到還剩幾件。' },
     'cp.total':             { en: 'Total quantity',                   zh: '上限數量' },
     'cp.total.hint':        { en: 'Hard cap · restock ceiling',       zh: '硬上限 · 補貨天花板' },
-    'cp.stock.over-err':    { en: "In stock can't exceed the total quantity.", zh: '目前在庫不能超過上限數量' },
+    'cp.stock.over-err':    { en: "In stock can't exceed the total quantity.", zh: '庫存量不能超過上限數量' },
     /* §4.1⑥ 取貨方式 Delivery (D064) */
     'cp.delivery.title':    { en: 'Delivery method',                  zh: '取貨方式' },
     'cp.delivery.sub':      { en: 'Tick at least one. Buyers choose at checkout.', zh: '至少勾一種，買家下單時自己選。' },   /* D470：二選一改勾選（原「寄送給買家，或讓買家憑 QR code 現場領取。」） */
@@ -6125,7 +6134,7 @@
     'cp.qc.desc':           { en: 'Description (30+)',                zh: '商品描述（30 字以上）' },
     'cp.qc.var-priced':     { en: 'Every variation priced & stocked', zh: '每個選項組合都有價格與庫存' },
     'cp.qc.price':          { en: 'Price',                            zh: '價格' },
-    'cp.qc.cap':            { en: 'Total quantity ≥ stock',           zh: '上限數量 ≥ 目前在庫' },
+    'cp.qc.cap':            { en: 'Total quantity ≥ stock',           zh: '上限數量 ≥ 庫存量' },
     'cp.qc.specs':          { en: 'Specifications',                   zh: '詳細規格' },
     'cp.qc.weight':         { en: 'Shipping weight',                  zh: '重量' },
     'cp.qc.delivery':       { en: 'Delivery method',                  zh: '取貨方式' },   /* D470：至少勾一種 */
@@ -6435,7 +6444,7 @@
     'cb.qc.sale':           { en: 'Limited-time discount complete',   zh: '限時折扣已填完整' },
     'cb.qc.listing':        { en: 'Listing & sale times',             zh: '上架與開賣時間' },
     /* 組合資訊：素材＋描述（spec 5.1.5.4 §4 F1）*/
-    'cb.media.show':        { en: 'Show it off',                      zh: '秀出組合' },
+    'cb.media.show':        { en: 'Bundle images',                    zh: '組合包圖片' },
     'cb.media.sub':         { en: "Buyers can't touch it. Your photos and videos do that job.", zh: '粉絲摸不到實品，照片與影片替你說話。' },
     'cb.media.hero':        { en: 'Bundle cover — the first thing fans see', zh: '組合封面 — 粉絲第一眼看到的' },
     'cb.desc':              { en: "Tell fans what they'll get",        zh: '告訴粉絲他們會拿到什麼' },
@@ -7014,7 +7023,7 @@
     /* 2026-10-12 建立組合包改版（UI-CHANGES 一百八十八；D402）：8 張分卡標題、組合物表、加入組合物彈窗、價格階梯、數量卡 */
     'cb.sec.info':              { en: 'Bundle info', zh: '組合資訊' },
     /* 2026-10-12 使用者選「圖片與影片」（原「展示」） */
-    'cb.sec.media':             { en: 'Photos & videos', zh: '圖片與影片' },
+    'cb.sec.media':             { en: 'Bundle images', zh: '組合包圖片' },
     'ce.bd.sec.media':          { en: 'Bundle images', zh: '組合包圖片' },   // 2026-10-12 活動的組合包編輯器（分段版型）；e-shop 建立組合包仍用上面的「展示」
     'cb.sec.members':           { en: 'What’s in it', zh: '組合物' },
     'cb.sec.price':             { en: 'Pricing', zh: '定價' },   /* 2026-10-12 使用者：價格卡標題改「定價與優惠」；2026-10-21 三步驟起優惠拆到第二步，這張只剩「定價」 */
@@ -7040,6 +7049,17 @@
     'cb.pick.tix':              { en: 'Event tickets', zh: '活動票券' },
     'cb.pick.tix.one':          { en: 'A bundle can hold one event only. To switch events, remove the tickets first.', zh: '一個組合包只能有一場活動，要換請先移除票券。' },
     'cb.pick.tix.locked':       { en: "A bundle can hold one event only. This bundle was started from this event's page, so its event stays fixed.", zh: '一個組合包只能有一場活動；從活動詳情建立的組合包，活動固定為這一場。' },
+    'cb.addm.title':            { en: 'Add to bundle', zh: '加入組合物' },   // 2026-10-28 組合物挑選彈窗（方向 A）
+    'cb.addm.empty.t':          { en: 'Add to bundle', zh: '加入組合物' },
+    'cb.addm.empty.s':          { en: 'Pick your products or events. At least one is needed to continue.', zh: '挑你的商品或活動，至少一項才能繼續' },
+    'cb.addm.more':             { en: 'Add more', zh: '加入更多' },
+    'cb.addm.f.all':            { en: 'All', zh: '全部' },
+    'cb.addm.f.item':           { en: 'Products', zh: '商品' },
+    'cb.addm.f.event':          { en: 'Events', zh: '活動' },
+    'cb.addm.confirm':          { en: 'Add', zh: '加入' },
+    'cb.addm.confirm.n':        { en: 'Add ({n})', zh: '加入（{n}）' },
+    'cb.addm.one-event':        { en: 'A bundle can hold one event only.', zh: '一個組合包只能含一場活動。' },
+    'cb.addm.has-event':        { en: 'Bundle already has an event', zh: '已含一場活動' },
     'cb.pick.new':              { en: 'Create a new product', zh: '建立新商品' },
     'cb.pick.done':             { en: 'Done', zh: '完成' },
     'cb.pl.how':                { en: 'See how', zh: '看怎麼算' },
@@ -8837,7 +8857,7 @@
     'ce.pv.venue':        { en: 'Venue to be set', zh: '場地待設定' },
     'ce.pv.tickets':      { en: 'Tickets coming soon', zh: '票券即將開賣' },
     'ce.pv.tiersn':       { en: '{n} ticket tiers', zh: '{n} 種票' },
-    'ce.save.saved':      { en: 'Saved · just now', zh: '已儲存 · 剛剛' },
+    'ce.save.saved':      { en: 'Saved', zh: '已儲存' },
     'ce.save.saving':     { en: 'Saving…', zh: '儲存中…' },
     'ce.saveexit':        { en: 'Save & exit', zh: '儲存並離開' },
     'ce.saveexit-alert':  { en: 'Draft saved. You can come back from Events → Draft.', zh: '草稿已儲存，可從 活動 → 草稿 回來繼續。' },

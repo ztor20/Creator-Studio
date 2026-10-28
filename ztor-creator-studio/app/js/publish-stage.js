@@ -836,6 +836,31 @@
       '</div>';
     rootEl.appendChild(mainEl);
     rootEl.appendChild(sideEl);
+    /* 桌機／手機預覽尺寸切換（2026-10-28，使用者指著預覽上方右側：「這裡放一個切換桌機和手機預覽尺寸的切換鈕」）：
+       鈕是 .pstage 的格線子項（疊在主欄右上角），不放進 mainEl——預覽重畫會清空 mainEl。狀態寫在 rootEl[data-device]，記 localStorage。 */
+    var device = 'desktop';
+    try { if (localStorage.getItem('ztor.pstage-device') === 'mobile') device = 'mobile'; } catch (e) {}
+    rootEl.setAttribute('data-device', device);
+    var devEl = el('div', 'pstage__device');
+    devEl.setAttribute('role', 'group');
+    devEl.setAttribute('aria-label', T('pstage.device', 'Preview size'));
+    /* 圖示走站上的 icon registry（data-lucide → ztorIcons.applyIcons，mount 尾端會掃 rootEl）；自畫 inline SVG 的手機框上緣會被裁掉 */
+    var SVG_DESK = '<i data-lucide="monitor" class="ztor-icon"></i>';
+    var SVG_MOB = '<i data-lucide="smartphone" class="ztor-icon"></i>';
+    [['desktop', SVG_DESK, 'pstage.device.desktop', 'Desktop'], ['mobile', SVG_MOB, 'pstage.device.mobile', 'Mobile']].forEach(function (d) {
+      var b = el('button', 'pstage__device-btn');
+      b.type = 'button'; b.setAttribute('data-device', d[0]);
+      b.setAttribute('aria-label', T(d[2], d[3])); b.title = T(d[2], d[3]);
+      b.setAttribute('aria-pressed', String(d[0] === device));
+      b.innerHTML = d[1];
+      b.addEventListener('click', function () {
+        rootEl.setAttribute('data-device', d[0]);
+        devEl.querySelectorAll('.pstage__device-btn').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        try { localStorage.setItem('ztor.pstage-device', d[0]); } catch (e) {}
+      });
+      devEl.appendChild(b);
+    });
+    rootEl.appendChild(devEl);
     host.appendChild(rootEl);
 
     editBtn = el('button', 'btn btn--outline btn--sm pstage-edit');

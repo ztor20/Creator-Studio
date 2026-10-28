@@ -1,0 +1,72 @@
+/* ============================================================
+   preview-dock.css · 建立流程的預覽欄（右側整高欄，可開關）
+   ------------------------------------------------------------
+   2026-10-28（UI-CHANGES 402，使用者：「改到正式上吧，預設是開啟預覽的」；lab-preview-page.html 的「推開」版型）：
+   建立活動／商品／組合包的預覽不再夾在內容旁邊當一欄，改成貼右緣的整高欄：
+     · 開啟時：整個內容區（頂列膠囊、表單、底列）往左收窄讓位，預覽欄從視窗最上緣到最下緣（上下各留 16）；
+     · 關閉時：預覽欄不顯示，表單吃滿寬度；開關是頂列「儲存狀態鈕」右邊的眼睛圖示鈕，欄右上角有 ✕。
+   預設開啟；開關狀態存 localStorage（壞了就回預設）。只在 ≥1100px 啟用；更窄時維持原本流程（預覽疊在表單上方）、不畫開關。
+   行為在 partials/preview-dock.js；它替 .wizard 打 data-preview（open／closed）與 data-preview-active（目前這一步有可停靠的預覽）。
+   可停靠的預覽欄＝內含 .fan-phone 的 .wizard-split__rail（建立活動）／.preview-col（建立商品、建立組合包），JS 會替它們掛 .preview-dock__rail。
+   anatomy
+     .wizard[data-preview][data-preview-active]
+       .wizard__top-actions > .preview-dock-toggle     （眼睛圖示鈕，aria-pressed）
+       .preview-dock__rail                              （整高欄）
+         .preview-dock__close                           （✕）
+         .fan-phone                                     （粉絲頁手機版鏡像，見 fan-phone.css）
+   ============================================================ */
+
+.preview-dock-toggle[aria-pressed="true"] { background: var(--ztu-glass-strong); }
+.preview-dock__close { display: none; }
+
+@media (min-width: 1100px) {
+  /* 預覽離開內容流：兩欄的格線收成單欄 */
+  .wizard[data-preview-active] .wizard-split--phone,
+  .wizard[data-preview-active] .preview-split--phone { grid-template-columns: minmax(0, 1fr); }
+
+  .wizard[data-preview-active][data-preview="closed"] .preview-dock__rail { display: none; }
+
+  .wizard[data-preview-active][data-preview="open"] .wizard__sheet { margin-right: 356px; transition: margin-right .28s ease; }
+  .wizard[data-preview-active][data-preview="open"] .wizard__bottom { right: 356px; transition: right .28s ease; }
+
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail {
+    display: flex; flex-direction: column;
+    position: fixed; top: var(--sp-16); right: var(--sp-16); bottom: var(--sp-16);
+    width: 340px; height: calc(100vh - var(--sp-32)); height: calc(100dvh - var(--sp-32)); min-height: 0; max-height: none; margin: 0; z-index: 40;
+    animation: preview-dock-in .28s ease-out;
+  }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail > .preview-col__head { display: none; }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail > .fan-phone {
+    --fan-phone-zoom: .94;            /* 360 手機版型 × .94 ≈ 340 欄寬 */
+    flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
+    padding-top: var(--sp-24);        /* 讓出右上角 ✕ 的位置（2026-10-29 由 48 縮到 24） */
+  }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail > .fan-phone::-webkit-scrollbar { display: none; }
+  /* 預覽內容捲動時上下緣漸消（使用者：「上下加一個漸消」）：疊在欄上的兩條漸層，從卡底色淡到透明，不擋滑鼠 */
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail::before,
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail::after {
+    content: ""; position: absolute; left: 1px; right: 1px; z-index: 1; pointer-events: none;
+  }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail::before {
+    top: 1px; height: var(--sp-48);
+    border-radius: calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px) 0 0;
+    background: linear-gradient(to bottom, var(--surface-page), transparent);
+  }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__rail::after {
+    bottom: 1px; height: var(--sp-56);
+    border-radius: 0 0 calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px);
+    background: linear-gradient(to top, var(--surface-page), transparent);
+  }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__close {
+    display: block; position: absolute; top: var(--sp-16); right: var(--sp-16); z-index: 2;
+    border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer;
+    font-size: var(--fs-16); line-height: 1; padding: 4px 8px; border-radius: var(--radius-md);
+  }
+  .wizard[data-preview-active][data-preview="open"] .preview-dock__close:hover { background: var(--ztu-glass-strong); color: var(--foreground); }
+}
+@media (max-width: 1099.98px) { .preview-dock-toggle { display: none; } }
+@keyframes preview-dock-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* 內容區的頁面捲軸不畫：它會夾在內容與預覽欄中間，把兩者看成分開的兩塊（使用者：「可以不要有這個」） */
+.wizard[data-preview-active][data-preview="open"] .wizard__sheet { scrollbar-width: none; }
+.wizard[data-preview-active][data-preview="open"] .wizard__sheet::-webkit-scrollbar { display: none; }

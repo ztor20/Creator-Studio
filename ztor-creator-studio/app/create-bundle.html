@@ -42,7 +42,7 @@
      右欄「粉絲看到的」預覽卡由 bundle-preview-card.css 提供（第二個消費者） -->
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/price-ladder.css?v=r2.2"><!-- 2026-10-12 改版：價格階梯（原價合計→折扣→粉絲實付，區間小字） -->
-<link rel="stylesheet" href="ds-components/member-table.css?v=r2.2"><!-- 2026-10-12 改版：組合物表（商品＋票券同一張，票券列可展開） -->
+<link rel="stylesheet" href="ds-components/member-table.css?v=r2.2"><link rel="stylesheet" href="ds-components/member-picker.css?v=r2.2"><!-- 2026-10-28 組合物挑選：空狀態大按鈕＋多選彈窗 --><!-- 2026-10-12 改版：組合物表（商品＋票券同一張，票券列可展開） -->
 <link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：問句設定塊（鎖定／販售上限）、分類標、標題列讀數 -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2"><!-- 2026-10-12 改版：「加入組合物」彈窗的商品／活動票券分頁 -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398／D456：組合包限購（自己的設定、獨立計算；js/purchase-limits.js） -->
@@ -67,6 +67,7 @@
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角組合包頁（前台 shop-item 組合分支鏡像，第 5 段；只給 js/fan-bundle-page.js 用） -->
+<link rel="stylesheet" href="ds-components/preview-dock.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- UI-CHANGES 397：右欄的粉絲頁手機版鏡像 -->
 <link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2"><!-- 2026-10-12：本頁大綱的列尾記號改用 progress-mark --><!-- 2026-10-12（UI-CHANGES 一百七十七）：左側空白欄的「本頁大綱」區段導覽（partials/section-outline.js），比照建立商品 -->
@@ -78,7 +79,7 @@
      左欄三段分卡「組合包介紹 → 選擇組合物 → 販售設定」（2026-10-12 重排，原為 2026-09-21 的「內容物 → 定價與庫存 → 命名與上架」）、右欄「粉絲看到的」預覽卡、底部固定列粉絲實付；跳段靠左側空白欄的「本頁大綱」（2026-10-12 起；頂列第二排的分節分頁同日移除，兩者重複）。
      分卡殼沿用頁面級的 form-section--outlined（建立商品同款），卡內節奏吃 .stack；表格／算式／footer
      一律用 bundle-editor.css 的元件 class；此處只留本頁獨有的一次性版面。 */
-  /* 墓碑 2026-10-28：.cb-add-tile（大塊「加入組合物」）的頁內樣式退場——入口改成就地搜尋 .fc-pick（bundle-editor.css） */
+  /* 2026-10-28：組合物挑選改為空狀態大按鈕＋多選彈窗（ds-components/member-picker.css）；舊 .cb-add-tile 頁內樣式已退場 */
   /* 候選清單的子標題（近期瀏覽／搜尋結果）*/
   .cb-sublabel { font-size: var(--fs-13); font-weight: var(--fw-regular); margin: 0 0 8px; }
   /* 候選列尾：徽章＋價格＋外開連結並排 */
@@ -126,8 +127,7 @@
         </div>
       </div>
       <div class="wizard__top-actions">
-        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
-        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
+        <button class="wizard__save-status" type="button" data-wizard-save data-wizard-savedraft data-state="saved"><i class="wizard__save-status__dot"></i><svg class="wizard__save-status__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-wizard-save-text>Saved</span><span class="wizard__save-status__hover" data-i18n="wiz.save.now">Save now</span></button>
       </div>
     </div>
   </header>
@@ -164,7 +164,7 @@
     <!-- ② 展示（F8；D243 十格、D259 可放影片）：卡片標題已說是展示，欄位標籤不重述 -->
     <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="media" data-outline-group="intro">
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cb.sec.media">Show it off</h3>
+        <h3 class="form-section__title" data-i18n="cb.sec.media">Bundle images</h3>
       </div>
       <div class="stack">
         <!-- 素材（spec 5.1.5.4 §4 F8，D243 十格＝封面 1＋附圖 9；D259 每格可放影片）：封面同時是預覽卡的圖 -->
@@ -227,17 +227,10 @@
             <!-- 墓碑 2026-10-12（使用者：「這應該不需要有」）：「換一場活動」鈕拿掉；一個組合包只含一場活動（D403），要換就移除這一列再從「加入組合物」重挑 -->
           </div>
           <div data-cb-items-table></div>
-          <!-- 2026-10-28 使用者：「1 用 2 這種設計」——改成建立活動「新增組合包」彈窗（js/bundle-editor.js）那種表格＋搜尋欄：
-               還沒有成員時表裡一句「還沒有內容」（[data-cb-members-empty]，syncMembersFrame 管），下方搜尋欄就地加入。 -->
-          <div class="member-table__empty" data-cb-members-empty data-i18n="cpp.bd.sum.empty">Nothing in it yet</div>
+          <!-- 2026-10-28 組合物挑選改版（lab-bundle-members 方向 A）：空狀態不再是一句「還沒有內容」，整塊是一顆大按鈕。 -->
         </div>
-        <!-- 墓碑 2026-10-28：大塊「加入組合物」（.cb-add-tile[data-cb-add-open]，開加入組合物彈窗）退場。
-             改成就地搜尋（.fc-pick，同 bundle-editor）：一個欄位同時找商品與活動，選商品加一列、選活動加票券列；
-             下拉最底「建立新商品…」開原本的嵌入建立商品彈窗。原加入彈窗（#cb-member-modal）保留當候選資料來源與活動門票規則（D403／D433）。 -->
-        <div class="fc-pick" data-cb-pick-inline>
-          <input class="input" data-cb-inline-search placeholder="Search your products or events…" data-i18n-placeholder="cb.search.inline.ph" autocomplete="off" aria-label="Add to bundle" data-i18n-aria-label="cb.add.open">
-          <div class="fc-pick__results" data-cb-inline-results hidden></div>
-        </div>
+        <button class="member-picker__empty" type="button" data-cb-addm-open="empty"><span class="member-picker__empty-t"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.addm.empty.t">Add to bundle</span></span><span class="member-picker__empty-s" data-i18n="cb.addm.empty.s">Pick your products or events. At least one is needed to continue.</span></button>
+        <button class="btn btn--outline btn--block member-picker__more" type="button" data-cb-addm-open="more" hidden><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.addm.more">Add more</span></button>
         <!-- 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）：限量成員、多選項成員、含票券 -->
         <div data-cb-notes></div>
       </div>
@@ -590,15 +583,10 @@
   </div>
 
   </div><!-- /.wizard__sheet -->
-  <!-- §5.2.4 底部操作列：左＝粉絲實付（從 $Y 起）＋「原價 $X · 最多 N 組」；右＝停用理由＋取消／建立組合（同第 1 批 footer） -->
-  <footer class="wizard__bottom">
-    <div class="bd-foot-price">
-      <span class="bd-foot-price__k" data-i18n="cpp.bd.calc.final">Fans pay</span>
-      <span class="bd-foot-price__v"><span data-cb-foot-final>—</span></span>
-      <span class="bd-foot-price__sub" data-cb-foot-sub></span>
-    </div>
+  <!-- §5.2.4 底部操作列：停用理由＋取消／建立組合，整組靠右（同第 1 批 footer）。2026-10-28（使用者：「這個移除」）：左側「粉絲實付」價格區（.bd-foot-price）撤除；價格在販售設定的價格階梯與預覽欄都看得到。程式裡的 footFinal／footSub 沒有對應節點時自動略過。 -->
+  <footer class="wizard__bottom wizard__bottom--end">
     <div class="bd-foot-actions">
-      <span class="bd-foot-why" data-cb-why hidden></span>
+      <!-- 2026-10-28（使用者：「移除」）：底列左側的停用理由（.bd-foot-why「至少加入 1 個成員」）撤除；下方 whyEl 沒有節點時自動略過。 -->
       <!-- 2026-10-28 四步驟（接 2026-10-21 D464）：第一步＝取消＋「下一步」；第二步＝「上一步」＋「下一步」（都不擋）；
            第三步＝這一步的停用理由＋「上一步」＋「下一步」（擋關照舊，擋進第四步＝預覽與發布）。顯隱由 cbGoStep() 的 renderFootSteps() 管。 -->
       <button class="btn btn--outline" type="button" data-wizard-back data-cb-cancel data-i18n="cpp.bd.sp.cancel">Cancel</button>
@@ -657,6 +645,23 @@
       <button class="btn btn--outline" type="button" id="cb-add-tile"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.pick.new">Create a new product</span></button>
       <div class="payout-dialog__foot-actions"><button class="btn btn--primary" type="button" data-cb-member-close data-i18n="cb.pick.done">Done</button></div>
     </div>
+  </section>
+</div>
+
+<!-- 組合物挑選彈窗（2026-10-28）：搜尋＋全部／商品／活動篩選，一次勾多個，「加入（N）」。一個組合包只含一場活動（D403／D433）。 -->
+<div class="payout-modal" data-cb-addm hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="cb-addm-title">
+    <div class="payout-dialog__head"><h2 class="payout-dialog__title" id="cb-addm-title" data-i18n="cb.addm.title">Add to bundle</h2><button class="btn btn--icon" type="button" data-cb-addm-close aria-label="Close" data-i18n-aria-label="cpp.bd.close"><i data-lucide="x" class="ztor-icon"></i></button></div>
+    <div class="payout-dialog__body">
+      <div class="member-picker__toolbar">
+        <input class="input" data-cb-addm-q placeholder="Search your products or events…" data-i18n-placeholder="cb.search.inline.ph" autocomplete="off">
+        <div class="segmented" data-cb-addm-f><button class="segmented__btn segmented__btn--active" type="button" data-f="all" data-i18n="cb.addm.f.all">All</button><button class="segmented__btn" type="button" data-f="item" data-i18n="cb.addm.f.item">Products</button><button class="segmented__btn" type="button" data-f="event" data-i18n="cb.addm.f.event">Events</button></div>
+      </div>
+      <div class="member-picker__list" data-cb-addm-list></div>
+      <button class="btn btn--outline btn--block member-picker__new" type="button" data-cb-addm-new><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cb.pick.new">Create a new product</span></button>
+    </div>
+    <div class="payout-dialog__foot"><p class="payout-dialog__foot-note" data-cb-addm-note hidden data-i18n="cb.addm.one-event">A bundle can hold one event only.</p>
+      <div class="payout-dialog__foot-actions"><button class="btn btn--outline" type="button" data-cb-addm-close data-i18n="pprom.cancel">Cancel</button><button class="btn btn--primary" type="button" data-cb-addm-ok disabled data-i18n="cb.addm.confirm">Add</button></div></div>
   </section>
 </div>
 
@@ -1964,12 +1969,12 @@
   const tixPriceEl = document.querySelector('[data-cb-tix-price]');
   const tixSubEl = document.querySelector('[data-cb-tix-sub]');
   const membersHead = document.querySelector('[data-cb-members-head]');
-  const membersEmpty = document.querySelector('[data-cb-members-empty]');
   let tixOpen = false;
   function syncMembersFrame() {
     const any = !!tix.event || productMembers().length > 0;
     if (membersHead) membersHead.hidden = !any;
-    if (membersEmpty) membersEmpty.hidden = any;
+    document.querySelectorAll('[data-cb-addm-open="empty"]').forEach(b => { b.hidden = any; });
+    document.querySelectorAll('[data-cb-addm-open="more"]').forEach(b => { b.hidden = !any; });
   }
   function renderTixRow() {
     const ev = tix.event;
@@ -2035,77 +2040,100 @@
   const addOpenBtn = document.querySelector('[data-cb-add-open]');
   if (addOpenBtn) addOpenBtn.addEventListener('click', () => openMemberModal('item'));
 
-  /* ── 就地搜尋加入（2026-10-28 使用者：「1 用 2 這種設計」，同建立活動「新增組合包」彈窗的 .fc-pick）──
-     一個欄位同時找商品與活動：沒打字時列最近的商品與活動，打字時依名稱／分類（商品）、名稱／日期／場地（活動）過濾。
-     規則全部沿用原加入彈窗：商品候選就是 #cb-recent 那份（isAdded／blocked 照舊），活動照 buildEvents 的規則——
-     草稿活動不列、已結束或已封存停用、已有一場時其他場停用（D403／D433），已加入那場點了展開門票勾選。
-     最底「建立新商品…」開嵌入建立商品（openAdd）。 */
-  const inlineInput = document.querySelector('[data-cb-inline-search]');
-  const inlineBox = document.querySelector('[data-cb-inline-results]');
-  function inlineRender() {
-    if (!inlineInput || !inlineBox) return;
-    const q = inlineInput.value.trim().toLowerCase();
-    const prods = [...recent.querySelectorAll('[data-cb-cand]')].filter(r => {
-      const hay = ((r.dataset.name || '') + ' ' + (r.dataset.catEn || '') + ' ' + (r.dataset.catZh || '')).toLowerCase();
-      return q ? hay.indexOf(q) > -1 : r.dataset.recent === '1';
-    }).slice(0, 8);
+  /* ── 組合物挑選彈窗（2026-10-28 使用者選 lab-bundle-members 方向 A）──
+     商品候選就是 #cb-recent 那份（isAdded 的不列、blocked 的停用），活動照 buildEvents 的規則——
+     草稿不列、已結束或已封存停用、已有一場時其他場停用（D403／D433）；一次勾多個，一次只能勾一場活動。
+     確認後商品逐個 addProduct、活動走 openEvent（展開門票勾選）；「建立新商品」開嵌入建立商品（openAdd）。 */
+  const addm = document.querySelector('[data-cb-addm]');
+  const addmQ = document.querySelector('[data-cb-addm-q]');
+  const addmF = document.querySelector('[data-cb-addm-f]');
+  const addmList = document.querySelector('[data-cb-addm-list]');
+  const addmOk = document.querySelector('[data-cb-addm-ok]');
+  const addmNote = document.querySelector('[data-cb-addm-note]');
+  let addmPicked = new Set(), addmFilt = 'all';
+  const addmEvOn = () => [...addmPicked].some(k => k.indexOf('e:') === 0);
+  function addmPaint() {
+    if (!addm) return;
+    const q = addmQ.value.trim().toLowerCase();
     const curId = tix.event ? tix.event.id : null;
-    const evs = EV ? EV.list().filter(ev => ev.status !== 'draft').filter(ev => {
-      const hay = (evName(ev) + ' ' + (ev.venue || '') + ' ' + (ev.city || '') + ' ' + (ev.date || '')).toLowerCase();
-      return q ? hay.indexOf(q) > -1 : true;
-    }) : [];
-    if (curId) { const ci = evs.findIndex(ev => ev.id === curId); if (ci > 0) evs.unshift(evs.splice(ci, 1)[0]); }
-    const evShown = evs.slice(0, q ? 8 : RECENT_EV_N);
-    const opt = (key, thumb, name, meta, end, disabled) =>
-      '<button type="button" class="fc-pick__opt" data-cb-iopt="' + esc(key) + '"' + (disabled ? ' disabled' : '') + '>' + thumb +
-        '<span>' + esc(name) + (meta ? ' <span class="fc-pick__opt-price">' + meta + '</span>' : '') + '</span>' +
-        '<span class="fc-pick__opt-price">' + end + '</span></button>';
+    const evLocked = !!curId || tixLocked;
     let html = '';
-    if (prods.length) {
-      html += '<div class="fc-pick__empty">' + esc(T('cpp.bd.search.browse', 'Your products')) + '</div>';
-      html += prods.map(r => {
-        const img = r.querySelector('img');
-        const sub = r.querySelector('.text-sub');
-        return opt('p:' + r.dataset.id, img ? '<img src="' + esc(img.getAttribute('src')) + '" alt="" loading="lazy">' : '<span></span>',
-          r.dataset.name || '', sub ? sub.innerHTML : '', esc(priceText(r.dataset.price, Number(r.dataset.price) || 0)), isAdded(r) || !!r.dataset.blocked);
-      }).join('');
-    }
-    if (evShown.length) {
-      html += '<div class="fc-pick__empty">' + esc(T('cb.search.inline.events', 'Your events')) + '</div>';
-      html += evShown.map(ev => {
-        const added = !!curId && ev.id === curId;
-        const blocked = evBlocked(ev) || (!!curId && !added);
-        const kv = ev.images && ev.images.keyvisual;
-        const end = added ? esc(T('cb.tix.added', 'Added')) : (evBlocked(ev) ? evBadgeHTML(ev) : '');
-        return opt('e:' + ev.id, kv ? '<img src="' + esc(kv) + '" alt="" loading="lazy">' : '<span></span>', evName(ev), esc(evMeta(ev)), end, blocked);
-      }).join('');
-    }
-    if (!prods.length && !evShown.length) html += '<div class="fc-pick__empty">' + esc(T('cb.search.inline.none', 'No products or events match.')) + '</div>';
-    html += '<button type="button" class="fc-pick__opt" data-cb-iopt="new"><span></span><span>' + esc(T('cpp.bd.search.create', 'Create a new product…')) + '</span><span></span></button>';
-    inlineBox.innerHTML = html;
-    inlineBox.hidden = false;
-    if (window.ztorIcons) window.ztorIcons.applyIcons(inlineBox);
-  }
-  function inlineClose() { if (inlineBox) inlineBox.hidden = true; }
-  if (inlineInput && inlineBox) {
-    inlineInput.addEventListener('focus', inlineRender);
-    inlineInput.addEventListener('input', inlineRender);
-    inlineInput.addEventListener('keydown', e => { if (e.key === 'Escape') { inlineClose(); inlineInput.blur(); } });
-    document.addEventListener('click', e => { if (!e.target.closest('[data-cb-pick-inline]')) inlineClose(); });
-    inlineBox.addEventListener('click', e => {
-      const b = e.target.closest('[data-cb-iopt]'); if (!b || b.disabled) return;
-      const k = b.getAttribute('data-cb-iopt');
-      inlineInput.value = ''; inlineClose();
-      if (k === 'new') { openAdd(); return; }
-      if (k.indexOf('p:') === 0) {
-        const row = [...recent.querySelectorAll('[data-cb-cand]')].find(r => r.dataset.id === k.slice(2));
-        if (row && !isAdded(row) && !row.dataset.blocked) addProduct(productOf(row));
-        return;
+    const row = (key, thumb, name, sub, price, dis, why) => {
+      const on = addmPicked.has(key);
+      return '<label class="member-picker__row" aria-disabled="' + (dis ? 'true' : 'false') + '"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-cb-addm-pk="' + esc(key) + '"' + (on ? ' checked' : '') + (dis ? ' disabled' : '') + '><span class="zcheck__box"></span></span>' +
+        '<span class="member-picker__name"><span class="member-picker__thumb">' + thumb + '</span><span class="member-picker__txt"><span class="member-picker__t">' + esc(name) + '</span><span class="member-picker__s">' + sub + (why ? ' · ' + esc(why) : '') + '</span></span></span>' +
+        '<span class="member-picker__num">' + price + '</span></label>';
+    };
+    if (addmFilt !== 'event') {
+      const prods = [...recent.querySelectorAll('[data-cb-cand]')].filter(r => {
+        if (isAdded(r)) return false;
+        const hay = ((r.dataset.name || '') + ' ' + (r.dataset.catEn || '') + ' ' + (r.dataset.catZh || '')).toLowerCase();
+        return !q || hay.indexOf(q) > -1;
+      });
+      if (prods.length) {
+        html += '<div class="member-picker__grp">' + esc(T('cb.pick.items', 'Products')) + '</div>';
+        html += prods.map(r => {
+          const img = r.querySelector('img'), sub = r.querySelector('.text-sub');
+          const blk = !!r.dataset.blocked;
+          return row('p:' + r.dataset.id, img ? '<img src="' + esc(img.getAttribute('src')) + '" alt="" loading="lazy">' : '<i data-lucide="package" class="ztor-icon"></i>',
+            r.dataset.name || '', sub ? sub.innerHTML : '', esc(priceText(r.dataset.price, Number(r.dataset.price) || 0)), blk, blk ? T('cb.member.unlisted', 'List it first to add') : '');
+        }).join('');
       }
-      const ev = EV && EV.get(k.slice(2)); if (!ev) return;
-      if (tix.event && tix.event.id === ev.id) { tixOpen = true; renderTixRow(); renderTierTable(); return; }
-      openEvent(ev);
+    }
+    if (addmFilt !== 'item' && EV) {
+      const evs = EV.list().filter(ev => ev.status !== 'draft' && !(curId && ev.id === curId)).filter(ev => {
+        const hay = (evName(ev) + ' ' + (ev.venue || '') + ' ' + (ev.city || '') + ' ' + (ev.date || '')).toLowerCase();
+        return !q || hay.indexOf(q) > -1;
+      });
+      if (evs.length) {
+        html += '<div class="member-picker__grp">' + esc(T('cb.pick.tix', 'Event tickets')) + '</div>';
+        html += evs.map(ev => {
+          const key = 'e:' + ev.id, on = addmPicked.has(key);
+          const dis = evBlocked(ev) || evLocked || (!on && addmEvOn());
+          const kv = ev.images && ev.images.keyvisual;
+          return row(key, kv ? '<img src="' + esc(kv) + '" alt="" loading="lazy">' : '<i data-lucide="ticket" class="ztor-icon"></i>', evName(ev), esc(evMeta(ev)),
+            evBlocked(ev) ? evBadgeHTML(ev) : '', dis, (!evBlocked(ev) && dis) ? T('cb.addm.has-event', 'Bundle already has an event') : '');
+        }).join('');
+      }
+    }
+    addmList.innerHTML = html || '<div class="member-picker__grp">' + esc(T('cb.search.inline.none', 'No products or events match.')) + '</div>';
+    const n = addmPicked.size;
+    addmOk.textContent = n ? T('cb.addm.confirm.n', 'Add ({n})').replace('{n}', n) : T('cb.addm.confirm', 'Add');
+    addmOk.disabled = !n;
+    addmNote.hidden = !(evLocked || addmEvOn());
+    if (window.ztorIcons) window.ztorIcons.applyIcons(addmList);
+  }
+  function addmOpen() {
+    if (!addm) return;
+    addmPicked = new Set(); addmFilt = 'all'; addmQ.value = '';
+    addmF.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.f === 'all'));
+    addm.hidden = false; document.body.classList.add('is-modal-open');
+    addmPaint(); addmQ.focus();
+  }
+  function addmClose() {
+    if (!addm || addm.hidden) return;
+    addm.hidden = true;
+    if ((!addModal || addModal.hidden) && (!memberModal || memberModal.hidden)) document.body.classList.remove('is-modal-open');
+  }
+  document.querySelectorAll('[data-cb-addm-open]').forEach(b => b.addEventListener('click', addmOpen));
+  document.querySelectorAll('[data-cb-addm-close]').forEach(b => b.addEventListener('click', addmClose));
+  if (addm) {
+    addm.addEventListener('click', e => { if (e.target === addm) addmClose(); });
+    addm.addEventListener('change', e => { const k = e.target.getAttribute && e.target.getAttribute('data-cb-addm-pk'); if (!k) return; e.target.checked ? addmPicked.add(k) : addmPicked.delete(k); addmPaint(); });
+    addmQ.addEventListener('input', addmPaint);
+    addmF.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; addmFilt = b.dataset.f; addmF.querySelectorAll('.segmented__btn').forEach(x => x.classList.toggle('segmented__btn--active', x === b)); addmPaint(); });
+    document.querySelector('[data-cb-addm-new]').addEventListener('click', () => { addmClose(); openAdd(); });
+    addmOk.addEventListener('click', () => {
+      const keys = [...addmPicked]; addmClose();
+      keys.filter(k => k.indexOf('p:') === 0).forEach(k => {
+        const r = [...recent.querySelectorAll('[data-cb-cand]')].find(x => x.dataset.id === k.slice(2));
+        if (r && !isAdded(r) && !r.dataset.blocked) addProduct(productOf(r));
+      });
+      const ek = keys.find(k => k.indexOf('e:') === 0);
+      const ev = ek && EV && EV.get(ek.slice(2));
+      if (ev) openEvent(ev);
     });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !addm.hidden && (!addModal || addModal.hidden)) addmClose(); });
   }
   function showTixStage(stage) {
     if (stage === 'events') { openMemberModal('tix'); return; }
@@ -2693,6 +2721,7 @@
 <script src="partials/preview-col.js?v=r2.2"></script>   <!-- UI-CHANGES 397：右欄限高（手機版頁面比視窗長，在框內自己捲） -->
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
+<script src="partials/preview-dock.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script><!-- .zstep 步進行為 -->
 <!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->

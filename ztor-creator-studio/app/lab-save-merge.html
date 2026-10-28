@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>儲存狀態與儲存鈕合併 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-save-merge — 建立流程頂列右側「已儲存 · 剛剛」＋「儲存為草稿」能不能合併（2026-10-28，使用者：「這個儲存可以合併嗎？先思考流程與狀態與 UX，再改 UI，先做 demo」）。
+     只做探索：四個方案並排，共用同一組狀態切換（已儲存／儲存中／儲存失敗／離線）。不改 create-event.html。 */
+  body { background: var(--surface-page); color: var(--foreground); font-family: var(--font-sans, inherit); margin: 0; }
+  .lab { max-width: 980px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-64); }
+  .lab h1 { font-size: var(--fs-24); font-weight: var(--fw-regular); margin: 0 0 var(--sp-8); }
+  .lab h2 { font-size: var(--fs-18); font-weight: var(--fw-regular); margin: 0 0 var(--sp-4); }
+  .lab p, .lab li { color: var(--muted-foreground); font-size: var(--fs-14); line-height: 1.7; margin: 0; }
+  .lab ul { margin: var(--sp-8) 0 0; padding-left: var(--sp-20); }
+  .lab-flow { border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--sp-20) var(--sp-24); margin: var(--sp-20) 0 var(--sp-24); background: var(--layer-1-surface); }
+  .lab-flow strong { color: var(--foreground); font-weight: var(--fw-regular); }
+  .lab-states { display: flex; gap: var(--sp-8); flex-wrap: wrap; align-items: center; margin-bottom: var(--sp-24); position: sticky; top: 0; z-index: 5; padding: var(--sp-12) 0; background: var(--surface-page); }
+  .lab-states > span { color: var(--muted-foreground); font-size: var(--fs-13); margin-inline-end: var(--sp-8); }
+  .lab-opt { margin-bottom: var(--sp-32); }
+  .lab-opt__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-16); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--sp-12) var(--sp-20); margin: var(--sp-12) 0; background: var(--layer-1-surface); min-height: 64px; }
+  .lab-opt__bar > .lab-fake { color: var(--muted-foreground); font-size: var(--fs-13); }
+  .lab-right { display: flex; align-items: center; gap: var(--sp-12); position: relative; }
+  .lab-tag { display: inline-block; font-size: var(--fs-12); padding: 2px var(--sp-8); border-radius: var(--radius-md); border: 1px solid var(--border); color: var(--muted-foreground); margin-inline-start: var(--sp-8); vertical-align: middle; }
+  .lab-tag--rec { color: var(--status-success); border-color: var(--status-success); }
+
+  /* 狀態點（沿用 .wizard__save-status__dot 的畫法；失敗／離線補兩色） */
+  .lab-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--status-success); }
+  [data-st="saving"] .lab-dot { width: 12px; height: 12px; background: transparent; border: 2px solid var(--border); border-top-color: var(--foreground-muted); animation: lab-spin .6s linear infinite; }
+  [data-st="failed"] .lab-dot { background: var(--status-danger, #e5484d); }
+  [data-st="offline"] .lab-dot { background: var(--status-warning, #f5a524); }
+  @keyframes lab-spin { to { transform: rotate(360deg); } }
+  .lab-status { display: inline-flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-12); color: var(--foreground-muted); white-space: nowrap; }
+  [data-st="failed"] .lab-status, [data-st="failed"] .lab-pill { color: var(--status-danger, #e5484d); }
+
+  /* 方案 B：一顆「狀態鈕」——點開選單 */
+  .lab-pill { display: inline-flex; align-items: center; gap: var(--sp-8); border: 0; cursor: pointer; color: var(--foreground); font: inherit; font-size: var(--fs-13);
+    padding: 7px var(--sp-12) 7px var(--sp-12); border-radius: var(--radius-md); box-shadow: 0 0 0 1px var(--border); background: var(--ztu-film); }
+  .lab-pill:hover { background: var(--ztu-glass-strong); }
+  .lab-ico { width: 14px; height: 14px; flex: none; display: none; }
+  /* 所有狀態（儲存中除外）滑過都改寫動作「立即儲存」：狀態點換成存檔圖示、文字換成動作、顏色回到一般文字色 */
+  .lab-pill [data-hover] { display: none; }
+  [data-st]:not([data-st="saving"]) .lab-pill:hover .lab-dot, [data-st]:not([data-st="saving"]) .lab-pill--hover .lab-dot,
+  [data-st]:not([data-st="saving"]) .lab-pill:hover [data-text], [data-st]:not([data-st="saving"]) .lab-pill--hover [data-text] { display: none; }
+  [data-st]:not([data-st="saving"]) .lab-pill:hover .lab-ico, [data-st]:not([data-st="saving"]) .lab-pill--hover .lab-ico { display: inline-block; }
+  [data-st]:not([data-st="saving"]) .lab-pill:hover [data-hover], [data-st]:not([data-st="saving"]) .lab-pill--hover [data-hover] { display: inline; }
+  [data-st]:not([data-st="saving"]) .lab-pill:hover, [data-st]:not([data-st="saving"]) .lab-pill--hover { color: var(--foreground); }
+  .lab-toast { position: fixed; bottom: var(--sp-24); left: 50%; transform: translateX(-50%); background: var(--layer-1-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-10, 10px) var(--sp-16); font-size: var(--fs-13); box-shadow: var(--shadow-card); z-index: 20; }
+
+  .lab-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-12); margin-top: var(--sp-12); }
+  .lab-cell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-16); align-items: center; border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--sp-16) var(--sp-20); background: var(--layer-1-surface); min-height: 96px; }
+  .lab-cell--menu { min-height: 190px; align-items: start; }
+  .lab-cell__pill { display: flex; justify-content: flex-end; position: relative; }
+  .lab-cell__note { color: var(--muted-foreground); font-size: var(--fs-12); line-height: 1.6; }
+  .lab-cell__note b { display: block; color: var(--foreground); font-weight: var(--fw-regular); font-size: var(--fs-13); margin-bottom: 2px; }
+  .lab-pill--hover { background: var(--ztu-glass-strong); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="lab">
+  <h1>儲存狀態與儲存鈕，能不能合併？</h1>
+  <p>先想清楚流程與狀態，再看四種長相。頁面右上的狀態切換對四個方案同時生效，可以逐一按按看。</p>
+
+  <div class="lab-flow">
+    <h2>先釐清：現在這兩個東西各做什麼</h2>
+    <ul>
+      <li><strong>「已儲存 · 剛剛」</strong>：規格 D060 定案是「全程自動儲存」，這一句只是報告「系統已經幫你存了」。使用者什麼都不用做。</li>
+      <li><strong>「儲存為草稿」</strong>：原型裡按下去只是把狀態重跑一次，內容早就自動存好了，所以這顆鈕沒有帶來新的結果。規格 5.1.6.1 §4.8 要的其實是「儲存並離開」（存完回活動列表的草稿），不是「再存一次」。</li>
+      <li><strong>使用者的疑問</strong>：自動存好了還要自己按儲存嗎？按了會發生什麼？這是兩個東西並排造成的雙重訊號。</li>
+    </ul>
+    <h2 style="margin-top:var(--sp-16)">可以合併，條件是每個狀態都還說得清楚</h2>
+    <ul>
+      <li><strong>已儲存</strong>：不需要任何動作，只要看得到「有存好」。</li>
+      <li><strong>儲存中</strong>：短暫轉圈，此時離開要等一下（或提示）。</li>
+      <li><strong>儲存失敗／離線</strong>：這是唯一一個使用者必須採取行動的狀態，要看得到、要能「重試」。<em>手動鈕在這個狀態才真的有用</em>。</li>
+      <li><strong>想離開</strong>：需要「存好就離開」的明確出口，離開前要確定沒有未存的內容。</li>
+    </ul>
+    <p style="margin-top:var(--sp-12)">結論：不必兩個並排。把「狀態」當成主角，「動作」只在有事可做時才出現。推薦方案 B 或 C，見下。</p>
+  </div>
+
+  <div class="lab-states" id="states" role="group" aria-label="切換儲存狀態">
+    <span>狀態：</span>
+    <button class="btn btn--outline btn--sm" data-set="saved">已儲存</button>
+    <button class="btn btn--outline btn--sm" data-set="saving">儲存中</button>
+    <button class="btn btn--outline btn--sm" data-set="failed">儲存失敗</button>
+    <button class="btn btn--outline btn--sm" data-set="offline">離線</button>
+  </div>
+
+  <!-- A 現況 -->
+  <section class="lab-opt" data-opt="A">
+    <h2>A　現況：狀態文字＋「儲存為草稿」<span class="lab-tag">現況</span></h2>
+    <p>兩個東西並排；任何狀態下按鈕都在，但按了沒有新結果。失敗時沒有重試入口。</p>
+    <div class="lab-opt__bar">
+      <span class="lab-fake">← 建立活動　［進度條］</span>
+      <div class="lab-right">
+        <span class="lab-status" data-status><i class="lab-dot"></i><span data-text></span></span>
+        <button class="btn btn--outline" type="button" data-act="toast:已儲存為草稿（其實已經存好了）">儲存為草稿</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- B 一顆狀態鈕 -->
+  <section class="lab-opt" data-opt="B">
+    <h2>B　一顆「狀態鈕」：狀態與立即儲存合在同一顆<span class="lab-tag lab-tag--rec">推薦</span></h2>
+    <p>平常顯示綠點加「已儲存」；滑過任何狀態（儲存中除外）都改成存檔圖示加「立即儲存」，點一下就存，沒有選單。失敗時整顆變紅、只寫「儲存失敗」，離線寫「未儲存」。離開靠左上「返回」，不另設「儲存並離開」。</p>
+    <ul>
+      <li>優點：右上角只剩一個東西；一個動作、不用選；平常安靜，出事才醒目。</li>
+      <li>缺點：「已儲存」其實是文字，第一次用的人可能不知道它能點（滑過才改寫成動作）。</li>
+    </ul>
+    <div class="lab-opt__bar">
+      <span class="lab-fake">← 返回　建立活動　［進度條］</span>
+      <div class="lab-right" data-b>
+        <button class="lab-pill" type="button" data-pill aria-label="立即儲存">
+          <i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text></span><span data-hover>立即儲存</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- B 全部狀態 -->
+  <section class="lab-opt" id="b-all">
+    <h2>B　所有狀態一覽</h2>
+    <p>同一顆狀態鈕在每個狀態的樣子，上排平常、下排滑過（靜態展開，不用切換）。右欄寫這個狀態下點一下會發生什麼。</p>
+    <div class="lab-grid">
+      <div class="lab-cell " data-st="saved"><div class="lab-cell__pill"><button class="lab-pill" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>已儲存</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>已儲存</b>平常狀態，安靜。</div></div>
+      <div class="lab-cell " data-st="saving"><div class="lab-cell__pill"><button class="lab-pill" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>儲存中…</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>儲存中</b>圓圈轉動，約 1 秒內結束；滑過不變。</div></div>
+      <div class="lab-cell " data-st="failed"><div class="lab-cell__pill"><button class="lab-pill" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>儲存失敗</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>儲存失敗</b>整顆變紅，只寫「儲存失敗」。</div></div>
+      <div class="lab-cell " data-st="offline"><div class="lab-cell__pill"><button class="lab-pill" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>未儲存</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>未儲存（離線）</b>黃點。網路恢復會自動重存。〔呈現假設，規格未寫〕</div></div>
+      <div class="lab-cell " data-st="saved"><div class="lab-cell__pill"><button class="lab-pill lab-pill--hover" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>已儲存</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>已儲存・滑過</b>狀態點換成存檔圖示，文字改「立即儲存」；點一下就存。</div></div>
+      <div class="lab-cell " data-st="saving"><div class="lab-cell__pill"><button class="lab-pill lab-pill--hover" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>儲存中…</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>儲存中・滑過</b>不變，避免重複送出。</div></div>
+      <div class="lab-cell " data-st="failed"><div class="lab-cell__pill"><button class="lab-pill lab-pill--hover" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>儲存失敗</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>儲存失敗・滑過</b>同上：圖示加「立即儲存」，顏色回到一般文字色。</div></div>
+      <div class="lab-cell " data-st="offline"><div class="lab-cell__pill"><button class="lab-pill lab-pill--hover" type="button" tabindex="-1"><i class="lab-dot"></i><svg class="lab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg><span data-text>未儲存</span><span data-hover>立即儲存</span></button></div><div class="lab-cell__note"><b>未儲存・滑過</b>同上。</div></div>
+    </div>
+  </section>
+
+  <!-- C 狀態＋儲存並離開 -->
+  <section class="lab-opt" data-opt="C">
+    <h2>C　狀態文字＋「儲存並離開」<span class="lab-tag">保守</span></h2>
+    <p>不真正合併，只把按鈕改名成它該做的事（對齊規格 D060 的「儲存並離開」）。失敗時文字旁多一個「重試」。</p>
+    <ul>
+      <li>優點：改動最小；按鈕意義清楚，不再有「按了沒反應」。</li>
+      <li>缺點：右上角還是兩個東西；平常大多數時候按鈕都用不到。</li>
+    </ul>
+    <div class="lab-opt__bar">
+      <span class="lab-fake">← 建立活動　［進度條］</span>
+      <div class="lab-right">
+        <span class="lab-status" data-status><i class="lab-dot"></i><span data-text></span></span>
+        <button class="btn btn--ghost btn--sm" type="button" data-retry data-act="save" hidden>重試</button>
+        <button class="btn btn--outline" type="button" data-act="toast:已儲存並離開，回到活動列表的草稿">儲存並離開</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- D 只留狀態 -->
+  <section class="lab-opt" data-opt="D">
+    <h2>D　只留狀態文字，離開靠左上的返回<span class="lab-tag">最簡</span></h2>
+    <p>右上角只剩狀態。離開＝按左上「返回」，系統自動存好再走；有未存或失敗時，才跳「還沒存好，要離開嗎？」確認。</p>
+    <ul>
+      <li>優點：最乾淨，完全貫徹自動儲存。</li>
+      <li>缺點：看不到明確的「我存好了」動作；使用者要信任自動儲存。失敗時只能靠文字旁的「重試」。</li>
+    </ul>
+    <div class="lab-opt__bar">
+      <span class="lab-fake"><button class="btn btn--outline btn--sm" type="button" data-act="back">← 返回</button>　建立活動　［進度條］</span>
+      <div class="lab-right">
+        <span class="lab-status" data-status><i class="lab-dot"></i><span data-text></span></span>
+        <button class="btn btn--ghost btn--sm" type="button" data-retry data-act="save" hidden>重試</button>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="lab-toast" id="toast" hidden></div>
+
+<script src="js/lucide.min.js?v=r2.2" onerror="void 0"></script>
+<script>
+(function () {
+  var TEXT = {
+    saved:   '已儲存 · 剛剛',
+    saving:  '儲存中…',
+    failed:  '儲存失敗',
+    offline: '離線 · 變更暫存在本機'
+  };
+  var state = 'saved', timer;
+  function render() {
+    document.querySelectorAll('[data-opt]').forEach(function (opt) {
+      var k = opt.getAttribute('data-opt');
+      opt.setAttribute('data-st', state);
+      var txt = TEXT[state];
+      if (k === 'B' && state === 'saved') txt = '已儲存';
+      if (k === 'B' && state === 'offline') txt = '未儲存';
+      opt.querySelectorAll('[data-text]').forEach(function (t) { t.textContent = txt; });
+      opt.querySelectorAll('[data-retry]').forEach(function (r) { r.hidden = !(state === 'failed' || state === 'offline'); });
+    });
+    document.querySelectorAll('#states [data-set]').forEach(function (b) {
+      b.classList.toggle('btn--primary', b.getAttribute('data-set') === state);
+    });
+  }
+  function setState(s) { state = s; render(); }
+  function toast(msg) {
+    var t = document.getElementById('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, 2200);
+  }
+  function save() { setState('saving'); clearTimeout(timer); timer = setTimeout(function () { setState('saved'); }, 700); }
+
+  document.getElementById('states').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-set]'); if (b) setState(b.getAttribute('data-set'));
+  });
+  document.addEventListener('click', function (e) {
+    var pill = e.target.closest('[data-pill]');
+    if (pill) { if (state !== 'saving') save(); return; }
+    var a = e.target.closest('[data-act]');
+    if (a) {
+      var act = a.getAttribute('data-act');
+      if (act === 'save') save();
+      else if (act === 'back') toast(state === 'saved' ? '已自動存好，直接離開' : '還沒存好，要離開嗎？（確認彈窗）');
+      else if (act.indexOf('toast:') === 0) toast(act.slice(6));
+    }
+  });
+  render();
+  if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+})();
+</script>
+</body>
+</html>

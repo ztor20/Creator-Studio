@@ -247,6 +247,27 @@
 [data-stage-drawer] .pp-table thead th { position: sticky; top: calc(var(--sp-24) * -1); z-index: 2; background: var(--card); }
 [data-stage-drawer] .pp-group-row td { position: sticky; top: calc(var(--pp-head-h, 46px) - var(--sp-24)); z-index: 1; background: var(--card); }
 
+/* 桌機／手機預覽尺寸切換（使用者：「這裡放一個切換桌機和手機預覽尺寸的切換鈕」）：
+   兩顆圖示鈕疊在主欄右上角（.pstage 格線子項），選手機時前台鏡像收成 390px 置中、加框，粉絲頁自己的容器查詢依寬度切成手機版型。 */
+.pstage__device {
+  grid-column: 1; grid-row: 1; align-self: start; justify-self: end; z-index: 3;
+  /* 避開前台鏡像頂端那條實色遮擋條（fan-shop.css 第 7 段 .fep-shop--event::before，高度 --fep-clip-h，z-index 190 會蓋住鈕的上緣；使用者：「還是有奇怪的黑塊」） */
+  margin-top: calc(var(--sp-12) + var(--sp-8));
+  display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--radius-md);
+  background: var(--surface-page); box-shadow: 0 0 0 1px var(--border);
+}
+.pstage__device-btn {
+  display: inline-grid; place-items: center; width: 32px; height: 30px; border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: var(--muted-foreground); cursor: pointer;
+}
+.pstage__device-btn .ztor-icon { width: 18px; height: 18px; }
+.pstage__device-btn:hover { color: var(--foreground); }
+.pstage__device-btn[aria-pressed="true"] { background: var(--ztu-glass-strong); color: var(--foreground); }
+.pstage[data-device="mobile"] .pstage__main > .fep-shop {
+  max-width: 390px; margin-inline: auto;
+  border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden;
+}
+
 /* ── 1023 以下：側欄不再是軌 ──────────────────────────────────── */
 @media (max-width: 1023.98px) {
   .pstage { grid-template-columns: minmax(0, 1fr); }
