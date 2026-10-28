@@ -220,6 +220,18 @@
    · 不在說明段落裡——切語言時 .page-intro__sub 的 innerHTML 會被換掉（見下方舊說明），而且按鈕靠右、跟說明句分開。
    歷史（2026-07-31 → 10-27）：先是動作列裡的按鈕、再移到說明句末的橘色連結、改過灰字＋箭頭、白字、另起一行，最後定案為線框按鈕。 */
 .page-intro > .page-intro__help { margin-left: auto; }
+/* 後面一支箭頭（2026-10-28 使用者：「要有一個箭頭 icon 在後面」）：這顆按鈕是「去別的頁看說明」，箭頭說出它會離開本頁。
+   用 CSS mask 畫 lucide arrow-right，九個消費頁（粉絲／媒體庫／品牌活動）的 markup 不必逐頁補 <i>，也不怕 JS 重畫圖示；
+   跟字同色（currentColor），間距吃 .btn 的 icon↔label gap。mask 內的 `#000` 只讀 alpha、不是顯示色。 */
+.page-intro__help::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 
 /* 頁尾註腳（2026-07-31）：整頁層級的細字，例如「本頁數字為原型示範資料」。
    與 .page-crumb 同一個家族——頁面外框的上下兩端，一個在標題之前、一個在內容

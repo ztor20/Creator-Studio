@@ -493,9 +493,7 @@
   /* 翻譯表（欄位 × 四語；預設語言欄唯讀＝母本要回表單改，D223） */
   function renderTransTable(host) {
     host.innerHTML = '';
-    var hint = el('p', 'field__hint pstage-drawer__hint');
-    hint.textContent = T('pstage.drawer.trans-hint', 'The default language is read-only — edit it in the form.');
-    host.appendChild(hint);
+    /* 墓碑 2026-10-28（#382，使用者：「移除」）：表格上方的提示句「預設語言那一欄是來源，要改回原本的欄位改」退場（pstage.drawer.trans-hint 留著未用）；預設欄已有「預設」徽章。 */
     var scroll = el('div', 'ztor-table-scroll');
     var table = el('table', 'ztor-table pp-table');
     var thead = el('thead');
@@ -570,25 +568,19 @@
     var list = currencies();
     var base = opts.baseCurrency;
     var rows = opts.prices || [];
-    /* 全部列都唯讀（電子商店）才換提示句；有些列可覆寫、有些不行（混合）時沿用舊句，
-       因為舊句「其餘幣別是換算值，輸入數字即覆寫」對可覆寫的列仍然成立。 */
-    var allReadonly = rows.length > 0 && rows.every(function (p) { return !rowOverridable(p); });
-    /* 有 bookyay 鎖定欄的表（D330）換一句：港幣是 bookyay 原價、鎖定；其他幣別（含可覆寫的基準欄）輸入即覆寫。 */
-    var anyPinned = rows.some(function (p) { var r = priceRec(p.key); return r && r.pin; });
-    var hint = el('p', 'field__hint pstage-drawer__hint');
-    hint.textContent = allReadonly
-      ? T('pstage.drawer.price-hint-readonly', 'Other currencies convert automatically at the exchange rate — the store can’t adjust them individually.')
-      : anyPinned
-      ? T('pp.table.prices-hint.bky', 'HKD is the bookyay price and stays locked. Other currencies start converted — type a number to override one.')
-      : T('pp.table.prices-hint', 'Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override it.');
-    host.appendChild(hint);
+    /* 墓碑 2026-10-28（#382，使用者：「移除」）：表格上方的提示句（全唯讀／bookyay 港幣鎖定／一般三種）與判斷它用的
+       allReadonly、anyPinned 退場，鍵留著未用。bookyay 鎖定改在被鎖的幣別表頭換行附註（使用者：「這裡換行附註 bookyay 鎖定」）。 */
     var scroll = el('div', 'ztor-table-scroll');
     var table = el('table', 'ztor-table pp-table pp-price-table');
     var thead = el('thead');
     var hr = el('tr');
     hr.appendChild(el('th', '', esc(T('pp.table.item', 'Item'))));
+    /* 被 bookyay 鎖定的幣別（D330，任一列在這個幣別有 pin）：表頭幣別下方換行一行小字「bookyay 鎖定」 */
+    var pinCur = {};
+    rows.forEach(function (p) { var r = priceRec(p.key); list.forEach(function (c) { if (pinnedOf(r, c) != null) pinCur[c] = true; }); });
     list.forEach(function (c) {
-      hr.appendChild(el('th', '', esc(c) + (c === base ? ' <span class="badge badge--neutral">' + esc(T('pp.price.base', 'Base')) + '</span>' : '')));
+      hr.appendChild(el('th', '', esc(c) + (c === base ? ' <span class="badge badge--neutral">' + esc(T('pp.price.base', 'Base')) + '</span>' : '') +
+        (pinCur[c] ? '<span class="pp-th-sub">' + esc(T('pp.price.bkylock', 'Locked by bookyay')) + '</span>' : '')));
     });
     thead.appendChild(hr);
     table.appendChild(thead);
@@ -654,6 +646,8 @@
     table.appendChild(tbody);
     scroll.appendChild(table);
     host.appendChild(scroll);
+    /* 分組列黏在表頭正下方：表頭多了附註行會變高，量實際高度寫進 --pp-head-h（publish-stage.css 用） */
+    requestAnimationFrame(function () { var h = thead.getBoundingClientRect().height; if (h) table.style.setProperty('--pp-head-h', Math.round(h) + 'px'); });
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
   }
 

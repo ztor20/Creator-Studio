@@ -2579,7 +2579,8 @@
       return '<div data-st-section="' + key + '" aria-hidden="true"></div>';
     }
     function sectionTabsHTML() {
-      return '<nav class="section-tabs section-tabs--dialog" data-section-tabs data-st-scroller=".payout-dialog__body" aria-label="' + esc(T('st.aria')) + '">' +
+      /* 2026-10-28（#364）：編輯模式的目錄改到左側欄（.section-tabs--rail，放在內容區 .bd-split 的第一欄），不再是頂列第二排 */
+      return '<nav class="section-tabs section-tabs--rail" data-section-tabs data-st-scroller=".payout-dialog__body" aria-label="' + esc(T('st.aria')) + '">' +
         '<div class="tabs tabs--underline-short tabs--underline-label">' +
           ST_SECTIONS.filter(function (it) { return it[0] !== 'more' || (window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker); }).map(function (it, i) {   /* 「其他」分頁只在有電影選擇器時才有 */
             return '<button type="button" class="tabs__item' + (i === 0 ? ' tabs__item--active' : '') + '" data-st-tab="' + it[0] + '"' +
@@ -2640,9 +2641,10 @@
             '<button class="btn btn--icon" type="button" data-bd-close aria-label="' + esc(T('cpp.bd.close')) + '">' +
               '<i data-lucide="x" class="ztor-icon"></i></button>' +
           '</div>' +
-          (wizOn(b) ? '' : sectionTabsHTML()) +   /* 墓碑 2026-10-27：新增模式標題下的步驟分頁排（wizTabsHTML）退場，步驟收進標題列 */
+          /* 墓碑 2026-10-27：新增模式標題下的步驟分頁排（wizTabsHTML）退場，步驟收進標題列；2026-10-28（#364）：編輯模式標題下的分節分頁排也退場，改成內容區左欄的目錄 */
           '<div class="payout-dialog__body bd-form">' +
-            '<div class="payout-dialog__split bd-split">' +
+            '<div class="payout-dialog__split bd-split' + (wizOn(b) ? '' : ' bd-split--rail') + '">' +
+              (wizOn(b) ? '' : sectionTabsHTML()) +
               /* 三大分類：組合包介紹 → 選擇組合物 → 販售設定（價格／數量／購買條件與限購／上架與開賣） */
               '<div class="bd-split__main">' +
                 (wizOn(b) ? wizBodyHTML(b) :   /* 新增模式：只畫目前這一步 */
@@ -2665,7 +2667,7 @@
               var wiz = wizOn(b), last = !wiz || wizStep(b) === wizSteps().length - 1, first = !wiz || wizStep(b) === 0;
               return '<div class="bd-foot-actions">' +
                 (last ? '<span class="bd-foot-why" data-bd-why' + (why ? '' : ' hidden') + '>' + esc(why) + '</span>' : '') +
-                '<button class="btn btn--outline" type="button" data-bd-cancel>' + esc(T('cpp.bd.sp.cancel')) + '</button>' +
+                /* 墓碑 2026-10-28（#363）：底部「取消」鈕退場（使用者：不需要）——右上角 ✕（data-bd-close）在分段彈窗走同一個 cancel（還原快照）。 */
                 (first ? '' : '<button class="btn btn--outline" type="button" data-bd-wback>' + esc(T('cpp.bd.back')) + '</button>') +
                 (last ? '<button class="btn btn--primary" type="button" data-bd-primary' + (gateOff ? ' disabled' : '') + '>' + esc(primaryLabel) + '</button>'
                       : '<button class="btn btn--primary" type="button" data-bd-wnext>' + esc(T('cpp.bd.next')) + '</button>') +
@@ -2886,16 +2888,22 @@
       var base = listPrice(b), fin = finalPrice(b);
       /* 列用 data-bd-open、彈窗才是 data-bd-card：編輯中兩者同時存在，共用同一個屬性的話
          「找這張卡的某個欄位」會先命中沒有欄位的那一列，打字時的焦點還原就會斷。 */
-      return '<button class="card bd-row" type="button" data-bd-open="' + b.id + '">' +
-        rowThumbHTML(b) +
-        '<span>' +
-          '<span class="bd-row__name">' + esc(b.name || T('cpp.bd.untitled')) + '</span>' +
-          rowLinesHTML(b) +
-        '</span>' +
-        '<span class="bd-row__price">' + esc(moneyFrom(b, fin)) +
-          (base > fin ? '<span class="bd-row__was">' + esc(moneyFrom(b, base)) + '</span>' : '') + '</span>' +
-        '<span class="bd-row__chev"><i data-lucide="chevron-right" class="ztor-icon"></i></span>' +
-      '</button>';
+      /* 2026-10-28（#375，使用者：「這個要有刪除功能」）：列尾加刪除鈕。列本身是 <button>，按鈕不能巢在按鈕裡，
+         所以外面包一層 .bd-row-wrap、刪除鈕是列的兄弟（絕對定位在列尾，原本 › 的位置；› 撤除，整列可點仍由 hover 上浮表達）。
+         點一下先變成「確定刪除？」，再點一次才刪；移開或 4 秒內沒再點就還原（不跳確認窗，也不會誤刪）。 */
+      return '<div class="bd-row-wrap">' +
+        '<button class="card bd-row" type="button" data-bd-open="' + b.id + '">' +
+          rowThumbHTML(b) +
+          '<span>' +
+            '<span class="bd-row__name">' + esc(b.name || T('cpp.bd.untitled')) + '</span>' +
+            rowLinesHTML(b) +
+          '</span>' +
+          '<span class="bd-row__price">' + esc(moneyFrom(b, fin)) +
+            (base > fin ? '<span class="bd-row__was">' + esc(moneyFrom(b, base)) + '</span>' : '') + '</span>' +
+        '</button>' +
+        '<button class="btn btn--ghost btn--icon btn--sm bd-row__del" type="button" data-bd-row-del="' + b.id + '" aria-label="' + esc(T('cpp.bd.row.del')) + '" title="' + esc(T('cpp.bd.row.del')) + '">' +
+          '<i data-lucide="trash-2" class="ztor-icon"></i><span class="bd-row__del-confirm">' + esc(T('cpp.bd.row.del.confirm')) + '</span></button>' +
+      '</div>';
     }
 
     function cardHTML(b, i) {
@@ -3772,6 +3780,22 @@
     });
 
     list.addEventListener('click', function (e) {
+      /* 收合列的刪除鈕（#375）：第一下進入確認態，第二下才刪 */
+      var del = e.target.closest('[data-bd-row-del]');
+      if (del) {
+        e.preventDefault();
+        if (!del.classList.contains('is-confirm')) {
+          list.querySelectorAll('.bd-row__del.is-confirm').forEach(function (x) { x.classList.remove('is-confirm'); });
+          del.classList.add('is-confirm');
+          clearTimeout(del._t); del._t = setTimeout(function () { del.classList.remove('is-confirm'); }, 4000);
+          return;
+        }
+        var gone = get(del.dataset.bdRowDel);
+        BUNDLES = BUNDLES.filter(function (x) { return x.id !== del.dataset.bdRowDel; });
+        render({ blur: true });
+        if (window.ztorToast && gone) window.ztorToast.show(T('cpp.bd.row.del.done').replace('{name}', gone.name || T('cpp.bd.untitled')));
+        return;
+      }
       /* 收合列在 [data-bd-card] 之外（見 secRowHTML 的說明），要先接。
          一次只編輯一組：打開這一組的同時把其餘收回列。 */
       var open = e.target.closest('[data-bd-open]');

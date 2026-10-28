@@ -70,6 +70,9 @@
 .fc-add, .fc-add-item { display: flex; width: 100%; justify-content: center; align-items: center; }
 .fc-add, .fc-add-item { border-style: dashed; }
 .fc-add { min-height: 56px; font-weight: var(--fw-regular); margin-top: var(--sp-16); border-radius: var(--radius-xl); }
+/* 不被上一張卡的投影壓到（2026-10-28，#365，使用者：「這個可以不被上面的陰影壓到嗎」）：組合包卡的投影（0 24px 60px 黑 45%）往下滲出約 80px，
+   「＋ 新增組合包」半透明底坐在那片影子裡，整顆被壓暗。疊在卡片之上（position+z-index），並在半透明薄膜底下鋪一層與頁面同色的底，影子就不會透上來。 */
+.fc-add { position: relative; z-index: 1; background: linear-gradient(var(--control-raise), var(--control-raise)), linear-gradient(var(--layer-0-surface), var(--layer-0-surface)); }   /* 上層＝原本 .btn--outline 的薄膜色，下層＝頁面同色的實底 */
 /* 2026-10-27：新增鈕坐在一排卡片（組合包收合列、套組卡）正下方，圓角改跟卡片同一級（--radius-xl，原本吃按鈕的 10px），
    與上面那排卡片的距離收進元件（--sp-16；原本各頁各自 inline margin-top 12，建立活動那頁漏掛，貼得只剩收合列的 10px）。 */
 .fc-add-item { min-height: 48px; margin-top: var(--sp-10); }
@@ -134,8 +137,9 @@
 }
 /* 縮圖：40px，跟收合列的文字兩行等高。圓角用 --radius-md 而不是 pill——
    它是一張商品照片，不是一個頭像。 */
+/* 2026-10-28 #369：全站縮圖不留方形，改直式 --img-portrait（2:3，Q39）；保留原高度、寬度跟著比例收（列高不跳） */
 .fc-sum__thumb {
-  width: 40px;
+  width: calc(40px * var(--img-portrait));
   height: 40px;
   flex: none;
   border-radius: var(--radius-md);
@@ -228,8 +232,9 @@
   border-bottom: 1px solid var(--border);
 }
 .fc-ref:last-of-type { border-bottom: 0; }
+/* 2026-10-28 #369：全站縮圖不留方形，改直式 --img-portrait（2:3，Q39）；保留原高度、寬度跟著比例收（列高不跳） */
 .fc-ref__thumb {
-  width: 44px; height: 44px;
+  width: calc(44px * var(--img-portrait)); height: 44px;
   border-radius: var(--radius-md);
   object-fit: cover;
   background: var(--ztu-film);   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--muted) */
@@ -300,8 +305,12 @@
   font-family: var(--font-ui);
   font-size: var(--fs-13);
 }
-.fc-pick__opt:hover, .fc-pick__opt:focus-visible { background: var(--ztu-glass-strong); }   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--accent) */
-.fc-pick__opt img { width: 32px; height: 32px; border-radius: var(--radius-sm); object-fit: cover; background: var(--ztu-film); }   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--muted) */
+.fc-pick__opt:hover, .fc-pick__opt:focus-visible { background: var(--ztu-glass-strong); }
+/* 不能選的結果（2026-10-28，建立組合包就地搜尋：已加入、已下架、已結束或已封存的活動、已有一場時的其他活動）：
+   照常列出讓人知道它在、但淡掉且不給 hover——同 .data-list__row--disabled 的讀法 */
+.fc-pick__opt:disabled { opacity: .5; cursor: default; }
+.fc-pick__opt:disabled:hover { background: none; }   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--accent) */
+.fc-pick__opt img { width: calc(32px * var(--img-portrait)); height: 32px; border-radius: var(--radius-sm); object-fit: cover; background: var(--ztu-film); }   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--muted) */
 .fc-pick__opt-price { font-variant-numeric: tabular-nums; color: var(--muted-foreground); font-size: var(--fs-12); }
 /* 找不到商品時的出口：現在就開一個草稿商品，而不是逼人改用自由文字。
    （黑膠還沒壓出來就是還沒有 SKU——這是真實情境，不是使用者的錯。）*/
@@ -472,6 +481,26 @@
 /* ── 收合列：已存在的一組 ────────────────────────────────────────────────
    一組組合包平常只需要回答三件事：叫什麼、裡面有什麼、賣多少。其餘欄位是編輯當下
    才要看的東西，點開才給。整列是按鈕（滑鼠不必瞄準小連結）。 */
+/* 列尾刪除鈕（2026-10-28，#375）：列是 <button>，刪除鈕不能巢在裡面——外包一層 .bd-row-wrap 讓刪除鈕當兄弟、絕對定位在列尾。
+   列右側內距加大讓出位置；刪除鈕第一下變「確定刪除？」（.is-confirm，破壞色、露出字），第二下才刪。 */
+.bd-row-wrap { position: relative; margin-bottom: var(--sp-10); }
+.bd-row-wrap > .bd-row { margin-bottom: 0; padding-right: 64px; }
+.bd-row__del { position: absolute; top: 50%; right: var(--sp-14); transform: translateY(-50%); z-index: 1; color: var(--muted-foreground); }
+.bd-row__del:hover { color: var(--destructive); }
+.bd-row__del-confirm { display: none; }
+.bd-row__del.is-confirm { width: auto; padding-inline: var(--sp-10); gap: var(--sp-6); color: var(--destructive); background: color-mix(in srgb, var(--destructive) 12%, transparent); }
+.bd-row__del.is-confirm .bd-row__del-confirm { display: inline; font-size: var(--fs-12); }
+.bd-row-wrap:has(.bd-row__del.is-confirm) > .bd-row { padding-right: 132px; }
+/* 跟著整張卡一起浮起（2026-10-28，#377，使用者：「垃圾桶按鈕在整張卡 hover 時怎麼不會一起動？」）：刪除鈕是列的兄弟，
+   card.css 的可點卡片 hover（上浮 --clickable-card-lift＋換底色）只作用在列本身；滑鼠停在刪除鈕上時列也不會 hover。
+   改由外層 .bd-row-wrap 的 hover 同時帶動兩者：列照標準上浮換底，刪除鈕同步位移同樣的距離。 */
+.bd-row__del { transition: transform var(--duration) var(--easing), color var(--duration) var(--easing), background-color var(--duration) var(--easing); }
+.bd-row-wrap:hover > .bd-row { transform: translateY(var(--clickable-card-lift)); background: var(--clickable-card-hover-bg); }
+.bd-row-wrap:hover > .bd-row__del { transform: translateY(calc(-50% + var(--clickable-card-lift))); }
+@media (prefers-reduced-motion: reduce) {
+  .bd-row-wrap:hover > .bd-row { transform: none; }
+  .bd-row-wrap:hover > .bd-row__del { transform: translateY(-50%); }
+}
 .bd-row {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto auto;
@@ -485,10 +514,11 @@
 }
 /* 2026-10-20：.bd-row 是 <button class="card">，hover 走全站可點卡片標準（card.css 的 :where(button.card):hover＝上浮＋按鈕 hover 底色）；
    原本自己換底色的 .bd-row:hover 撤除，不然權重比標準高、只換底色不上浮。 */
+/* 2026-10-28 #369：全站縮圖不留方形，改直式 --img-portrait（2:3，Q39）；保留原高度、寬度跟著比例收（列高不跳） */
 .bd-row__thumb {
   display: grid;
   place-items: center;
-  width: 44px; height: 44px;
+  width: calc(44px * var(--img-portrait)); height: 44px;
   border-radius: var(--radius-md);
   background: var(--ztu-film);   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--muted) */
   color: var(--muted-foreground);
@@ -792,6 +822,12 @@
 /* 特寬彈窗的高度上限放到視窗高（payout-dialog 預設 760px）：右欄預覽卡連 CTA 約 640px，
    760 減掉頭尾只剩 580，卡的按鈕永遠在摺線下、側欄又是自己內捲，看不出那裡還有東西。 */
 .bd-dialog--split { max-height: calc(100vh - var(--sp-48)); }
+/* 編輯模式：目錄在左（section-tabs--rail）｜表單｜預覽，三欄（2026-10-28，#364）；左欄 148px 夠放四個節名，窄視窗收掉目錄 */
+.bd-split--rail { grid-template-columns: 148px minmax(0, 1fr) var(--payout-split-side); }
+@media (max-width: 900px) {
+  .bd-split--rail { grid-template-columns: minmax(0, 1fr) var(--payout-split-side); }
+  .bd-split--rail > .section-tabs--rail { display: none; }
+}
 .bd-split__main { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; }
 .bd-split__main .bd-sec { margin-bottom: 0; }
 /* 側欄黏在 body 頂端（payout-dialog__split-side 自帶 sticky），上緣對齊第一張分卡。 */

@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/export-dialog.css?v=r2.2"><!-- 2026-10-28：匯出視窗（筆數摘要＋匯出紀錄） -->
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2"><!-- D481：D448 彈窗的恢復排程兩個選項 -->
 <link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- D481：重新上架時詢問是否恢復排程 -->
@@ -1582,8 +1583,7 @@
                 <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
               </button>
               <button class="btn btn--outline" type="button" data-tx-export data-view-safe data-nav-act="tx" hidden><i data-lucide="download" class="ztor-icon"></i><span data-i18n="event-detail.tx.export">Export transactions</span></button>
-              <!-- D424 決定 4：匯出紀錄（這一場的交易明細匯出：誰、何時、篩選條件、筆數、檔名）——匯出鈕旁的次要按鈕，創作者與 Admin 都看得到 -->
-              <button class="btn btn--ghost" type="button" data-tx-export-log data-view-safe data-nav-act="tx" data-feat="O42" hidden><i data-lucide="history" class="ztor-icon"></i><span data-i18n="csv.log.btn">Export history</span></button>
+              <!-- 墓碑 2026-10-28：「匯出紀錄」鈕（[data-tx-export-log]，D424 決定 4）退場——紀錄改列在匯出視窗下半部（同訂單管理） -->
               <button class="btn btn--outline" type="button" data-view-safe data-nav-act="roster" data-ed-export="attendees" hidden><i data-lucide="download" class="ztor-icon"></i><span data-i18n="event-detail.att.export">Export attendee list</span></button>
             </div>
           </div>
@@ -3525,12 +3525,22 @@
     });
     return { headers: headers, rows: rows };
   }
+  /* 匯出紀錄與匯出視窗共用的篩選條件（D424 決定 4 的結構） */
+  function txFilterSummary() {
+    const from = (document.querySelector('[data-tx-date-from]') || {}).value || '';
+    const to = (document.querySelector('[data-tx-date-to]') || {}).value || '';
+    const filters = [];
+    if (txFilter !== 'all') filters.push({ k: 'csv.log.f.status', v: txFilter, vk: txFilter === 'voided' ? 'event-detail.tx.f.cancelled' : 'event-detail.tx.f.' + txFilter });
+    if (from || to) filters.push({ k: 'orders.filter.date', v: (from || '…') + ' – ' + (to || '…') });
+    return filters;
+  }
   function openTxExport() {
     const list = txExportList();
     window.ztorCsv.confirm({
       title: T('csv.tx.title', 'Export transactions'),
       count: list.length,
       withShip: false,
+      scope: 'tx:' + ev.id, filters: txFilterSummary(),   /* 2026-10-28：同訂單管理——上半部寫篩選條件、下半部列這一場的匯出紀錄 */
       note: T('csv.tx.note', 'Shipping details are not in this export.'),
       /* D424 決定 3、4：確認後右下角「匯出中…」約 1 秒 → 原地轉「匯出完成」並下載，同時寫一筆這場活動的匯出紀錄（ztorCsv.run） */
       onExport: () => {
@@ -3539,9 +3549,7 @@
         const to = (document.querySelector('[data-tx-date-to]') || {}).value || '';
         const name = window.ztorCsv.safeName(T('csv.file.tx', 'Transactions')) + '_' + window.ztorCsv.safeName(ev.name) + '_' +
           window.ztorCsv.fileRange(from, to) + '.csv';
-        const filters = [];
-        if (txFilter !== 'all') filters.push({ k: 'csv.log.f.status', v: txFilter, vk: txFilter === 'voided' ? 'event-detail.tx.f.cancelled' : 'event-detail.tx.f.' + txFilter });
-        if (from || to) filters.push({ k: 'orders.filter.date', v: (from || '…') + ' – ' + (to || '…') });
+        const filters = txFilterSummary();
         window.ztorCsv.run({
           scope: 'tx:' + ev.id, name: name, count: rows.length, filters: filters,
           make: () => { const t = txExportTable(rows); return window.ztorCsv.build(t.headers, t.rows); }
@@ -3676,10 +3684,6 @@
     });
     /* 匯出照目前篩選結果（D411）；D416 起開確認視窗並真的產 CSV（版本閘 O39 關閉時維持舊行為：只回報筆數） */
     /* D424 決定 4：這一場活動的匯出紀錄 */
-    const txLog = document.querySelector('[data-tx-export-log]');
-    if (txLog) txLog.addEventListener('click', () => {
-      if (window.ztorCsv && window.ztorCsv.openLog) window.ztorCsv.openLog({ scope: 'tx:' + ev.id, title: T('csv.log.title', 'Export history') });
-    });
     const txExp = document.querySelector('[data-tx-export]');
     if (txExp) txExp.addEventListener('click', () => {
       if (txExportOn()) { openTxExport(); return; }

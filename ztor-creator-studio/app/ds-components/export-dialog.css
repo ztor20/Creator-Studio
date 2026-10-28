@@ -1,0 +1,71 @@
+/* Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗）
+   ------------------------------------------------------------------
+   2026-10-28 使用者：「匯出紀錄可以在這（匯出視窗）查看，工具列就不用放」，並要求先想 UX 再重做 UI。
+   消費：js/csv-export.js 的 ztorCsv.confirm()——訂單管理（orders.html）、活動詳情交易明細（event-detail.html）。
+   外殼仍是 canonical 對話框（.payout-modal／.payout-dialog），本檔只管 body 裡的兩塊：
+
+     .export-summary        這次要匯出什麼——大字筆數＋「照目前的篩選結果」＋篩選條件一行
+       __count / __num / __unit / __filters
+     .export-history        匯出紀錄——上緣一道細線和上半部分開，標題＋說明、最近 3 筆、「顯示全部 N 筆」
+       __head / __title / __sub / __more
+
+   為什麼這樣排（UX）：
+     · 按「匯出」那一刻最要緊的是「我拿到的會是哪些資料」——所以筆數放大、篩選條件寫出來，
+       不必再回頭看清單上方開了哪些篩選；紀錄裡每一列也寫同一種篩選條件，上下讀法一致。
+     · 紀錄在匯出前看最有用：剛剛是不是已經有人匯過同一份？所以和這次篩選相同的紀錄標「同樣的篩選」。
+     · 紀錄是次要資訊，放在下半部、只露最近 3 筆，主鈕「匯出 N 筆」永遠在底部看得到。
+   ------------------------------------------------------------------ */
+.export-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.export-summary__count {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-6);
+  color: var(--foreground);
+}
+.export-summary__num {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  line-height: 1;
+}
+.export-summary__unit {
+  font-size: var(--fs-14);
+  color: var(--foreground-muted);
+}
+.export-summary__filters {
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+}
+
+.export-history {
+  margin-top: var(--sp-24);
+  padding-top: var(--sp-20);
+  border-top: 1px solid var(--border-soft);
+}
+.export-history[hidden] { display: none; }
+.export-history__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-6);
+}
+.export-history__title {
+  margin: 0;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+.export-history__sub {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.export-history__more { margin-top: var(--sp-4); }
+.export-history__more[hidden] { display: none; }

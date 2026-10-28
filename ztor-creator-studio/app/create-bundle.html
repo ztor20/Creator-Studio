@@ -61,8 +61,8 @@
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <!-- D321（D321，D310 組合側，2026-09-23，比照建立商品 D317）：兩步驟——第 2 步「預覽與發布」全頁畫面（js/publish-stage.js）＋主區粉絲視角組合包頁（js/fan-bundle-page.js） -->
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- 頁首進度條；2026-10-21 起三段（組合包設定／上架設定／預覽與發布） -->
-<link rel="stylesheet" href="ds-components/form-steps.css?v=r2.2"><!-- 2026-10-21 三步驟：同一張表單依步驟顯示節（data-form-step） -->
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- 頁首進度條；2026-10-28 起四段（選擇組合商品／組合包設定／上架與販售／預覽與發布） -->
+<link rel="stylesheet" href="ds-components/form-steps.css?v=r2.2"><!-- 2026-10-21 起分步（2026-10-28 改四步驟）：同一張表單依步驟顯示節（data-form-step） -->
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2"><!-- 全頁畫面側欄的發布前檢核清單 -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
@@ -77,15 +77,7 @@
      左欄三段分卡「組合包介紹 → 選擇組合物 → 販售設定」（2026-10-12 重排，原為 2026-09-21 的「內容物 → 定價與庫存 → 命名與上架」）、右欄「粉絲看到的」預覽卡、底部固定列粉絲實付；跳段靠左側空白欄的「本頁大綱」（2026-10-12 起；頂列第二排的分節分頁同日移除，兩者重複）。
      分卡殼沿用頁面級的 form-section--outlined（建立商品同款），卡內節奏吃 .stack；表格／算式／footer
      一律用 bundle-editor.css 的元件 class；此處只留本頁獨有的一次性版面。 */
-  /* 合併的新增方塊（商品：嵌入建立商品流程；票券：打開活動挑選器）：虛線邊＝「可以放東西進來」的訊號 */
-  .cb-add-tile { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; padding: 16px;
-    border: 1px dashed var(--layer-2-line); border-radius: var(--radius-md); background: var(--layer-2-surface); color: var(--foreground);
-    cursor: pointer; font: inherit; transition: background .15s ease, border-color .15s ease; }
-  .cb-add-tile:hover { background: var(--accent); border-color: var(--muted-foreground); }
-  .cb-add-tile[hidden] { display: none; }
-  .cb-add-tile .ztor-icon { width: 18px; height: 18px; margin-bottom: 3px; }
-  .cb-add-tile__main { font-size: var(--fs-13); font-weight: var(--fw-regular); }
-  .cb-add-tile__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
+  /* 墓碑 2026-10-28：.cb-add-tile（大塊「加入組合物」）的頁內樣式退場——入口改成就地搜尋 .fc-pick（bundle-editor.css） */
   /* 候選清單的子標題（近期瀏覽／搜尋結果）*/
   .cb-sublabel { font-size: var(--fs-13); font-weight: var(--fw-regular); margin: 0 0 8px; }
   /* 候選列尾：徽章＋價格＋外開連結並排 */
@@ -120,14 +112,15 @@
         </div>
       </div>
       <!-- 2026-09-23 D321（D310 組合側，比照建立商品 D317）進度條；2026-10-21 起三段——組合包設定／上架設定／預覽與發布
-           （.progress-stepper--anystep：三段都能點，點擊處理器見頁尾腳本 stepperLabels.forEach）。第一段中文寫「組合包設定」是使用者 2026-10-21 指定的名稱。 -->
+           （2026-10-28 起四段；.progress-stepper--anystep：每段都能點，點擊處理器見頁尾腳本 stepperLabels.forEach）。第一段中文寫「組合包設定」是使用者 2026-10-21 指定的名稱。 -->
       <div class="wizard__progress" id="cb-progress">
-        <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="cb-stepper" style="--steps:3;--at:1;--progress:0%">
+        <div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" id="cb-stepper" style="--steps:4;--at:1;--progress:0%">
           <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
           <div class="progress-stepper__labels">
-            <span class="progress-stepper__label progress-stepper__label--current" data-step="1"><span data-i18n="cb.step.details">Details</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="2"><span data-i18n="cb.step.listing">Listing</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="3"><span data-i18n="cb.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="1"><span data-i18n="cb.step.members">Choose items</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="2"><span data-i18n="cb.step.details">Details</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="3"><span data-i18n="cb.step.listing">Listing</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="4"><span data-i18n="cb.step.preview">Preview &amp; publish</span><span class="progress-stepper__state" data-step-state></span></span>
           </div>
         </div>
       </div>
@@ -139,9 +132,10 @@
   </header>
 
   <div class="wizard__body wizard__body--form wizard__body--narrow preview-split">
-    <!-- 2026-10-21 三步驟：.form-steps＋data-at＝目前顯示第幾步（ds-components/form-steps.css）；每張分卡標 data-form-step。
-         第一步「組合包設定」＝組合資訊、圖片與影片、組合物、定價、數量、限購、電影關聯；第二步「上架設定」＝上架與開賣、購買條件、優惠；
-         第三步「預覽與發布」＝下方 [data-cb-stage] 全頁畫面。 -->
+    <!-- 2026-10-28 四步驟（使用者反饋，接 2026-10-21 D464 三步驟）：.form-steps＋data-at＝目前顯示第幾步（ds-components/form-steps.css）；每張分卡標 data-form-step。
+         第一步「選擇組合商品」＝組合物；第二步「組合包設定」＝組合資訊、圖片與影片、定價、數量、限購、電影關聯；
+         第三步「上架與販售」＝上架與開賣、取貨、購買條件、優惠；第四步「預覽與發布」＝下方 [data-cb-stage] 全頁畫面。
+         組合包詳情頁（bundle-detail.html）不分步，維持一頁到底。 -->
     <div class="preview-split__form form-steps" data-at="1" data-cb-form>
 
     <!-- 2026-10-12 改版（UI-CHANGES 一百八十八；規格 5.1.5.4 §5 呈現參考）：三大分類（本頁大綱群組；分卡上方的分類小標已撤除）、8 張分卡。
@@ -149,7 +143,7 @@
          sale＝價格（價格階梯）／數量（最多可賣＋鎖定＋上限）／購買條件與限購／上架與開賣。
          額外權益依使用者 2026-10-12 裁決從組合包移除（墓碑：原第二張分卡的 [data-cb-perks-group]）。 -->
     <!-- ① 組合資訊（spec 5.1.5.4 §4 F1）：名稱由組合物自動建議（使用者改過就不再覆蓋） -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="info" data-outline-group="intro">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="info" data-outline-group="intro">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.info">Bundle info</h3>
       </div>
@@ -167,7 +161,7 @@
     </section>
 
     <!-- ② 展示（F8；D243 十格、D259 可放影片）：卡片標題已說是展示，欄位標籤不重述 -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="media" data-outline-group="intro">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="media" data-outline-group="intro">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.media">Show it off</h3>
       </div>
@@ -232,12 +226,17 @@
             <!-- 墓碑 2026-10-12（使用者：「這應該不需要有」）：「換一場活動」鈕拿掉；一個組合包只含一場活動（D403），要換就移除這一列再從「加入組合物」重挑 -->
           </div>
           <div data-cb-items-table></div>
-          <!-- 2026-10-12 使用者：還沒有成員時只留下面的「加入組合物」，「還沒有內容」那句與上緣分隔線都不要（墓碑 [data-cb-members-empty]） -->
+          <!-- 2026-10-28 使用者：「1 用 2 這種設計」——改成建立活動「新增組合包」彈窗（js/bundle-editor.js）那種表格＋搜尋欄：
+               還沒有成員時表裡一句「還沒有內容」（[data-cb-members-empty]，syncMembersFrame 管），下方搜尋欄就地加入。 -->
+          <div class="member-table__empty" data-cb-members-empty data-i18n="cpp.bd.sum.empty">Nothing in it yet</div>
         </div>
-        <button type="button" class="cb-add-tile" data-cb-add-open>
-          <i data-lucide="plus" class="ztor-icon"></i>
-          <span class="cb-add-tile__main" data-i18n="cb.add.open">Add to bundle</span>
-        </button>
+        <!-- 墓碑 2026-10-28：大塊「加入組合物」（.cb-add-tile[data-cb-add-open]，開加入組合物彈窗）退場。
+             改成就地搜尋（.fc-pick，同 bundle-editor）：一個欄位同時找商品與活動，選商品加一列、選活動加票券列；
+             下拉最底「建立新商品…」開原本的嵌入建立商品彈窗。原加入彈窗（#cb-member-modal）保留當候選資料來源與活動門票規則（D403／D433）。 -->
+        <div class="fc-pick" data-cb-pick-inline>
+          <input class="input" data-cb-inline-search placeholder="Search your products or events…" data-i18n-placeholder="cb.search.inline.ph" autocomplete="off" aria-label="Add to bundle" data-i18n-aria-label="cb.add.open">
+          <div class="fc-pick__results" data-cb-inline-results hidden></div>
+        </div>
         <!-- 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）：限量成員、多選項成員、含票券 -->
         <div data-cb-notes></div>
       </div>
@@ -246,7 +245,7 @@
     <!-- D473（2026-10-22）：「取貨與核銷」節已搬到第二步「上架與開賣」之後（見下方），步驟 1 不再有這一節 -->
 
     <!-- ⑤ 定價（F3 定價＋組合折扣；2026-10-21 三步驟起限時折扣與使用優惠碼搬到第二步的「優惠」） -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="price" data-outline-group="sale">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="price" data-outline-group="sale">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.price">Price</h3>
       </div>
@@ -289,7 +288,7 @@
     </section>
 
     <!-- ⑥ 數量（F4 庫存；D266 鎖定、D292 上限）：標題列右側「最多可賣 N 組」 -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="qty" data-outline-group="sale">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="qty" data-outline-group="sale">
       <div class="form-section__head form-section__head--actions">
         <h3 class="form-section__title" data-i18n="cb.sec.qty">Quantity</h3>
         <div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k" data-i18n="cb.qty.max">Can sell</span><span class="form-tally__v" data-cb-sets>—</span></span></div>
@@ -341,7 +340,7 @@
          規則照舊：D456 不繼承成員、預設不限、獨立計算，js/purchase-limits.js 畫成 .rules-group 的一列。
          2026-10-22 D469（release2.3）：建立時就能設（原 D455 B7「照預設帶入、不能調整」的停用欄位與附註退場），元件與擋存同組合包細節頁。
          沒有成員時整節收起（沿用 2026-10-12「沒有成員時限購區塊整個不顯示」，ASSUMPTIONS UIA 三步驟條）。 -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="limits" data-outline-group="sale" data-feat="S94" data-cb-limits-sec>
+    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="limits" data-outline-group="sale" data-feat="S94" data-cb-limits-sec>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.limit">Purchase limit</h3>
       </div>
@@ -354,7 +353,7 @@
     </section>
 
     <!-- 電影關聯（F10）：2026-10-12 使用者「電影關聯移到最後面」——原在展示與組合物之間，改放整頁最後；大綱分類另立「其他」（不再算組合包介紹） -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="1" data-st-section="films" data-outline-group="more">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="films" data-outline-group="more">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.films">Linked movies</h3>
       </div>
@@ -370,7 +369,7 @@
 
     <!-- 2026-10-21 三步驟：以下是第二步「上架設定」——上架與開賣 →（D473，只在最終版）取貨與核銷 → 購買條件 → 優惠 -->
     <!-- ⑧ 上架與開賣（F6；含票券＝跟著活動＋四格跟隨／另設（D342）；純商品＝三開關（D241）） -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="listing" data-outline-group="sale">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="listing" data-outline-group="sale">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.listing">Listing &amp; sale</h3>
       </div>
@@ -499,7 +498,7 @@
          「上架與開賣」之後、「購買條件」之前（同建立商品步驟 2 的取貨方式位置）；整節掛 S34.1＝只在最終版，release2.3 建立組合包不出現這一節
          （成員唯讀列表一併不出現〔推導〕，ASSUMPTIONS UIA-293）。組合詳情不受影響。
          內容由 partials/pickup-session-modal.js 的 mountBundlePickup 畫（組合詳情同一支），存檔寫進組合記錄的 pickupSession（null＝繼承）。 -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="pickup" data-outline-group="sale" data-feat="S34.1" data-cb-pickup hidden>
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="pickup" data-outline-group="sale" data-feat="S34.1" data-cb-pickup hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="bd.pickup.title">Pickup &amp; redemption</h3>
         <p class="form-section__sub" data-i18n="bd.pickup.sub">Bundles have no delivery method of their own — each member follows its own settings.</p>
@@ -510,7 +509,7 @@
     <!-- 購買條件（2026-10-21 三步驟：從「購買條件與限購」拆出，放第二步「上架設定」；規則不變——D342／D400：
          含門票＝預設跟隨所含門票（取最嚴）、關掉跟隨可調、只能收窄；純商品＝預設不限、可加限時購買／限粉絲分級購買。
          2026-10-22 使用者裁決：release2.3 建立時就能設（原 D455 B7「照預設帶入、調整在細節頁」的唯讀讀數退場），元件與檢查同組合包細節頁） -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="rules" data-outline-group="sale" data-feat="S94" data-cb-buy-sec>
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="rules" data-outline-group="sale" data-feat="S94" data-cb-buy-sec>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.buy">Purchase conditions</h3>
         <p class="form-section__sub" data-feat="S105" data-i18n="pc.sub.set">This bundle’s own set — members’ conditions don’t apply. Limits are counted separately from the members.</p>
@@ -529,7 +528,7 @@
 
     <!-- 優惠（2026-10-21 三步驟：從「定價與優惠」價格階梯拆出，放第二步「上架設定」——限時折扣（F7 · D144／D261）與使用優惠碼（D458）；
          組合折扣決定售價，留在第一步的「定價」。這裡是第二條 .price-ladder，列的 markup 與欄位 id 原封搬過來，JS 不變。 -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="offers" data-outline-group="sale">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="offers" data-outline-group="sale">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.offers">Discounts</h3>
       </div>
@@ -601,12 +600,12 @@
     </div>
     <div class="bd-foot-actions">
       <span class="bd-foot-why" data-cb-why hidden></span>
-      <!-- 2026-10-21 三步驟（D464）：第一步＝這一步的缺項提示＋取消＋「下一步」（不擋——第一步沒填完也能進第二步）；
-           第二步＝這一步的停用理由＋「上一步」＋「下一步」（擋關照舊，擋進第三步）。顯隱由 cbGoStep() 的 renderFootSteps() 管。 -->
+      <!-- 2026-10-28 四步驟（接 2026-10-21 D464）：第一步＝取消＋「下一步」；第二步＝「上一步」＋「下一步」（都不擋）；
+           第三步＝這一步的停用理由＋「上一步」＋「下一步」（擋關照舊，擋進第四步＝預覽與發布）。顯隱由 cbGoStep() 的 renderFootSteps() 管。 -->
       <button class="btn btn--outline" type="button" data-wizard-back data-cb-cancel data-i18n="cpp.bd.sp.cancel">Cancel</button>
       <button class="btn btn--outline" type="button" data-cb-prev hidden data-i18n="wiz.back">Back</button>
       <button class="btn btn--primary" type="button" data-cb-next data-i18n="wiz.next">Next</button>
-      <button class="btn btn--primary" id="cb-create" disabled hidden data-i18n="wiz.next">Next</button><!-- 2026-10-21 D464 使用者裁決：步驟 1、2 的主按鈕一律只寫「下一步」 --><!-- 2026-09-23：按下＝進第 2 步預覽（最終的「建立組合」在全頁畫面側欄） -->
+      <button class="btn btn--primary" id="cb-create" disabled hidden data-i18n="wiz.next">Next</button><!-- 2026-10-21 D464 使用者裁決：表單步驟的主按鈕一律只寫「下一步」（2026-10-28 起這顆是第 3 步的擋關主鈕） --><!-- 2026-09-23：按下＝進第 2 步預覽（最終的「建立組合」在全頁畫面側欄） -->
     </div>
   </footer>
 </div>
@@ -736,7 +735,7 @@
      宣告放最前面——recompute() 每次都會 renderStepper()，而 recompute 在頁尾以外也可能早跑。 */
   const stepperEl = document.getElementById('cb-stepper');
   const stepperLabels = stepperEl ? Array.from(stepperEl.querySelectorAll('.progress-stepper__label')) : [];
-  let cbStep = 1;             // 2026-10-21 三步驟：1＝組合包設定、2＝上架設定（同一張表單切顯示）、3＝預覽與發布（全頁畫面）
+  let cbStep = 1;             // 2026-10-28 四步驟：1＝選擇組合商品、2＝組合包設定、3＝上架與販售（同一張表單切顯示）、4＝預覽與發布（全頁畫面）
   const cbVisited = { 1: true };   // 到過的表單步驟（沒到過的不標已完成）
   const cbForm = document.querySelector('[data-cb-form]');
   let stage = null;            // publish-stage 的 handle（只有在全頁畫面時是非 null）
@@ -1322,39 +1321,41 @@
 
   /* ── footer 與主鈕的停用理由（同第 1 批 gateWhyText）── */
   /* 2026-10-21 D464：同一組擋關條件，每項標出所在步驟（1＝組合包設定、2＝上架與販售），讓停用理由只講目前這一步的必填項
-     （使用者裁決「就緒檢查分步顯示」）。條件與順序照舊；gateWhy() 仍回第一個沒過的理由、擋進第三步。 */
+     （使用者裁決「就緒檢查分步顯示」）。條件與順序照舊；gateWhy() 仍回第一個沒過的理由、擋進預覽與發布（2026-10-28 起第四步；步驟號：1＝選擇組合商品、2＝組合包設定、3＝上架與販售）。 */
   function gateList() {
     const out = [];
     const add = (step, text) => out.push({ step, text });
     if (!hasContent()) add(1, T('cpp.bd.sp.why.members', 'Add at least 1 member'));
-    if (!bundleName()) add(1, T('cb.why.name', 'Name it first'));
-    if (!discInfo().ok) add(1, T('cb.why.disc', 'Discount must be 0–100'));
-    if (lockOver() || lockBad) add(1, T('cpp.bd.sp.why.lock', 'Locked sets exceed the ceiling'));
-    if (limitedEdition() && !capN()) add(1, T('cb.why.cap', 'Limited needs a cap'));
-    if (capOver()) add(1, T('cpp.bd.sp.why.cap', 'Cap exceeds what members can supply'));
+    if (!bundleName()) add(2, T('cb.why.name', 'Name it first'));
+    if (!discInfo().ok) add(2, T('cb.why.disc', 'Discount must be 0–100'));
+    if (lockOver() || lockBad) add(2, T('cpp.bd.sp.why.lock', 'Locked sets exceed the ceiling'));
+    if (limitedEdition() && !capN()) add(2, T('cb.why.cap', 'Limited needs a cap'));
+    if (capOver()) add(2, T('cpp.bd.sp.why.cap', 'Cap exceeds what members can supply'));
     if (saleOn()) {
       const sp = salePctInfo();
       const s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
-      if (!sp.ok || !s || !e || e <= s) add(2, T('cb.why.sale', 'Fill in the limited-time discount'));
+      if (!sp.ok || !s || !e || e <= s) add(3, T('cb.why.sale', 'Fill in the limited-time discount'));
     }
     if (!ticketMember()) {
-      if (!saleWindowOk()) add(2, T('cp.listing.sale-err', 'Sale end must be after sale start'));
-      if (listingMode === 'schedule' && listingTime && !listingTime.value) add(2, T('cb.why.listing-time', 'Scheduled listing needs a time'));
-    } else if (tbErrCount()) add(2, T('cpp.bd.sp.why.tb', 'Fix the times or purchase rules marked in red.'));   /* D342：另設超出活動上架區間、或所含門票的可購買時間沒有交集 */
-    if (window.cbRulesErr && window.cbRulesErr()) {   /* D398：限購的錯在第一步「限購」，純商品購買條件期間的錯在第二步「購買條件」 */
+      if (!saleWindowOk()) add(3, T('cp.listing.sale-err', 'Sale end must be after sale start'));
+      if (listingMode === 'schedule' && listingTime && !listingTime.value) add(3, T('cb.why.listing-time', 'Scheduled listing needs a time'));
+    } else if (tbErrCount()) add(3, T('cpp.bd.sp.why.tb', 'Fix the times or purchase rules marked in red.'));   /* D342：另設超出活動上架區間、或所含門票的可購買時間沒有交集 */
+    if (window.cbRulesErr && window.cbRulesErr()) {   /* D398：限購的錯在第二步「限購」，純商品購買條件期間的錯在第三步「購買條件」（2026-10-28 四步驟編號） */
       const limErr = (window.ztorPurchaseLimits && window.cbRulesState) ? Object.keys(window.ztorPurchaseLimits.errors(window.cbRulesState.limits, T)).length : 0;
-      const uniE = !!(window.ztorPurchaseConds && window.ztorPurchaseConds.uniOn());   /* D463（最終版）：錯都在第二步的購買條件 */
-      add(limErr && !uniE ? 1 : 2, uniE ? T('pc.err.save', 'Fix the purchase conditions marked in red.') : T('pl.err.save', 'Fix the purchase limits marked in red.'));
+      const uniE = !!(window.ztorPurchaseConds && window.ztorPurchaseConds.uniOn());   /* D463（最終版）：錯都在第三步的購買條件 */
+      add(limErr && !uniE ? 2 : 3, uniE ? T('pc.err.save', 'Fix the purchase conditions marked in red.') : T('pl.err.save', 'Fix the purchase limits marked in red.'));
     }
     return out;
   }
   function gateWhy() { const l = gateList(); return l.length ? l[0].text : ''; }
-  /* 停用理由（footer 主鈕旁）：只講目前這一步的第一個缺項；第二步自己齊了、第一步還有缺時，說一句是哪一步沒完成 */
+  /* 停用理由（footer 主鈕旁）：只講目前這一步的第一個缺項；這一步自己齊了、前面的步驟還有缺時，說一句是哪一步沒完成 */
   function gateWhyStep(n) {
     const l = gateList();
     const here = l.find(x => x.step === n);
     if (here) return here.text;
-    if (n === 2 && l.length) return T('cb.why.step1', '{step} isn’t finished').replace('{step}', T('cb.step.details', 'Bundle settings'));
+    /* 這一步齊了、前面的步驟還有缺：說一句是哪一步沒完成（4 步：選擇組合商品／組合包設定／上架與販售） */
+    const prev = l.find(x => x.step < n);
+    if (prev) return T('cb.why.step1', '{step} isn’t finished').replace('{step}', T(['', 'cb.step.members', 'cb.step.details'][prev.step] || 'cb.step.details', ''));
     return '';
   }
   function footSubText() {
@@ -1454,7 +1455,7 @@
     if (footFinal) footFinal.textContent = hasContent() ? moneyFrom(finalPrice(), priceRange()) : '—';
     if (footSub) footSub.textContent = footSubText();
     const why = gateWhy();
-    const whyHere = (cbStep === 1 || cbStep === 2) ? gateWhyStep(cbStep) : '';
+    const whyHere = (cbStep >= 1 && cbStep <= 3) ? gateWhyStep(cbStep) : '';
     if (whyEl) { whyEl.hidden = !whyHere; whyEl.textContent = whyHere; }   /* 2026-10-21 D464：每一步只講該步的缺項（第一步的「下一步」不擋，只提示） */
     createBtn.disabled = !!why;
     renderStepper();
@@ -2032,6 +2033,79 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && memberModal && !memberModal.hidden && (!addModal || addModal.hidden)) closeMemberModal(); });
   const addOpenBtn = document.querySelector('[data-cb-add-open]');
   if (addOpenBtn) addOpenBtn.addEventListener('click', () => openMemberModal('item'));
+
+  /* ── 就地搜尋加入（2026-10-28 使用者：「1 用 2 這種設計」，同建立活動「新增組合包」彈窗的 .fc-pick）──
+     一個欄位同時找商品與活動：沒打字時列最近的商品與活動，打字時依名稱／分類（商品）、名稱／日期／場地（活動）過濾。
+     規則全部沿用原加入彈窗：商品候選就是 #cb-recent 那份（isAdded／blocked 照舊），活動照 buildEvents 的規則——
+     草稿活動不列、已結束或已封存停用、已有一場時其他場停用（D403／D433），已加入那場點了展開門票勾選。
+     最底「建立新商品…」開嵌入建立商品（openAdd）。 */
+  const inlineInput = document.querySelector('[data-cb-inline-search]');
+  const inlineBox = document.querySelector('[data-cb-inline-results]');
+  function inlineRender() {
+    if (!inlineInput || !inlineBox) return;
+    const q = inlineInput.value.trim().toLowerCase();
+    const prods = [...recent.querySelectorAll('[data-cb-cand]')].filter(r => {
+      const hay = ((r.dataset.name || '') + ' ' + (r.dataset.catEn || '') + ' ' + (r.dataset.catZh || '')).toLowerCase();
+      return q ? hay.indexOf(q) > -1 : r.dataset.recent === '1';
+    }).slice(0, 8);
+    const curId = tix.event ? tix.event.id : null;
+    const evs = EV ? EV.list().filter(ev => ev.status !== 'draft').filter(ev => {
+      const hay = (evName(ev) + ' ' + (ev.venue || '') + ' ' + (ev.city || '') + ' ' + (ev.date || '')).toLowerCase();
+      return q ? hay.indexOf(q) > -1 : true;
+    }) : [];
+    if (curId) { const ci = evs.findIndex(ev => ev.id === curId); if (ci > 0) evs.unshift(evs.splice(ci, 1)[0]); }
+    const evShown = evs.slice(0, q ? 8 : RECENT_EV_N);
+    const opt = (key, thumb, name, meta, end, disabled) =>
+      '<button type="button" class="fc-pick__opt" data-cb-iopt="' + esc(key) + '"' + (disabled ? ' disabled' : '') + '>' + thumb +
+        '<span>' + esc(name) + (meta ? ' <span class="fc-pick__opt-price">' + meta + '</span>' : '') + '</span>' +
+        '<span class="fc-pick__opt-price">' + end + '</span></button>';
+    let html = '';
+    if (prods.length) {
+      html += '<div class="fc-pick__empty">' + esc(T('cpp.bd.search.browse', 'Your products')) + '</div>';
+      html += prods.map(r => {
+        const img = r.querySelector('img');
+        const sub = r.querySelector('.text-sub');
+        return opt('p:' + r.dataset.id, img ? '<img src="' + esc(img.getAttribute('src')) + '" alt="" loading="lazy">' : '<span></span>',
+          r.dataset.name || '', sub ? sub.innerHTML : '', esc(priceText(r.dataset.price, Number(r.dataset.price) || 0)), isAdded(r) || !!r.dataset.blocked);
+      }).join('');
+    }
+    if (evShown.length) {
+      html += '<div class="fc-pick__empty">' + esc(T('cb.search.inline.events', 'Your events')) + '</div>';
+      html += evShown.map(ev => {
+        const added = !!curId && ev.id === curId;
+        const blocked = evBlocked(ev) || (!!curId && !added);
+        const kv = ev.images && ev.images.keyvisual;
+        const end = added ? esc(T('cb.tix.added', 'Added')) : (evBlocked(ev) ? evBadgeHTML(ev) : '');
+        return opt('e:' + ev.id, kv ? '<img src="' + esc(kv) + '" alt="" loading="lazy">' : '<span></span>', evName(ev), esc(evMeta(ev)), end, blocked);
+      }).join('');
+    }
+    if (!prods.length && !evShown.length) html += '<div class="fc-pick__empty">' + esc(T('cb.search.inline.none', 'No products or events match.')) + '</div>';
+    html += '<button type="button" class="fc-pick__opt" data-cb-iopt="new"><span></span><span>' + esc(T('cpp.bd.search.create', 'Create a new product…')) + '</span><span></span></button>';
+    inlineBox.innerHTML = html;
+    inlineBox.hidden = false;
+    if (window.ztorIcons) window.ztorIcons.applyIcons(inlineBox);
+  }
+  function inlineClose() { if (inlineBox) inlineBox.hidden = true; }
+  if (inlineInput && inlineBox) {
+    inlineInput.addEventListener('focus', inlineRender);
+    inlineInput.addEventListener('input', inlineRender);
+    inlineInput.addEventListener('keydown', e => { if (e.key === 'Escape') { inlineClose(); inlineInput.blur(); } });
+    document.addEventListener('click', e => { if (!e.target.closest('[data-cb-pick-inline]')) inlineClose(); });
+    inlineBox.addEventListener('click', e => {
+      const b = e.target.closest('[data-cb-iopt]'); if (!b || b.disabled) return;
+      const k = b.getAttribute('data-cb-iopt');
+      inlineInput.value = ''; inlineClose();
+      if (k === 'new') { openAdd(); return; }
+      if (k.indexOf('p:') === 0) {
+        const row = [...recent.querySelectorAll('[data-cb-cand]')].find(r => r.dataset.id === k.slice(2));
+        if (row && !isAdded(row) && !row.dataset.blocked) addProduct(productOf(row));
+        return;
+      }
+      const ev = EV && EV.get(k.slice(2)); if (!ev) return;
+      if (tix.event && tix.event.id === ev.id) { tixOpen = true; renderTixRow(); renderTierTable(); return; }
+      openEvent(ev);
+    });
+  }
   function showTixStage(stage) {
     if (stage === 'events') { openMemberModal('tix'); return; }
     if (stage === 'tiers') tixOpen = true;
@@ -2209,7 +2283,7 @@
   /* ── 兩步驟：頁首進度條＋第 2 步「預覽與發布」全頁畫面（D321，D310 組合側，2026-09-23，比照建立商品 D317）──────
      第 1 步「內容」＝上面整張表單；第 2 步「預覽與發布」＝建立活動第 8 步／建立商品同一個組件（js/publish-stage.js）：
      主區由 js/fan-bundle-page.js 畫前台組合包頁的鏡像，側欄三段（語言／幣別／發布前檢核）＋主鈕「建立組合」。
-     表單主鈕改成「下一步」（D464）：擋關照舊（gateWhy()），通過才進第 3 步；真正存檔搬到側欄主鈕（onPrimary → doCreate()）。
+     表單主鈕改成「下一步」（D464）：擋關照舊（gateWhy()），通過才進預覽與發布（2026-10-28 起第 4 步；表單分三步、見 cbGoStep）；真正存檔搬到側欄主鈕（onPrimary → doCreate()）。
      本頁只負責備料（buildStageOpts）、進出（enterStage／exitStage）；版型、兩軸、兩張表都在 publish-stage.js。
      翻譯模式不傳：電子商店的多語規則是自動翻譯（主規格 §7.4 通則；D312 只把活動改成手動），用元件預設值。
      幣別覆寫依 D318：組合成員含活動票券時可覆寫、只含商品時唯讀——用 prices[i].overridable 列級旗標，不傳全域 priceOverrides。
@@ -2222,8 +2296,8 @@
   const stageCol = stageBody ? stageBody.querySelector('.preview-col') : null;
   const stageFoot = document.querySelector('.wizard__bottom');
 
-  /* 進度條：2026-10-21 起三段。第 1、2 段狀態＝發布前檢核 stageChecks()（＝擋關 gateWhy() 同一組條件）裡落在該步的項目全過，
-     不另訂規則；沒到過的步驟不標已完成。第 3 段沒有「已完成」——側欄按「建立組合」直接離站，走不到第 3 段打勾的畫面（同建立商品）。 */
+  /* 進度條：2026-10-28 起四段。第 1～3 段狀態＝發布前檢核 stageChecks()（＝擋關 gateWhy() 同一組條件）裡落在該步的項目全過，
+     不另訂規則；沒到過的步驟不標已完成。第 4 段沒有「已完成」——側欄按「建立組合」直接離站，走不到第 4 段打勾的畫面（同建立商品）。 */
   function cbStepOf(el) {
     const s = el && el.closest ? el.closest('[data-form-step]') : null;
     return s ? Number(s.getAttribute('data-form-step')) || 1 : 1;
@@ -2236,14 +2310,14 @@
   function renderStepper() {
     if (!stepperEl) return;
     stepperEl.style.setProperty('--at', String(cbStep));
-    stepperEl.style.setProperty('--progress', ((cbStep - 1) / 3 * 100) + '%');
+    stepperEl.style.setProperty('--progress', ((cbStep - 1) / 4 * 100) + '%');
     stepperLabels.forEach(l => {
       const n = Number(l.dataset.step);
       l.classList.toggle('progress-stepper__label--current', n === cbStep);
       l.classList.toggle('progress-stepper__label--done', n < cbStep);
       const box = l.querySelector('[data-step-state]');
       if (!box) return;
-      const done = n < 3 ? (!!cbVisited[n] && cbStepReady(n)) : false;
+      const done = n < 4 ? (!!cbVisited[n] && cbStepReady(n)) : false;
       box.innerHTML = done
         ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(T('wiz.step.done', 'Done'))
         : (n === cbStep ? esc(T('wiz.step.editing', 'Editing')) : esc(T('wiz.step.todo', 'Not done')));   /* 2026-10-27：正在編輯的那一步寫編輯中 */
@@ -2441,7 +2515,7 @@
     stage = window.ztorPublishStage.mount(stageHost, buildStageOpts());
     if (stageSheet) stageSheet.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: 'instant' });
-    cbStep = 3;
+    cbStep = 4;
     cbRememberStep();
     renderStepper();
     return true;
@@ -2461,7 +2535,7 @@
     if (stageFoot) stageFoot.hidden = false;
     /* 2026-10-21 三步驟：從檢核項／預覽「編輯」回來＝跳到該節所在的步驟；「返回表單」＝回第二步（上一步） */
     const dest = step ? cbSectionOf(step) : null;
-    cbGoStep(dest && dest.target ? cbStepOf(dest.target) : 2, { keepScroll: true });
+    cbGoStep(dest && dest.target ? cbStepOf(dest.target) : 3, { keepScroll: true });
     if (dest && dest.target) {
       const top = document.querySelector('.wizard__top');
       dest.target.style.scrollMarginTop = 'calc(' + (top ? top.offsetHeight : 0) + 'px + var(--sp-16))';
@@ -2473,17 +2547,17 @@
     }
   }
 
-  /* 2026-10-21 三步驟：表單兩步之間切換（同一張表單，.form-steps[data-at]）。不清任何欄位、不擋（沿用現行規則：擋關只擋進預覽與發布）；
+  /* 2026-10-28 四步驟：表單三步之間切換（同一張表單，.form-steps[data-at]）。不清任何欄位、不擋（沿用現行規則：擋關只擋進預覽與發布）；
      換步捲回頂端，keepScroll＝呼叫端自己決定捲動。本頁大綱只列目前這一步的節，data-at 不在元件監看範圍，這裡主動 refresh。 */
   const cbPrev = document.querySelector('[data-cb-prev]');
   const cbNext = document.querySelector('[data-cb-next]');
   const cbCancel = document.querySelector('[data-cb-cancel]');
   function renderFootSteps() {
-    if (cbPrev) cbPrev.hidden = cbStep !== 2;
+    if (cbPrev) cbPrev.hidden = cbStep < 2 || cbStep > 3;
     if (cbCancel) cbCancel.hidden = cbStep !== 1;
-    if (cbNext) cbNext.hidden = cbStep !== 1;
-    createBtn.hidden = cbStep !== 2;
-    if (whyEl) { const w = (cbStep === 1 || cbStep === 2) ? gateWhyStep(cbStep) : ''; whyEl.textContent = w; whyEl.hidden = !w; }
+    if (cbNext) cbNext.hidden = cbStep > 2;
+    createBtn.hidden = cbStep !== 3;
+    if (whyEl) { const w = (cbStep >= 1 && cbStep <= 3) ? gateWhyStep(cbStep) : ''; whyEl.textContent = w; whyEl.hidden = !w; }
   }
   /* 2026-10-21 D464 使用者裁決「從草稿回來時，停在上次離開的那一步」：每次換步記下目前步驟，帶 ?draft 進來
      （原型沒有組合包草稿清單，以 ?draft=1 模擬「從草稿回來」）時還原；原型的草稿本身沒有存欄位值。 */
@@ -2503,11 +2577,11 @@
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
-  if (cbNext) cbNext.addEventListener('click', () => cbGoStep(2));
+  if (cbNext) cbNext.addEventListener('click', () => cbGoStep(cbStep + 1));
   document.querySelector('[data-wizard-savedraft]')?.addEventListener('click', cbRememberStep);
-  if (cbPrev) cbPrev.addEventListener('click', () => cbGoStep(1));
+  if (cbPrev) cbPrev.addEventListener('click', () => cbGoStep(cbStep - 1));
 
-  /* 表單主鈕「下一步」（D464）：擋關照舊，通過進第 3 步；元件沒載到時退回原本的直接建立 */
+  /* 表單主鈕「下一步」（D464）：擋關照舊，通過進第 4 步（預覽與發布）；元件沒載到時退回原本的直接建立 */
   createBtn.addEventListener('click', () => {
     if (createBtn.disabled || gateWhy()) return;
     if (enterStage()) return;
@@ -2521,8 +2595,8 @@
     l.addEventListener('click', () => {
       const n = Number(l.dataset.step);
       if (n === cbStep) return;
-      if (n < 3) {
-        if (cbStep === 3) exitStage();
+      if (n < 4) {
+        if (cbStep === 4) exitStage();
         cbGoStep(n);
         return;
       }
@@ -2572,14 +2646,14 @@
   renderItems();
   renderAlloc();
   recompute();
-  /* 從草稿回來（?draft）：停在上次離開的那一步；上次在預覽而擋關沒過，就停在第二步 */
+  /* 從草稿回來（?draft）：停在上次離開的那一步；上次在預覽而擋關沒過，就停在第三步（2026-10-28 四步驟） */
   (function () {
     if (new URLSearchParams(location.search).get('draft') == null) return;
     let d = null;
     try { d = JSON.parse(localStorage.getItem(CB_DRAFT_KEY) || 'null'); } catch (e) {}
     const n = d ? Number(d.step) || 1 : 1;
-    if (n >= 2) cbGoStep(2);
-    if (n >= 3 && !createBtn.disabled) createBtn.click();
+    if (n >= 2) cbGoStep(Math.min(n, 3));
+    if (n >= 4 && !createBtn.disabled) createBtn.click();
   })();
 
   /* ── D397 決定一（2026-10-12，5.1.5.4 §2 入口 3、§4 F2「從活動詳情進入時的預帶」；UI-CHANGES 一百七十五）──────

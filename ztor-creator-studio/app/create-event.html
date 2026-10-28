@@ -863,25 +863,8 @@
              gap），這裡不用額外包一層；aria-labelledby 拿掉（軌內兩張卡各自有自己的標題，
              不再只對應單一標題）。 -->
         <aside class="wizard-split__rail">
-          <div class="preview-col__head">
-            <h3 class="preview-col__title" id="ce-pv-title-5" data-i18n="ce.preview">Preview</h3>
-            <p class="preview-col__sub" data-i18n="ce.preview.title">How fans see your event</p>
-          </div>
-          <div class="event-preview-card">
-              <div class="event-preview-card__poster" data-pv="poster">
-                <span class="badge event-preview-card__type-tag" data-pv="type" hidden></span>
-                <i data-lucide="image" class="ztor-icon" data-pv="poster-icon"></i>
-              </div>
-              <div class="event-preview-card__body">
-                <h4 class="event-preview-card__name is-empty" data-pv="name" data-i18n="ce.pv.name">Event name</h4>
-                <p class="event-preview-card__highlight" data-pv="highlight" hidden></p>
-                <div class="event-preview-card__meta">
-                  <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span data-pv="date" data-i18n="ce.pv.date">Date to be set</span></span>
-                  <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span data-pv="venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
-                </div>
-                <div class="event-preview-card__tickets is-empty" data-pv="tickets" data-i18n="ce.pv.tickets">Tickets coming soon</div>
-              </div>
-            </div>
+          <!-- 墓碑 2026-10-28（#371，使用者：「這一頁的預覽可以移除」）：票種與票務這一步的「預覽／粉絲看到的活動樣子」標題與活動預覽卡移除，
+               側欄只留收入試算；其他步驟的預覽照舊。 -->
           <div class="card" id="ce-calc-rail" aria-labelledby="ce-calc-title">
             <h3 class="fd-ov__title" id="ce-calc-title" data-i18n="ce.calc.h">Revenue estimate</h3>
             <div class="calc-sum">
@@ -956,8 +939,28 @@
                出現；這一條右軌回答的是跨組合包的「這場的票被哪幾組綁到」，彈窗關掉後仍看得到，
                兩者不重複。 -->
           <div class="card fd-ov">
-            <h3 class="fd-ov__title" data-di="d.bd.pool">影響範圍</h3>
+            <h3 class="fd-ov__title" data-di="d.bd.pool">可加入組合包的票</h3>
             <div id="ce-bd-pool"></div>
+          </div>
+          <!-- 收入試算（2026-10-28，#374，使用者：「這裡也要有收入試算」）：票務商品這一步把組合包算進去——
+               單售門票（扣掉組合包鎖走的張數）＋組合包（鎖定組數 × 組合包價）；支出沿用票種那一步填的值，這裡只讀。 -->
+          <div class="card" id="ce-bd-calc" aria-labelledby="ce-bd-calc-title">
+            <h3 class="fd-ov__title" id="ce-bd-calc-title" data-i18n="ce.calc.h">Revenue estimate</h3>
+            <div class="calc-sum">
+              <div class="kv"><span class="kv__k" data-di="d.bd.calc.single">單售門票</span><span class="kv__v" id="ce-bd-calc-single">$0</span></div>
+              <div class="kv"><span class="kv__k" data-di="d.bd.calc.bundles">組合包</span><span class="kv__v" id="ce-bd-calc-bundles">$0</span></div>
+              <div class="kv kv--lead"><span class="kv__k" data-i18n="ce.calc.revenue">Projected revenue</span><span class="kv__v" id="ce-bd-calc-rev">$0</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="ce.calc.fee">Platform fee</span><span class="kv__v" id="ce-bd-calc-fee">$0</span></div>
+              <!-- #378（使用者：「支出一樣要能填，與上一步驟同步」）：跟票種那一步同一格資料（#ce-expense），兩邊任一邊改，另一邊跟著變 -->
+              <div class="kv kv--input"><span class="kv__k" data-i18n="ce.calc.cost">Costs</span>
+                <span class="amount-field amount-field--readonly calc-sum__cost">
+                  <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                  <input class="input amount-field__input" type="number" min="0" step="1" id="ce-bd-expense" placeholder="0" data-i18n-placeholder="ce.calc.expense.ph">
+                </span>
+              </div>
+              <div class="kv calc-sum__out"><span class="kv__k" data-i18n="ce.calc.profit">Your take</span><span class="kv__v" id="ce-bd-calc-profit">$0</span></div>
+            </div>
+            <p class="field__hint" data-di="d.bd.calc.note">單售門票以折後價、組合包以鎖定組數賣完估算；沒有鎖定組數的組合包不計入。</p>
           </div>
         </aside>
       </div>
@@ -991,6 +994,50 @@
             </div>
         </aside>
         <div class="wizard-split__main">
+      <!-- 2026-10-28（#380，使用者：「取票方式放第一個」）：取票方式移到這一步最上面（原在開賣設定之後、顯示設定之前）。 -->
+      <!-- 取票方式（文件 3「物流：順風, 到店自取, 電子門票」；順風＝順豐）。三選一沿用建立商品的取貨方式做法。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title"><span data-di="d.ship">取票方式</span></h3>
+          <p class="form-section__sub" data-di="d.ship.sub">粉絲怎麼拿到票。</p>
+        </div>
+        <div class="segmented radio-cards radio-cards--3" data-seg="ship" data-value="eticket" data-bky-seg="ship">
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="eticket">
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.e">電子門票</span><span class="radio-card__sub" data-di="d.ship.e.sub">票收在 App 裡，入場掃碼。</span></span>
+          </button>
+          <!-- 2026-10-20：順豐寄送（S102 ⚪）release2.3 收起，release2.3 取票方式只有電子門票 -->
+          <button class="segmented__btn" type="button" data-val="sf" data-feat="S102">
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.sf">順豐寄送</span><span class="radio-card__sub" data-di="d.ship.sf.sub">實體票寄到粉絲填的地址，運費粉絲付。</span></span>
+          </button>
+          <!-- 2026-10-09 D383：到店自取（S89 ⚪）release2.3 收起，最終版照舊 -->
+          <button class="segmented__btn" type="button" data-val="pickup" data-feat="S89">
+            <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.pick">到店自取</span><span class="radio-card__sub" data-di="d.ship.pick.sub">粉絲到指定門市或活動現場憑證件領票。</span></span>
+          </button>
+        </div>
+        <!-- 墓碑 2026-09-29（D327）：電子門票底下原有的三組附屬設定（外部平台發票＋取票說明、QR 更新間隔、
+             持票人移轉＋次數／期限）整組刪除——電子門票＝ztor 發票、一票一碼的靜態 QR，底下沒有第二層設定
+             （5.1.6.1 F24）。原本的附屬設定堆疊、三組開關的 apply 函式與 bookyay 預填段一併退場。 -->
+        <!-- 選了才問的欄位（2026-08-10 使用者指示）：寄送要知道運費怎麼算，自取要知道去哪裡拿。
+             兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
+        <div class="field" data-ship-when="sf" hidden>
+          <label class="field__label"><span data-di="d.ship.fee">運費</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+          <span class="amount-field">
+            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <!-- data-bky="shipFee"（2026-10-07 補，5.1.6.1 F21／F24「取票方式本身，含順豐寄送的運費」）：bookyay 帶入時照值帶入並鎖定（lockField）；
+                 原本取票方式鎖了、運費卻可改。取貨地點不在鎖定清單，不掛。 -->
+            <input class="input amount-field__input" data-ce="ship-fee" data-bky="shipFee" type="number" min="0" step="1" placeholder="例如：120" data-di-ph="d.ship.fee.ph">
+          </span>
+          <p class="field__hint" data-di="d.ship.fee.hint">粉絲結帳時另外付這筆。</p>
+          <!-- D368 決定四：bookyay 帶入的運費是港幣換算後的值，這一句寫港幣原值（syncShipFeeSrc） -->
+          <p class="field__hint" data-ship-fee-src hidden></p>
+        </div>
+        <div class="field" data-ship-when="pickup" hidden>
+          <label class="field__label"><span data-di="d.ship.spot">取貨地點</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+          <input class="input" data-ce="ship-spot" placeholder="例如：ztor 門市 台北信義店" data-di-ph="d.ship.spot.ph">
+          <p class="field__hint" data-di="d.ship.spot.hint">粉絲帶證件到這裡領票。</p>
+        </div>
+      </div>
+
 
       <!-- 上架設定（spec 5.1.6.1 F12b · 主規格 §7.14 · D239，2026-09-02）：可見性窗口。
            上架＝粉絲看得到、開賣＝粉絲買得到，是兩軸；這一區管前者，下一區「開賣設定」管後者。
@@ -1114,49 +1161,6 @@
         </div>
       </div>
 
-
-      <!-- 取票方式（文件 3「物流：順風, 到店自取, 電子門票」；順風＝順豐）。三選一沿用建立商品的取貨方式做法。 -->
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-di="d.ship">取票方式</span></h3>
-          <p class="form-section__sub" data-di="d.ship.sub">粉絲怎麼拿到票。</p>
-        </div>
-        <div class="segmented radio-cards radio-cards--3" data-seg="ship" data-value="eticket" data-bky-seg="ship">
-          <button class="segmented__btn segmented__btn--active" type="button" data-val="eticket">
-            <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.e">電子門票</span><span class="radio-card__sub" data-di="d.ship.e.sub">票收在 App 裡，入場掃碼。</span></span>
-          </button>
-          <!-- 2026-10-20：順豐寄送（S102 ⚪）release2.3 收起，release2.3 取票方式只有電子門票 -->
-          <button class="segmented__btn" type="button" data-val="sf" data-feat="S102">
-            <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.sf">順豐寄送</span><span class="radio-card__sub" data-di="d.ship.sf.sub">實體票寄到粉絲填的地址，運費粉絲付。</span></span>
-          </button>
-          <!-- 2026-10-09 D383：到店自取（S89 ⚪）release2.3 收起，最終版照舊 -->
-          <button class="segmented__btn" type="button" data-val="pickup" data-feat="S89">
-            <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.pick">到店自取</span><span class="radio-card__sub" data-di="d.ship.pick.sub">粉絲到指定門市或活動現場憑證件領票。</span></span>
-          </button>
-        </div>
-        <!-- 墓碑 2026-09-29（D327）：電子門票底下原有的三組附屬設定（外部平台發票＋取票說明、QR 更新間隔、
-             持票人移轉＋次數／期限）整組刪除——電子門票＝ztor 發票、一票一碼的靜態 QR，底下沒有第二層設定
-             （5.1.6.1 F24）。原本的附屬設定堆疊、三組開關的 apply 函式與 bookyay 預填段一併退場。 -->
-        <!-- 選了才問的欄位（2026-08-10 使用者指示）：寄送要知道運費怎麼算，自取要知道去哪裡拿。
-             兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
-        <div class="field" data-ship-when="sf" hidden>
-          <label class="field__label"><span data-di="d.ship.fee">運費</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-          <span class="amount-field">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-            <!-- data-bky="shipFee"（2026-10-07 補，5.1.6.1 F21／F24「取票方式本身，含順豐寄送的運費」）：bookyay 帶入時照值帶入並鎖定（lockField）；
-                 原本取票方式鎖了、運費卻可改。取貨地點不在鎖定清單，不掛。 -->
-            <input class="input amount-field__input" data-ce="ship-fee" data-bky="shipFee" type="number" min="0" step="1" placeholder="例如：120" data-di-ph="d.ship.fee.ph">
-          </span>
-          <p class="field__hint" data-di="d.ship.fee.hint">粉絲結帳時另外付這筆。</p>
-          <!-- D368 決定四：bookyay 帶入的運費是港幣換算後的值，這一句寫港幣原值（syncShipFeeSrc） -->
-          <p class="field__hint" data-ship-fee-src hidden></p>
-        </div>
-        <div class="field" data-ship-when="pickup" hidden>
-          <label class="field__label"><span data-di="d.ship.spot">取貨地點</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-          <input class="input" data-ce="ship-spot" placeholder="例如：ztor 門市 台北信義店" data-di-ph="d.ship.spot.ph">
-          <p class="field__hint" data-di="d.ship.spot.hint">粉絲帶證件到這裡領票。</p>
-        </div>
-      </div>
 
 
       <!-- 顯示設定（Display settings，D340；5.1.6.1 F25，定義本體見主規格 §7.14「三個狀態開關」「非公開連結」）：
@@ -1466,7 +1470,7 @@
   /* 步驟標籤的完整字放進 title（2026-10-15）：窄寬時標籤會以刪節號收尾，滑過仍讀得到全文。
      語言切換後字會換，i18n:applied 再同步一次。 */
   function syncStepTitles() {
-    document.querySelectorAll(".progress-stepper__label").forEach(s => {
+    document.querySelectorAll("#stepper .progress-stepper__label").forEach(s => {
       const tx = s.firstElementChild;
       if (tx) s.title = tx.textContent.trim();
     });
@@ -1477,7 +1481,9 @@
     document.querySelectorAll("[data-step-panel]").forEach(p => {
       p.classList.toggle("hidden", Number(p.dataset.stepPanel) !== step);
     });
-    const labels = document.querySelectorAll(".progress-stepper__label");
+    /* 2026-10-28（#373，使用者：「添加一個組合包後，上面的步驟不知道為什麼跑出好多個」）：只數頁首這一條步驟列（#stepper）的標籤——
+       原本抓全頁的 .progress-stepper__label，新增組合包彈窗裡也有一條四步的步驟列，彈窗開著時頁面一重算，格數就變成 6＋4＝10 格。 */
+    const labels = document.querySelectorAll("#stepper .progress-stepper__label");
     labels.forEach(s => {
       const n = labelStep(s);
       s.classList.toggle("progress-stepper__label--current", n === step);
@@ -1753,7 +1759,7 @@
      「下一步」。這是原型，看的人要能直接跳到想看的那一段，不必照順序填一遍；發布前的必填
      把關本來就在 Review 那一步的檢核清單上，不靠「不准你跳過去」來實現。
      被跳過的步驟（共看派對的票務、免票入場的票種）仍然不能點——它們在這個活動裡不存在。 */
-  document.querySelectorAll(".progress-stepper__label").forEach(s => {
+  document.querySelectorAll("#stepper .progress-stepper__label").forEach(s => {
     s.addEventListener("click", () => {
       const n = labelStep(s);
       if (n >= first && !skipped(n)) { step = n; render(); }
@@ -4682,7 +4688,13 @@
     const p = document.getElementById("ce-calc-profit");
     if (p) { p.textContent = money(profit); p.classList.toggle("calc-sum__neg", profit < 0); }
   }
-  document.getElementById("ce-expense")?.addEventListener("input", () => { renderCalc(); scheduleSave(); });
+  document.getElementById("ce-expense")?.addEventListener("input", () => { renderCalc(); try { renderBundleCalc(); } catch (e) {} scheduleSave(); });
+  /* #378：票務商品那一步的支出格寫回同一個 #ce-expense（存檔、票種那一步的試算都讀它），再兩邊一起重算 */
+  document.getElementById("ce-bd-expense")?.addEventListener("input", e => {
+    const main = document.getElementById("ce-expense");
+    if (main) main.value = e.target.value;
+    renderCalc(); try { renderBundleCalc(); } catch (err) {} scheduleSave();
+  });
 
   /* 墓碑 2026-10-20（D460）：收合卡上的「自訂」標記（renderTierBadges／[data-tier-custom]，標哪幾張票不跟隨活動預設）隨活動層預設購票規則退場。 */
   function renderTierBadges() {}
@@ -4718,7 +4730,7 @@
     /* D380：「票種與票務」那一格（data-step 5／data-step-wp 4）共看派對叫「入場券」，一般活動叫「票種與票務」。 */
     [['[data-step="3"]', isWP() ? "d.step.wp.when" : "d.step.session"],
      ['[data-step-wp="4"]', isWP() ? "d.step.wp.ticket" : "d.step.tix"]].forEach(([sel, key]) => {
-      const el = document.querySelector('.progress-stepper__label' + sel);
+      const el = document.querySelector('#stepper .progress-stepper__label' + sel);
       if (!el) return;
       /* 只換步驟名那一層（2026-08-10 修）：標籤現在還裝著下方的狀態小字，
          直接寫 el.textContent 會把它一起洗掉，那兩步就永遠沒有已完成／未完成。 */
@@ -4947,47 +4959,120 @@
      沒被綁到的收成一行摘要。組合包不另設庫存、賣掉一組就從票扣一張，這件事
      寫在說明裡看不出後果，攤成一份名單才讀得到。
      這裡只報「誰用到了」，不做扣減：一組能賣幾份取決於實際銷售，原型沒有銷售資料。 */
+  /* 2026-10-28（#376，使用者：「可以單純列出可設定的票 票名/張數 … 這樣就好」）：右軌改成「可加入組合包的票」清單——
+     每張票一列：票名／張數；多場活動照場次分段。原本只列被組合包用到的票、寫「N 組可選 · 每組幾張」與「其餘 N 張票券未納入」，
+     資訊和左邊重複又容易誤讀（「8 張票券」其實是 8 種票），整段撤除；d.bd.pool.none／.n／.idle 三個鍵留著未用。 */
+  /* 組合包鎖走的張數（#370 試算、#374 收入試算共用）：只含一種票的組合包整個鎖定套數算給那張票；
+     可選多種票的照逐票種分配（alloc），沒分配到的套數記成 floating（不知道從哪種票扣）。 */
+  const bdIntOf = v => { const n = Math.floor(Number(v)); return Number.isFinite(n) && n > 0 ? n : 0; };
+  function bundleLocks() {
+    const bundles = bundleEd ? bundleEd.getBundles() : [];
+    const tixOf = b => (window.ztorEvents && window.ztorEvents.bundleTickets) ? window.ztorEvents.bundleTickets(b) : { tierIds: [], qty: 1 };
+    const locked = {}; let floating = 0;
+    bundles.forEach(b => {
+      const tk = tixOf(b), sets = bdIntOf(b.lockSets);
+      if (!sets || !tk.tierIds.length) return;
+      if (tk.tierIds.length === 1) { locked[tk.tierIds[0]] = (locked[tk.tierIds[0]] || 0) + sets * tk.qty; return; }
+      let used = 0;
+      tk.tierIds.forEach(id => { const a = bdIntOf((b.alloc || {})[id]); if (a) { locked[id] = (locked[id] || 0) + a * tk.qty; used += a; } });
+      floating += Math.max(0, sets - used) * tk.qty;
+    });
+    return { locked, floating, bundles };
+  }
+  /* 收入試算（票務商品這一步，#374）：單售門票＝每張票（張數 − 組合包鎖走的）× 折後最低價；
+     組合包＝鎖定組數 × 組合包實付價（bundleEd.finalPrice）；沒鎖定組數的組合包不計（賣幾組沒有依據）。
+     floating（多票種組合包未指定票種的鎖定）從單售張數總量裡按比例扣不出來，先不扣，說明句已交代以鎖定組數估算。
+     平台費同票種那一步（EVENT_FEE_PCT）；支出讀票種那一步填的 #ce-expense，這裡不另填。 */
+  function renderBundleCalc() {
+    if (!document.getElementById("ce-bd-calc")) return;
+    const { locked, bundles } = bundleLocks();
+    const single = savedTiers().reduce((a, t) => a + netPrice(t) * Math.max(0, (Number(val(t).qty) || 0) - (locked[t.id] || 0)), 0);
+    const bd = bundles.reduce((a, b) => a + bdIntOf(b.lockSets) * (bundleEd && bundleEd.finalPrice ? bundleEd.finalPrice(b) : 0), 0);
+    const rev = single + bd, fee = rev * EVENT_FEE_PCT / 100;
+    const cost = Number(document.getElementById("ce-expense")?.value || 0);
+    const profit = rev - fee - cost;
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = money(v); };
+    set("ce-bd-calc-single", single); set("ce-bd-calc-bundles", bd); set("ce-bd-calc-rev", rev);
+    set("ce-bd-calc-fee", fee);
+    const bdIn = document.getElementById("ce-bd-expense");
+    if (bdIn && document.activeElement !== bdIn) bdIn.value = document.getElementById("ce-expense")?.value || "";
+    const p = document.getElementById("ce-bd-calc-profit");
+    if (p) { p.textContent = money(profit); p.classList.toggle("calc-sum__neg", profit < 0); }
+  }
   function renderBundlePool() {
     const box = document.getElementById("ce-bd-pool");
     if (!box) return;
-    const bundles = bundleEd ? bundleEd.getBundles() : [];
     const list = savedTiers();
     if (!list.length) { box.innerHTML = '<p class="field__hint">' + esc(dT("d.quick.none")) + '</p>'; return; }
-    /* 票券成員是 `{ tierIds, qty }`（2026-09-21 D296；舊 `[{id, qty}]` 由 events-store 的相容層讀）。
-       右軌每張票報「N 組可選 · 每組幾張」——被列進允許清單＝粉絲買那一組時可以選到它；張數不同的組並列寫（例：每組 2／1 張）。 */
-    const tixOf = b => (window.ztorEvents && window.ztorEvents.bundleTickets) ? window.ztorEvents.bundleTickets(b) : { tierIds: [], qty: 1 };
-    const usedIn = t => bundles.map(tixOf).filter(x => x.tierIds.indexOf(t.id) >= 0).map(x => x.qty);
-    const usedN = t => usedIn(t).length;
-    const perSet = t => usedIn(t).filter((q, i, a) => a.indexOf(q) === i).join("／");
-    const idle = list.filter(t => !usedN(t));
-    if (idle.length === list.length) {
-      box.innerHTML = '<p class="field__hint">' + esc(dT("d.bd.pool.none")) + '</p>';
-      return;
-    }
+    /* 試算（2026-10-28，#370，使用者：「這個加上試算」）：每張票被組合包鎖走幾張、還剩幾張可單售。
+       鎖定張數＝鎖定套數 × 每組張數（D266；限量時鎖定＝限量，D480，bundle-editor 已同步進 lockSets）：
+         · 只含一種票的組合包：整個鎖定套數都算這張票；
+         · 可選多種票的組合包（D296）：照「逐票種分配」（alloc）算，沒分配到票種的套數另寫一行，從允許的票種共用庫存扣。
+       只算鎖定（保證留給組合包的量），不算銷售——原型在建立階段沒有銷售資料。 */
+    const { locked, floating } = bundleLocks();
+    renderBundleCalc();
     const many = multi();
+    /* #378（使用者：「第四個以後就隱藏，可點擊展開才看到更多」）：只先列前 3 種票，其餘收起，下方一顆「顯示其餘 N 種」／「收合」。
+       被組合包鎖到的票不收（試算要看得到）；展開狀態記在 poolOpen，重畫不會被收回。 */
+    let shownN = 0;
     box.innerHTML = '<div class="kv-list">' + series.list.map((ss, i) => {
-      const rows = list.filter(t => t.sess === ss.id && usedN(t));
+      const rows = list.filter(t => t.sess === ss.id);
       if (!rows.length) return "";
       return (many ? '<div class="quick-result__head">' + esc(sessionLabel(ss, i)) + '</div>' : "") +
-        rows.map(t =>
-          '<div class="kv"><span class="kv__k">' + esc(ticketNames(t)[0]) + '</span>' +
-          '<span class="kv__v">' + esc(dT("d.quick.qtyn").replace("{n}", val(t).qty || 0)) +
-          ' · ' + esc(dT("d.bd.pool.n").replace("{n}", usedN(t)).replace("{m}", perSet(t))) + '</span></div>'
-        ).join("");
+        rows.map(t => {
+          shownN += 1;
+          const extra = shownN > 3 && !locked[t.id];
+          const qty = Number(val(t).qty) || 0, lk = locked[t.id] || 0;
+          const calc = lk ? '<span class="kv__sub' + (lk > qty ? ' kv__sub--over' : '') + '">' +
+            esc(dT("d.bd.pool.calc").replace("{lock}", lk).replace("{left}", Math.max(0, qty - lk))) + '</span>' : "";
+          return '<div class="kv"' + (extra ? ' data-pool-extra' + (poolOpen ? '' : ' hidden') : '') + '><span class="kv__k">' + esc(ticketNames(t)[0]) + calc + '</span>' +
+            '<span class="kv__v">' + esc(dT("d.quick.qtyn").replace("{n}", qty)) + '</span></div>';
+        }).join("");
     }).join("") + '</div>' +
-    (idle.length
-      ? '<p class="field__hint mt-10">' + esc(dT("d.bd.pool.idle").replace("{n}", idle.length)) + '</p>'
-      : "");
+    (floating ? '<p class="field__hint mt-10">' + esc(dT("d.bd.pool.float").replace("{n}", floating)) + '</p>' : "");
+    const extras = box.querySelectorAll('[data-pool-extra]').length;
+    if (extras) {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'btn btn--soft btn--block mt-12'; btn.setAttribute('data-pool-toggle', '');   /* #379：滿寬、有底色的次級鈕（使用者指示） */
+      btn.textContent = poolOpen ? dT('d.bd.pool.less') : dT('d.bd.pool.more').replace('{n}', extras);
+      box.querySelector('.kv-list').after(btn);
+    }
   }
+  var poolOpen = false;   // var：renderBundlePool 可能在這行之前就被組合包編輯器的 onChange 叫到，let 會撞 TDZ
+  document.getElementById("ce-bd-pool")?.addEventListener("click", e => {
+    if (!e.target.closest('[data-pool-toggle]')) return;
+    poolOpen = !poolOpen; renderBundlePool();
+  });
 
   /* 右軌是 sticky，貼齊位置要讓開 .wizard__top（同一個捲動容器裡的 sticky header）。
      高度隨語言換行而變，所以執行期量一次、寫進 --wizard-top-h（做法沿用 create-project）。 */
   (function measureTop() {
     const bar = document.querySelector(".wizard__top");
-    const set = () => { if (bar) document.documentElement.style.setProperty("--wizard-top-h", bar.offsetHeight + "px"); };
+    const foot = document.querySelector(".wizard__bottom");
+    /* #378：底部動作列＋上方 56px 漸層遮罩也會蓋住右軌底端，一起量進 --wizard-bottom-h（wizard-split.css 扣掉它） */
+    const set = () => {
+      if (bar) document.documentElement.style.setProperty("--wizard-top-h", bar.offsetHeight + "px");
+      if (foot) document.documentElement.style.setProperty("--wizard-bottom-h", (foot.offsetHeight + 56) + "px");
+    };
     set();
     window.addEventListener("resize", set);
     document.addEventListener("i18n:applied", set);
+    /* #378：右軌的高度上限跟著它「現在的上緣」算——左欄內容短時軌不會黏住、停在頁面正常位置，
+       固定的上限會讓軌底端落到底部動作列後面，捲到底也看不到最後一張卡。改成每次捲動／縮放／換步驟時，
+       把（動作列上緣 − 漸層 − 軌上緣 − 16）寫進 --wizard-rail-max（wizard-split.css 有寫就用它）。 */
+    const fitRails = () => {
+      const limit = (foot ? foot.getBoundingClientRect().top : window.innerHeight) - 56 - 16;
+      document.querySelectorAll(".wizard-split__rail").forEach(r => {
+        if (!r.offsetParent) return;
+        const top = r.getBoundingClientRect().top;
+        r.style.setProperty("--wizard-rail-max", Math.max(160, Math.round(limit - top)) + "px");
+      });
+    };
+    document.addEventListener("scroll", fitRails, true);
+    window.addEventListener("resize", fitRails);
+    document.addEventListener("click", () => requestAnimationFrame(fitRails));
+    window.ztorFitRails = fitRails;
+    requestAnimationFrame(fitRails);
   })();
 
   let i18nBusy = false;
@@ -5019,7 +5104,14 @@
        庫存共用那條規則移進 `d.s6.sub`；`d.bd.empty.text`（舉例）與 `d.bd.empty.skip`
        （「本活動不設組合包」）同輪撤除，理由見上面 markup 的說明。 */
     "d.bd.add":       { en: "＋ Add a bundle",   zh: "＋ 新增組合包" },
-    "d.bd.pool":      { en: "What this step affects", zh: "影響範圍" },
+    "d.bd.pool":      { en: "Tickets you can bundle", zh: "可加入組合包的票" },
+    "d.bd.calc.single": { en: "Tickets sold alone", zh: "單售門票" },   // #374 票務商品步驟的收入試算
+    "d.bd.calc.bundles": { en: "Bundles", zh: "組合包" },
+    "d.bd.calc.note": { en: "Assumes tickets sold alone go at their discounted price and each bundle sells its locked sets. Bundles with no locked sets aren't counted.", zh: "單售門票以折後價、組合包以鎖定組數賣完估算；沒有鎖定組數的組合包不計入。" },
+    "d.bd.pool.more": { en: "Show {n} more", zh: "顯示其餘 {n} 種" },   // #378
+    "d.bd.pool.less": { en: "Show less", zh: "收合" },
+    "d.bd.pool.calc": { en: "{lock} locked for bundles · {left} left to sell alone", zh: "組合包鎖 {lock} 張 · 可單售 {left} 張" },   // #370 試算
+    "d.bd.pool.float":{ en: "Another {n} tickets are locked by bundles with several ticket choices but not assigned to one — they come out of whichever ticket fans pick.", zh: "另有 {n} 張由可選多種票的組合包鎖定、尚未指定票種，粉絲選哪種就從哪種扣。" },   // 2026-10-28 #376：原「影響範圍」
     "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own. Bundle some and this lists which tickets get pulled in.",
                         zh: "尚未建立組合包，各票券單獨販售。建立後將列出受影響的票券。" },
     "d.bd.pool.n":    { en: "pickable in {n} bundles · {m} per set", zh: "{n} 組可選 · 每組 {m} 張" },

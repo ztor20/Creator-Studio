@@ -18,7 +18,7 @@
            .section-outline__group             群組標題列（選配；mount 傳 group 才出現，不可點）
            .section-outline__item(.is-active)  一節＝一列（下緣分隔線）；<button>，aria-current="location" 標目前節
              .section-outline__text            節名（左，最多兩行）
-             .section-outline__mk.pmark[data-st] 列尾記號：todo＝空心圈＋淡勾／done＝.pmark--done／opt＝不畫
+             .section-outline__mk.pmark[data-st] 列尾記號：todo＝橘色膠囊字「必填」（__req）／done＝灰色空心圈＋勾／opt＝不畫（2026-10-28 改）
 
    修飾與掛載：
      .section-outline--gutter    放進頁面左側空白欄（相對 .section-outline-host 絕對定位）。
@@ -175,6 +175,24 @@
 /* 狀態記號：JS 在 .section-outline__mk 上同時掛 .pmark（progress-mark.css）；尺寸收到 16px，選填不畫 */
 .section-outline__mk { --pmark-size: 16px; }
 .section-outline__mk[data-st="opt"] { display: none; }
+/* 2026-10-28 使用者（所有建立頁）：「這些都改成橘色，並寫必填，完成的時候就變灰色」——
+   必填未填（todo）＝品牌橘的字「必填」（無外框），不畫圈與勾，讓還沒填的節在大綱裡先被看到；
+   完成（done）＝原本空心圈＋勾的灰色（.pmark 預設外觀），退到背景。綠色實心完成記號在大綱裡不用。 */
+.section-outline__req { display: none; }
+.section-outline__mk[data-st="todo"] {
+  width: auto;
+  height: auto;
+  padding: 0;
+  border-color: transparent;   /* 2026-10-28 使用者：「不要外框」——只留橘色字 */
+  color: var(--primary);
+}
+.section-outline__mk[data-st="todo"] .ztor-icon { display: none; }
+.section-outline__mk[data-st="todo"] .section-outline__req {
+  display: block;
+  font-size: var(--fs-11);
+  line-height: var(--lh-snug);
+  white-space: nowrap;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .section-outline__bar::before { transition: none; }

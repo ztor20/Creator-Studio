@@ -7,8 +7,10 @@
      · build(headers, rows)   → 完整 CSV 字串：UTF-8 BOM 開頭、逗號分隔、列以 CRLF 結尾；
                                 含逗號、雙引號、換行的欄位加雙引號，內部雙引號重複一次（RFC 4180）。
      · download(name, text)   → 瀏覽器端產檔下載（Blob + <a download>）。
-     · confirm(opts)          → 匯出確認視窗：顯示筆數、（訂單管理才有）「包含收件資料」核取框、匯出／取消。
-                                opts: { title, count, withShip, note, onExport(includeShip) }
+     · confirm(opts)          → 匯出視窗：這次匯出什麼（筆數＋篩選條件）、（訂單管理才有）「包含收件資料」核取框、
+                                這個範圍的匯出紀錄（最近 3 筆，可展開全部）、匯出 N 筆／取消。
+                                opts: { title, count, withShip, note, scope, filters, onExport(includeShip) }
+                                2026-10-28 使用者：匯出紀錄改在這個視窗看，工具列的「匯出紀錄」鈕退場（openLog 保留給舊呼叫）。
      · fileRange(from, to)    → 檔名用的起訖日期字串；兩邊都沒填回傳「全部」。
      · safeName(s)            → 檔名不能含的字元換成空白。
      · run(opts)              → 匯出中提示＋產檔下載＋寫一筆匯出紀錄（D424 決定 3、4，2026-10-15）。
@@ -72,19 +74,30 @@
     modal.className = 'payout-modal';
     modal.hidden = true;
     modal.innerHTML =
-      '<div class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="csv-title">' +
+      /* 2026-10-28：寬度回到預設 620（原 --narrow 460）——下半部要放匯出紀錄，一列要裝檔名與兩行小字 */
+      '<div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="csv-title">' +
         '<div class="payout-dialog__head">' +
           '<h3 class="payout-dialog__title" id="csv-title" data-csv-title></h3>' +
           '<button class="btn btn--icon btn--sm" type="button" data-csv-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>' +
         '</div>' +
         '<div class="payout-dialog__body">' +
-          '<div data-csv-count></div>' +
+          '<div class="export-summary">' +
+            '<div class="export-summary__count"><span class="export-summary__num" data-csv-num></span><span class="export-summary__unit" data-csv-unit></span></div>' +
+            '<p class="export-summary__filters" data-csv-filters></p>' +
+          '</div>' +
           '<div class="field mt-16" data-csv-ship-wrap hidden>' +
             '<label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-csv-ship><span class="zcheck__box"></span></span>' +
               '<span class="zcheck__label" data-csv-ship-label></span></label>' +
             '<div class="field__hint mt-8" data-csv-ship-hint></div>' +
           '</div>' +
           '<div class="field__hint mt-16" data-csv-note hidden></div>' +
+          '<section class="export-history" data-csv-hist aria-labelledby="csv-hist-title">' +
+            '<div class="export-history__head"><h4 class="export-history__title" id="csv-hist-title" data-csv-hist-title></h4>' +
+              '<p class="export-history__sub" data-csv-hist-sub></p></div>' +
+            '<div class="data-list" data-csv-hist-list></div>' +
+            '<p class="field__hint" data-csv-hist-empty hidden></p>' +
+            '<button class="btn btn--ghost btn--sm export-history__more" type="button" data-csv-hist-more hidden></button>' +
+          '</section>' +
         '</div>' +
         '<div class="payout-dialog__foot">' +
           '<button class="btn btn--ghost btn--sm" type="button" data-csv-close data-csv-cancel></button>' +
@@ -96,6 +109,7 @@
     modal.querySelectorAll('[data-csv-close]').forEach(function (el) { el.addEventListener('click', close); });
     modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
+    modal.querySelector('[data-csv-hist-more]').addEventListener('click', function () { if (cur) { cur.histAll = !cur.histAll; renderHist(); } });
     modal.querySelector('[data-csv-go]').addEventListener('click', function () {
       if (!cur) return;
       var fn = cur.onExport, ship = !!(cur.withShip && modal.querySelector('[data-csv-ship]').checked);
@@ -117,8 +131,11 @@
     cur = opts;
     var n = opts.count || 0;
     m.querySelector('[data-csv-title]').textContent = opts.title;
-    m.querySelector('[data-csv-count]').textContent = n
-      ? T('csv.count', '{n} orders will be exported, following your current filters.').replace('{n}', n.toLocaleString('en-US'))
+    /* 這次匯出什麼：大字筆數＋單位；下一行寫「照目前的篩選結果」＋篩選條件（同紀錄列的寫法，上下讀法一致） */
+    m.querySelector('[data-csv-num]').textContent = n.toLocaleString('en-US');
+    m.querySelector('[data-csv-unit]').textContent = T('csv.unit', 'orders');
+    m.querySelector('[data-csv-filters]').textContent = n
+      ? T('csv.scope', 'Following your current filters — {filters}').replace('{filters}', filterText(opts.filters))
       : T('csv.none', 'No orders match your current filters, so there is nothing to export.');
     var shipWrap = m.querySelector('[data-csv-ship-wrap]');
     shipWrap.hidden = !opts.withShip;
@@ -129,13 +146,40 @@
     note.hidden = !opts.note;
     note.textContent = opts.note || '';
     m.querySelector('[data-csv-cancel]').textContent = T('csv.cancel', 'Cancel');
+    cur.histAll = false;
+    renderHist();
     var go = m.querySelector('[data-csv-go]');
-    go.textContent = T('csv.go', 'Export');
+    go.textContent = n ? T('csv.go.n', 'Export {n}').replace('{n}', n.toLocaleString('en-US')) : T('csv.go', 'Export');
     go.disabled = !n;
     m.querySelector('[data-csv-close][aria-label]').setAttribute('aria-label', T('csv.close', 'Close'));
     m.hidden = false;
     document.body.classList.add('is-modal-open');
     (n ? go : m.querySelector('[data-csv-cancel]')).focus();
+  }
+
+  /* 匯出視窗下半部：這個範圍的匯出紀錄（D424 決定 4；版本閘 O42 關閉時整塊不出現）。
+     預設只露最近 3 筆、其餘用「顯示全部 N 筆」展開；和這次篩選相同的紀錄標「同樣的篩選」（比對時不看收件資料那一項——
+     那是匯出選項、不是篩選），讓人在按匯出前就看得到「剛剛是不是已經匯過同一份」。 */
+  var HIST_PEEK = 3;
+  function filterKey(list) {
+    return JSON.stringify((list || []).filter(function (f) { return f.k !== 'csv.log.f.ship'; }).map(function (f) { return [f.k, f.v]; }));
+  }
+  function renderHist() {
+    var m = modal, sec = m.querySelector('[data-csv-hist]');
+    sec.hidden = !(cur && cur.scope && featOn('O42'));
+    if (sec.hidden) return;
+    var rows = log(cur.scope), mine = filterKey(cur.filters);
+    var shown = cur.histAll ? rows : rows.slice(0, HIST_PEEK);
+    m.querySelector('[data-csv-hist-title]').textContent = T('csv.log.title', 'Export history');
+    m.querySelector('[data-csv-hist-sub]').textContent = T('csv.log.sub', 'Who exported, when, with which filters, how many orders and the file name — newest first.');
+    m.querySelector('[data-csv-hist-list]').innerHTML = shown.map(function (r) { return logRowHTML(r, filterKey(r.filters) === mine); }).join('');
+    m.querySelector('[data-csv-hist-list]').hidden = !rows.length;
+    var empty = m.querySelector('[data-csv-hist-empty]');
+    empty.hidden = !!rows.length;
+    empty.textContent = T('csv.log.empty.here', 'No exports yet — this export will be the first one listed here.');
+    var more = m.querySelector('[data-csv-hist-more]');
+    more.hidden = rows.length <= HIST_PEEK;
+    more.textContent = cur.histAll ? T('csv.log.less', 'Show recent only') : T('csv.log.all', 'Show all {n}').replace('{n}', rows.length);
   }
 
   /* ── 匯出中提示＋匯出紀錄（D424 決定 3、4）──────────────────────────── */
@@ -229,6 +273,17 @@
       return T(f.k, f.k) + T('csv.log.sep', ': ') + v;
     }).join(T('csv.log.join', ' · '));
   }
+  /* 一筆紀錄一列：標題＝檔名；第一行小字＝時間 · 誰；第二行＝篩選條件 · 筆數；same＝和這次篩選相同時右側一個中性徽章 */
+  function logRowHTML(r, same) {
+    return '<div class="data-list__row" data-csv-log-row><div class="data-list__row-main"><div class="data-list__body">' +
+      '<div class="data-list__title">' + escH(r.file) + '</div>' +
+      '<div class="data-list__meta">' + escH(r.at) + ' · ' + escH(whoText(r.who)) + '</div>' +
+      '<div class="data-list__meta">' + escH(filterText(r.filters)) + ' · ' +
+        escH(T('csv.log.count', '{n} orders').replace('{n}', Number(r.count || 0).toLocaleString('en-US'))) + '</div>' +
+    '</div></div>' +
+    (same ? '<span class="badge badge--neutral">' + escH(T('csv.log.same', 'Same filters')) + '</span>' : '') +
+    '</div>';
+  }
   function ensureLog() {
     if (logModal) return logModal;
     logModal = document.createElement('div');
@@ -262,14 +317,7 @@
     var rows = log(opts.scope);
     m.querySelector('[data-csv-log-title]').textContent = opts.title || T('csv.log.title', 'Export history');
     m.querySelector('[data-csv-log-sub]').textContent = T('csv.log.sub', 'Every export from this page — who, when, which filters, how many orders and the file name. Creators and Admins both see it.');
-    m.querySelector('[data-csv-log-list]').innerHTML = rows.map(function (r) {
-      return '<div class="data-list__row" data-csv-log-row><div class="data-list__row-main"><div class="data-list__body">' +
-        '<div class="data-list__title">' + escH(r.file) + '</div>' +
-        '<div class="data-list__meta">' + escH(r.at) + ' · ' + escH(whoText(r.who)) + '</div>' +
-        '<div class="data-list__meta">' + escH(filterText(r.filters)) + ' · ' +
-          escH(T('csv.log.count', '{n} orders').replace('{n}', Number(r.count || 0).toLocaleString('en-US'))) + '</div>' +
-      '</div></div></div>';
-    }).join('');
+    m.querySelector('[data-csv-log-list]').innerHTML = rows.map(function (r) { return logRowHTML(r, false); }).join('');
     m.querySelector('[data-csv-log-list]').hidden = !rows.length;
     var empty = m.querySelector('[data-csv-log-empty]');
     empty.hidden = !!rows.length;

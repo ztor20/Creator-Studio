@@ -46,3 +46,39 @@
 }
 
 .date-range__clear[hidden] { display: none; }
+
+/* --bare（2026-10-28 使用者：訂單管理工作列的日期篩選「樣式改成需求看板的下拉那樣」）：
+   日期欄去邊框、去填色，坐在工作列殼層（.list-toolbar）上，外觀比照 .select--bare——
+   32px 高、膠囊圓角、12px 字、hover 才浮出 --ztu-glass-strong 底。欄名（__label）不放，
+   改由兩格各自的 placeholder 說明（例：訂單起始日／訂單結束日，消費頁用 data-ph-key 給字）。 */
+.date-range--bare { gap: var(--sp-4); }
+.date-range--bare .date-range__field { width: auto; }
+/* 寬度跟著內容走（2026-10-28 使用者：「因為沒有外框，所以空格要處理」）：沒有外框時，固定寬留下的空白
+   會被讀成字與「–」之間一大段空隙。把 input 與 placeholder 疊在同一個 grid 格子裡、placeholder 回到流內，
+   格子寬＝兩者較寬的那個：空值＝placeholder 的寬（中英文各自剛好），已填＝日期本身的寬。 */
+.date-range--bare .date-input { display: inline-grid; }
+.date-range--bare .date-input > * { grid-area: 1 / 1; }
+.date-range--bare .date-input .input { width: auto; min-width: 0; }
+.date-range--bare .date-input[data-empty="true"] .input { width: 0; min-width: 100%; }
+.date-range--bare .date-input[data-empty="true"] .date-input__ph {
+  position: static;
+  transform: none;
+  align-self: center;
+  padding: 0 var(--sp-12) 0 var(--sp-32);
+  white-space: nowrap;
+}
+.date-range--bare .input {
+  height: var(--sp-32);
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  background-color: transparent;
+  color: var(--foreground);
+  font-size: var(--fs-12);
+  transition: background-color var(--duration) var(--easing);
+}
+.date-range--bare .input:hover { background-color: var(--ztu-glass-strong); }
+.date-range--bare .input:focus { box-shadow: 0 0 0 2px var(--ring); }
+.date-range--bare .date-input__ph { font-size: var(--fs-12); color: var(--foreground-muted); }
+.date-range--bare .date-input__icon { left: var(--sp-10); }
+.date-range--bare .date-input[data-empty="true"] .input { padding-left: var(--sp-32); }
+.date-range--bare .date-range__sep { color: var(--muted-foreground); }

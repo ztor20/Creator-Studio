@@ -71,6 +71,57 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* ── 彈窗左側欄目錄（2026-10-28，#364；使用者：「編輯組合包的這個目錄改到左側欄，像創建商品的流程一樣」）──
+   同一組 [data-st-tab]／[data-st-section]（行為不變，js/section-tabs.js），排成直列放進彈窗內容區的左欄，
+   長相對齊創建商品的「本頁大綱」（section-outline.css）：一節一列、列與列之間 --border-soft 細線、
+   目前節換 --selected-ink 與字重、不畫橫向底線與捲動橫條。nav 自己在捲動區裡，黏在上緣（top:0），左欄寬由消費者的 grid 決定。 */
+.section-tabs--rail {
+  position: sticky;
+  top: 0;
+  z-index: auto;
+  height: auto;
+  display: block;
+  align-self: start;
+  padding: 0;
+  border: 0;
+}
+.section-tabs--rail > .tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: visible;
+  border: 0;
+}
+.section-tabs--rail > .tabs::after { display: none; }       /* tabs--underline-* 的底線／發光 */
+.section-tabs--rail .tabs__item {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: var(--sp-10) var(--sp-4);
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--foreground-muted);
+}
+.section-tabs--rail > .tabs .tabs__item > span::before,
+.section-tabs--rail > .tabs .tabs__item > span::after,
+.section-tabs--rail > .tabs .tabs__item::before,
+.section-tabs--rail > .tabs .tabs__item::after,
+.section-tabs--rail > .tabs .tabs__item--active::before,
+.section-tabs--rail > .tabs .tabs__item--active::after { display: none !important; content: none !important; }   /* 發光底線在 tabs.css 以更高權重畫在 ::after（--active），只能強關 */
+.section-tabs--rail .tabs__item:last-child { border-bottom: 0; }
+.section-tabs--rail .tabs__item:hover { color: var(--foreground); background: none; }
+.section-tabs--rail .tabs__item.tabs__item--active,
+.section-tabs--rail .tabs__item[aria-current="location"] { color: var(--selected-ink); font-weight: var(--fw-medium); }
+
 /* ── 建立流程頂列第二排 ───────────────────────────────────────────────────
    寬度與 .wizard__body--narrow（max 1000、左右 --sp-28）同一條內容欄；殼內距＝欄內距減去
    第一顆 tab 的 --sp-14，標籤文字起點與底下分卡的左緣切齊。分隔線交給 .wizard__top 自己的

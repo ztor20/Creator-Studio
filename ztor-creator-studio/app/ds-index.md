@@ -408,7 +408,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 181 支；主 class 前 5 個）
+## 元件（ds-components/，共 182 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -459,6 +459,7 @@
 - `entry-list.css` — .entry-list, .entry-list__row, .entry-list__add, .entry-list--extras, .entry-list__row--extras ｜ entry-list.css · 逐筆單欄輸入清單（可增可刪）
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer
+- `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗）
 - `fact-list.css` — .fact-list, .fact-list__item ｜ Fact list · 唯讀事實列（2026-08-19）
 - `fan-shop.css` — .fep-shop, .fep-shop--event ｜ fan-shop.css · 前台活動頁鏡像（發布前預覽確認的預覽檢視，D305 使用者裁決 2
 - `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ fan-store.css · 粉絲端創作者頁的手機版鏡像（See-as-fan 預覽）
@@ -483,12 +484,12 @@
 - `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開）
 - `kpi-rotator.css` — .kpi-rotator, .kpi-rotator__slide, .kpi-rotator__slide--active, .distribution, .distribution__head ｜ kpi-rotator — 一格位置輪流講兩件事（2026-08-31 建）
 - `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ KPI — metric tile (label / value / delta or meta
-- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__v ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
+- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__sub, .kv__sub--over ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title
 - `limit-set.css` — .limit-set, .limit-set__head, .limit-set__sub, .limit-set__act, .limit-set__fields ｜ limit-set.css · 限購（D398，2026-10-12；D427，2026-10-
 - `link-field.css` — .linkf, .linkf__label, .linkf__row, .linkf__input, .linkf__act ｜ link-field.css · 唯讀連結 ＋ 複製 ＋ 重置
 - `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
-- `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar__filter, .list-toolbar__filter-count, .list-status-row ｜ List toolbar · 清單頁頭的兩層控制骨架
+- `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar--filters, .list-toolbar__filters, .list-toolbar__filter ｜ List toolbar · 清單頁頭的兩層控制骨架
 - `listing-controls.css` — .lctl, .lctl__row, .lctl--locked, .lctl__row--locked, .lctl__lock-note ｜ listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7.
 - `live-item.css` — .live-bg, .is-live-bg, .live-rail__wrap, .live-rail__nav--prev, .live-rail__view ｜ live-item — 進行中的一件（2026-08-31 建）
 - `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義；
@@ -540,7 +541,7 @@
 - `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
 - `section-nav.css` — .section-nav-layout, .section-nav, .section-nav__item, .settings-nav__item, .section-nav__item--active ｜ section-nav.css · 側欄分節導覽（一頁多節，左邊選、右邊看）
 - `section-outline.css` — .section-outline-host, .section-outline, .section-outline--gutter, .section-outline__inner, .section-outline__head ｜ section-outline.css · 本頁大綱（長表單的區段導覽）
-- `section-tabs.css` — .section-tabs, .section-tabs--dialog, .section-tabs--wizard ｜ Section tabs · 長表單頂端的固定分節分頁（2026-09-21）
+- `section-tabs.css` — .section-tabs, .section-tabs--dialog, .section-tabs--rail, .section-tabs--wizard ｜ Section tabs · 長表單頂端的固定分節分頁（2026-09-21）
 - `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active, .segmented__btn--icon, .segmented--locked ｜ Segmented control · 2/3-way text toggle in a mut
 - `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit
 - `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06）

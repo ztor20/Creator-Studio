@@ -90,6 +90,7 @@
         title: l.title || 'On this page',
         required: l.required || 'Required {n}/{m}',
         todo: l.todo || 'Required, not filled',
+        req: l.req || (window.i18nT && window.i18nT('cp.outline.req')) || 'Required',   /* 2026-10-28：必填未填時列尾直接寫出的短字 */
         done: l.done || 'Done',
         opt: l.opt || 'Optional'
       };
@@ -118,6 +119,7 @@
         ic.className = 'ztor-icon';
         ic.setAttribute('aria-hidden', 'true');
         mk.appendChild(ic);
+        mk.appendChild(el('span', 'section-outline__req'));   /* 2026-10-28：必填未填（todo）時顯示「必填」，其餘狀態由 CSS 收起 */
         var tx = el('span', 'section-outline__text', titles[i]);
         var sr = el('span', 'u-visually-hidden');
         btn.appendChild(mk); btn.appendChild(tx); btn.appendChild(sr);
@@ -155,7 +157,8 @@
         if (it.st !== st || rebuilt) {
           it.st = st;
           it.mk.setAttribute('data-st', st);
-          it.mk.classList.toggle('pmark--done', st === 'done');
+          /* 2026-10-28 使用者：必填未填＝橘色「必填」、完成＝灰色打勾（不再是綠色實心），所以不掛 .pmark--done */
+          it.mk.querySelector('.section-outline__req').textContent = l.req;
           it.sr.textContent = ' · ' + l[st];
         }
         it.btn.title = it.title + ' · ' + l[st];

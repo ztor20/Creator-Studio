@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
@@ -29,6 +30,8 @@
 <link rel="stylesheet" href="ds-components/demand-focus.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
+  /* 篩選工作列到摘要指標的距離沿用原本次層篩選列的 40px（2026-10-28 改成工作列殼層） */
+  .demand-board__bar { margin-top: var(--sp-16); margin-bottom: var(--sp-40); }
   /* 本頁一次性版面：F4 左欄（表格）要能縮到比內容窄，橫向捲動交給 .product-list-scroll；
      grid item 預設 min-width:auto 會被表格撐開、把右側常駐欄擠出去。 */
   .demand-board__table { min-width: 0; }
@@ -62,9 +65,10 @@
       <!-- F2 · 篩選與分組：適用對象一組 filter-tabs（一律選定一個——尺寸占比不跨適用對象混算），
            分類／次分類／單一商品三個下拉（.list-status-row__field ＋ .select--bare，同 IP 市場的次層篩選列）。
            選項只列統計期間內有需求的值（F2 其他狀態）。 -->
-      <div class="list-status-row">
-        <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Department" data-i18n-aria-label="demand.f.audience" data-dv-audience></nav>
-        <span class="list-status-row__sep" aria-hidden="true"></span>
+      <!-- 2026-10-28 使用者：改成電子商店那種工作列殼層——適用對象＝殼層裡的底線分頁（tabs，一律選定一個），三個下拉放右側動作群 -->
+      <div class="list-toolbar demand-board__bar">
+        <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist" aria-label="Department" data-i18n-aria-label="demand.f.audience" data-dv-audience></nav>
+        <div class="list-toolbar__actions">
         <span class="list-status-row__field">
           <span data-i18n="demand.f.category">Category</span>
           <select class="select select--bare" aria-label="Category" data-i18n-aria-label="demand.f.category" data-dv-category style="width:auto"></select>
@@ -77,6 +81,7 @@
           <span data-i18n="demand.f.product">Product</span>
           <select class="select select--bare" aria-label="Product" data-i18n-aria-label="demand.f.product" data-dv-product style="width:auto"></select>
         </span>
+        </div>
       </div>
 
       <!-- F3 · 摘要指標（前三項）。預測售罄天數與尺寸差距只對選定對象有意義，放在 F4 右側的選定對象面板。 -->
