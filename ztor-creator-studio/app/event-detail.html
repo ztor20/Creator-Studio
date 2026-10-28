@@ -907,11 +907,12 @@
             </div>
           </div>
         <!-- D435（2026-10-16，S81.1）：已發布且上架中的活動按「編輯活動」只能改庫存——就地說明＋下架入口（按鈕帶 data-ed-unlist，與「上架與下架」那顆同一個動作、同一個確認窗）。edStockSync() 切 hidden -->
-        <div class="alert alert--row alert--info mt-16" data-ed-stockonly-note data-feat="S81.1" role="note" hidden>
+        <!-- 2026-10-28（UI-CHANGES 三百六十二，使用者：「在設定中能編輯的不是庫存」）：設定分頁上架中能改的是發布設定裡沒鎖的欄位（D435：發布設定、連結、上下架、封存不鎖；pubLocks 逐欄鎖），文案與票務分頁分開。 -->
+        <div class="alert alert--row alert--info alert--glass mt-16" data-ed-stockonly-note data-feat="S81.1" role="note" hidden>
           <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
           <div class="alert__body">
-            <div class="alert__title" data-i18n="ed.stockonly.title">This event is listed — only stock can change right now</div>
-            <div class="alert__meta" data-i18n="ed.stockonly.body">You can change ticket quantities (not below what's sold) and each bundle's locked sets (in the bundle's Stock tab). To edit anything else, unlist the event first. After you save, relist it yourself.</div>
+            <div class="alert__title" data-i18n="ed.stockonly.setup.title">This event is listed — only stock can change right now</div>
+            <div class="alert__meta" data-i18n="ed.stockonly.setup.body">You can change ticket quantities (not below what's sold) and each bundle's locked sets (in the bundle's Stock tab). To edit anything else, unlist the event first. After you save, relist it yourself.</div>
           </div>
           <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-unlist data-i18n="event-detail.unlist.btn">Unlist event</button>
         </div>
@@ -1390,7 +1391,7 @@
             </div>
           </div>
         <!-- D435（2026-10-16，S81.1）：已發布且上架中的活動按「編輯活動」只能改庫存——就地說明＋下架入口（按鈕帶 data-ed-unlist，與「上架與下架」那顆同一個動作、同一個確認窗）。edStockSync() 切 hidden -->
-        <div class="alert alert--row alert--info mt-16" data-ed-stockonly-note data-feat="S81.1" role="note" hidden>
+        <div class="alert alert--row alert--info alert--glass mt-16" data-ed-stockonly-note data-feat="S81.1" role="note" hidden>
           <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
           <div class="alert__body">
             <div class="alert__title" data-i18n="ed.stockonly.title">This event is listed — only stock can change right now</div>
@@ -1767,7 +1768,7 @@
           <div class="section-head__sub" data-i18n="event-detail.notif.sub">Purchase confirmation, pre-event reminder and change notices (§5.1.6 F5).</div>
         </div>
         <!-- D455（2026-10-20，S81.1）：通知開關屬其他資料，活動上架中要先下架才能切換——就地說明＋下架入口（同設定分頁的 data-ed-stockonly-note）。edStockSync() 切 hidden -->
-        <div class="alert alert--row alert--info mb-16" data-ed-notif-listed-note data-feat="S81.1" role="note" hidden>
+        <div class="alert alert--row alert--info alert--glass mb-16" data-ed-notif-listed-note data-feat="S81.1" role="note" hidden>
           <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
           <div class="alert__body">
             <div class="alert__title" data-i18n="ed.notif.listed.title">This event is listed — notification settings can't change</div>
@@ -4689,6 +4690,12 @@
     const show = (sel, on) => document.querySelectorAll(sel).forEach(el => { el.hidden = !on; });
     /* 墓碑 2026-09-18（D281）：`show('[data-ed-delete]', editing)` 退場——刪除活動鈕已自頁首移除。 */
     show('[data-ed-cancel]', editing);
+    /* 編輯中不能切換主分頁（2026-10-28，UI-CHANGES 三百六十二，使用者：「開啟編輯模式是不能切換頁的，設定編輯完要儲存才可以開啟票務進行編輯」）：
+       其他主分頁標成停用，點了只提示「先儲存或捨棄」；程式自己帶頁（儲存檢查時 goSection 帶回設定）不擋。 */
+    document.querySelectorAll('[data-tabs] [data-tab]').forEach(t => {
+      const lock = editing && !t.classList.contains('section-nav__item--active');
+      if (lock) t.setAttribute('aria-disabled', 'true'); else t.removeAttribute('aria-disabled');
+    });
     document.querySelectorAll('[data-ed-editmode]').forEach(btn => {
       /* 2026-08-18：系列子場照常給編輯入口（見 isSeriesChild 上方的裁決）。
          D361 決定三：已結束、已取消整頁唯讀，不給編輯入口（syncStage 收起之後，這裡不能再把它打開） */
@@ -4705,6 +4712,12 @@
     });
   }
 
+  document.querySelector('[data-tabs]')?.addEventListener('click', e => {
+    const t = e.target.closest('[data-tab]');
+    if (!t || !e.isTrusted || t.getAttribute('aria-disabled') !== 'true') return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (window.ztorToast) window.ztorToast.show(T('ed.tab.locked', 'You’re editing — save or discard your changes before switching tabs.'));
+  }, true);
   function setMode(mode) {
     document.querySelectorAll('.tab-panel[data-editable]').forEach(p => p.setAttribute('data-mode', mode));
     /* D390（稽核第一節原型第 4 條）：發布設定跟著頁面的編輯模式——進入編輯時從活動複製一份草稿，離開（儲存或捨棄）時丟掉 */

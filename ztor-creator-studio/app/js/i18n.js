@@ -10755,7 +10755,10 @@
     'ed.tm.ro': { en: 'This event has ended or is archived — tickets are view-only.', zh: '活動已結束或已封存，門票只能檢視。' },
     'ed.tm.ro.view': { en: 'Select Edit to change this ticket.', zh: '按「編輯」後才能修改這張門票。' },
     'ed.tm.ro.stock': { en: 'This event is listed — only the quantity and single-sale lock can change. Unlist the event to edit anything else.', zh: '活動上架中，只能改張數與鎖給單售；其他欄位要先下架活動才能修改。' },
-    'ed.stockonly.title': { en: 'This event is listed — only stock can change right now', zh: '活動上架中，目前只能改庫存' },
+    'ed.stockonly.title': { en: 'This event is listed — only stock can change on this page', zh: '活動上架中，這一頁只能改庫存' },   // 票務分頁（2026-10-28 三百六十二：設定分頁另用 ed.stockonly.setup.*）
+    'ed.stockonly.setup.title': { en: 'This event is listed — only publish settings can change on this page', zh: '活動上架中，這一頁只能改發布設定' },
+    'ed.stockonly.setup.body': { en: "Publish settings that aren't locked can still change — for example the sales end, the scheduled unlist time and visibility. Event content, dates and venue need the event unlisted first; after you save, relist it yourself.", zh: '發布設定裡沒有鎖住的欄位照常可改，例如停售時間、定時下架時間與顯示設定。活動內容、場次與地點要先下架才能修改；改完儲存後，再自行重新上架。' },
+    'ed.tab.locked': { en: 'You’re editing — save or discard your changes before switching tabs.', zh: '編輯中不能切換分頁，請先儲存或捨棄變更。' },
     'ed.stockonly.body': { en: "You can change ticket quantities and each bundle's locked sets and sales cap (in the bundle's page). A ticket's quantity can't go below what's sold, plus what's locked for single sales and bundles, plus what's reserved in unlocked stock. To edit anything else, unlist the event first. After you save, relist it yourself.", zh: '上架中可以直接改門票張數，以及組合包的鎖定套數與販售上限（在組合商品細節頁）。門票張數不能少於已售、鎖給單售與各組合包鎖定的張數，再加上未鎖定裡保留中的張數。其他資料要先下架才能修改；改完儲存後，再自行重新上架。' },
     'sd.confirm.title.some': { en: 'Sync to {n} of {m} dates?', zh: '要同步到 {m} 場中的 {n} 場嗎？' },
     'sd.confirm.title.none': { en: 'No dates can be synced yet', zh: '目前沒有可以同步的場次' },
