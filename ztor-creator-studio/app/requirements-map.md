@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-28 建立活動右欄預覽改手機版（UI-CHANGES 三百九十四、ASSUMPTIONS UIA-313；S72 🔵 release2.3）**：5.1.6.1 §5.2.5 即時預覽 → `create-event.html` 第 2／3／4／7 步右欄改畫粉絲端活動頁手機版（`ds-components/fan-phone.css`、`wizard-split.css` `--phone`、`js/fan-event-page.js`），呈現變更、規格不動。
+
 > **2026-10-28 D486 原型同步（UI-CHANGES 三百八十七；tier 🔵 release2.3）**：商品端「使用優惠碼」總開關移除（修訂 D458）——`create-product.html`、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js`（建立活動組合包）的開關列與收合退場，選碼欄（`js/code-picker.js`，`hideLabel`）常駐；全店碼 chip 標「全店」；`js/discount-codes-store.js` 的 `applicable()` 不再依開關排除；`store-settings.html` 範圍浮卡不再標「不適用」。規格 5.1.5.2 F13（唯一定義處）、5.1.5.1 §2.15、5.1.5.4 F7、5.1.5.9 §2.3、5.1.5.5 F8.2、5.1.6.1／5.1.6.2／5.1.6.3、5.1.7.2、5.1.0.7、主規格 §8.22 與規則手冊 7 頁同步。
 
 > **2026-10-23 release2.4 媒體庫範圍（UI-CHANGES 三百零二、ASSUMPTIONS UIA-300；S86、S93、S106、S112–S114、S120 🟣 release2.4，S121–S125 ⚪）**：使用者裁決 release2.4 媒體庫＝需求網址 MVP → `media-vault.html`（頁級 S120）在 release2.4 出現；5.1.7.3 的 F4 鑰匙、F10 的排程、F5 的大彩蛋、F8 的其餘六種行動任務、總覽待補規格的數字只在最終版。release2.3 不變。

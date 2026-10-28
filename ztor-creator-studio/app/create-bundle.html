@@ -371,7 +371,7 @@
     <!-- ⑧ 上架與開賣（F6；含票券＝跟著活動＋四格跟隨／另設（D342）；純商品＝三開關（D241）） -->
     <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="listing" data-outline-group="sale">
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cb.sec.listing">Listing &amp; sale</h3>
+        <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
       </div>
       <div class="stack">
         <!-- 上架（含票券成員，D293；2026-10-01 D342 改寫）：純商品那組三開關收起，換成——
@@ -395,7 +395,6 @@
         <!-- 上架設定／顯示／開賣（D241／D245／D246／D247；spec 5.1.5.4 §4 F6）：純商品組合的完整三開關。
              建立流程不放非公開連結——連結是儲存後才產生的東西，這裡只說會發生什麼。 -->
         <div class="stack" data-cb-listing-controls>
-          <div class="bd-sub"><span class="bd-sub__title" data-i18n="cp.listing.sec-listed">Listing</span></div>
           <div class="lctl lctl--stack">
             <!-- 上架三選一改並排卡（2026-10-12 使用者裁示，UI-CHANGES 一百八十八）：與建立活動「上架設定」同一個元件、同一個順序；
                  選「定時上架」時上架時間緊接在卡片下方出現，不再排到「顯示於商店」後面。 -->
@@ -432,64 +431,67 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <!-- 顯示於商店（D247）：放在上架區最後（2026-10-12 使用者：定時上架的時間與定時下架放一起、顯示於商店放最後）。2026-10-12 使用者：「這個可以也有線框嗎」——與定時下架、定時停售同一種線框（control-group--plain），上下的分隔線拿掉 -->
-            <div class="lctl__row control-group control-group--plain" data-cb-shown-row hidden>
-              <div class="lctl__head">
-                <div class="lctl__titles">
-                  <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
-                  <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+              <!-- 顯示於商店（D247）：與定時下架同一個線框，中間分隔線區隔（2026-10-28 使用者指示，同建立商品） -->
+              <div class="lctl__rule lctl__rule--group"></div>
+              <div class="lctl__row" data-cb-shown-row>
+                <div class="lctl__head">
+                  <div class="lctl__titles">
+                    <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+                    <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+                  </div>
+                  <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="cb-shown"></div>
                 </div>
-                <div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0" id="cb-shown"></div>
-              </div>
-              <div class="lctl__body" data-cb-shown-body hidden>
-                <p class="lctl__hint" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</p>
+                <div class="lctl__body" data-cb-shown-body hidden>
+                  <p class="lctl__hint" data-i18n="cb.listing.hidden-note">The private link is created once you save, on the bundle page</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="stack" data-cb-sale-section hidden>
-            <div class="lctl__rule"></div><!-- 2026-10-12 使用者：上架設定與開賣設定中間要有分隔線（隨開賣區一起顯示／隱藏） -->
-            <div class="bd-sub"><span class="bd-sub__title" data-i18n="cp.listing.sec-sale">Sale</span></div>
-            <div class="lctl lctl--stack">
-              <!-- 開賣二選一改並排卡（2026-10-12，同上架）；開賣時間緊接在卡片下方 -->
-              <div class="segmented radio-cards" id="cb-sale-mode" data-value="follow">
-                <button class="segmented__btn segmented__btn--active" type="button" data-cb-sale-mode="follow">
-                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                </button>
-                <button class="segmented__btn" type="button" data-cb-sale-mode="schedule">
-                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
-                </button>
-              </div>
-              <div class="lctl__derived control-group control-group--plain">
-                <!-- 2026-10-12 使用者：「開賣設定的定時開賣也要這樣改」——選定時開賣時，開賣日期與時間進這個線框、與定時停售之間一條分隔線（同上架區） -->
-                <div class="field" data-cb-sale-start-field hidden>
-                  <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
-                  <input class="input" type="datetime-local" id="cb-sale-open">
-                </div>
-                <div class="lctl__rule lctl__rule--group" data-cb-sale-rule hidden></div>
-                <div class="lctl__row">
-                  <div class="lctl__head">
-                    <div class="lctl__titles">
-                      <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
-                      <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
-                    </div>
-                    <div class="switch lctl__control" id="cb-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
-                  </div>
-                  <div class="lctl__sched" data-cb-saleend-fields hidden>
-                    <div class="field">
-                      <div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div>
-                      <input class="input" type="datetime-local" id="cb-sale-close">
-                      <p class="field__error" id="cb-sale-window-err" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 開賣設定：與上架設定拆成兩個 section（2026-10-28 使用者指示，同建立商品）；上架為「不上架」時整節收起 -->
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="sale" data-outline-group="sale" data-cb-sale-section hidden>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
+      </div>
+    <div class="lctl lctl--stack">
+      <!-- 開賣二選一改並排卡（2026-10-12，同上架）；開賣時間緊接在卡片下方 -->
+      <div class="segmented radio-cards" id="cb-sale-mode" data-value="follow">
+        <button class="segmented__btn segmented__btn--active" type="button" data-cb-sale-mode="follow">
+          <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+        </button>
+        <button class="segmented__btn" type="button" data-cb-sale-mode="schedule">
+          <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+        </button>
+      </div>
+      <div class="lctl__derived control-group control-group--plain">
+        <!-- 2026-10-12 使用者：「開賣設定的定時開賣也要這樣改」——選定時開賣時，開賣日期與時間進這個線框、與定時停售之間一條分隔線（同上架區） -->
+        <div class="field" data-cb-sale-start-field hidden>
+          <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
+          <input class="input" type="datetime-local" id="cb-sale-open">
+        </div>
+        <div class="lctl__rule lctl__rule--group" data-cb-sale-rule hidden></div>
+        <div class="lctl__row">
+          <div class="lctl__head">
+            <div class="lctl__titles">
+              <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
+              <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
+            </div>
+            <div class="switch lctl__control" id="cb-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="lctl__sched" data-cb-saleend-fields hidden>
+            <div class="field">
+              <div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div>
+              <input class="input" type="datetime-local" id="cb-sale-close">
+              <p class="field__error" id="cb-sale-window-err" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </section>
 
     <!-- 取貨與核銷（5.1.5.4 F9）：成員含現場 QR 領取商品時才出現（同組合詳情 5.1.5.9 §2.6）。D470：組合包沒有自己的取貨方式，
@@ -528,7 +530,7 @@
 
     <!-- 優惠（2026-10-21 三步驟：從「定價與優惠」價格階梯拆出，放第二步「上架設定」——限時折扣（F7 · D144／D261）與使用優惠碼（D458）；
          組合折扣決定售價，留在第一步的「定價」。這裡是第二條 .price-ladder，列的 markup 與欄位 id 原封搬過來，JS 不變。 -->
-    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="offers" data-outline-group="sale">
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="offers" data-outline-group="sale" data-feat-off="S105">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.sec.offers">Discounts</h3>
       </div>
@@ -552,18 +554,16 @@
             <div class="field__hint" id="cb-sale-hint" data-i18n="cb.sale.pending">Sale price source &amp; time zone pending spec (5.1.5.4 §4 F7).</div>
           </div>
         </div>
-
-        <!-- 優惠碼（D458；2026-10-28 D486：「使用優惠碼」總開關移除——全店碼一律適用，這一列只剩標籤，選碼欄常駐在下一條 --panel 列）。
-             墓碑：[data-cb-stack] 開關、price-ladder__s「關閉時，任何商店優惠碼都不能用在這裡」、[data-cb-codes-body] 的 hidden 收合。 -->
-        <div class="price-ladder__step">
-          <div class="price-ladder__k">
-            <span class="price-ladder__t" data-i18n="cpk.title">Discount codes</span>
-          </div>
-        </div>
-        <div class="price-ladder__step price-ladder__step--panel" data-cb-codes-body>
-          <div class="price-ladder__codes" data-cb-codes-host></div>
-        </div>
       </div>
+    </section>
+
+    <!-- 優惠碼（D458；2026-10-28 D486：總開關移除、全店碼一律適用）：自成一節，與建立商品同款（2026-10-28 使用者：「不需要一層包一層」）。
+         墓碑：[data-cb-stack] 開關、price-ladder 列內的優惠碼標籤列與 --panel 包層、[data-cb-codes-body] 的 hidden 收合。 -->
+    <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="codes" data-outline-group="sale">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cpk.title">Discount codes</h3>
+      </div>
+      <div data-cb-codes-body><div data-cb-codes-host></div></div>
     </section>
 
     </div><!-- /.preview-split__form -->
@@ -1522,12 +1522,11 @@
   function syncListing() {
     const listed = listingMode !== 'none';
     if (listedBody) listedBody.hidden = !listed;
-    const shownRow = document.querySelector('[data-cb-shown-row]');
-    if (shownRow) shownRow.hidden = !listed;
     if (listingSched) listingSched.hidden = listingMode !== 'schedule';
     const listingRule = document.querySelector('[data-cb-listing-rule]');
     if (listingRule) listingRule.hidden = listingMode !== 'schedule';
-    if (saleSection) saleSection.hidden = !listed;
+    const ctl = document.querySelector('[data-cb-listing-controls]');
+    if (saleSection) saleSection.hidden = !listed || !!(ctl && ctl.hidden);   /* 含票券成員跟隨活動時，開賣設定（在 follow 區裡）一起收起 */
   }
   /* 並排卡（2026-10-12）：點卡＝換選項，選中樣式由 segmented__btn--active 表達 */
   function wireCards(host, attr, set) {
@@ -1592,6 +1591,7 @@
     const ev = tix.event && ticketMember() ? (EV ? (EV.get(tix.event.id) || tix.event) : tix.event) : null;
     if (follow) follow.hidden = !ev;
     if (controls) controls.hidden = !!ev;
+    if (typeof syncListing === 'function') syncListing();
     renderTbFollow(ev);
   }
   /* ── D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設（js/ticket-bundle.js 共用）──────────────

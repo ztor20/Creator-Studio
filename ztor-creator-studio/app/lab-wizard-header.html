@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 2026-10-28 示意頁（不是正式頁）：建立流程頂列「進度條換行」的四個提案。
+     使用者：寬版單排（標題｜進度條｜儲存）是正常的；中寬以下進度條會換到第二排，需要新的設計——
+     建議兩排間距加大、中間一條貼邊的分隔線，更小的寬度也適用。先給幾個提案看。
+     每個提案各畫兩個寬度（960 中寬、375 手機）。頂列是用正式 class 拼的靜態示意，不依賴視窗寬度，
+     所以在任何視窗大小下看到的都一樣。確認後才改 shared.css 的 ≤1024 規則與 .wizard__top-bar。 -->
+<title>建立流程頂列 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  .lab-wh { display: flex; flex-direction: column; gap: var(--sp-48); max-width: 1120px; }
+  .lab-wh__sec { display: flex; flex-direction: column; gap: var(--sp-16); }
+  .lab-wh__t { margin: 0; font-size: var(--fs-16); color: var(--foreground); display: flex; align-items: center; gap: var(--sp-8); }
+  .lab-wh__frames { display: flex; flex-wrap: wrap; gap: var(--sp-24); align-items: flex-start; }
+  .lab-wh__fr { display: flex; flex-direction: column; gap: var(--sp-6); }
+  .lab-wh__cap { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-wh__note { max-width: 720px; font-size: var(--fs-13); line-height: 1.6; color: var(--foreground-muted); }
+  .lab-wh__note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-wh__note ul { margin: var(--sp-4) 0 0; padding-left: var(--sp-18); }
+
+  /* ── 示意用頂列（膠囊）：材質照 .wizard__top::before ── */
+  .lab-cap {
+    box-sizing: border-box; overflow: hidden;
+    background: var(--ztu-glass-bg); border: 1px solid var(--border);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  }
+  .lab-cap--w960 { width: 960px; }
+  .lab-cap--w375 { width: 375px; }
+  .lab-r1 { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--sp-12); padding: var(--sp-14, 14px) var(--sp-20) var(--sp-14, 14px) var(--sp-24); }
+  .lab-cap--w375 .lab-r1 { padding: var(--sp-12) var(--sp-12) var(--sp-12) var(--sp-16); }
+  .lab-r1 .wizard__top-lead { grid-column: 1; }
+  .lab-r1 .wizard__top-actions { grid-column: 2; }
+  .lab-cap--w375 .wizard__save-status:not(.wizard__save-status--button) { font-size: 0; gap: 0; margin-inline-end: var(--sp-4); }
+  .lab-div { height: 1px; background: var(--border-soft); }   /* 貼邊：膠囊 overflow:hidden 之內，從左緣到右緣 */
+  .lab-r2 { padding: var(--sp-18, 18px) var(--sp-24) var(--sp-16); }
+  .lab-cap--w375 .lab-r2 { padding: var(--sp-16) var(--sp-16) var(--sp-14, 14px); }
+  .lab-r2 .progress-stepper--segmented { max-width: none; margin-inline: 0; --progress-stepper-tail: 0px; }
+  .lab-cap--w375 .progress-stepper--segmented .progress-stepper__state { display: none; }
+  /* B：第二排是一塊貼邊的底板 */
+  .lab-r2--plate { background: var(--ztu-film); }
+  /* C：第二排只放「目前這步」的摘要＋分段軌道 */
+  .lab-sum { display: flex; flex-direction: column; gap: var(--sp-10); }
+  .lab-sum__row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-12); }
+  .lab-sum__now { display: flex; align-items: baseline; gap: var(--sp-8); font-size: var(--fs-14); color: var(--foreground); min-width: 0; }
+  .lab-sum__n { font-family: var(--font-numeric); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-sum__st { display: inline-flex; align-items: center; gap: var(--sp-4); font-size: var(--fs-12); color: var(--status-success-ink); }
+  .lab-sum__st svg { width: 12px; height: 12px; }
+  .lab-sum__next { font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; }
+  .lab-sum .progress-stepper--segmented { max-width: none; margin-inline: 0; }
+  .lab-sum .progress-stepper__labels { display: none; }   /* 標籤改由上面一行說 */
+  /* D：單排——中寬把狀態小字收掉、標籤縮短，不換行 */
+  /* 2026-10-28 修：原本中欄 minmax(0,360px)、左欄 1fr 吃掉所有剩餘，進度條被推到右邊、跟標題之間留一大塊空白（使用者：「這裡為什麼要有空白」）。
+     改成左右欄只佔內容寬、中欄 1fr 填滿剩下的空間，標題｜進度條｜儲存之間的間距一致。 */
+  .lab-d { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: var(--sp-32); padding: var(--sp-12) var(--sp-20) var(--sp-12) var(--sp-24); }
+  .lab-d .progress-stepper--segmented { max-width: none; margin-inline: 0; --progress-stepper-tail: 0px; }
+  .lab-d .progress-stepper__state { display: none; }
+  .lab-d .progress-stepper--segmented .progress-stepper__label { padding-block: var(--sp-8); }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="main">
+    <div class="page lab">
+      <div class="page-intro"><div>
+        <h1 class="page-intro__title">建立流程頂列：進度條換行的四個提案</h1>
+        <p class="page-intro__sub">寬版單排不動（標題｜進度條｜儲存）。下面四個是中寬（960）與手機（375）的做法；A、B 照你的建議（間距加大＋貼邊分隔線），C、D 是另外兩個方向。</p>
+      </div></div>
+      <div class="lab-wh" data-lab-root></div>
+    </div>
+  </main>
+</div>
+<script>
+(function () {
+  var BACK = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="ztor-icon"><path d="M15 6l-6 6l6 6"></path></svg>';
+  var PEN = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg>';
+  var lead = '<div class="wizard__top-lead"><button class="wizard__back" type="button" aria-label="上一步">' + BACK + '</button>' +
+    '<div class="wizard__top-titlewrap"><span class="wizard__top-title">新增商品</span><span class="wizard__top-sub">實體商品</span></div></div>';
+  var actions = '<div class="wizard__top-actions"><span class="wizard__save-status" data-state="saved"><span class="wizard__save-status__dot"></span><span>已儲存 · 剛剛</span></span>' +
+    '<button class="btn btn--outline" type="button">儲存為草稿</button></div>';
+  function stepper() {
+    return '<div class="progress-stepper progress-stepper--segmented progress-stepper--anystep" style="--steps:3;--at:2;--progress:33%"><div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div><div class="progress-stepper__labels">' +
+      '<span class="progress-stepper__label progress-stepper__label--done"><span>商品設定</span><span class="progress-stepper__state">未完成</span></span>' +
+      '<span class="progress-stepper__label progress-stepper__label--current"><span>上架與販售</span><span class="progress-stepper__state">編輯中</span></span>' +   /* 筆 icon 由 progress-stepper.css 的 ::before 畫 */
+      '<span class="progress-stepper__label"><span>預覽與發布</span><span class="progress-stepper__state">未完成</span></span></div></div>';
+  }
+  function twoRow(w, plate) {
+    return '<div class="lab-cap lab-cap--w' + w + '"><div class="lab-r1">' + lead + actions + '</div><div class="lab-div"></div><div class="lab-r2' + (plate ? ' lab-r2--plate' : '') + '">' + stepper() + '</div></div>';
+  }
+  function summary(w) {
+    return '<div class="lab-cap lab-cap--w' + w + '"><div class="lab-r1">' + lead + actions + '</div><div class="lab-div"></div><div class="lab-r2"><div class="lab-sum">' +
+      '<div class="lab-sum__row"><span class="lab-sum__now"><span class="lab-sum__n">2／3</span><span>上架與販售</span><span class="lab-sum__st">' + PEN + '編輯中</span></span><span class="lab-sum__next">下一步　預覽與發布</span></div>' +
+      stepper() + '</div></div></div>';
+  }
+  function oneRow() {
+    return '<div class="lab-cap lab-cap--w960"><div class="lab-d">' + lead + stepper() + actions + '</div></div>';
+  }
+  function sec(key, title, tag, frames, note) {
+    return '<section class="lab-wh__sec"><h2 class="lab-wh__t">' + key + ' · ' + title + (tag ? ' <span class="badge badge--success">' + tag + '</span>' : '') + '</h2>' +
+      '<div class="lab-wh__frames">' + frames.map(function (f) { return '<div class="lab-wh__fr"><span class="lab-wh__cap">' + f[0] + '</span>' + f[1] + '</div>'; }).join('') + '</div>' +
+      '<div class="lab-wh__note">' + note + '</div></section>';
+  }
+  var root = document.querySelector('[data-lab-root]');
+  root.innerHTML =
+    sec('A', '兩排＋貼邊分隔線（照你的建議）', '推薦', [['960 中寬', twoRow(960)], ['375 手機', twoRow(375)]],
+      '<b>做法</b>：第一排返回／標題／儲存，第二排進度條滿寬；兩排之間一條 1px 分隔線，從膠囊左緣貼到右緣；兩排的上下內距各加到 14～18px。<ul><li>好處：結構最單純，標籤與狀態都留著，進度一眼看完；手機只收掉狀態小字</li><li>代價：頂列高度約 150px（手機約 125px），比現在換行版多一點留白</li></ul>') +
+    sec('B', '兩排＋第二排底板', '', [['960 中寬', twoRow(960, true)], ['375 手機', twoRow(375, true)]],
+      '<b>做法</b>：同 A，但第二排換成一塊略深的貼邊底板（左右下三邊貼齊膠囊），分隔線由底板的邊界承擔。<ul><li>好處：兩排的主從更明確——第一排是「我在哪、要做什麼」，第二排是「進度」</li><li>代價：多一塊底色，高度與 A 相同（約 150px／125px），視覺上比 A 更重；膠囊本身是玻璃，底板會讓下緣看起來比上半沉</li></ul>') +
+    sec('C', '兩排＋第二排只講目前這一步', '', [['960 中寬', summary(960)], ['375 手機', summary(375)]],
+      '<b>做法</b>（高度約 140px／130px）：第二排上面一行「2／3　上架與販售　編輯中　　下一步 預覽與發布」，下面是分段軌道，不再列三個標籤。<ul><li>好處：最矮、最不擠，窄寬度也不會有標籤被截；一般人只在乎「現在這步與下一步」</li><li>代價：看不到每一步完不完成（現在的「未完成／已完成」小字）；要跳步得點軌道的分段，不如標籤明顯</li></ul>') +
+    sec('D', '不換行：中寬縮成單排（更窄才換行）', '', [['960 中寬（單排）', oneRow()], ['375 手機（改用 A）', twoRow(375)]],
+      '<b>做法</b>：1024 以下先不換行——收掉各步下面的狀態小字，進度條縮成中欄一條，標籤保持一行；真的放不下（約 720 以下）才換成 A。<ul><li>好處：中寬頂列維持一排，高度不變</li><li>代價：頂列只有約 66px 高；中寬看不到「編輯中／未完成」；英文標籤較長時，一格放不下要截斷</li></ul>');
+})();
+</script>
+</body>
+</html>

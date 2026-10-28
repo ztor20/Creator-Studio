@@ -236,7 +236,7 @@
     const keys = ALLOW.map(c => c.k).filter(k => r.conds[k]);   // 照種類固定順序排，不照加入先後
     /* D417 決定五（2026-10-15，〔推導〕）：ctx.addOnly＝整組鎖定的一份裡仍可由創作者自加的種類（bookyay 門票：折扣、限時折扣）。
        bky 條件照舊鎖；創作者自己加的（沒有 bky 標記、在 addOnly 內）可改可移除；選單只列 addOnly。
-       ctx.noEmpty：沒有任何條件時不寫空狀態句（呼叫端另有自己的空狀態，例如跟隨活動的摘要） */
+       空狀態句（「還沒有條件：任何人都買得到…」）2026-10-28 全站退場，沒有條件時只剩「新增條件」按鈕；ctx.noEmpty／emptyKey 保留為無作用的相容參數 */
     const only = locked && ctx.addOnly ? ctx.addOnly : null;
     const lockOf = k => only ? (!!r.conds[k].bky || only.indexOf(k) < 0) : (locked || !!r.conds[k].bky);
     const featOf = k => only && !r.conds[k].bky && only.indexOf(k) >= 0 ? ctx.addFeat : "";
@@ -248,8 +248,7 @@
                          const f = featOf(k);
                          return f ? h.replace('<div class="cond-list__item', '<div data-feat="' + f + '" class="cond-list__item') : h;   // disc／discTime 本身沒有 feat，可直接掛
                        }).join("")
-                     : (ctx.noEmpty ? "" : '<p class="field__hint cond-list__empty' + (ctx.emptyKey ? ' field__hint--fact' : '') + '"' + (ctx.emptyKey ? ' data-i18n="' + esc(ctx.emptyKey) + '"' : '') + '>' +
-                         esc(ctx.emptyKey ? T(ctx.emptyKey, t("d.cond.empty")) : t("d.cond.empty")) + '</p>')) +
+                     : "") +
         (locked ? (only ? addMenuHTML(r, only) : "") : addMenuHTML(r)) +
       '</div>';
   }

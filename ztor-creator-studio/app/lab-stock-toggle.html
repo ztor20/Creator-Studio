@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>限量商品開關 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-stock-toggle — 庫存區段「限量商品」開關 demo（2026-10-28）。
+     取代現行「不限量／限量」兩張卡；資料仍是同一條版本型態軸（Edition），只換呈現。
+     本頁只用既有元件（form-section、control-row、switch、field、variant-table、segmented），自有樣式一律 lab- 前綴＋token。 */
+  .lab [hidden] { display: none !important; }
+  .lab-bar { display: flex; flex-wrap: wrap; gap: var(--sp-24); margin-top: var(--sp-20); }
+  .lab-bar__item { display: grid; gap: var(--sp-6); }
+  .lab-bar__label { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-stage { max-width: 770px; margin-top: var(--sp-20); }
+  .lab-fan { display: inline-flex; align-items: center; gap: var(--sp-8); margin-top: var(--sp-12); padding: var(--sp-6) var(--sp-12); border: 1px solid var(--border); border-radius: var(--radius-pill); font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-fan b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-12) 0 0; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-gap { margin-top: var(--sp-16); }
+  .lab-list { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro"><div>
+        <h1 class="page-intro__title">庫存區段：限量商品開關（設計探索）</h1>
+        <p class="page-intro__sub">用一顆「限量商品」開關取代「不限量／限量」兩張卡。預設關閉，畫面上不出現「不限量」這個詞。上方三組切換可以看所有組合：商品類型、單一或多選項、已上架時關閉的提醒。</p>
+      </div></div>
+
+      <div class="lab-bar">
+        <div class="lab-bar__item"><span class="lab-bar__label">商品類型</span>
+          <div class="segmented" id="lab-type">
+            <button class="segmented__btn segmented__btn--active" type="button" data-v="physical">實體</button>
+            <button class="segmented__btn" type="button" data-v="digital">數位</button>
+          </div></div>
+        <div class="lab-bar__item"><span class="lab-bar__label">規格</span>
+          <div class="segmented" id="lab-var">
+            <button class="segmented__btn segmented__btn--active" type="button" data-v="single">單一規格</button>
+            <button class="segmented__btn" type="button" data-v="multiple">多選項</button>
+          </div></div>
+        <div class="lab-bar__item"><span class="lab-bar__label">商品狀態</span>
+          <div class="segmented" id="lab-live">
+            <button class="segmented__btn segmented__btn--active" type="button" data-v="draft">草稿</button>
+            <button class="segmented__btn" type="button" data-v="live">上架中</button>
+          </div></div>
+      </div>
+
+      <div class="lab-stage">
+        <section class="form-section form-section--outlined" id="lab-stock">
+          <div class="form-section__head"><h3 class="form-section__title">庫存</h3></div>
+
+          <div class="control-group">
+            <div class="control-row">
+              <div>
+                <div class="control-row__main">限量商品</div>
+                <div class="control-row__sub" id="lab-ltd-sub"></div>
+              </div>
+              <div class="switch" id="lab-ltd" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+          </div>
+          <div class="info-banner lab-gap" id="lab-warn" hidden>
+            <div class="info-banner__body" id="lab-warn-text"></div>
+          </div>
+
+          <!-- 單一規格 -->
+          <div id="lab-single" class="lab-gap">
+            <div class="form-grid">
+              <div class="field" id="lab-f-total" hidden>
+                <div class="field__label">上限數量 <span class="field__req">*</span></div>
+                <input class="input" placeholder="0" id="lab-total" inputmode="numeric">
+                <div class="field__hint">硬上限，補貨不能超過。</div>
+              </div>
+              <div class="field" id="lab-f-stock">
+                <div class="field__label">目前在庫</div>
+                <input class="input" placeholder="0" id="lab-stock-in" inputmode="numeric">
+                <div class="field__hint" id="lab-stock-hint">補貨沒有上限，賣完才顯示售罄。</div>
+                <p class="field__error" id="lab-over" hidden>在庫不能超過上限數量。</p>
+              </div>
+            </div>
+            <div class="lab-fan" id="lab-fan" hidden>粉絲端顯示：<b id="lab-fan-text"></b></div>
+          </div>
+
+          <!-- 數位不限量：沒有庫存欄，只說明 -->
+          <p class="lab-note" id="lab-digital-off" hidden>不限量：粉絲可無上限購買與下載，不需要填庫存。</p>
+
+          <!-- 多選項：逐選項組合表（限量時多一欄「上限」） -->
+          <div id="lab-multi" hidden class="lab-gap">
+            <div class="variant-table-wrap">
+              <div class="variant-table" id="lab-vt">
+                <div class="variant-table__head">
+                  <span>規格</span><span>價格</span><span>在庫</span>
+                  <span class="variant-cell--total">上限</span><span>SKU</span><span>成本</span><span></span>
+                </div>
+                <div id="lab-rows"></div>
+              </div>
+            </div>
+            <div class="field__hint" style="margin-top:var(--sp-8)" id="lab-multi-hint">每個選項各自填在庫；補貨沒有上限。</div>
+          </div>
+
+          <!-- 低庫存提醒（實體） -->
+          <div class="control-group lab-gap" id="lab-low-wrap">
+            <div class="control-row">
+              <div>
+                <div class="control-row__main">庫存快不夠時提醒我</div>
+                <div class="control-row__sub" id="lab-low-sub"></div>
+              </div>
+              <div class="switch switch--on" id="lab-low" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card lab-gap" style="max-width:770px">
+        <div class="card__head"><h2 class="card__title">這個版本怎麼處理</h2></div>
+        <ul class="lab-list">
+          <li><b>關閉（預設）</b>：只有「目前在庫」，說明寫「補貨沒有上限，賣完才顯示售罄」，使用者仍知道庫存要填。</li>
+          <li><b>開啟</b>：多出「上限數量」必填欄，並預覽粉絲端會看到「還剩 N / 上限 件」。多選項時表格多一欄「上限」。</li>
+          <li><b>數位商品</b>：關閉＝不填庫存、無上限下載；開啟＝只填上限，不填在庫。</li>
+          <li><b>上架中關閉</b>：出現提醒「上限會被清除，粉絲不再看到剩餘件數」；草稿狀態直接切換。</li>
+          <li><b>低庫存提醒</b>：只對實體商品；門檻基準限量＝上限、非限量＝目前在庫。</li>
+        </ul>
+      </section>
+
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const S = { type: 'physical', varMode: 'single', live: 'draft', limited: false };
+  const rows = [['黑 / S', '1,200', '12', '30', 'TEE-BK-S', '320'], ['黑 / M', '1,200', '20', '50', 'TEE-BK-M', '320'], ['白 / M', '1,200', '8', '20', 'TEE-WH-M', '320']];
+  $('lab-rows').innerHTML = rows.map(r =>
+    `<div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">${r[0]}</span></span>`
+    + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="${r[1]}"></span>`
+    + `<input class="input" value="${r[2]}"><input class="input variant-cell--total" value="${r[3]}"><input class="input" value="${r[4]}">`
+    + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" value="${r[5]}"></span><span></span></div>`).join('');
+
+  function seg(id, key) {
+    const el = $(id);
+    el.querySelectorAll('.segmented__btn').forEach(b => b.addEventListener('click', () => {
+      el.querySelectorAll('.segmented__btn').forEach(x => x.classList.remove('segmented__btn--active'));
+      b.classList.add('segmented__btn--active'); S[key] = b.dataset.v; render();
+    }));
+  }
+  seg('lab-type', 'type'); seg('lab-var', 'varMode'); seg('lab-live', 'live');
+
+  function setSwitch(el, on) { el.classList.toggle('switch--on', on); el.setAttribute('aria-checked', on ? 'true' : 'false'); }
+  const ltd = $('lab-ltd');
+  function toggleLtd() {
+    const turningOff = S.limited;
+    S.limited = !S.limited;
+    if (turningOff) {
+      const had = ($('lab-total').value || '').trim() || S.varMode === 'multiple';
+      const w = $('lab-warn');
+      if (S.live === 'live' && had) {
+        $('lab-warn-text').textContent = '已關閉限量：上限數量會清除，粉絲不再看到剩餘件數。已售出的件數不受影響。';
+        w.hidden = false;
+      } else w.hidden = true;
+      $('lab-total').value = '';
+    } else $('lab-warn').hidden = true;
+    render();
+  }
+  ltd.addEventListener('click', toggleLtd);
+  ltd.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleLtd(); } });
+  const low = $('lab-low');
+  low.addEventListener('click', () => setSwitch(low, !low.classList.contains('switch--on')));
+  ['lab-total', 'lab-stock-in'].forEach(id => $(id).addEventListener('input', render));
+
+  function render() {
+    const phys = S.type === 'physical', single = S.varMode === 'single', on = S.limited;
+    setSwitch(ltd, on);
+    $('lab-ltd-sub').textContent = on
+      ? '設定總量上限，粉絲看得到還剩幾件。'
+      : (phys ? '打開後設定總量上限，粉絲看得到還剩幾件。' : '打開後設定總量上限，粉絲看得到還剩幾份。');
+    // 單一規格區
+    $('lab-single').hidden = !single || (!phys && !on);
+    $('lab-f-total').hidden = !on;
+    $('lab-f-stock').hidden = !phys;
+    $('lab-stock-hint').textContent = on ? '還沒賣出、現在手上有的件數；可以隨時補貨，但不能超過上限。' : '補貨沒有上限，賣完才顯示售罄。';
+    $('lab-digital-off').hidden = !(!phys && !on && single);
+    // 多選項（數位沒有多選項表，沿用單一區）
+    $('lab-multi').hidden = single || !phys;
+    if (!single && !phys) { $('lab-single').hidden = (!on); }
+    $('lab-vt').classList.toggle('variant-table--limited', on);
+    $('lab-multi-hint').textContent = on ? '每個選項各自填在庫與上限；各選項上限加總為商品總量。' : '每個選項各自填在庫；補貨沒有上限。';
+    // 超量錯誤與粉絲預覽
+    const t = parseInt($('lab-total').value.replace(/,/g, ''), 10), s = parseInt($('lab-stock-in').value.replace(/,/g, ''), 10);
+    $('lab-over').hidden = !(on && phys && single && t > 0 && s > t);
+    const fan = $('lab-fan'), showFan = on && single && t > 0;
+    fan.hidden = !showFan;
+    if (showFan) { const left = phys ? (s >= 0 ? Math.min(s, t) : t) : t; $('lab-fan-text').textContent = `還剩 ${left} / ${t} ${phys ? '件' : '份'}`; }
+    // 低庫存
+    $('lab-low-wrap').hidden = !phys;
+    $('lab-low-sub').textContent = on ? '在庫降到上限數量的 10%（預設低庫存門檻）時提醒你。' : '在庫降到 10%（預設低庫存門檻）時提醒你。';
+    if (!on && !($('lab-warn-text').textContent && !$('lab-warn').hidden)) { /* keep */ }
+  }
+  render();
+})();
+</script>
+</body>
+</html>
