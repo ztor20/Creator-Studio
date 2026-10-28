@@ -50,11 +50,14 @@
   .lab-num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; font-size: var(--fs-14); color: var(--foreground); text-align: right; }
   .lab-cols .lab-num { font-family: inherit; font-size: inherit; color: inherit; }
   /* 「新增優惠碼」＝跟卡片同一種整塊框（寬度吃滿、卡片級圓角），整塊都是按鈕 */
-  .lab-add { width: 100%; border-radius: var(--radius-xl); min-height: var(--sp-64); justify-content: center; }
+  .lab-add { width: 100%; border-radius: var(--radius-xl); min-height: var(--sp-64); height: auto; justify-content: center; align-items: center; margin-top: var(--sp-12); }
   @media (max-width: 560px) {
     .lab-cols, .lab-card__row { grid-template-columns: minmax(0, 1fr) minmax(0, 4.5rem) var(--sp-48) var(--sp-80) var(--sp-32); }
     .lab-period { display: none; }
   }
+  .lab-head { display: flex; align-items: center; gap: var(--sp-8); }
+  .lab-hint { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0 0 var(--sp-12); }
+  .lab-new { border-radius: var(--radius-lg); min-height: var(--sp-48); height: auto; justify-content: center; margin-top: var(--sp-12); }
   .lab-sec__title { font-family: var(--font-display); font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--foreground); margin: 0 0 var(--sp-12); }
   .lab-sec__rule { height: 1px; background: var(--border); margin: var(--sp-20) calc(var(--sp-20) * -1); }
   .lab-pick { display: flex; flex-direction: column; gap: var(--sp-12); }
@@ -73,7 +76,7 @@
 
       <div class="page-intro"><div>
         <h1 class="page-intro__title">優惠碼：卡片列表＋新增彈窗（設計探索）</h1>
-        <p class="page-intro__sub">上層每個碼是一張框起來的卡，底下一顆框線的「新增優惠碼」按鈕。按下去開彈窗：同一頁上半「選擇已建立」、下半「建立新的」，一個「加入」鈕一起處理。已建立但還沒加入的碼只在彈窗裡出現，不佔上層版面。</p>
+        <p class="page-intro__sub">上層每個碼是一張框起來的卡，底下一顆框線的「新增優惠碼」按鈕。按下去開彈窗：預設是已建立的碼清單（挑了按「加入」），清單底部一列「建立新的優惠碼」，點了在同一個彈窗換到建立畫面、可返回。每個畫面只有一個主要按鈕。已建立但還沒加入的碼只在彈窗裡出現，不佔上層版面。</p>
       </div></div>
 
       <div class="lab-stage">
@@ -85,41 +88,51 @@
         <button class="btn btn--ghost btn--sm lab-reset" type="button" id="lab-reset">重設 demo</button>
       </div>
 
-      <p class="lab-note"><b>規則照舊</b>：全店碼一律適用，卡上沒有移除鈕、標「全店」；特定商品的碼可移除（移除＝只是不套用在這個商品，碼本身還在，之後可從彈窗再加入）。已結束或停用的碼不出現在「選擇已建立」。新建的碼隨商品儲存才真的建立，卡上先標「待儲存」。</p>
+      <p class="lab-note"><b>規則照舊</b>：全店碼一律適用，卡上沒有移除鈕、標「全店」；特定商品的碼可移除（移除＝只是不套用在這個商品，碼本身還在，之後可從彈窗再加入）。已結束或停用的碼不出現在清單。新建的碼隨商品儲存才真的建立，卡上先標「待儲存」。</p>
 
     </div>
   </main>
 </div>
 
-<!-- 新增優惠碼彈窗（重用 payout-modal／payout-dialog） -->
+<!-- 新增優惠碼彈窗（重用 payout-modal／payout-dialog）。
+     UX：清單優先——多數時候是從已建立的碼挑；「建立新的」是少用動作，收在清單底部一列，點了在同一個彈窗換到建立畫面（可返回）。
+     每個畫面只有一個主要按鈕：清單＝「加入（N）」、建立＝「建立並加入」。沒有已建立的碼時直接進建立畫面。 -->
 <div class="payout-modal" id="lab-modal" hidden>
   <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="lab-modal-title">
     <div class="payout-dialog__head">
-      <h2 class="payout-dialog__title" id="lab-modal-title">新增優惠碼</h2>
+      <div class="lab-head">
+        <button class="btn btn--icon btn--sm" type="button" id="lab-back" aria-label="返回" hidden><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <h2 class="payout-dialog__title" id="lab-modal-title">選擇優惠碼</h2>
+      </div>
       <button class="btn btn--icon" type="button" data-lab-close aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <h3 class="lab-sec__title">選擇已建立</h3>
-      <div class="lab-pick" id="lab-pane-pick"></div>
 
-      <div class="lab-sec__rule"></div>
-      <h3 class="lab-sec__title">建立新的</h3>
-      <div class="stack" id="lab-pane-create" style="gap:var(--sp-16)">
-        <div class="field">
-          <div class="field__label">優惠碼 <span class="field__req">*</span></div>
-          <div class="code-picker-modal__row"><input class="input" id="lab-m-code" maxlength="20" autocomplete="off" placeholder="SUMMER25"><button class="btn btn--outline btn--sm" type="button" id="lab-m-gen">自動產生</button></div>
-          <div class="field__hint">8–20 個英文字母或數字，不分大小寫。</div>
-        </div>
-        <div class="field">
-          <div class="field__label">折扣 <span class="field__req">*</span></div>
-          <span class="amount-field amount-field--suffix" style="width:132px"><input class="input amount-field__input" id="lab-m-pct" value="10" inputmode="decimal"><span class="amount-field__unit">%</span></span>
-        </div>
-        <div class="code-picker-modal__dates">
-          <div class="field"><div class="field__label">開始日期</div><input class="input" type="date" id="lab-m-start"></div>
-          <div class="field"><div class="field__label">結束日期</div><input class="input" type="date" id="lab-m-end"></div>
-        </div>
-        <div class="field"><div class="field__label">適用範圍</div><div class="code-picker-modal__scope">特定商品：這件商品（新碼會自動加入）</div></div>
+      <div class="lab-view" id="lab-view-pick">
+        <p class="lab-hint">選了就套用在這個商品。全店碼不用選，一律適用。</p>
+        <div class="lab-pick" id="lab-pane-pick"></div>
+        <button class="btn btn--outline btn--block lab-new" type="button" id="lab-new"><i data-lucide="plus" class="ztor-icon"></i><span>建立新的優惠碼</span></button>
       </div>
+
+      <div class="lab-view" id="lab-view-create" hidden>
+        <div class="stack" style="gap:var(--sp-16)">
+          <div class="field">
+            <div class="field__label">優惠碼 <span class="field__req">*</span></div>
+            <div class="code-picker-modal__row"><input class="input" id="lab-m-code" maxlength="20" autocomplete="off" placeholder="SUMMER25"><button class="btn btn--outline btn--sm" type="button" id="lab-m-gen">自動產生</button></div>
+            <div class="field__hint">8–20 個英文字母或數字，不分大小寫。</div>
+          </div>
+          <div class="field">
+            <div class="field__label">折扣 <span class="field__req">*</span></div>
+            <span class="amount-field amount-field--suffix" style="width:132px"><input class="input amount-field__input" id="lab-m-pct" value="10" inputmode="decimal"><span class="amount-field__unit">%</span></span>
+          </div>
+          <div class="code-picker-modal__dates">
+            <div class="field"><div class="field__label">開始日期</div><input class="input" type="date" id="lab-m-start"></div>
+            <div class="field"><div class="field__label">結束日期</div><input class="input" type="date" id="lab-m-end"></div>
+          </div>
+          <div class="field"><div class="field__label">適用範圍</div><div class="code-picker-modal__scope">特定商品：這件商品（新碼會自動加入）</div></div>
+        </div>
+      </div>
+
     </div>
     <div class="payout-dialog__foot">
       <p class="payout-dialog__foot-note" id="lab-err" hidden></p>
@@ -171,25 +184,35 @@
       '<div class="code-picker__head"><span></span><span>優惠碼</span><span class="code-picker__cell">適用範圍</span><span class="code-picker__num">折扣</span><span class="code-picker__cell code-picker__period">期間</span></div>' +
       S.pool.map(c => `<label class="code-picker__row${picked.has(c.code) ? '' : ' code-picker__row--off'}"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-pick="${c.code}"${picked.has(c.code) ? ' checked' : ''} aria-label="${c.code}"><span class="zcheck__box"></span></span><span class="code-picker__code">${c.code}</span><span class="code-picker__cell code-picker__scope">特定商品</span><span class="code-picker__num">${c.pct}%</span><span class="code-picker__cell code-picker__period">${c.period}</span></label>`).join('') + '</div>';
   }
-  const hasNew = () => $('lab-m-code').value.trim() !== '';
+  let view = 'pick';
+  function setView(v) {
+    view = v;
+    $('lab-view-pick').hidden = v !== 'pick'; $('lab-view-create').hidden = v !== 'create';
+    $('lab-modal-title').textContent = v === 'pick' ? '選擇優惠碼' : '建立新的優惠碼';
+    $('lab-back').hidden = !(v === 'create' && S.pool.length);   /* 沒有已建立的碼時，建立畫面就是起點，不需要返回 */
+    syncFoot();
+  }
   function syncFoot() {
-    const b = $('lab-confirm'), n = picked.size + (hasNew() ? 1 : 0);
-    b.textContent = n ? `加入（${n}）` : '加入'; b.disabled = !n;
+    const b = $('lab-confirm');
+    if (view === 'pick') { b.textContent = picked.size ? `加入（${picked.size}）` : '加入'; b.disabled = !picked.size; }
+    else { b.textContent = '建立並加入'; b.disabled = $('lab-m-code').value.trim() === ''; }
     $('lab-err').hidden = true;
   }
   function openModal() {
     picked = new Set(); renderPick();
     ['lab-m-code', 'lab-m-start', 'lab-m-end'].forEach(i => $(i).value = ''); $('lab-m-pct').value = '10';
     $('lab-modal').hidden = false; document.body.classList.add('is-modal-open');
-    syncFoot();
+    setView(S.pool.length ? 'pick' : 'create');
     if (window.ztorIcons) window.ztorIcons.applyIcons($('lab-modal'));
   }
   function closeModal() { $('lab-modal').hidden = true; document.body.classList.remove('is-modal-open'); }
   const short = v => { const m = /^\d{4}-(\d{2})-(\d{2})/.exec(v || ''); return m ? (+m[1] + '/' + +m[2]) : ''; };
   function confirm() {
     const err = k => { $('lab-err').textContent = k; $('lab-err').hidden = false; };
-    let fresh = null;
-    if (hasNew()) {
+    if (view === 'pick') {
+      S.pool.filter(c => picked.has(c.code)).forEach(c => S.applied.push(c));
+      S.pool = S.pool.filter(c => !picked.has(c.code));
+    } else {
       const code = $('lab-m-code').value.trim();
       if (!/^[A-Za-z0-9]{8,20}$/.test(code)) return err('優惠碼要 8–20 個英文字母或數字。');
       const up = code.toUpperCase();
@@ -198,18 +221,17 @@
       if (!(pct >= 1 && pct <= 100)) return err('折扣要在 1–100% 之間。');
       const s = $('lab-m-start').value, e = $('lab-m-end').value;
       if (s && e && e < s) return err('結束日期要晚於開始日期。');
-      fresh = { code: up, pct, period: (s || e) ? ((short(s) || '…') + ' – ' + (short(e) || '…')) : '—', scope: 'items', status: 'pending' };
+      S.applied.push({ code: up, pct, period: (s || e) ? ((short(s) || '…') + ' – ' + (short(e) || '…')) : '—', scope: 'items', status: 'pending' });
     }
-    S.pool.filter(c => picked.has(c.code)).forEach(c => S.applied.push(c));
-    S.pool = S.pool.filter(c => !picked.has(c.code));
-    if (fresh) S.applied.push(fresh);
     closeModal(); renderCards();
   }
 
   $('lab-add').addEventListener('click', openModal);
   $('lab-reset').addEventListener('click', () => { S = SEED(); renderCards(); });
   $('lab-confirm').addEventListener('click', confirm);
-  ['lab-m-code'].forEach(i => $(i).addEventListener('input', syncFoot));
+  $('lab-m-code').addEventListener('input', syncFoot);
+  $('lab-new').addEventListener('click', () => setView('create'));
+  $('lab-back').addEventListener('click', () => setView('pick'));
   $('lab-m-gen').addEventListener('click', () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let o = ''; for (let i = 0; i < 10; i++) o += A[Math.floor(Math.random() * A.length)]; $('lab-m-code').value = o; syncFoot(); });
   $('lab-modal').addEventListener('click', e => { if (e.target === $('lab-modal') || e.target.closest('[data-lab-close]')) closeModal(); });
   $('lab-modal').addEventListener('change', e => { const k = e.target.getAttribute && e.target.getAttribute('data-pick'); if (!k) return; e.target.checked ? picked.add(k) : picked.delete(k); renderPick(); syncFoot(); });

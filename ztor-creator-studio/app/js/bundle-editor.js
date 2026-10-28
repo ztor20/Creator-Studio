@@ -2222,14 +2222,6 @@
               '<small data-bd-save>' + esc(saveText(b)) + '</small></div>' +
           '</div>' +
           saleRows +
-          /* 優惠碼（F7，D458；2026-10-28 D486：總開關移除——全店碼一律適用，這一列只剩標籤，選碼欄常駐；js/code-picker.js，render 後掛進 host）。
-             墓碑：ladderSwitch('data-bd-stack-toggle')、price-ladder__s「關閉時…」、--panel 的 hidden 收合。b.stack 欄位保留不再讀。 */
-          '<div class="price-ladder__step" data-feat="S64">' +
-            ladderK(esc(T('cpk.title')), '') +
-          '</div>' +
-          '<div class="price-ladder__step price-ladder__step--panel" data-feat="S64">' +
-            '<div class="price-ladder__codes" data-bd-codes-host></div>' +
-          '</div>' +
           /* 粉絲實付（平時）；限時折扣生效時下面一行「期間 $Y」 */
           '<div class="price-ladder__step price-ladder__step--total">' +
             ladderK(esc(T('cpp.bd.calc.final')), '') +
@@ -2237,6 +2229,12 @@
               '<small data-bd-total-during' + (has && sp ? '' : ' hidden') + '>' + esc(has && sp ? T('cb.pl.total.during').replace('{p}', moneyFrom(b, fp * (1 - sp / 100))) : '') + '</small></div>' +
           '</div>' +
         '</div>' +
+      '</section>' +
+      /* 優惠碼（F7，D458；2026-10-28 D486：總開關移除——全店碼一律適用）：自成一節、不再塞在價格階梯裡（一層包一層，同建立組合包）；js/code-picker.js，render 後掛進 host。
+         墓碑：ladderSwitch('data-bd-stack-toggle')、price-ladder__s「關閉時…」、--panel 的 hidden 收合、階梯內的標籤列與 --panel 列。b.stack 欄位保留不再讀。 */
+      '<section class="form-section form-section--outlined" data-feat="S64">' +
+        '<div class="form-section__head"><h3 class="form-section__title">' + esc(T('cpk.title')) + '</h3></div>' +
+        '<div data-bd-codes-host></div>' +
       '</section>';
     }
     /* 鎖定問句的選擇（UI 狀態 b.lockAsk：'yes'／'no'；沒選過時由鎖定套數推回）。選「不鎖定」會清掉鎖定套數與逐票種分配。 */

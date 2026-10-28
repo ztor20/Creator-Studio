@@ -3,7 +3,8 @@
    ------------------------------------------------------------
    window.ztorCodePicker.mount(host, opts) → 實例。
    2026-10-28 D486：「使用優惠碼」總開關移除——全店碼一律適用，消費頁直接放 host（不再有開關、不再收合）。host 裡面就是本元件：
-     「優惠碼」勾選表（2026-10-28 起；原下拉多選）：全店碼固定勾著列在最前面，特定商品的碼可勾，表尾「建立新的優惠碼」。資料讀寫都走 js/discount-codes-store.js（window.ztorCodes）。
+     「優惠碼」卡片列表（2026-10-28 起；原勾選表、再早是下拉多選）：只列這個商品實際會套用的碼——全店碼（固定、不能移除）＋已加入的特定商品碼（可 ✕ 移除）；每個碼一張框，欄位平行對齊；底下整塊框線按鈕「新增優惠碼」。
+     已建立但還沒加入的碼不在上層列出，按「新增優惠碼」開彈窗：預設是清單（勾選後按「加入（N）」），清單底部「建立新的優惠碼」在同一個彈窗換到建立畫面（可返回）。資料讀寫都走 js/discount-codes-store.js（window.ztorCodes）。
 
    opts
      pending  （選填）重畫時帶回上次暫存的新碼（活動建立流程的組合包編輯器每次重畫都重新 mount）
@@ -33,8 +34,10 @@
   var STATUS_KEY = { scheduled: 'cpk.status.scheduled', ended: 'cpk.status.ended', disabled: 'cpk.status.disabled', exhausted: 'cpk.status.exhausted' };
   var STATUS_FB = { scheduled: 'Scheduled', ended: 'Ended', disabled: 'Disabled', exhausted: 'Used up' };
 
-  /* ── 新碼彈窗（整頁共用一顆；重用 payout-modal） ── */
-  var modal = null, modalOwner = null;
+  /* ── 新增優惠碼彈窗（整頁共用一顆；重用 payout-modal）。
+     兩個畫面、每個畫面一個主要按鈕：清單（預設）＝「加入（N）」；建立＝「建立並加入」。已建立的碼清單是主要路徑，
+     建立是少用動作、收在清單底部一列，點了在同一個彈窗換畫面；沒有可加入的碼時直接進建立畫面。 ── */
+  var modal = null, modalOwner = null, view = 'pick', picked = [];
   function shortDate(v) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v || ''); return m ? (Number(m[2]) + '/' + Number(m[3])) : ''; }
   function genCode(len) {
     var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = '', buf = new Uint32Array(len);
@@ -48,57 +51,102 @@
     modal.className = 'payout-modal'; modal.hidden = true; modal.id = 'cpk-modal';
     modal.innerHTML =
       '<section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="cpk-modal-title">' +
-        '<div class="payout-dialog__head"><h2 class="payout-dialog__title" id="cpk-modal-title"></h2>' +
+        '<div class="payout-dialog__head"><div class="code-picker-modal__head">' +
+          '<button class="btn btn--icon btn--sm" type="button" data-cpk-back hidden><i data-lucide="chevron-left" class="ztor-icon"></i></button>' +
+          '<h2 class="payout-dialog__title" id="cpk-modal-title"></h2></div>' +
           '<button class="btn btn--icon" type="button" data-cpk-close><i data-lucide="x" class="ztor-icon"></i></button></div>' +
-        '<div class="payout-dialog__body"><div class="stack" style="gap:var(--sp-16)">' +
-          '<div class="field"><div class="field__label"><span data-cpk-t="cpk.m.code"></span> <span class="field__req">*</span></div>' +
-            '<div class="code-picker-modal__row"><input class="input" id="cpk-m-code" maxlength="20" autocomplete="off">' +
-            '<button class="btn btn--outline btn--sm" type="button" data-cpk-gen></button></div>' +
-            '<div class="field__hint" data-cpk-t="cpk.m.code.hint"></div></div>' +
-          '<div class="field"><div class="field__label"><span data-cpk-t="cpk.m.pct"></span> <span class="field__req">*</span></div>' +
-            '<span class="amount-field amount-field--suffix" style="width:132px"><input class="input amount-field__input" id="cpk-m-pct" value="10" inputmode="decimal"><span class="amount-field__unit">%</span></span></div>' +
-          '<div class="code-picker-modal__dates">' +
-            '<div class="field"><div class="field__label" data-cpk-t="cpk.m.start"></div><input class="input" type="date" id="cpk-m-start"></div>' +
-            '<div class="field"><div class="field__label" data-cpk-t="cpk.m.end"></div><input class="input" type="date" id="cpk-m-end"></div>' +
+        '<div class="payout-dialog__body">' +
+          '<div data-cpk-view="pick">' +
+            '<p class="code-picker-modal__hint" data-cpk-t="cpk.pick.hint"></p>' +
+            '<div data-cpk-list></div>' +
+            '<button class="btn btn--outline btn--block code-picker-modal__new" type="button" data-cpk-to-create><i data-lucide="plus" class="ztor-icon"></i><span data-cpk-t="cpk.new"></span></button>' +
           '</div>' +
-          '<div class="field"><div class="field__label" data-cpk-t="cpk.m.scope"></div><div class="code-picker-modal__scope" data-cpk-scope></div></div>' +
-        '</div></div>' +
+          '<div data-cpk-view="create" hidden><div class="stack" style="gap:var(--sp-16)">' +
+            '<div class="field"><div class="field__label"><span data-cpk-t="cpk.m.code"></span> <span class="field__req">*</span></div>' +
+              '<div class="code-picker-modal__row"><input class="input" id="cpk-m-code" maxlength="20" autocomplete="off">' +
+              '<button class="btn btn--outline btn--sm" type="button" data-cpk-gen></button></div>' +
+              '<div class="field__hint" data-cpk-t="cpk.m.code.hint"></div></div>' +
+            '<div class="field"><div class="field__label"><span data-cpk-t="cpk.m.pct"></span> <span class="field__req">*</span></div>' +
+              '<span class="amount-field amount-field--suffix" style="width:132px"><input class="input amount-field__input" id="cpk-m-pct" value="10" inputmode="decimal"><span class="amount-field__unit">%</span></span></div>' +
+            '<div class="code-picker-modal__dates">' +
+              '<div class="field"><div class="field__label" data-cpk-t="cpk.m.start"></div><input class="input" type="date" id="cpk-m-start"></div>' +
+              '<div class="field"><div class="field__label" data-cpk-t="cpk.m.end"></div><input class="input" type="date" id="cpk-m-end"></div>' +
+            '</div>' +
+            '<div class="field"><div class="field__label" data-cpk-t="cpk.m.scope"></div><div class="code-picker-modal__scope" data-cpk-scope></div></div>' +
+          '</div></div>' +
+        '</div>' +
         '<div class="payout-dialog__foot"><p class="payout-dialog__foot-note" data-cpk-err hidden></p>' +
           '<div class="payout-dialog__foot-actions"><button class="btn btn--outline" type="button" data-cpk-close data-cpk-t="cpk.m.cancel"></button>' +
-          '<button class="btn btn--primary" type="button" data-cpk-save data-cpk-t="cpk.m.save"></button></div></div>' +
+          '<button class="btn btn--primary" type="button" data-cpk-confirm disabled></button></div></div>' +
       '</section>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function (e) {
       var t = e.target;
       if (t === modal || t.closest('[data-cpk-close]')) { closeModal(); return; }
-      if (t.closest('[data-cpk-gen]')) { document.getElementById('cpk-m-code').value = genCode(10); return; }
-      if (t.closest('[data-cpk-save]')) { saveModal(); return; }
+      if (t.closest('[data-cpk-gen]')) { document.getElementById('cpk-m-code').value = genCode(10); syncFoot(); return; }
+      if (t.closest('[data-cpk-to-create]')) { setView('create'); return; }
+      if (t.closest('[data-cpk-back]')) { setView('pick'); return; }
+      if (t.closest('[data-cpk-confirm]')) { confirmModal(); }
     });
+    modal.addEventListener('change', function (e) {
+      var k = e.target.getAttribute && e.target.getAttribute('data-cpk-pick-m'); if (!k) return;
+      var i = picked.indexOf(k);
+      if (e.target.checked) { if (i < 0) picked.push(k); } else if (i >= 0) picked.splice(i, 1);
+      paintList(); syncFoot();
+    });
+    modal.addEventListener('input', function (e) { if (e.target.id === 'cpk-m-code') syncFoot(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal && !modal.hidden) closeModal(); });
     return modal;
+  }
+  function paintList() {
+    var host = modal.querySelector('[data-cpk-list]'), o = modalOwner; if (!o) return;
+    var pool = o.pool();
+    if (!pool.length) { host.innerHTML = '<p class="code-picker-modal__hint">' + esc(T('cpk.pick.none')) + '</p>'; return; }
+    host.innerHTML = '<div class="code-picker__tbl">' +
+      '<div class="code-picker__head"><span></span><span>' + esc(T('cpk.col.code')) + '</span><span class="code-picker__cell">' + esc(T('cpk.col.scope')) + '</span><span class="code-picker__num">' + esc(T('cpk.col.pct')) + '</span><span class="code-picker__cell code-picker__period">' + esc(T('cpk.col.period')) + '</span></div>' +
+      pool.map(function (i) {
+        var on = picked.indexOf(i.code) >= 0;
+        return '<label class="code-picker__row' + (on ? '' : ' code-picker__row--off') + '"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-cpk-pick-m="' + esc(i.code) + '"' + (on ? ' checked' : '') + ' aria-label="' + esc(i.code) + '"><span class="zcheck__box"></span></span>' +
+          '<span class="code-picker__code">' + esc(i.code) + '</span><span class="code-picker__cell code-picker__scope">' + esc(T('cpk.scope.items')) + '</span>' +
+          '<span class="code-picker__num">' + esc(i.pct) + '%</span><span class="code-picker__cell code-picker__period">' + esc(i.period || '—') + '</span></label>';
+      }).join('') + '</div>';
   }
   function paintModalText() {
     if (!modal) return;
     modal.querySelectorAll('[data-cpk-t]').forEach(function (el) { el.textContent = T(el.getAttribute('data-cpk-t')); });
-    modal.querySelector('#cpk-modal-title').textContent = T('cpk.new');
     modal.querySelector('[data-cpk-gen]').textContent = T('cpk.m.gen');
     modal.querySelector('#cpk-m-code').placeholder = 'SUMMER25';
+    modal.querySelector('[data-cpk-back]').setAttribute('aria-label', T('cpk.back'));
+    if (modalOwner) { paintList(); setView(view); }
+  }
+  function syncFoot() {
+    var b = modal.querySelector('[data-cpk-confirm]');
+    if (view === 'pick') { b.textContent = picked.length ? T('cpk.pick.confirm.n').replace('{n}', picked.length) : T('cpk.pick.confirm'); b.disabled = !picked.length; }
+    else { b.textContent = T('cpk.create.confirm'); b.disabled = modal.querySelector('#cpk-m-code').value.trim() === ''; }
+    modal.querySelector('[data-cpk-err]').hidden = true;
+  }
+  function setView(v) {
+    view = v;
+    modal.querySelectorAll('[data-cpk-view]').forEach(function (el) { el.hidden = el.getAttribute('data-cpk-view') !== v; });
+    modal.querySelector('#cpk-modal-title').textContent = v === 'pick' ? T('cpk.pick.title') : T('cpk.new');
+    modal.querySelector('[data-cpk-back]').hidden = !(v === 'create' && modalOwner && modalOwner.pool().length);   /* 沒有可加入的碼時，建立畫面就是起點、不放返回 */
+    syncFoot();
   }
   function openModal(owner) {
-    ensureModal(); modalOwner = owner; paintModalText();
+    ensureModal(); modalOwner = owner; picked = [];
     modal.querySelector('#cpk-m-code').value = '';
     modal.querySelector('#cpk-m-pct').value = '10';
     modal.querySelector('#cpk-m-start').value = ''; modal.querySelector('#cpk-m-end').value = '';
     var nm = owner.opts.label ? owner.opts.label() : '';
     modal.querySelector('[data-cpk-scope]').textContent = T('cpk.m.scope.v').replace('{name}', nm || T('cpk.m.scope.this'));
-    var err = modal.querySelector('[data-cpk-err]'); err.hidden = true;
+    paintModalText(); paintList(); setView(owner.pool().length ? 'pick' : 'create');
     modal.hidden = false; document.body.classList.add('is-modal-open');
     if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(modal);
-    modal.querySelector('#cpk-m-code').focus();
   }
-  function closeModal() { if (modal) modal.hidden = true; document.body.classList.remove('is-modal-open'); modalOwner = null; }
-  function saveModal() {
+  function closeModal() { if (modal) modal.hidden = true; document.body.classList.remove('is-modal-open'); modalOwner = null; picked = []; }
+  function confirmModal() {
     var o = modalOwner; if (!o) return;
+    if (view === 'pick') { var add = picked.slice(); closeModal(); o.addCodes(add); return; }
     var err = modal.querySelector('[data-cpk-err]');
     var fail = function (k) { err.textContent = T(k); err.hidden = false; };
     var code = modal.querySelector('#cpk-m-code').value.trim();
@@ -111,8 +159,8 @@
     var period = (s || e) ? ((shortDate(s) || '…') + ' – ' + (shortDate(e) || '…')) : '—';
     var today = new Date().toISOString().slice(0, 10);
     var status = s && s > today ? 'scheduled' : 'active';
-    o.addNew({ code: code.toUpperCase(), pct: pct, period: period, status: status });
     closeModal();
+    o.addNew({ code: code.toUpperCase(), pct: pct, period: period, status: status });
     if (window.ztorToast) window.ztorToast.show(T('cpk.toast.created'), { tone: 'success' });
   }
 
@@ -139,71 +187,72 @@
       if (i.pending) return T('cpk.pending');
       return STATUS_KEY[i.status] ? T(STATUS_KEY[i.status], STATUS_FB[i.status]) : '';
     }
-    /* ── 2026-10-28：下拉多選（combobox）改成勾選表（使用者在 lab-code-picker.html 選定方案 B）──
-       一張表、五欄：勾選｜優惠碼｜適用範圍｜折扣｜期間｜狀態；表尾整列是「建立新的優惠碼」文字按鈕。
-       全店碼（autoApplied）一律適用：勾選框固定勾著、停用（checkbox.css 的空心橘）。特定商品的碼（selectable＋選了的＋暫存新碼）可勾。
-       沒勾的列整列淡掉、狀態徽章退成停用樣。鎖定（上架中）或唯讀（檢視態）時全部停用、表尾按鈕收起。
-       墓碑：.combobox／.tag-input__field／chip 輸入框、menuHTML、data-cpk-search／-menu／-add／-rm、focusin／input／Esc 下拉處理。 */
+    /* ── 2026-10-28：勾選表改成卡片列表（使用者要求，demo 見 lab-code-popup.html）──
+       上層只列「這個商品實際會套用」的碼：全店碼（autoApplied，固定、沒有移除鈕）＋已加入的特定商品碼（sel＋暫存新碼，有 ✕）。
+       每個碼一張框（.control-group--plain），欄位平行：優惠碼｜適用範圍｜折扣｜期間｜狀態｜移除；最後一格每張卡都留位置，沒有 ✕ 的全店碼狀態徽章才不會偏。
+       底下整塊框線按鈕「新增優惠碼」開彈窗（清單／建立兩個畫面）。鎖定（上架中）或唯讀（檢視態）時沒有 ✕ 也沒有新增鈕。
+       墓碑：.code-picker__row 勾選列放進上層的做法（原勾選表）、表尾 .code-picker__add 的「建立新的優惠碼」文字鈕、data-cpk-pick／-new 事件。 */
     var BADGE = { active: 'success', scheduled: 'info', ended: 'neutral', disabled: 'neutral', exhausted: 'warning' };
     function badgeHTML(i) {
       var txt = i.pending ? T('cpk.pending') : (i.status === 'active' ? T('cpk.status.active') : statusText(i));
       return '<span class="badge badge--' + (i.pending ? 'neutral' : (BADGE[i.status] || 'neutral')) + '">' + esc(txt) + '</span>';
     }
-    function rowHTML(i, on, fixed, scopeKey) {
-      var dis = fixed || st.locked || st.ro;
-      return '<label class="code-picker__row' + (on ? '' : ' code-picker__row--off') + (dis ? ' code-picker__row--fixed' : '') + '">' +
-        '<span class="zcheck__control"><input class="zcheck__input" type="checkbox"' + (fixed ? '' : ' data-cpk-pick="' + esc(i.code) + '"') +
-          (on ? ' checked' : '') + (dis ? ' disabled' : '') + ' aria-label="' + esc(i.code) + '"><span class="zcheck__box"></span></span>' +
+    function cardHTML(i, fixed, scopeKey) {
+      var canRm = !fixed && !st.locked && !st.ro;
+      return '<div class="control-group control-group--plain"><div class="code-picker__card">' +
         '<span class="code-picker__code">' + esc(i.code) + '</span>' +
         '<span class="code-picker__cell code-picker__scope">' + esc(T(scopeKey)) + '</span>' +
         '<span class="code-picker__num">' + esc(i.pct) + '%</span>' +
         '<span class="code-picker__cell code-picker__period">' + esc(i.period || '—') + '</span>' +
-        '<span>' + badgeHTML(i) + '</span></label>';
+        '<span>' + badgeHTML(i) + '</span>' +
+        '<span>' + (canRm ? '<button type="button" class="btn btn--icon btn--sm" data-cpk-rm="' + esc(i.code) + '" aria-label="' + esc(T('cpk.remove').replace('{code}', i.code)) + '"><i data-lucide="x" class="ztor-icon"></i></button>' : '') + '</span>' +
+        '</div></div>';
     }
+    /* 彈窗清單用：碼端可選的特定商品碼，扣掉已加入的與全店碼（全店碼一律適用不用選） */
+    self.pool = function () {
+      var C2 = Codes(); if (!C2) return [];
+      var autoCodes = C2.autoApplied().map(function (c) { return c.code; });
+      return C2.selectable(st.sel).map(function (c) { return codeInfo(c.code); })
+        .filter(function (i) { return st.sel.indexOf(i.code) < 0 && autoCodes.indexOf(i.code) < 0; });
+    };
     function render() {
       var C2 = Codes(); if (!C2) return;
       var auto = C2.autoApplied();
-      /* 可勾的碼：碼端可選的特定商品碼＋已選（含已結束的舊選取）＋暫存新碼；全店碼不重複列 */
       var autoCodes = auto.map(function (c) { return c.code; });
-      var list = C2.selectable(st.sel).map(function (c) { return c.code; });
-      st.sel.forEach(function (c) { if (list.indexOf(c) < 0) list.push(c); });
-      st.pending.forEach(function (p) { if (list.indexOf(p.code) < 0) list.push(p.code); });
-      list = list.filter(function (c) { return autoCodes.indexOf(c) < 0; });
+      var sel = st.sel.filter(function (c) { return autoCodes.indexOf(c) < 0; });
+      var head = '<div class="code-picker__cols"><span>' + esc(T('cpk.col.code')) + '</span><span>' + esc(T('cpk.col.scope')) + '</span>' +
+        '<span class="code-picker__num">' + esc(T('cpk.col.pct')) + '</span><span class="code-picker__period">' + esc(T('cpk.col.period')) + '</span><span>' + esc(T('cpk.col.status')) + '</span><span></span></div>';
       var html = '<div class="code-picker__field">' + (opts.hideLabel ? '' : '<div class="field__label">' + esc(T('cpk.title')) + '</div>') +
-        '<div class="code-picker__tbl">' +
-          '<div class="code-picker__head"><span></span><span>' + esc(T('cpk.col.code')) + '</span><span class="code-picker__cell">' + esc(T('cpk.col.scope')) + '</span>' +
-            '<span class="code-picker__num">' + esc(T('cpk.col.pct')) + '</span><span class="code-picker__cell code-picker__period">' + esc(T('cpk.col.period')) + '</span><span>' + esc(T('cpk.col.status')) + '</span></div>' +
-          auto.map(function (c) { return rowHTML({ code: c.code, pct: c.pct, period: c.period, status: c.status }, true, true, 'cpk.scope.all'); }).join('') +
-          list.map(function (code) { return rowHTML(codeInfo(code), st.sel.indexOf(code) >= 0, false, 'cpk.scope.items'); }).join('') +
-          (st.locked || st.ro ? '' : '<div class="code-picker__add"><button type="button" class="btn btn--ghost btn--block" data-cpk-new><i data-lucide="plus" class="ztor-icon"></i><span>' + esc(T('cpk.new')) + '</span></button></div>') +
+        '<div class="code-picker__cards">' +
+          ((auto.length || sel.length) ? head : '') +
+          auto.map(function (c) { return cardHTML({ code: c.code, pct: c.pct, period: c.period, status: c.status }, true, 'cpk.scope.all'); }).join('') +
+          sel.map(function (code) { return cardHTML(codeInfo(code), false, 'cpk.scope.items'); }).join('') +
         '</div>' +
-        /* 墓碑 2026-10-28（使用者：「這兩個不需要」）：欄位下方兩行說明 cpk.hint／cpk.auto.hint 拿掉；只留鎖定時（cpk.locked）那一句 */
+        (st.locked || st.ro ? '' : '<button type="button" class="btn btn--outline btn--block code-picker__add" data-cpk-add><i data-lucide="plus" class="ztor-icon"></i><span>' + esc(T('cpk.add')) + '</span></button>') +
         (st.locked ? '<div class="field__hint">' + esc(T('cpk.locked')) + '</div>' : '') + '</div>';
       host.innerHTML = '<div class="code-picker"' + (st.locked || st.ro ? ' data-locked' : '') + '>' + html + '</div>';
       if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(host);
     }
-    /* 重畫整塊後把焦點還給剛才那一格（鍵盤勾選後焦點才不會掉到 body，2026-10-28 驗收補） */
     function changed() {
-      var ae = document.activeElement, key = host.contains(ae) && ae.getAttribute ? ae.getAttribute('data-cpk-pick') : null;
       render();
-      if (key) { var back = host.querySelector('[data-cpk-pick="' + key.replace(/"/g, '\\"') + '"]'); if (back) back.focus(); }
       if (opts.onChange) opts.onChange({ codes: st.sel.slice(), pending: st.pending.slice() });
     }
 
-    host.addEventListener('change', function (e) {
-      var t = e.target; if (st.locked || st.ro || !t.hasAttribute || !t.hasAttribute('data-cpk-pick')) return;
-      var code = t.getAttribute('data-cpk-pick');
-      if (t.checked) { if (st.sel.indexOf(code) < 0) st.sel.push(code); }
-      else {
-        st.sel = st.sel.filter(function (x) { return x !== code; });
-        st.pending = st.pending.filter(function (p) { return p.code !== code; });   /* 暫存的新碼取消勾＝不建立（同原本移除 chip） */
-      }
-      changed();
-    });
     host.addEventListener('click', function (e) {
       if (st.locked || st.ro) return;
-      if (e.target.closest('[data-cpk-new]')) openModal(self);
+      var rm = e.target.closest('[data-cpk-rm]');
+      if (rm) {
+        var code = rm.getAttribute('data-cpk-rm');
+        st.sel = st.sel.filter(function (x) { return x !== code; });
+        st.pending = st.pending.filter(function (p) { return p.code !== code; });   /* 暫存的新碼移除＝不建立 */
+        changed(); return;
+      }
+      if (e.target.closest('[data-cpk-add]')) openModal(self);
     });
+    self.addCodes = function (codes) {
+      codes.forEach(function (c) { if (st.sel.indexOf(c) < 0) st.sel.push(c); });
+      changed();
+    };
     self.addNew = function (spec) {
       if (st.key && !opts.deferCreate) {
         /* 商品已有 id：碼先建在碼端（還沒綁商品），選入後等 commit 才寫進特定商品範圍 */
