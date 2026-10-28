@@ -960,7 +960,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Form ask | 🟡 molecule | ✓ App | 問句式設定塊（問句→說明→二選一→選了才出現的內容）＋標題列讀數 `.form-tally`（分類標 `.form-cat` 已撤除）（2026-10-12 D402）。詳見 §4.237 | [form-ask.css](./ds-components/form-ask.css) |
 | Export dialog | 🟡 molecule | ✓ App | 匯出視窗的 body 兩塊（2026-10-28，UI-CHANGES 三百七十七）：`.export-summary`（`__count`／`__num`／`__unit`／`__filters`，這次匯出什麼）＋ `.export-history`（`__head`／`__title`／`__sub`／`__more`，這個範圍的匯出紀錄，列用 `.data-list__row`）。外殼是 canonical `.payout-modal`／`.payout-dialog`；組裝規則見 §5.1.12 Export confirm。消費：`js/csv-export.js` 的 `ztorCsv.confirm()`（訂單管理、活動詳情交易明細）。 | [export-dialog.css](./ds-components/export-dialog.css) |
 | Date range | 🟡 molecule | ✓ App | **2026-10-28 `.date-range--bare`**（UI-CHANGES 三百七十八）：坐在工作列殼層上的無底框版，外觀比照 `.select--bare`（32px 膠囊、12px 字、hover 才浮出 `--ztu-glass-strong`）；不放 `__label`，兩格 placeholder 用 `data-ph-key` 各寫欄名（訂單起始日／訂單結束日）。寬度跟內容走（沒有外框時固定寬的空白會被讀成空隙）：input 與 placeholder 疊在同一個 grid 格子、placeholder 回到流內，空值＝placeholder 的寬、已填＝日期的寬。消費：`orders.html`。 清單篩選列的日期區間「訂單日期（起）–（訖）」，可只填一邊、附清除鈕（2026-10-13 D411）。詳見 §4.238 | [date-range.css](./ds-components/date-range.css) |
-| Code picker | 🟡 molecule | ✓ App | **2026-10-28（UI-CHANGES 三百九十）**：下拉多選改成勾選表（勾選｜優惠碼｜適用範圍｜折扣｜期間｜狀態），全店碼固定勾著、表尾整列「建立新的優惠碼」；詳見 §4.239。 **2026-10-28（D486，UI-CHANGES 三百八十七）**：「使用優惠碼」總開關移除——全店碼一律適用，選擇欄常駐（消費頁不再放開關列、不再收合）；全店碼 chip 的小鎖頭換成尾端 `.chip__tag`「全店」（鎖頭被讀成「官方鎖定」，`.code-picker__lock` 退場）；新增 `hideLabel` 參數，外層已寫「優惠碼」時不重複欄位標籤。 商品端優惠碼選擇欄（2026-10-20 D458；D486 起沒有開關、2026-10-28 起為勾選表）：全店碼固定勾著＋特定商品碼可勾（勾＝把本商品加進該碼的特定商品範圍）＋表尾「建立新的優惠碼」；組合包上架中鎖定。詳見 §4.239 | [code-picker.css](./ds-components/code-picker.css) |
+| Code picker | 🟡 molecule | ✓ App | **2026-10-28（UI-CHANGES 三百九十）**：下拉多選改成勾選表；**同日再改成卡片列表＋新增彈窗**（每碼一張框、欄位對齊、底下整塊「新增優惠碼」按鈕、彈窗清單／建立兩個畫面，UI-CHANGES 三百九十五之後）；詳見 §4.239。 **2026-10-28（D486，UI-CHANGES 三百八十七）**：「使用優惠碼」總開關移除——全店碼一律適用，選擇欄常駐（消費頁不再放開關列、不再收合）；全店碼 chip 的小鎖頭換成尾端 `.chip__tag`「全店」（鎖頭被讀成「官方鎖定」，`.code-picker__lock` 退場）；新增 `hideLabel` 參數，外層已寫「優惠碼」時不重複欄位標籤。 商品端優惠碼選擇欄（2026-10-20 D458；D486 起沒有開關、2026-10-28 起為勾選表）：全店碼固定勾著＋特定商品碼可勾（勾＝把本商品加進該碼的特定商品範圍）＋表尾「建立新的優惠碼」；組合包上架中鎖定。詳見 §4.239 | [code-picker.css](./ds-components/code-picker.css) |
 | Roster picker | 🟠 organism | ⚠ 退場候選（2026-10-08 D372 起零消費，待使用者裁決）| 上面選人、下面看那一位：上段是一張卡一個對象的網格（可換行、窄畫面掉成一欄），下段是選定那一位的內容、佔整個內容寬度。卡面與已選態整個交給 `.selection-card`（1px 橘 outline ＋中性陰影），本支只排卡內與網格。與 `section-nav-layout`（140px、選的是「同一個東西的哪一段」）分工：本支選的是「哪一個對象」。詳見 §4.203 | [roster-picker.css](./ds-components/roster-picker.css) |
 | Row disclosure | 🟡 molecule | ✓ App | 母列收成一列、點開才看到底下每一筆。站上「可展開子列」的單一答案（Q107 裁決，取代 `product-list` 的 `__row--group`／`__row--child` 與 `data-list` 的 `__row--child`；2026-09-04 改寫成 L3「整組換層」）。階層不靠縮排說，靠「母列與子項一起坐進哪一層面」說：展開時整組包進 `.rowdis__group` 那塊 L2 薄膜面板，第二層改用 `.rowdis__frame` 的 1px 框。欄位版面仍歸所在容器，因此表格型與清單型兩種骨架都能疊。2026-09-04（Q109，參考 Braintrust）再加**列首欄** `.rowdis__lead`：展開 chevron 移到列的最前緣獨立一欄、`⋯` 維持在列尾，子列在同一格放組內序號，一般列留空；表格型兩頁已導入，清單型三頁維持現況（理由見 §4.204）。互動走 `js/row-disclosure.js` 的 `data-rowdis` 契約。詳見 §4.204 | [row-disclosure.css](./ds-components/row-disclosure.css) |
 | Listing controls | 🟠 organism | ✓ App | §7.14（D241）的三個獨立開關——上架 `listed`／顯示於商店 `shown`／開賣 `saleStart`–`saleEnd`——三列並列的骨架。 **`--locked`／`.lctl__row--locked`＋`.lctl__lock-note`（2026-09-11 D265）**：下架時顯示列與開賣區留在畫面但停用（整塊變淡、控件不吃事件）、上方一句說明「要重新上架後才能調整」；商品／組合詳情共用。只擁有列的版型（標題＋一行說明、控制擺哪、排程欄何時展開、三列的距離由容器 `gap` 持有），控制本身重用 Switch／Radio list `--collapsible`／Field＋Input／Link field。上架列用哪一種由頁面決定：建立頁三選一、細節頁開關。數字與狀態一律問 `js/listing-state.js`。詳見 §4.205 | [listing-controls.css](./ds-components/listing-controls.css) |
@@ -7637,16 +7637,17 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **`_layer`** · molecule ｜ **source tier** · App ｜ **surface 層** · 坐在 `form-section--outlined` 卡面或 Price ladder 的 `--panel` 列上（D486 起不再坐在開關底下的 `control-group__body`）（白或略深一階）；chip 吃 `--chip-surface`、欄位有 1px 邊，兩層都看得見。
 
-**Anatomy**（2026-10-28 起：勾選表，UI-CHANGES 三百九十；原下拉多選退場，選定經過見 `lab-code-picker.html` 方案 B）
+**Anatomy**（2026-10-28 起：卡片列表＋新增彈窗，UI-CHANGES 三百九十五之後；原勾選表、再早的下拉多選退場，demo 見 `lab-code-popup.html`）
 - `.code-picker` — 整塊（直排，間距由容器 `gap: --sp-12` 持有）
   - `.code-picker__field` — `hideLabel` 時不畫欄位標籤
-    - `.code-picker__tbl` — 表：外框 `--layer-line`、圓角 `--radius-md`、`overflow:hidden`（同組合包門票表的語言）
-      - `.code-picker__head` — 欄名：勾選｜優惠碼｜適用範圍｜折扣｜期間｜狀態（`--column-head-ink`、`--fs-12`）
-      - `.code-picker__row` — 一碼一列（`<label>`，點整列就勾），欄軌 `16px · 1fr · 6.5rem · 56px · 7.5rem · 80px`；`--off`＝沒勾（碼與折扣淡字、狀態徽章退成中性底淡字）；`--fixed`＝不能改（全店碼、鎖定、唯讀，無 hover）
-        - `.code-picker__code`（數字字型）／`.code-picker__scope`（全店／特定商品）／`.code-picker__num`（折扣 %，右對齊）／`.code-picker__period`（≤560px 收起）／`.badge`（進行中 success、尚未開始 info、已結束與已停用 neutral、已用完 warning、隨儲存建立 neutral）
-      - `.code-picker__add` — 表尾整列「建立新的優惠碼」：`.btn.btn--ghost.btn--block`、圓角歸零、最小高 `--sp-48`；鎖定／唯讀時不出現
-  - `[data-locked]` — 鎖定（組合包上架中）或唯讀（詳情頁檢視態）：所有勾選框停用（checkbox.css「勾著但停用」＝空心橘）；鎖定時表下 hint「上架中，先下架才能改優惠碼」
-  - 墓碑：`.combobox`／`.tag-input__field` 輸入框、`.code-picker__auto-chip`、`__pct`、`__new-opt`、`__empty`（2026-10-28 下拉多選退場）
+    - `.code-picker__cards` — 卡片列表容器（直排 `gap: --sp-12`）
+      - `.code-picker__cols` — 欄名列：優惠碼｜適用範圍｜折扣｜期間｜狀態｜移除（`--column-head-ink`、`--fs-12`，與卡片共用同一組欄軌）
+      - 每個碼一張框：`.control-group.control-group--plain` ＞ `.code-picker__card`（六欄 grid，最後一格每張卡都留位置，沒有移除鈕的全店碼狀態徽章才不會偏）
+        - `.code-picker__code`（數字字型）／`.code-picker__scope`（全店／特定商品）／`.code-picker__num`（折扣 %，右對齊）／`.code-picker__period`（≤560px 收起）／`.badge`（進行中 success、尚未開始 info、已結束與停用中性、已用完 warning、暫存新碼「隨儲存建立」中性）／移除鈕（`.btn.btn--icon.btn--sm`，只在特定商品碼且未鎖定／唯讀時出現）
+    - `.code-picker__add` — 底下整塊框線按鈕「新增優惠碼」：`.btn.btn--outline.btn--block`、圓角 `--radius-xl`、最小高 `--sp-64`；鎖定／唯讀時不出現
+  - `[data-locked]` — 鎖定（組合包上架中）或唯讀（詳情頁檢視態）：沒有移除鈕、沒有新增按鈕；鎖定時下方 hint「上架中，先下架才能改優惠碼」
+- 新增彈窗（重用 `payout-modal`，整頁共用一顆）：兩個畫面、每個畫面一個主要按鈕。**清單畫面**（預設）＝說明＋可加入的碼（`.code-picker__tbl`／`__row` 勾選列，不含全店碼與已加入的碼）＋底部整塊按鈕「建立新的優惠碼」，主要按鈕「加入（N）」；**建立畫面**＝標題列左側返回鍵＋代碼／折扣／起訖／適用範圍，主要按鈕「建立並加入」；沒有可加入的碼時直接進建立畫面、不放返回鍵。
+  - 墓碑：`.combobox`／`.tag-input__field` 輸入框、`.code-picker__auto-chip`、`__pct`、`__new-opt`、`__empty`（下拉多選退場）；上層的勾選表列與表尾「建立新的優惠碼」文字鈕（勾選表退場，`__tbl`／`__row` 縮到只用在彈窗清單）
 
 **Behavior** — `window.ztorCodePicker.mount(host, { key, label, hideLabel, locked, readonly, selected, pending, onChange })`（`hideLabel`：外層已寫「優惠碼」時不畫欄位標籤，D486 同輪新增） 回傳實例（`get`／`setLocked`／`setReadonly`／`setKey`／`commit`／`reset`／`refresh`）。可選的是範圍含「特定商品」且狀態可用的碼（已結束／已停用／已用完不列為新選項；已選過的保留並標狀態）。選取結果隨商品儲存才寫入碼端（`commit`）；建立流程（還沒有商品 id）的新碼整個暫存到 `commit`，放棄建立商品則不建立；已有 id 的商品新建的碼先建在碼端、選入後同樣等 `commit` 才綁定。沒選碼也成立（仍適用全部商店碼；D486 起沒有開關）。
 
@@ -7656,7 +7657,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **Dependencies** — Chip（`chip--static`、`chip--removable`）、Combobox、Tag input、Button、Field、Amount field、Payout modal。
 
-**Consumers** — `create-product.html`、`product-detail.html`（「優惠碼」獨立一段，在折扣設定之後）；`create-bundle.html`、`bundle-detail.html`（價格階梯的「優惠碼」列下方 `--panel`；D486 前是「使用優惠碼」開關列）；`js/bundle-editor.js`（建立活動第 6 步票務商品的價格階梯，`layout:'split'`）。
+**Consumers** — `create-product.html`、`product-detail.html`（「優惠碼」獨立一段，在折扣設定之後）；`create-bundle.html`、`bundle-detail.html`（2026-10-28 起「優惠碼」自成一節，不再放在價格階梯的 `--panel`；原：價格階梯的「優惠碼」列下方 `--panel`；D486 前是「使用優惠碼」開關列）；`js/bundle-editor.js`（建立活動第 6 步票務商品的價格階梯，`layout:'split'`）。
 
 **CSS** — [`code-picker.css`](./ds-components/code-picker.css)
 

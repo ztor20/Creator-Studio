@@ -7,7 +7,14 @@
    markup 與互動由 js/code-picker.js（window.ztorCodePicker.mount）產生。
    2026-10-28 D486：總開關移除，消費頁直接放本元件、常駐顯示；外層已寫「優惠碼」時用 hideLabel 不再重複欄位標籤。
 
-   anatomy（2026-10-28 起：勾選表；原下拉多選退場，lab-code-picker.html 方案 B）
+   anatomy（2026-10-28 起：卡片列表＋新增彈窗，demo 見 lab-code-popup.html；原勾選表、再早的下拉多選退場）
+     .code-picker__cards               卡片列表容器（直排 gap --sp-12）：欄名列 .code-picker__cols ＋ 每個碼一張 .control-group.control-group--plain > .code-picker__card
+       .code-picker__card／__cols      六欄同一組欄軌：優惠碼｜適用範圍｜折扣｜期間｜狀態｜移除（最後一格每張卡都留位置）
+     .code-picker__add                 底下整塊框線按鈕「新增優惠碼」（.btn.btn--outline.btn--block，卡片級圓角）
+     彈窗：清單畫面（.code-picker__tbl 勾選列＋底部 .code-picker-modal__new「建立新的優惠碼」）／建立畫面，兩個畫面各一個主要按鈕
+   以下 anatomy 的 __tbl／__row 現只用在彈窗的清單畫面。
+
+   anatomy（舊：勾選表）
      .code-picker                       整塊（直排、gap 由容器持有）
        .code-picker__field              （hideLabel 時沒有欄位標籤）
          .code-picker__tbl              表：外框 --layer-line、圓角 --radius-md（同組合包門票表 .bd-tbl 的語言）
@@ -50,8 +57,7 @@
 .code-picker__row--off .code-picker__num { color: var(--muted-foreground); }
 .code-picker__row--off .badge { background: var(--ztu-film); color: var(--muted-foreground); }
 /* 表尾整列就是按鈕（使用者：「建立新的優惠碼可以在表格內」「置中，且是一個按鈕」「可以用文字的按鈕」「一整塊都是按鈕」） */
-.code-picker__add { border-top: 1px solid var(--border-soft); }
-.code-picker__add .btn { border-radius: 0; min-height: var(--sp-48); }
+/* 墓碑 2026-10-28：表尾 .code-picker__add（border-top）與其內 .btn 規則退場，.code-picker__add 現在是上層的整塊框線按鈕（見檔尾） */
 /* 窄寬：期間欄收起（碼、範圍、折扣、狀態仍在一列） */
 @media (max-width: 560px) {
   .code-picker__head,
@@ -65,3 +71,32 @@
 /* 2026-10-20：價格階梯為了圓角把 overflow 設成 hidden，會把下拉清單裁掉；有選碼欄時放開（圓角由內層列自己負責） */
 .price-ladder:has(.code-picker__field) { overflow: visible; }
 /* 墓碑 2026-10-28：下拉展開時抬高所在卡片的 :has(.combobox__menu) 規則退場（勾選表沒有下拉） */
+
+/* ── 卡片列表（2026-10-28）：欄軌與欄名列共用同一組，所有卡片欄位上下對齊 ── */
+.code-picker__cards { display: flex; flex-direction: column; gap: var(--sp-12); }
+.code-picker__cols,
+.code-picker__card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 5.5rem) var(--sp-56) minmax(0, 7.5rem) var(--sp-80) var(--sp-32);
+  align-items: center;
+  column-gap: var(--sp-12);
+}
+.code-picker__cols { padding: 0 var(--sp-16); color: var(--column-head-ink); font-size: var(--fs-12); }
+.code-picker__cols .code-picker__num { font-family: inherit; font-size: inherit; color: inherit; }
+.code-picker__card { min-height: var(--sp-40); }
+/* 新增按鈕：整塊框、寬度吃滿、卡片級圓角；與上方卡片的間距由容器持有 */
+.code-picker__add { border-radius: var(--radius-xl); min-height: var(--sp-64); height: auto; justify-content: center; align-items: center; }
+.code-picker__field > .code-picker__add { margin-top: var(--sp-12); }
+@media (max-width: 560px) {
+  .code-picker__cols,
+  .code-picker__card { grid-template-columns: minmax(0, 1fr) minmax(0, 4.5rem) var(--sp-48) var(--sp-80) var(--sp-32); }
+  .code-picker__cols .code-picker__period,
+  .code-picker__card .code-picker__period { display: none; }
+}
+/* 彈窗：標題列（返回鍵＋標題）、說明、清單底部的「建立新的優惠碼」 */
+.code-picker-modal__head { display: flex; align-items: center; gap: var(--sp-8); }
+.code-picker-modal__hint { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0 0 var(--sp-12); }
+.code-picker-modal__new { border-radius: var(--radius-lg); min-height: var(--sp-48); height: auto; justify-content: center; margin-top: var(--sp-12); }
+/* 彈窗清單的勾選列沒有「狀態」欄（全是可加入的碼）：欄軌少一欄 */
+#cpk-modal .code-picker__head,
+#cpk-modal .code-picker__row { grid-template-columns: var(--sp-16) minmax(0, 1fr) minmax(0, 6.5rem) var(--sp-56) minmax(0, 7.5rem); }
