@@ -159,8 +159,9 @@
         '<input class="tag-input__entry" type="search" data-cpk-search role="combobox" aria-expanded="false" autocomplete="off" placeholder="' + esc(T('cpk.select.ph')) + '"' + (st.locked || st.ro ? ' disabled' : '') + ' value="' + esc(st.q) + '">' +
         '<i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i></div>' +
         '<div class="combobox__menu" data-cpk-menu' + (st.menu && !st.locked && !st.ro ? '' : ' hidden') + '>' + menuHTML() + '</div></div>' +
-        '<div class="field__hint">' + esc(st.locked ? T('cpk.locked') : T('cpk.hint')) + '</div>' +
-        (auto.length && !st.locked ? '<div class="field__hint">' + esc(T('cpk.auto.hint')) + '</div>' : '') + '</div>';
+        /* 墓碑 2026-10-28（使用者：「這兩個不需要」）：欄位下方兩行說明——cpk.hint「選了碼，就是把這個加進該碼的特定商品範圍；都不選時，只適用全部商店的碼」
+           與 cpk.auto.hint「範圍是全部商店的碼，不必另外選」——都拿掉；只留鎖定時（cpk.locked）說明為什麼不能改的那一句 */
+        (st.locked ? '<div class="field__hint">' + esc(T('cpk.locked')) + '</div>' : '') + '</div>';
       var wasFocus = host.contains(document.activeElement) && document.activeElement.hasAttribute && document.activeElement.hasAttribute('data-cpk-search');
       host.innerHTML = '<div class="code-picker"' + (st.locked || st.ro ? ' data-locked' : '') + '>' + html + '</div>';
       if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(host);
