@@ -6013,6 +6013,12 @@
     'cp.edition':           { en: 'Edition',                          zh: '庫存版本' },
     'cp.edition.unlimited': { en: 'Unlimited edition',                zh: '不限量' },
     'cp.edition.limited':   { en: 'Limited edition',                  zh: '限量' },
+    'cp.limited.title':     { en: 'Limited edition', zh: '限量商品' },
+    'cp.limited.sub-off':   { en: 'Turn on to set the most you can sell in total.', zh: '打開後設定商品可販售的總量上限。' },
+    'cp.limited.sub-on':    { en: 'Set the most you can sell in total.', zh: '設定商品可販售的總量上限。' },
+    'cp.limited.digital-off': { en: 'Fans can buy and download without a cap — no stock to enter.', zh: '粉絲可無上限購買與下載，不需要填庫存。' },
+    'cp.stock.pool-hint-off': { en: 'Restock without a cap — it only shows sold out when it hits zero.', zh: '補貨沒有上限，賣完才顯示售罄。' },
+    'cp.stock.pool-hint-on':  { en: "Total quantity can't exceed the cap.", zh: '總數量不可超過上限數量。' },
     'cp.edition.unlimited-hint': { en: 'Restock anytime — never auto sells out.', zh: '可隨時補貨，不會自動售罄。' },
     'cp.edition.limited-hint':   { en: 'Hard cap — fans see how many remain.', zh: '設定總量上限，看得到還剩幾件。' },
     'cp.total':             { en: 'Total quantity',                   zh: '上限數量' },
@@ -8815,6 +8821,7 @@
 
     /* Create Event — live preview / autosave / inline validation (5.1.6.1 v3 / D060) */
     'ce.preview':         { en: 'Preview', zh: '預覽' },
+    'ce.preview.heading': { en: 'Event preview', zh: '活動預覽' },   // #394：右欄手機版活動頁鏡像的卡內標題（同建立商品的 cp.preview.heading）
     'ce.preview.title':   { en: 'How fans see your event', zh: '粉絲看到的活動樣子' },
     'ce.pv.name':         { en: 'Event name', zh: '活動名稱' },
     'ce.pv.date':         { en: 'Date to be set', zh: '日期待設定' },
