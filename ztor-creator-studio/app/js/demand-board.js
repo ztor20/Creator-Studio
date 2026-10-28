@@ -490,7 +490,7 @@
 
       elAud.innerHTML = (A ? A.audiences : []).map(function (a) {
         var on = a.key === F.audience, has = auds.indexOf(a.key) >= 0;
-        return '<button class="filter-tabs__item' + (on ? ' filter-tabs__item--active' : '') + '" type="button" role="tab" aria-selected="' + on + '"' +
+        return '<button class="tabs__item' + (on ? ' tabs__item--active' : '') + '" type="button" role="tab" aria-selected="' + on + '"' +   /* 2026-10-28：工作列殼層裡的底線分頁 */
           (has ? '' : ' disabled') + ' data-dv-aud="' + a.key + '">' + esc(audLabel(a)) + '</button>';
       }).join('');
       elCat.innerHTML = optionHTML('', T('demand.f.allcat', 'All categories'), !F.category) +

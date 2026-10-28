@@ -118,9 +118,9 @@
     <div class="wizard__gate-inner">
       <h1 class="wizard__step-title" data-i18n="cp.gate.h1">What are you selling?</h1>
       <p class="wizard__step-sub" data-i18n="cp.gate.sub">This decides which settings you'll see.</p>
-      <div class="segmented radio-cards radio-cards--gate" data-cp-gate-seg role="radiogroup" aria-label="Product type">
-        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cp-gate-type="physical"><i data-lucide="package" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.physical">Physical item</span><span class="radio-card__sub" data-i18n="cp.type.physical-sub">Ships to the buyer</span></span></button>
-        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cp-gate-type="digital"><i data-lucide="download" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.digital">Digital file</span><span class="radio-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span></span></button>
+      <div class="segmented radio-cards radio-cards--gate" data-cp-gate-seg role="group" aria-label="Product type">
+        <button type="button" class="segmented__btn" data-cp-gate-type="physical"><i data-lucide="package" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.physical">Physical item</span><span class="radio-card__sub" data-i18n="cp.type.physical-sub">Ships to the buyer</span></span></button>
+        <button type="button" class="segmented__btn" data-cp-gate-type="digital"><i data-lucide="download" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.digital">Digital file</span><span class="radio-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span></span></button>
       </div>
       <div class="wizard__gate-foot">
         <button class="btn btn--icon-circle wizard__gate-close" type="button" data-cp-gate-back data-i18n-aria-label="cp.gate.back" aria-label="Back"><i data-lucide="x" class="ztor-icon"></i></button>
@@ -214,9 +214,10 @@
         <textarea class="textarea" id="cp-f-desc" placeholder="Describe your product…" data-i18n-placeholder="cp.desc.ph" data-cp-counter="30"></textarea>
         <div class="field__hint field__hint--count" data-cp-counter-label>0/30 minimum</div>
       </div>
+      <!-- 2026-10-28 使用者：「分類」放回商品資訊、實體商品的標籤寫「實體分類」；服飾配件選了之後的主分類／次分類／適用對象、詳細規格、尺寸指南仍在下方「商品類別」卡 -->
       <!-- 分類（§7.1 次分類，依類型）：實體＝周邊次分類、數位＝數位次分類。主分類由商品類型隱含記錄（見 ASSUMPTIONS PG-013）。 -->
       <div class="field" data-cp-show="physical">
-        <div class="field__label" data-i18n="cp.category">Category</div>
+        <div class="field__label" data-i18n="cp.category.phys">Physical category</div>
         <span class="select-wrap"><select class="select" id="cp-cat-phys">
           <!-- D360（S70）：「服飾」「配件」兩個葉節點由一個群組取代（5.1.5.2 F2；§7.1）——選了它才依序出現大類與次分類 -->
           <option data-group="apparel" data-i18n="cp.psub.apparel-group">Apparel &amp; accessories</option>
@@ -233,6 +234,30 @@
           <option data-i18n="cp.psub.limited">Limited &amp; signed</option>
           <option data-i18n="cp.psub.merch">Merch</option>
         </select></span>
+      </div>
+      <div class="field" data-cp-show="digital">
+        <div class="field__label" data-i18n="cp.category">Category</div>
+        <span class="select-wrap"><select class="select" id="cp-cat-digi" data-cp-cat-digi>
+          <!-- D251（2026-09-08）：數位的影視類與音樂類只能透過項目發售，不進電子商店的三種賣法。
+               依使用者指示**隱藏不刪除**——option 留著並加 hidden，日後若規則改回只要拿掉 hidden。
+               規格側已在 5.1.5.2 §4.1 F2 明確移除這 7 個分類；數位下拉現況只剩文檔與會員卡。 -->
+          <option data-cfile="video" data-i18n="cp.dsub.movie" hidden>Movie</option>
+          <option data-cfile="video" data-i18n="cp.dsub.short" hidden>Short film</option>
+          <option data-cfile="video" data-i18n="cp.dsub.series" hidden>Series</option>
+          <option data-cfile="video" data-i18n="cp.dsub.mv" hidden>MV</option>
+          <option data-cfile="video" data-i18n="cp.dsub.documentary" hidden>Documentary</option>
+          <option data-cfile="music" data-i18n="cp.dsub.music" hidden>Song</option>
+          <option data-cfile="album" data-i18n="cp.dsub.album" hidden>Album</option>
+          <option data-cfile="other" data-i18n="cp.dsub.document" selected>Document</option>
+          <option data-cfile="membership" data-i18n="cp.dsub.membership">Membership / VIP card</option>
+        </select></span>
+      </div>
+    </section>
+    <!-- 商品類別（2026-10-28 使用者：「這些獨立一個 section 叫商品類別」）：分類、服飾配件的大類／次分類／適用對象、詳細規格、尺寸指南
+         原本都在「商品資訊」那張卡的下半部，拆成自己一張卡。欄位、顯隱與驗證都沒動，只換外層卡片；規格 5.1.5.2 F2 的分組屬呈現參考。 -->
+    <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.cat.title">Specification details</h3>
       </div>
       <!-- 服飾配件的第二、三層（D360 · S70，5.1.5.2 F2）：大類→次分類、適用對象。
            清單全取 window.ztorApparel（js/apparel-taxonomy.js），選項由本頁腳本依語言渲染。
@@ -255,23 +280,6 @@
             <span class="select-wrap"><select class="select" id="cp-audience"></select></span>
           </div>
         </div>
-      </div>
-      <div class="field" data-cp-show="digital">
-        <div class="field__label" data-i18n="cp.category">Category</div>
-        <span class="select-wrap"><select class="select" id="cp-cat-digi" data-cp-cat-digi>
-          <!-- D251（2026-09-08）：數位的影視類與音樂類只能透過項目發售，不進電子商店的三種賣法。
-               依使用者指示**隱藏不刪除**——option 留著並加 hidden，日後若規則改回只要拿掉 hidden。
-               規格側已在 5.1.5.2 §4.1 F2 明確移除這 7 個分類；數位下拉現況只剩文檔與會員卡。 -->
-          <option data-cfile="video" data-i18n="cp.dsub.movie" hidden>Movie</option>
-          <option data-cfile="video" data-i18n="cp.dsub.short" hidden>Short film</option>
-          <option data-cfile="video" data-i18n="cp.dsub.series" hidden>Series</option>
-          <option data-cfile="video" data-i18n="cp.dsub.mv" hidden>MV</option>
-          <option data-cfile="video" data-i18n="cp.dsub.documentary" hidden>Documentary</option>
-          <option data-cfile="music" data-i18n="cp.dsub.music" hidden>Song</option>
-          <option data-cfile="album" data-i18n="cp.dsub.album" hidden>Album</option>
-          <option data-cfile="other" data-i18n="cp.dsub.document" selected>Document</option>
-          <option data-cfile="membership" data-i18n="cp.dsub.membership">Membership / VIP card</option>
-        </select></span>
       </div>
       <!-- §4.1② 詳細規格 Specifications（僅實體；併入商品資訊）· spec 5.1.5.2 §4.1② / v3.0 -->
       <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
@@ -297,6 +305,9 @@
            設了專屬指南＝粉絲在這件商品只看得到那一份，商店那幾份全部不出現。
            2026-08-20 使用者指示改成「線框的 layer」：這一組自己圈一個框，
            與旁邊裸的詳細規格欄位分開（線框層做法同建立活動的「開放入場」）。 -->
+      <!-- 2026-10-28 使用者：「尺寸指南只有在服飾配件的實體分類出現」——外包一層 [data-cp-apparel]（與主分類／次分類／適用對象同一個開關，syncApparel 管），
+           內層 data-cp-show="physical" 照舊交給 applyVisibility；兩層各管各的，切成數位或改別的實體分類都會收起。 -->
+      <div data-cp-apparel hidden>
       <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
         <div class="field__label" data-i18n="cp.sg.title">Size guide</div>
         <div class="control-group control-group--plain">
@@ -329,6 +340,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
 
@@ -522,6 +534,7 @@
             <div class="field__label" data-i18n="stock.pool">Goods in stock</div>
             <input class="input" placeholder="0" id="cp-stock">
             <div class="field__hint" data-i18n="cp.stock.pool-hint">Locking stock for single sale or a bundle happens on the product page and in the bundle flow.</div>
+            <p class="field__error" data-cp-stock-err hidden data-i18n="cp.stock.over-err">In stock can't exceed the total quantity.</p>
           </div>
           <!-- 墓碑 2026-10-27（UIA-301 第 5 項）：數位限量原有「剩餘份數」必填欄（#cp-dcopies）。5.1.5.2 類型差異表寫明
                數位商品「限量僅設上限、無在庫」，剩餘份數＝上限 − 已售由系統算，建立時就等於上限，不另收；只留上方「上限數量」。 -->
@@ -679,174 +692,8 @@
       </div>
       <div data-cp-film-picker></div>
     </section>
-
-    <!-- §4.6 上架設定／開賣設定（2026-09-04 使用者裁決 D245：原本「上架、顯示與開賣」一個 section
-         三列平鋪，拆成兩個 section，並在每個 section 裡做出兩層）。
-         為什麼拆：三列雖然規格上互相獨立（§7.14 · D241），對創作者卻是兩個不同時間點的決定——
-         「這件東西要不要、什麼時候出現在商店」是現在就要決定的；「什麼時候可以結帳」是出現之後的事。
-         擠在同一張卡裡，第一個決定還沒做完就得看到第二個決定的欄位。
-         分層規則：每個 section 的第一層只有一個主決定（上架三選一／開賣二選一），
-         由它推導出來的附屬設定收進第二層的線框盒（.control-group--plain.lctl__derived），
-         主決定沒成立就整層不出現——「不上架」＝草稿，沒有下架時間、沒有顯示開關，也沒有開賣這回事。
-         列標題不重寫 section 標題已經說過的字（上架設定裡不再有一列叫「上架」）。
-         三個時間欄一律選填、不預設值；唯一校驗仍是「停售 > 開賣」（ListingState.validateSaleWindow）。 -->
-    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
-      </div>
-      <!-- 2026-10-12 使用者：「改成像組合包一樣的 UI」（同 create-bundle.html 上架區）：三選一並排卡（三張一排）→
-           線框盒（選定時上架時最上面是上架日期與時間、分隔線、定時下架）→ 顯示於商店（線框，放最後）。 -->
-      <div class="lctl">
-        <div class="segmented radio-cards radio-cards--3" id="cp-listing-mode" data-value="now">
-          <button class="segmented__btn" type="button" data-cp-listing="none">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-          </button>
-          <button class="segmented__btn segmented__btn--active" type="button" data-cp-listing="now">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sell">Goes live when you tap Start selling</span></span>
-          </button>
-          <button class="segmented__btn" type="button" data-cp-listing="schedule">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-          </button>
-        </div>
-        <!-- 第 2 層：上架成立之後才存在的設定（排程）。 -->
-        <div class="control-group control-group--plain lctl__derived" data-cp-listed-body hidden>
-          <div class="field" data-cp-listing-fields hidden>
-            <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
-            <input class="input" type="datetime-local" id="cp-listing-time">
-          </div>
-          <div class="lctl__rule lctl__rule--group" data-cp-listing-rule hidden></div>
-          <div class="lctl__row">
-            <div class="lctl__head">
-              <div class="lctl__titles">
-                <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
-                <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
-              </div>
-              <div class="switch lctl__control" id="cp-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
-            </div>
-            <div class="lctl__sched" data-cp-unlist-fields hidden>
-              <div class="field">
-                <div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div>
-                <input class="input" type="datetime-local" id="cp-unlist-time">
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- 顯示於商店（D247）：放最後、有線框（同建立組合包，2026-10-12） -->
-        <div class="lctl__row control-group control-group--plain" data-cp-shown-row hidden>
-          <div class="lctl__head">
-            <div class="lctl__titles">
-              <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
-              <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
-            </div>
-            <div class="switch switch--on lctl__control" id="cp-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-cp-sale-section hidden>
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
-        <!-- D332：開賣與停售只管單售、不影響之後含本商品的組合包；要連組合包一起停用下架（5.1.5.2 §4.6） -->
-        <p class="form-section__sub" data-i18n="cp.listing.sale-scope">Applies to single sales only — unlist to stop bundles too</p>
-      </div>
-      <!-- 2026-10-12 同建立組合包開賣區：二選一並排卡 → 線框盒（選定時開賣時最上面是開賣日期與時間、分隔線、定時停售） -->
-      <div class="lctl">
-        <div class="segmented radio-cards" id="cp-sale-mode" data-value="follow">
-          <button class="segmented__btn segmented__btn--active" type="button" data-cp-sale-mode="follow">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-          </button>
-          <button class="segmented__btn" type="button" data-cp-sale-mode="schedule">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
-          </button>
-        </div>
-        <div class="lctl__derived control-group control-group--plain">
-          <div class="field" data-cp-sale-start-field hidden>
-            <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
-            <input class="input" type="datetime-local" id="cp-listing-sale-start">
-          </div>
-          <div class="lctl__rule lctl__rule--group" data-cp-sale-rule hidden></div>
-          <div class="lctl__row">
-            <div class="lctl__head">
-              <div class="lctl__titles">
-                <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
-                <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
-              </div>
-              <div class="switch lctl__control" id="cp-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
-            </div>
-            <div class="lctl__sched" data-cp-saleend-fields hidden>
-              <div class="field">
-                <div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div>
-                <input class="input" type="datetime-local" id="cp-listing-sale-end">
-              <p class="field__error" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
-      </div>
-    </section>
-
-    <!-- §4.1 F4 取貨方式 Delivery method（僅實體；步驟 2，開賣設定之後、購買條件之前）· spec 5.1.5.2 F4 / D470（2026-10-22）。
-         二選一改成勾選：物流配送、現場 QR 領取或兩者，至少一種；新建預設勾物流配送〔推導〕。買家下單時從勾的方式裡自己選。
-         勾了現場 QR 領取才出現取貨場次：選一個既有場次（單售商品只屬於一個場次，D339／D471），或下拉底部「建立取貨場次」開共用彈窗；
-         不必已選場次（可事後加入〔推導〕）。每一列是 .control-row--check（整列是 <label>，點哪裡都勾得到）。
-         取貨與退貨說明（D291）跟著取貨方式放這一步〔推導〕，兩種方式共用同一欄。
-         兩個版本（最終版／release2.3）都在這個位置：之後才接購買條件（S105）或折扣設定（feat-off S105）與優惠碼。 -->
-    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical" data-cp-delivery-sec>
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.delivery.title">Delivery method</h3>
-        <p class="form-section__sub" data-i18n="cp.delivery.sub">Tick at least one. Buyers choose at checkout.</p>
-      </div>
-      <div class="control-group" id="cp-delivery">
-        <label class="control-row control-row--check">
-          <span>
-            <span class="control-row__main" data-i18n="cp.delivery.shipping">Shipping</span>
-            <span class="control-row__sub" data-i18n="cp.delivery.subsidy">Closed Beta: the platform subsidizes shipping fees.</span>
-          </span>
-          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="cp-dl-ship" checked><span class="zcheck__box"></span></span>
-        </label>
-        <label class="control-row control-row--check">
-          <span>
-            <span class="control-row__main" data-i18n="cp.delivery.qr">QR code pickup</span>
-            <span class="control-row__sub" data-i18n="cp.delivery.qr.sub">Buyers collect on site; staff scan each item's own QR.</span>
-          </span>
-          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="cp-dl-qr"><span class="zcheck__box"></span></span>
-        </label>
-        <!-- 現場 QR 領取的取貨場次（D111 串接取貨管理）：單售商品只屬於一個場次（D339，D471 保留——D470 一度改成可加入多場，已撤回）。
-             選既有場次，或下拉最底下「建立取貨場次」開共用彈窗；不必已選場次（可事後加入〔推導〕）。
-             說明併在標籤底下、選了場次就在下面列出地點／時間／狀態／入口（2026-09-11 使用者指示的寫法，沿用）。 -->
-        <div class="control-group__body" data-cp-qr-body hidden>
-          <div class="field">
-            <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-            <div class="field__hint" data-i18n="cp.delivery.session.desc">Pick an existing session or create one — this item joins that session's pickup list. Each item gets its own pickup QR in the buyer's ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.</div>
-            <select class="select" id="cp-pickup-session"
-                    data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
-                    data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
-              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
-              <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
-              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
-            </select>
-            <div class="fact-list" data-cp-session-info hidden>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-cp-si-loc></span></div>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-cp-si-time></span></div>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-cp-si-status><span></span></span></span></div>
-              <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-cp-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="field__error" data-cp-delivery-err hidden data-i18n="cp.delivery.err">Tick at least one.</p>
-
-      <!-- 取貨與退貨說明（2026-09-18 使用者裁決 D291）：物流配送與現場 QR 領取共用同一格，放在勾選之外、區塊底部。
-           選填、短文字；內容進買家端商品頁的「取貨與退換」段，屬可翻譯文案欄位（進發布前預覽 publish-stage 的 fields）。
-           與場次層的取貨說明（D244）是不同東西——那份是現場指示，這份是商品規則。 -->
-      <div class="field mt-16">
-        <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
-        <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
-        <textarea class="textarea" id="cp-delivery-returns" rows="3" maxlength="200" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached." data-i18n-placeholder="cp.delivery.returns.ph"></textarea>
-      </div>
-    </section>
+    <!-- 2026-10-28 使用者：第二步「上架與販售」的順序改成 購買條件 → 優惠碼 → 取貨方式 → 上架／開賣設定。
+         購買條件與其舊版替身（Discount settings，release2.2 沒有 S105 時才出現）同在第 1 位，優惠碼第 2、取貨方式第 3；其餘節維持原相對順序。 -->
 
     <!-- 2026-10-21 三步驟（第二步「上架設定」）：折扣設定（單一／多選項）與優惠碼從第一步的定價旁搬到上架與開賣之後，順序＝上架設定→開賣設定→折扣設定→優惠碼 -->
     <!-- §4.4 F13 折扣設定（單一規格；spec 5.1.5.2 §4.4 F13 · D144＋2026-07-17 產品微調）：開啟折扣 → 折扣價 ↔ 折扣%（雙向連動，以定價為基準、最後編輯為準）＋（可選）限時折扣起訖日。多規格版在逐規格表下方（只用折扣%，見該區）。取代已移除的「原價」機制；限時折扣關＝常態折扣、開＝只在檔期內套用。 -->
@@ -982,6 +829,174 @@
         <div class="control-group__body" data-cp-codes-body hidden>
           <div data-cp-codes-host></div>
         </div>
+      </div>
+    </section>
+
+    <!-- §4.1 F4 取貨方式 Delivery method（僅實體；步驟 2，開賣設定之後、購買條件之前）· spec 5.1.5.2 F4 / D470（2026-10-22）。
+         二選一改成勾選：物流配送、現場 QR 領取或兩者，至少一種；新建預設勾物流配送〔推導〕。買家下單時從勾的方式裡自己選。
+         勾了現場 QR 領取才出現取貨場次：選一個既有場次（單售商品只屬於一個場次，D339／D471），或下拉底部「建立取貨場次」開共用彈窗；
+         不必已選場次（可事後加入〔推導〕）。每一列是 .control-row--check（整列是 <label>，點哪裡都勾得到）。
+         取貨與退貨說明（D291）跟著取貨方式放這一步〔推導〕，兩種方式共用同一欄。
+         兩個版本（最終版／release2.3）都在這個位置：之後才接購買條件（S105）或折扣設定（feat-off S105）與優惠碼。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical" data-cp-delivery-sec>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.delivery.title">Delivery method</h3>
+        <p class="form-section__sub" data-i18n="cp.delivery.sub">Tick at least one. Buyers choose at checkout.</p>
+      </div>
+      <div class="control-group" id="cp-delivery">
+        <label class="control-row control-row--check">
+          <span>
+            <span class="control-row__main" data-i18n="cp.delivery.shipping">Shipping</span>
+            <span class="control-row__sub" data-i18n="cp.delivery.subsidy">Closed Beta: the platform subsidizes shipping fees.</span>
+          </span>
+          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="cp-dl-ship" checked><span class="zcheck__box"></span></span>
+        </label>
+        <label class="control-row control-row--check">
+          <span>
+            <span class="control-row__main" data-i18n="cp.delivery.qr">QR code pickup</span>
+            <span class="control-row__sub" data-i18n="cp.delivery.qr.sub">Buyers collect on site; staff scan each item's own QR.</span>
+          </span>
+          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="cp-dl-qr"><span class="zcheck__box"></span></span>
+        </label>
+        <!-- 現場 QR 領取的取貨場次（D111 串接取貨管理）：單售商品只屬於一個場次（D339，D471 保留——D470 一度改成可加入多場，已撤回）。
+             選既有場次，或下拉最底下「建立取貨場次」開共用彈窗；不必已選場次（可事後加入〔推導〕）。
+             說明併在標籤底下、選了場次就在下面列出地點／時間／狀態／入口（2026-09-11 使用者指示的寫法，沿用）。 -->
+        <div class="control-group__body" data-cp-qr-body hidden>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
+            <div class="field__hint" data-i18n="cp.delivery.session.desc">Pick an existing session or create one — this item joins that session's pickup list. Each item gets its own pickup QR in the buyer's ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.</div>
+            <select class="select" id="cp-pickup-session"
+                    data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
+                    data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
+              <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
+              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
+            </select>
+            <div class="fact-list" data-cp-session-info hidden>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-cp-si-loc></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-cp-si-time></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-cp-si-status><span></span></span></span></div>
+              <div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-cp-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="field__error" data-cp-delivery-err hidden data-i18n="cp.delivery.err">Tick at least one.</p>
+
+      <!-- 取貨與退貨說明（2026-09-18 使用者裁決 D291）：物流配送與現場 QR 領取共用同一格，放在勾選之外、區塊底部。
+           選填、短文字；內容進買家端商品頁的「取貨與退換」段，屬可翻譯文案欄位（進發布前預覽 publish-stage 的 fields）。
+           與場次層的取貨說明（D244）是不同東西——那份是現場指示，這份是商品規則。 -->
+      <div class="field mt-16">
+        <div class="field__label" data-i18n="cp.delivery.returns">Pickup &amp; returns</div>
+        <div class="field__hint" data-i18n="cp.delivery.returns.hint">Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.</div>
+        <textarea class="textarea" id="cp-delivery-returns" rows="3" maxlength="200" placeholder="e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached." data-i18n-placeholder="cp.delivery.returns.ph"></textarea>
+      </div>
+    </section>
+
+    <!-- §4.6 上架設定／開賣設定（2026-09-04 使用者裁決 D245：原本「上架、顯示與開賣」一個 section
+         三列平鋪，拆成兩個 section，並在每個 section 裡做出兩層）。
+         為什麼拆：三列雖然規格上互相獨立（§7.14 · D241），對創作者卻是兩個不同時間點的決定——
+         「這件東西要不要、什麼時候出現在商店」是現在就要決定的；「什麼時候可以結帳」是出現之後的事。
+         擠在同一張卡裡，第一個決定還沒做完就得看到第二個決定的欄位。
+         分層規則：每個 section 的第一層只有一個主決定（上架三選一／開賣二選一），
+         由它推導出來的附屬設定收進第二層的線框盒（.control-group--plain.lctl__derived），
+         主決定沒成立就整層不出現——「不上架」＝草稿，沒有下架時間、沒有顯示開關，也沒有開賣這回事。
+         列標題不重寫 section 標題已經說過的字（上架設定裡不再有一列叫「上架」）。
+         三個時間欄一律選填、不預設值；唯一校驗仍是「停售 > 開賣」（ListingState.validateSaleWindow）。 -->
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.listing.sec-listed">Listing</h3>
+      </div>
+      <!-- 2026-10-12 使用者：「改成像組合包一樣的 UI」（同 create-bundle.html 上架區）：三選一並排卡（三張一排）→
+           線框盒（選定時上架時最上面是上架日期與時間、分隔線、定時下架）→ 顯示於商店（線框，放最後）。 -->
+      <div class="lctl">
+        <div class="segmented radio-cards radio-cards--3" id="cp-listing-mode" data-value="now">
+          <button class="segmented__btn" type="button" data-cp-listing="none">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+          </button>
+          <button class="segmented__btn segmented__btn--active" type="button" data-cp-listing="now">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sell">Goes live when you tap Start selling</span></span>
+          </button>
+          <button class="segmented__btn" type="button" data-cp-listing="schedule">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+          </button>
+        </div>
+        <!-- 第 2 層：上架成立之後才存在的設定（排程）。 -->
+        <div class="control-group control-group--plain lctl__derived" data-cp-listed-body hidden>
+          <div class="field" data-cp-listing-fields hidden>
+            <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+            <input class="input" type="datetime-local" id="cp-listing-time">
+          </div>
+          <div class="lctl__rule lctl__rule--group" data-cp-listing-rule hidden></div>
+          <div class="lctl__row">
+            <div class="lctl__head">
+              <div class="lctl__titles">
+                <span class="lctl__title" data-i18n="cp.listing.unlist-sched">Unlist at a set time</span>
+                <p class="lctl__hint" data-i18n="cp.listing.unlist-sched-sub">Unlists automatically at the time you set</p>
+              </div>
+              <div class="switch lctl__control" id="cp-unlist-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lctl__sched" data-cp-unlist-fields hidden>
+              <div class="field">
+                <div class="field__label"><span data-i18n="cp.listing.unlist">Unlist time</span> <span class="field__req">*</span></div>
+                <input class="input" type="datetime-local" id="cp-unlist-time">
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 顯示於商店（D247）：放最後、有線框（同建立組合包，2026-10-12） -->
+        <div class="lctl__row control-group control-group--plain" data-cp-shown-row hidden>
+          <div class="lctl__head">
+            <div class="lctl__titles">
+              <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
+              <p class="lctl__hint" data-i18n="cp.listing.shown-hint">Hidden items stay purchasable via the private link and inside bundles</p>
+            </div>
+            <div class="switch switch--on lctl__control" id="cp-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section form-section--outlined" data-form-step="2" data-cp-show="physical digital" data-cp-sale-section hidden>
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.listing.sec-sale">Sale</h3>
+        <!-- D332：開賣與停售只管單售、不影響之後含本商品的組合包；要連組合包一起停用下架（5.1.5.2 §4.6） -->
+        <p class="form-section__sub" data-i18n="cp.listing.sale-scope">Applies to single sales only — unlist to stop bundles too</p>
+      </div>
+      <!-- 2026-10-12 同建立組合包開賣區：二選一並排卡 → 線框盒（選定時開賣時最上面是開賣日期與時間、分隔線、定時停售） -->
+      <div class="lctl">
+        <div class="segmented radio-cards" id="cp-sale-mode" data-value="follow">
+          <button class="segmented__btn segmented__btn--active" type="button" data-cp-sale-mode="follow">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
+          </button>
+          <button class="segmented__btn" type="button" data-cp-sale-mode="schedule">
+            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+          </button>
+        </div>
+        <div class="lctl__derived control-group control-group--plain">
+          <div class="field" data-cp-sale-start-field hidden>
+            <div class="field__label"><span data-i18n="cp.listing.sale-start">Sale start</span> <span class="field__req">*</span></div>
+            <input class="input" type="datetime-local" id="cp-listing-sale-start">
+          </div>
+          <div class="lctl__rule lctl__rule--group" data-cp-sale-rule hidden></div>
+          <div class="lctl__row">
+            <div class="lctl__head">
+              <div class="lctl__titles">
+                <span class="lctl__title" data-i18n="cp.listing.saleend-sched">Close sales at a set time</span>
+                <p class="lctl__hint" data-i18n="cp.listing.saleend-sched-sub">Checkout closes then; the item stays visible</p>
+              </div>
+              <div class="switch lctl__control" id="cp-saleend-toggle" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lctl__sched" data-cp-saleend-fields hidden>
+              <div class="field">
+                <div class="field__label"><span data-i18n="cp.listing.sale-end">Sale end</span> <span class="field__req">*</span></div>
+                <input class="input" type="datetime-local" id="cp-listing-sale-end">
+              <p class="field__error" data-i18n="cp.listing.sale-err" hidden>Sale end must be after sale start</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
       </div>
     </section>
 
@@ -2278,11 +2293,9 @@
   function setType(t) {
     state.type = t;
     if (t !== 'physical') { state.varMode = 'single'; setSegActive('cp-var-mode', 'single', 'cpVar'); }
-    cards.forEach(c => {
-      const on = c.dataset.cpGateType === t;
-      c.classList.toggle('segmented__btn--active', on);
-      c.setAttribute('aria-checked', String(on));
-    });
+    /* 墓碑 2026-10-28（使用者：「選擇實體與數位那個頁面，點擊後就是進入，不需要已選定的狀態」）：閘門卡不再標選定
+       （原本這裡依 state.type 切 .segmented__btn--active／aria-checked，一開頁實體商品就帶著選定外觀與橘點）。
+       兩張卡只是「點了就進入」的入口，hover 照元件預設。 */
     /* 切換鈕上寫的是「現在是哪一型」，文字取自閘門那張卡的標題＝站上唯一一份型別名稱。
        頁首副標同一份文字（2026-08-10 修：原本寫死「實體商品」，切成數位也不會變）。 */
     const tKey = t === 'digital' ? 'cp.type.digital' : 'cp.type.physical';
@@ -2348,7 +2361,7 @@
     if (v === 'multiple') renderOptions();
     refresh();
   });
-  wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); refresh(); });
+  wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); syncStockErr(); refresh(); });
   /* D470 取貨方式勾選（5.1.5.2 F4，步驟 2）：勾了現場 QR 領取才出現取貨場次；都沒勾就地紅字「至少勾一種」，
      就緒檢查同一條（進入步驟 3 時擋）。重量欄的＊與說明跟著物流配送的勾選（重量欄在步驟 1，F15）。 */
   function syncDelivery() {
@@ -2543,6 +2556,16 @@
   });
   [fTotal, fStock].forEach(el => { if (el) el.addEventListener('input', syncLowStock); });
 
+  /* 限量：目前在庫不能超過上限（capOk 本來只擋就緒檢查，這裡補就地紅字）。兩欄任一邊改動就重算 */
+  function syncStockErr() {
+    const err = document.querySelector('[data-cp-stock-err]');
+    if (!err) return;
+    const tot = fTotal && fTotal.value.trim(), st = fStock && fStock.value.trim();
+    const over = state.edition === 'limited' && state.type === 'physical' && tot && st && Number(st) > Number(tot);
+    err.hidden = !over;
+    if (fStock) fStock.setAttribute('aria-invalid', over ? 'true' : 'false');
+  }
+  [fTotal, fStock].forEach(el => { if (el) el.addEventListener('input', syncStockErr); });
   /* §4.2 F11 內容檔案：數位下載檔上傳格隨數位次分類切換（音樂／專輯／影片／會員卡／其他）*/
   const catDigi = document.getElementById('cp-cat-digi');
   const cfileTitle = document.getElementById('cp-cfile-title');

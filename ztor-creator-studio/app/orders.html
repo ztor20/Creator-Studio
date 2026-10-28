@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/status-axes.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2"><!-- 2026-10-28：上排工作列殼層（.list-toolbar--filters） -->
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
@@ -27,16 +28,15 @@
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- D416：匯出確認視窗（js/csv-export.js 動態建立） -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/export-dialog.css?v=r2.2"><!-- 2026-10-28：匯出視窗（筆數摘要＋匯出紀錄） -->
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2"><!-- D424：匯出紀錄視窗的列（js/csv-export.js openLog） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* F2 工作列版型（對齊電子商店 F3 兩排式）：上排＝匯出＋收合搜尋靠右，下排＝狀態 filter-tabs 獨佔整列。
      版面為 page-specific 佈局（不套 e-shop 的 sticky/Figma 陰影，只取兩排結構）；元件本身皆共用。 */
   .ord-list-controls { margin-top: var(--sp-16); margin-bottom: var(--sp-40); }   /* 2026-07-26 使用者：篩選列到清單的間距加大，對齊 .list-status-row 的 40px */
-  .ord-list-topbar { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
-  /* D411：左側＝訂單日期區間＋訂單類型（共用 date-range／zselect），右側維持搜尋＋匯出 */
-  .ord-list-topbar__filters { display:flex; align-items:center; gap:var(--sp-12); flex-wrap:wrap; margin-right:auto; }
-  .ord-type-select { width:auto; min-width:var(--w-220); }
+  /* 墓碑 2026-10-28：頁內 .ord-list-topbar／__filters 退場，上排改用共用 .list-toolbar--filters（ds-components/list-toolbar.css）。
+     D411：左側＝訂單日期區間＋訂單類型（共用 date-range／zselect），右側維持搜尋＋匯出 */
   .ord-status-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   /* F3 篩選無結果空狀態（§F3／§頁面狀態「查無符合的訂單」，與帳號層級 .when-empty 分流）*/
   .orders-noresult[hidden]{ display:none; }
@@ -74,23 +74,27 @@
 
       <!-- F2 · Filters · 對齊電子商店 F3：上排匯出＋收合搜尋、下排狀態 filter-tabs--brand（每項附數量）-->
       <section class="ord-list-controls when-data" aria-label="Order filters">
-        <div class="ord-list-topbar">
+        <!-- 2026-10-28 使用者：上排改成電子商店那種工作列殼層（.list-toolbar--filters）：左＝篩選、右＝搜尋＋匯出＋匯出紀錄 -->
+        <div class="list-toolbar list-toolbar--filters">
           <!-- D411（5.1.5.3 F2）：訂單日期（起）／（訖）可只填一邊、訂單類型（全部／商品／門票／組合包），與狀態、搜尋同時成立 -->
-          <div class="ord-list-topbar__filters" data-feat="O35">
-            <div class="date-range" data-orders-dates>
-              <span class="date-range__label" data-i18n="orders.filter.date">Order date</span>
-              <span class="date-range__field"><input class="input" type="date" data-orders-date-from aria-label="Order date (from)" data-i18n-aria-label="orders.filter.date.from"></span>
+          <div class="list-toolbar__filters" data-feat="O35">
+            <!-- 2026-10-28 使用者：樣式改成需求看板那種無底框（.date-range--bare、.select--bare）；欄名「訂單日期」拿掉，兩格 placeholder 各寫訂單起始日／訂單結束日 -->
+            <div class="date-range date-range--bare" data-orders-dates>
+              <span class="date-range__field"><input class="input" type="date" data-orders-date-from data-ph-key="orders.filter.date.from.ph" data-ph="Order start date" aria-label="Order date (from)" data-i18n-aria-label="orders.filter.date.from"></span>
               <span class="date-range__sep">–</span>
-              <span class="date-range__field"><input class="input" type="date" data-orders-date-to aria-label="Order date (to)" data-i18n-aria-label="orders.filter.date.to"></span>
-              <button class="btn btn--ghost btn--xs date-range__clear" type="button" data-orders-date-clear hidden data-i18n="orders.filter.date.clear">Clear dates</button>
+              <span class="date-range__field"><input class="input" type="date" data-orders-date-to data-ph-key="orders.filter.date.to.ph" data-ph="Order end date" aria-label="Order date (to)" data-i18n-aria-label="orders.filter.date.to"></span>
+              <!-- 2026-10-28 使用者：日期欄無外框之後，「清除日期」改用有外框的按鈕（btn--outline），跟沒外框的篩選分得出是動作 -->
+              <button class="btn btn--outline btn--xs date-range__clear" type="button" data-orders-date-clear hidden data-i18n="orders.filter.date.clear">Clear dates</button>
             </div>
-            <select class="select ord-type-select" data-orders-type aria-label="Order type" data-i18n-aria-label="orders.filter.type">
+            <span class="list-status-row__sep" aria-hidden="true"></span><!-- 2026-10-28 使用者：日期區間與訂單類型之間加分隔線（同需求看板、IP 市場次層篩選的 1px 直線） -->
+            <select class="select select--bare" style="width:auto" data-orders-type aria-label="Order type" data-i18n-aria-label="orders.filter.type">
               <option value="all" data-i18n="orders.type.all">All types</option>
               <option value="product" data-i18n="orders.type.product">Products</option>
               <option value="ticket" data-i18n="orders.type.ticket">Tickets</option>
               <option value="bundle" data-i18n="orders.type.bundle">Bundles</option>
             </select>
           </div>
+          <div class="list-toolbar__actions">
           <div class="search-collapse" data-orders-search-wrap>
             <button class="btn btn--icon search-collapse__toggle" type="button" data-orders-search-toggle aria-expanded="false" aria-label="Search orders" title="Search orders" data-i18n-aria-label="orders.btn.search" data-i18n-title="orders.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
             <label class="field-pill search-collapse__field" aria-label="Search orders">
@@ -100,8 +104,8 @@
             </label>
           </div>
           <button class="btn btn--outline" type="button" data-orders-export data-i18n="orders.btn.export">Export</button>
-          <!-- D424 決定 4：匯出紀錄（誰、何時、篩選條件、筆數、檔名）——匯出鈕旁的次要按鈕，創作者與 Admin 都看得到；視窗由 js/csv-export.js openLog() 建立 -->
-          <button class="btn btn--ghost" type="button" data-orders-export-log data-feat="O42"><i data-lucide="history" class="ztor-icon"></i><span data-i18n="csv.log.btn">Export history</span></button>
+          <!-- 墓碑 2026-10-28：「匯出紀錄」鈕（[data-orders-export-log]，D424 決定 4）退場——使用者：「匯出紀錄可以在這（匯出視窗）查看，這裡就不用放」；紀錄改列在匯出視窗下半部（js/csv-export.js confirm） -->
+          </div>
         </div>
         <div class="ord-status-row">
           <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter by status" data-orders-status>
@@ -364,6 +368,7 @@
         title: T('csv.orders.title', 'Export orders'),
         count: ids.length,
         withShip: true,
+        scope: 'orders', filters: filterSummary(false),   /* 2026-10-28：視窗上半部寫出這次的篩選條件、下半部列這個範圍的匯出紀錄 */
         /* D424 決定 3：確認後右下角「匯出中…」約 1 秒 → 原地轉「匯出完成」並下載；同一刻寫一筆匯出紀錄（ztorCsv.run） */
         onExport: ship => {
           const list = ids.map(id => window.ztorOrders.get(id)).filter(Boolean);
@@ -375,10 +380,6 @@
           });
         }
       });
-    });
-    const exportLog = document.querySelector('[data-orders-export-log]');
-    if (exportLog) exportLog.addEventListener('click', () => {
-      if (window.ztorCsv && window.ztorCsv.openLog) window.ztorCsv.openLog({ scope: 'orders', title: T('csv.log.title', 'Export history') });
     });
     /* 版本切換（devtools）收起／放出已過期列後重算清單與數量 */
     document.addEventListener('ztor:devstate-changed', apply);

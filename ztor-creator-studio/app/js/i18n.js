@@ -5006,6 +5006,7 @@
     'pp.table.prices':      { en: 'Prices',                           zh: '價格' },
     'pp.table.prices-hint': { en: 'Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override.', zh: '基準幣別唯讀，要改回原欄位改。其餘幣別是換算值，直接輸入數字即覆寫。' },
     'pp.table.item':        { en: 'Item',                             zh: '項目' },
+    'pp.price.bkylock': { en: 'Locked by bookyay', zh: 'bookyay 鎖定' },   // 2026-10-28 #382 價格表表頭附註
     'pp.price.base':        { en: 'Base',                             zh: '基準' },
     'pp.price.locked':      { en: 'Set by bookyay',                   zh: '由 bookyay 決定' },
     /* D330：bookyay 帶入者的價格表——港幣欄＝bookyay 原價、鎖定；其他幣別（含可覆寫的基準欄）輸入即覆寫。 */
@@ -5657,6 +5658,8 @@
     'cp.type.auction':      { en: 'Auction',                          zh: '拍賣' },
     'cp.type.auction-sub':  { en: 'One-of-a-kind items your top fans bid for', zh: '獨一無二、讓鐵粉競標' },
     'cp.info.title':        { en: 'Product info',                     zh: '商品資訊' },
+    'cp.cat.title':         { en: 'Specification details',            zh: '規格詳情' },   // 2026-10-28：主分類／次分類／適用對象／詳細規格／尺寸指南獨立成一張卡（標題同日由「商品類別」改「規格詳情」）
+    'cp.category.phys':     { en: 'Physical category',                zh: '實體分類' },   // 2026-10-28：建立商品的實體分類欄（放回商品資訊）
     /* 類型閘門與切換鈕（2026-08-10，做法對齊建立活動） */
     'cp.gate.h1':           { en: "What are you selling?",             zh: '要賣什麼？' },
     'cp.gate.sub':          { en: 'This decides which settings you\'ll see.', zh: '這會決定接下來看到哪些設定。' },
@@ -5925,7 +5928,7 @@
     'cp.spec.name.ph':      { en: 'e.g., Material',                   zh: '例：材質' },
     'cp.spec.value.ph':     { en: 'e.g., 100% organic cotton',        zh: '例：100% 有機棉' },
     /* D360（S70／S71）：服飾配件的大類→次分類、適用對象、系統屬性與自訂規格兩段、尺寸顏色自行輸入。清單內的名稱取自 js/apparel-taxonomy.js，不在這裡 */
-    'cp.apparel.group':     { en: 'Category group',                   zh: '大類' },
+    'cp.apparel.group':     { en: 'Main category',                    zh: '主分類' },   // 2026-10-28 使用者：大類改名主分類（建立商品、商品細節頁共用）
     'cp.apparel.sub':       { en: 'Sub category',                     zh: '次分類' },
     'cp.apparel.dept':      { en: 'Department',                       zh: '適用對象' },
     'cp.apparel.choose':    { en: 'Select',                           zh: '請選擇' },
@@ -6014,6 +6017,7 @@
     'cp.edition.limited-hint':   { en: 'Hard cap — fans see how many remain.', zh: '設定總量上限，看得到還剩幾件。' },
     'cp.total':             { en: 'Total quantity',                   zh: '上限數量' },
     'cp.total.hint':        { en: 'Hard cap · restock ceiling',       zh: '硬上限 · 補貨天花板' },
+    'cp.stock.over-err':    { en: "In stock can't exceed the total quantity.", zh: '目前在庫不能超過上限數量' },
     /* §4.1⑥ 取貨方式 Delivery (D064) */
     'cp.delivery.title':    { en: 'Delivery method',                  zh: '取貨方式' },
     'cp.delivery.sub':      { en: 'Tick at least one. Buyers choose at checkout.', zh: '至少勾一種，買家下單時自己選。' },   /* D470：二選一改勾選（原「寄送給買家，或讓買家憑 QR code 現場領取。」） */
@@ -6092,6 +6096,7 @@
     /* 2026-10-12 本頁大綱（左側空白欄的區段導覽，ds-components/section-outline.css）：標題、必填摘要（{n}＝已完成節數、{m}＝必填節數）、狀態圓的無障礙文字 */
     'cp.outline.title':     { en: 'On this page',                     zh: '本頁大綱' },
     'cp.outline.required':  { en: 'Required {n}/{m}',                 zh: '必填 {n}／{m}' },
+    'cp.outline.req': { en: 'Required', zh: '必填' },   // 2026-10-28 本頁大綱：必填未填時列尾的橘色短字
     'cp.outline.todo':      { en: 'Required, not filled',             zh: '必填未填' },
     'cp.outline.done':      { en: 'Done',                             zh: '已完成' },
     'cp.outline.opt':       { en: 'Optional',                         zh: '選填' },
@@ -6391,6 +6396,7 @@
     'cb.limit.hint':        { en: 'Leave empty for unlimited',        zh: '留空即不限量' },
     'cb.create':            { en: 'Create bundle',                    zh: '建立組合' },
     /* 2026-09-23 兩步驟（D310 組合側，比照建立商品 D317）：頁首進度條＋表單主鈕＋第 2 步全頁畫面的返回鈕與發布前檢核 */
+    'cb.step.members':      { en: 'Choose items',                     zh: '選擇組合商品' },   // 2026-10-28 建立組合包改四步驟：組合物移到第一步（使用者指定名稱「選擇組合商品」）
     'cb.step.details':      { en: 'Bundle settings',                  zh: '組合包設定' },   // 2026-10-21 三步驟（D464）：使用者指定第一步名稱「組合包設定」（原「內容」）
     'cb.step.listing':      { en: 'Listing & sales',                  zh: '上架與販售' },   // 2026-10-21 D464 使用者裁決
     'cb.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
@@ -6847,6 +6853,9 @@
     'cpp.bd.expand':        { en: 'Expand',                           zh: '展開' },
     'cpp.bd.collapse':      { en: 'Collapse',                         zh: '收合' },
     'cpp.bd.remove':        { en: 'Remove',                           zh: '移除' },
+    'cpp.bd.row.del':       { en: 'Delete bundle', zh: '刪除組合包' },   // 2026-10-28 #375 收合列的刪除鈕
+    'cpp.bd.row.del.confirm': { en: 'Delete?', zh: '確定刪除？' },
+    'cpp.bd.row.del.done':  { en: 'Deleted {name}', zh: '已刪除「{name}」' },
     /* 展開態的兩個出口寫全字（2026-07-30）：它們在卡片底部、旁邊沒有別的動作可以
        互相對照，單一個「收合」「移除」不會告訴人收合什麼、移除什麼。 */
     'cpp.bd.collapse.long': { en: 'Collapse this bundle',             zh: '收合這個套組' },
@@ -6999,6 +7008,9 @@
     'cb.mt.tix.any':            { en: 'Picked: {names} (pick one) · change', zh: '已選 {names} 任選 · 調整' },
     'cb.mt.tix.one':            { en: 'Picked: {name} · change', zh: '已選 {name} · 調整' },
     'cb.add.open':              { en: 'Add to bundle', zh: '加入組合物' },
+    'cb.search.inline.ph':      { en: 'Search your products or events…', zh: '搜尋你的商品或活動…' },   // 2026-10-28 組合物就地搜尋（同建立活動新增組合包彈窗）
+    'cb.search.inline.events':  { en: 'Your events', zh: '你的活動' },
+    'cb.search.inline.none':    { en: 'No products or events match.', zh: '沒有符合的商品或活動。' },
     'cb.pick.title':            { en: 'Add to bundle', zh: '加入組合物' },
     'cb.pick.items':            { en: 'Products', zh: '商品' },
     'cb.pick.tix':              { en: 'Event tickets', zh: '活動票券' },
@@ -7679,6 +7691,16 @@
     'csv.tx.note': { en: 'Shipping details are not in this export.', zh: '收件資料不在這份匯出裡。' },
     'csv.cancel': { en: 'Cancel', zh: '取消' },
     'csv.go': { en: 'Export', zh: '匯出' },
+    /* 2026-10-28 匯出視窗改版：大字筆數、篩選條件一行、主鈕寫筆數、下半部匯出紀錄 */
+    'orders.filter.date.from.ph': { en: 'Order start date', zh: '訂單起始日' },   // 2026-10-28 工作列日期欄 placeholder（欄名拿掉）
+    'orders.filter.date.to.ph': { en: 'Order end date', zh: '訂單結束日' },
+    'csv.unit': { en: 'orders', zh: '筆訂單' },
+    'csv.scope': { en: 'Following your current filters — {filters}', zh: '照目前的篩選結果：{filters}' },
+    'csv.go.n': { en: 'Export {n}', zh: '匯出 {n} 筆' },
+    'csv.log.all': { en: 'Show all {n}', zh: '顯示全部 {n} 筆' },
+    'csv.log.less': { en: 'Show recent only', zh: '只看最近 3 筆' },
+    'csv.log.same': { en: 'Same filters', zh: '同樣的篩選' },
+    'csv.log.empty.here': { en: 'No exports yet — this export will be the first one listed here.', zh: '還沒有匯出過，這次匯出後會記在這裡。' },
     'csv.close': { en: 'Close', zh: '關閉' },
     'csv.toast': { en: 'Exported {n} orders', zh: '已匯出 {n} 筆訂單' },
     'csv.file.orders': { en: 'Orders', zh: '訂單' },

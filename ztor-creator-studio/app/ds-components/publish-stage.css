@@ -234,6 +234,18 @@
   gap: var(--sp-2);
 }
 [data-stage-drawer="price"] .pp-price-reset { font-size: var(--fs-11); padding-inline: 0; text-align: right; }
+/* 表頭固定（2026-10-28，#381，使用者：「表頭在滾動時要固定在上面，價格表的次級表頭（票種／票務商品）也要跟著固定」）：
+   捲動的是抽屜的 .drawer__body；中間兩層（.ztor-table-scroll 的 overflow-x:auto、.ztor-table 的 overflow:hidden）都會變成
+   sticky 的參考框，表頭只會黏在自己的表裡、等於沒黏。兩層改 overflow:clip——照樣裁圓角與溢出，但不算捲動容器——
+   表頭 th 就能黏在抽屜頂端；價格表的分組列（.pp-group-row）黏在表頭正下方（--pp-head-h＝表頭高，約 46px）。
+   底色用抽屜面板同一色（--card），捲上來的列不會從表頭底下透出來。 */
+/* 表頭幣別下方的附註行（#382）：例「bookyay 鎖定」——換行、小一級、淡色 */
+.pp-th-sub { display: block; margin-top: var(--sp-2); font-size: var(--fs-11); font-weight: var(--fw-regular); color: var(--faint-ink); }
+[data-stage-drawer] .ztor-table-scroll,
+[data-stage-drawer] .pp-table { overflow: clip; }
+/* top 取負的抽屜內距（.drawer__body 上內距 --sp-24）：sticky 會停在「捲動區扣掉內距」的位置，不扣的話表頭上方留 24px 縫、列會從縫裡透出來 */
+[data-stage-drawer] .pp-table thead th { position: sticky; top: calc(var(--sp-24) * -1); z-index: 2; background: var(--card); }
+[data-stage-drawer] .pp-group-row td { position: sticky; top: calc(var(--pp-head-h, 46px) - var(--sp-24)); z-index: 1; background: var(--card); }
 
 /* ── 1023 以下：側欄不再是軌 ──────────────────────────────────── */
 @media (max-width: 1023.98px) {

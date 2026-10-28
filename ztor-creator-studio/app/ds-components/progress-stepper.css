@@ -175,7 +175,21 @@
   font-weight: var(--fw-regular);
 }
 .progress-stepper__state .ztor-icon { width: 12px; height: 12px; }
-.progress-stepper__label--done .progress-stepper__state { color: var(--status-success-ink); }
+/* 綠字只給真的完成（有打勾）的那一格：--done 只代表「走過這一步」，沒填完時狀態字是「未完成」，要維持灰（2026-10-28 使用者反饋） */
+.progress-stepper__state:has(.ztor-icon) { color: var(--status-success-ink); }
+/* 正在編輯的那一步（2026-10-28 使用者：編輯中也要用綠色、前面加筆 icon）：同「已完成」的綠，前面用 CSS mask 畫 lucide pencil，
+   所有消費頁（markup 由各頁 JS 產生）不必逐頁補 <i>，目前這一格的狀態字一律帶筆。 */
+.progress-stepper__label--current .progress-stepper__state { color: var(--status-success-ink); }
+.progress-stepper__label--current .progress-stepper__state::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: var(--progress-stepper-pencil) center / contain no-repeat;
+  mask: var(--progress-stepper-pencil) center / contain no-repeat;
+}
+.progress-stepper { --progress-stepper-pencil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z'/%3E%3Cpath d='m15 5 4 4'/%3E%3C/svg%3E"); }
 
 /* 已完成步驟：可回點 */
 .progress-stepper__label--done {

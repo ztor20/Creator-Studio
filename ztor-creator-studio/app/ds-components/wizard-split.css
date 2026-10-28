@@ -56,7 +56,13 @@
   /* Never let the card be taller than the space it has: if it grows (more
      rows, a longer locale) it scrolls inside itself instead of being cut off
      at the bottom, which is the same clipping bug from the other end. */
-  max-height: calc(100vh - var(--wizard-top-h, 80px) - var(--sp-56));
+  /* 2026-10-28（#378，使用者：「右側欄不能再繼續往下滑，除非整個頁面滾動」）：底部動作列（.wizard__bottom，連上方漸層遮罩）
+     蓋在捲動區最下面，原本的上限只扣頁首，軌的最後一段永遠藏在動作列後面、自己捲到底也看不到。
+     再扣掉 --wizard-bottom-h（頁面執行期量動作列＋漸層的高度；沒量的頁面＝0，維持原本行為）。 */
+  max-height: calc(100vh - var(--wizard-top-h, 80px) - var(--wizard-bottom-h, 0px) - var(--sp-56));
+  /* 還沒黏住（左欄內容短、軌在頁面正常位置）時，上面這個上限是照「黏住時的位置」算的，軌的底端仍會落到動作列後面；
+     消費頁可以在執行期改寫 --wizard-rail-max（＝動作列上緣 − 軌目前上緣），有寫就用它（create-event #378）。 */
+  max-height: var(--wizard-rail-max, calc(100vh - var(--wizard-top-h, 80px) - var(--wizard-bottom-h, 0px) - var(--sp-56)));
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
