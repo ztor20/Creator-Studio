@@ -408,7 +408,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 182 支；主 class 前 5 個）
+## 元件（ds-components/，共 183 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -461,6 +461,7 @@
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer
 - `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗）
 - `fact-list.css` — .fact-list, .fact-list__item ｜ Fact list · 唯讀事實列（2026-08-19）
+- `fan-phone.css` — .fan-phone ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
 - `fan-shop.css` — .fep-shop, .fep-shop--event ｜ fan-shop.css · 前台活動頁鏡像（發布前預覽確認的預覽檢視，D305 使用者裁決 2
 - `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ fan-store.css · 粉絲端創作者頁的手機版鏡像（See-as-fan 預覽）
 - `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide
@@ -589,6 +590,6 @@
 - `venue-map.css` — .venue-map, .fep-shop, .venue-map__canvas, .venue-map__streets, .venue-map__road ｜ venue-map — 依完整地址產生的活動地點地圖（D369 決定二，2026-10-07 建
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
 - `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
-- `wizard-split.css` — .wizard-split, .wizard-split__main, .wizard-split__rail, .wizard-split--narrow, .fd-ov ｜ Wizard split — content column + sticky summary r
+- `wizard-split.css` — .wizard-split, .wizard-split__main, .wizard-split__rail, .wizard-split--narrow, .wizard-split--phone ｜ Wizard split — content column + sticky summary r
 - `work-card.css` — .work-cards__wrap, .work-cards__nav, .work-cards__nav--prev, .work-cards__nav--next, .work-cards ｜ Work card · 創作者自己那一批「進行中的項目與活動」的封面磚
 - `zselect.css` — .zselect__native, .zselect__trigger, .zselect__lead, .zselect__option, .zselect__label ｜ zselect — 下拉選單的房內樣式（2026-07-28 使用者裁示：「下拉的樣式還不是我們

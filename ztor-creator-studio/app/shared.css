@@ -1402,7 +1402,8 @@ html[data-theme="light"] .wizard__top::before {
   /* 膠囊內距（2026-09-23）：外面已經有 .wizard__top 的一圈外距，上下由 20 收成 12；
      左邊多 4 是給返回鈕 hover 膠囊的負外距留位，同 .list-toolbar 左右不對稱的理由。
      舊值：padding: var(--sp-20) var(--sp-28)（2026-06-23 使用者指定加大）。 */
-  padding: var(--sp-12) var(--sp-20) var(--sp-12) var(--sp-24);
+  --wh-pad-l: var(--sp-24); --wh-pad-r: var(--sp-20); --wh-pad-b: var(--sp-12);   /* 2026-10-28：內距拆成變數，窄寬度的第二排底板要用同一組負外距貼到膠囊邊 */
+  padding: var(--sp-12) var(--wh-pad-r) var(--wh-pad-b) var(--wh-pad-l);
 }
 /* 頂列下面還有一排（分節分頁）時，兩排之間一條淡分隔線，橫跨整顆膠囊。 */
 .wizard__top-bar:has(+ :not([hidden])) { border-bottom: 1px solid var(--border-soft); }
@@ -1418,8 +1419,12 @@ html[data-theme="light"] .wizard__top::before {
   position: relative;
   display: flex; align-items: flex-start; gap: var(--sp-12);   /* Figma=12（原 14）*/
   min-width: 0;
-  padding: var(--sp-8) var(--sp-16) var(--sp-8) var(--sp-8);
-  margin: calc(-1 * var(--sp-8)) calc(-1 * var(--sp-16)) calc(-1 * var(--sp-8)) calc(-1 * var(--sp-8));
+  /* 2026-10-28 使用者：「按鈕左邊空格和上下要一樣」——箭頭 icon 自己在 24px 格子裡左右留白，加上內距 8，
+     箭頭墨跡離膠囊左緣實測 22px，上下（字到膠囊緣）只有 ~8–11px，看起來左邊特別寬。
+     左內距歸零、箭頭格往左收 2px（墨跡離左緣 12px，與上下同量級），膠囊左緣同步右移 10px（margin-left −8 → +2），
+     箭頭與標題在頁面上的位置都不動，只有膠囊左邊縮短。 */
+  padding: var(--sp-8) var(--sp-16) var(--sp-8) 0;
+  margin: calc(-1 * var(--sp-8)) calc(-1 * var(--sp-16)) calc(-1 * var(--sp-8)) calc(-1 * var(--sp-8) + 10px);
   border-radius: var(--radius-lg);
   transition: background-color var(--duration) var(--easing);
 }
@@ -1429,6 +1434,7 @@ html[data-theme="light"] .wizard__top::before {
   flex: 0 0 auto;
   display: inline-grid; place-items: center;
   width: 24px; height: var(--fs-22);   /* 高度≈主標題行高，與標題同高並列 */
+  margin-left: -2px;   /* 2026-10-28：配合 .wizard__top-lead 左內距歸零，見上 */
   border: 0; background: transparent; cursor: pointer;
   color: var(--foreground);
 }
@@ -1489,22 +1495,51 @@ html[data-theme="light"] .wizard__top::before {
    英文最後一格「PREVIEW & PUBLISH」畫進右欄的「Saved · just now」）。≤1024 一律走兩排：
    第一排＝返回／標題＋右側工具，第二排＝進度條滿寬；中寬的外距與儲存狀態文字維持桌機版，只有 ≤720 再收緊。 */
 @media (max-width: 1024px) {
-  .wizard__top-bar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: var(--sp-10);
-  }
+  /* 2026-10-28 使用者定案（lab-wizard-header.html）：960 中寬用提案 D、375 手機用提案 B。
+     中寬（721–1024）＝不換行：標題｜進度條（中欄 1fr 填滿）｜儲存，三段用 --sp-32 隔開；各步下面的狀態小字收起、標籤一行。
+     取代 2026-10-15 的「≤1024 一律兩排」與同日稍早的「兩排時進度條滿寬」（#393）。
+     例外：步驟 ≥5 的頁（建立活動 7～8 步）單排放不下，中寬也照手機的兩排＋底板（見下）。 */
+  .wizard__top-bar { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: var(--sp-32); }
   .wizard__top-lead { grid-column: 1; grid-row: 1; }
-  .wizard__top-actions { grid-column: 2; grid-row: 1; }
-  .wizard__progress, .wizard__stepper-slot { grid-column: 1 / -1; grid-row: 2; }
+  .wizard__progress, .wizard__stepper-slot { grid-column: 2; grid-row: 1; }
+  .wizard__top-actions { grid-column: 3; grid-row: 1; }
   .wizard__progress { padding-inline: 0; --progress-stepper-tail: 0px; }
+  .wizard__progress .progress-stepper--segmented { max-width: none; margin-inline: 0; }
+  .wizard__progress .progress-stepper__state { display: none; }
+  /* 步驟多的頁：兩排＋第二排底板（同手機版） */
+  .wizard__top-bar:has(.progress-stepper__label:nth-child(5)) { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--sp-12); row-gap: var(--sp-10); }
+  .wizard__top-bar:has(.progress-stepper__label:nth-child(5)) .wizard__progress,
+  .wizard__top-bar:has(.progress-stepper__label:nth-child(5)) .wizard__stepper-slot { grid-column: 1 / -1; grid-row: 2; }
+  .wizard__top-bar:has(.progress-stepper__label:nth-child(5)) .wizard__top-actions { grid-column: 2; }
+  .wizard__top-bar:has(.progress-stepper__label:nth-child(5)) .wizard__progress {
+    width: auto;   /* 基礎規則的 width:100% 會讓負外距撐不開，底板到不了右緣 */
+    margin: 0 calc(1px - var(--wh-pad-r)) calc(1px - var(--wh-pad-b)) calc(1px - var(--wh-pad-l));
+    padding: var(--sp-16) var(--wh-pad-r) var(--sp-14) var(--wh-pad-l);
+    background: var(--ztu-film); border-top: 1px solid var(--border-soft);
+    border-radius: 0 0 calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px);
+  }
 }
 @media (max-width: 720px) {
   .wizard__top { --wizard-top-pad-x: var(--sp-16); --wizard-top-pad-t: var(--sp-12); }
+  /* 手機＝提案 B：兩排；第一排返回／標題＋儲存，第二排是一塊貼邊的底板（略深、上緣一條貼邊分隔線、下兩角跟膠囊同弧），
+     進度條坐在底板裡、與第一排同一條左緣；兩排之間的間距加大（第一排下 10＋列距 10＋底板上內距 16）。
+     狀態小字沿用 progress-stepper.css ≤720 的收起；儲存狀態收成只剩狀態點。 */
   .wizard__top-bar {
-    gap: var(--sp-10) var(--sp-12);
-    padding: var(--sp-10) var(--sp-12) var(--sp-10) var(--sp-16);
+    --wh-pad-l: var(--sp-16); --wh-pad-r: var(--sp-12); --wh-pad-b: var(--sp-10);
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--sp-12); row-gap: var(--sp-10);
+    padding: var(--sp-10) var(--wh-pad-r) var(--wh-pad-b) var(--wh-pad-l);
   }
-  .wizard__top-actions { gap: var(--sp-6); }
+  .wizard__top-lead { grid-column: 1; grid-row: 1; }
+  .wizard__top-actions { grid-column: 2; grid-row: 1; gap: var(--sp-6); }
+  .wizard__progress, .wizard__stepper-slot { grid-column: 1 / -1; grid-row: 2; }
+  .wizard__progress {
+    width: auto;   /* 基礎規則的 width:100% 會讓負外距撐不開，底板到不了右緣 */
+    margin: 0 calc(1px - var(--wh-pad-r)) calc(1px - var(--wh-pad-b)) calc(1px - var(--wh-pad-l));
+    padding: var(--sp-16) var(--wh-pad-r) var(--sp-14) var(--wh-pad-l);
+    background: var(--ztu-film); border-top: 1px solid var(--border-soft);
+    border-radius: 0 0 calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px);
+  }
   .wizard__top-actions .wizard__save-status:not(.wizard__save-status--button),
   .wizard__top-actions .ce-save-status { font-size: 0; gap: 0; margin-inline-end: var(--sp-4); }
 }

@@ -507,38 +507,38 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.stock.title">Stock</h3>
       </div>
-      <!-- 庫存版本 Edition：不限量 / 限量（決定上限欄與逐規格表的上限欄）-->
-      <div class="field">
-        <div class="segmented radio-cards" id="cp-edition">
-          <button class="segmented__btn segmented__btn--active" type="button" data-cp-edition="unlimited">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.unlimited">Unlimited edition</span><span class="radio-card__sub" data-i18n="cp.edition.unlimited-hint">Restock anytime — never auto sells out.</span></span>
-          </button>
-          <button class="segmented__btn" type="button" data-cp-edition="limited">
-            <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.limited">Limited edition</span><span class="radio-card__sub" data-i18n="cp.edition.limited-hint">Hard cap with a visible total — fans see how many remain.</span></span>
-          </button>
+      <!-- 庫存版本 Edition：一顆「限量商品」開關（2026-10-28；原不限量／限量兩張卡退場）。
+           關＝不限量（預設，畫面不出現「不限量」一詞）、開＝限量；資料仍是同一條版本型態軸 state.edition。 -->
+      <div class="control-group">
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.limited.title">Limited edition</div>
+            <div class="control-row__sub" id="cp-edition-hint" data-i18n="cp.limited.sub-off">Turn on to set the most you can sell in total.</div>
+          </div>
+          <div class="switch" id="cp-edition" role="switch" aria-checked="false" tabindex="0"></div>
         </div>
-      </div>
-
       <!-- 單一規格的在庫欄位（多規格時改由逐規格表）-->
-      <div data-when-var="single">
-        <div class="form-grid" style="margin-top:var(--sp-6)">
+      <div class="control-group__body" data-when-var="single">
+        <div class="form-grid">
           <!-- 上限 Total Quantity：限量才出現（實體+數位）-->
           <div class="field" data-when-edition="limited">
             <div class="field__label"><span data-i18n="cp.total">Total quantity</span> <span class="field__req">*</span></div>
             <input class="input" placeholder="0" id="cp-total">
-            <div class="field__hint" data-i18n="cp.total.hint">Hard cap · restock ceiling</div>
           </div>
           <!-- 實體：目前在庫（spec §7.14 · D241）。這一欄收的是「這件商品總共有幾件」，
                分給單售與各組合包的鎖定量不在建立流程收（單售在商品細節頁、組合在建立組合流程）。 -->
           <div class="field" data-cp-show="physical">
             <div class="field__label" data-i18n="stock.pool">Goods in stock</div>
             <input class="input" placeholder="0" id="cp-stock">
-            <div class="field__hint" data-i18n="cp.stock.pool-hint">Locking stock for single sale or a bundle happens on the product page and in the bundle flow.</div>
+            <div class="field__hint" id="cp-stock-hint" data-i18n="cp.stock.pool-hint-off">Restock without a cap — it only shows sold out when it hits zero.</div>
             <p class="field__error" data-cp-stock-err hidden data-i18n="cp.stock.over-err">In stock can't exceed the total quantity.</p>
           </div>
           <!-- 墓碑 2026-10-27（UIA-301 第 5 項）：數位限量原有「剩餘份數」必填欄（#cp-dcopies）。5.1.5.2 類型差異表寫明
                數位商品「限量僅設上限、無在庫」，剩餘份數＝上限 − 已售由系統算，建立時就等於上限，不另收；只留上方「上限數量」。 -->
         </div>
+  <!-- 數位商品關閉限量：沒有庫存欄，只說明（spec 5.1.5.2 類型差異表）-->
+      <p class="field__hint" style="margin:0" data-cp-show="digital" data-when-edition="unlimited" data-i18n="cp.limited.digital-off">Fans can buy and download without a cap — no stock to enter.</p>
+      </div>
       </div>
 
       <!-- 低庫存提醒（實體；單一與多規格皆適用）。門檻預設＝庫存上限的 10%（spec §7.2 / D105）。
@@ -935,9 +935,9 @@
               </div>
             </div>
           </div>
-        </div>
-        <!-- 顯示於商店（D247）：放最後、有線框（同建立組合包，2026-10-12） -->
-        <div class="lctl__row control-group control-group--plain" data-cp-shown-row hidden>
+        <!-- 顯示於商店（D247）：與定時下架同一個線框，中間分隔線區隔（2026-10-28 使用者指示） -->
+        <div class="lctl__rule lctl__rule--group"></div>
+        <div class="lctl__row" data-cp-shown-row>
           <div class="lctl__head">
             <div class="lctl__titles">
               <span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span>
@@ -945,6 +945,7 @@
             </div>
             <div class="switch switch--on lctl__control" id="cp-shown-toggle" role="switch" aria-checked="true" tabindex="0"></div>
           </div>
+        </div>
         </div>
       </div>
     </section>
@@ -988,7 +989,6 @@
             </div>
           </div>
         </div>
-        <p class="lctl__note" data-i18n="cp.listing.pending">Time zone &amp; exact timing pending spec.</p>
       </div>
     </section>
 
@@ -2335,10 +2335,15 @@
     });
   }
   function updateEditionHint() {
+    const ltd = state.edition === 'limited';
+    const sw = document.getElementById('cp-edition');
+    if (sw) { sw.classList.toggle('switch--on', ltd); sw.setAttribute('aria-checked', ltd ? 'true' : 'false'); }
     const hint = document.getElementById('cp-edition-hint');
-    if (!hint) return;
-    if (state.edition === 'limited') { hint.setAttribute('data-i18n', 'cp.edition.limited-hint'); hint.textContent = T('cp.edition.limited-hint', 'Hard cap with a visible total — fans see how many remain.'); }
-    else { hint.setAttribute('data-i18n', 'cp.edition.unlimited-hint'); hint.textContent = T('cp.edition.unlimited-hint', 'Restock anytime — never auto sells out.'); }
+    const k = ltd ? 'cp.limited.sub-on' : 'cp.limited.sub-off';
+    if (hint) { hint.setAttribute('data-i18n', k); hint.textContent = T(k, ltd ? 'Set the most you can sell in total.' : 'Turn on to set the most you can sell in total.'); }
+    const sh = document.getElementById('cp-stock-hint');
+    const k2 = ltd ? 'cp.stock.pool-hint-on' : 'cp.stock.pool-hint-off';
+    if (sh) { sh.setAttribute('data-i18n', k2); sh.textContent = T(k2, ltd ? 'Total quantity can\'t exceed the cap.' : 'Restock without a cap — it only shows sold out when it hits zero.'); }
   }
   wireSegmented('cp-var-mode', 'cpVar', v => {
     state.varMode = v;
@@ -2351,7 +2356,16 @@
     if (v === 'multiple') renderOptions();
     refresh();
   });
-  wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); syncStockErr(); refresh(); });
+  function toggleEdition() {
+    state.edition = state.edition === 'limited' ? 'unlimited' : 'limited';
+    if (state.edition === 'unlimited' && fTotal) fTotal.value = '';   // 關閉限量＝上限清掉
+    updateEditionHint(); applyVisibility(); syncVariantLimited(); syncStockErr(); refresh();
+  }
+  const edSwitch = document.getElementById('cp-edition');
+  if (edSwitch) {
+    edSwitch.addEventListener('click', toggleEdition);
+    edSwitch.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleEdition(); } });
+  }
   /* D470 取貨方式勾選（5.1.5.2 F4，步驟 2）：勾了現場 QR 領取才出現取貨場次；都沒勾就地紅字「至少勾一種」，
      就緒檢查同一條（進入步驟 3 時擋）。重量欄的＊與說明跟著物流配送的勾選（重量欄在步驟 1，F15）。 */
   function syncDelivery() {
@@ -2428,8 +2442,6 @@
     const listed = listingMode !== 'none';
     const body = document.querySelector('[data-cp-listed-body]');
     if (body) body.hidden = !listed;
-    const shownRow = document.querySelector('[data-cp-shown-row]');
-    if (shownRow) shownRow.hidden = !listed;
     const f = document.querySelector('[data-cp-listing-fields]');
     if (f) f.hidden = listingMode !== 'schedule';
     const rl = document.querySelector('[data-cp-listing-rule]');

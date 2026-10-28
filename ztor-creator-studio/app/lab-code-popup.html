@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>優惠碼卡片與新增彈窗 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-code-popup — 商品端優惠碼：每個碼一張框起來的卡＋「新增優惠碼」框線按鈕＋新增彈窗（2026-10-28）。
+     取代現行勾選表（code-picker）。上層只列「這個商品實際會套用」的碼（全店碼＋已加入的特定商品碼）；
+     已建立但還沒加入的碼不在上層列出，要加入時在彈窗的「選擇已建立」裡挑，或在同一個彈窗「建立新的」。
+     只用既有元件（control-group--plain、lctl__*、badge、btn、payout-dialog、zcheck、code-picker__tbl 列），自有樣式 lab- 前綴＋token。 */
+  .lab [hidden] { display: none !important; }
+  .lab-stage { max-width: 770px; margin-top: var(--sp-20); }
+  .lab-cards { display: flex; flex-direction: column; gap: var(--sp-12); }
+  /* 每張卡內的欄位平行排成一列，欄軌與欄名列共用同一組，全部卡片欄位上下對齊；
+     最後一欄（移除鈕）每張卡都留位置，全店碼沒有鈕也不會讓狀態徽章往右偏。 */
+  .lab-cols, .lab-card__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 5.5rem) var(--sp-56) minmax(0, 7.5rem) var(--sp-80) var(--sp-32);
+    align-items: center;
+    column-gap: var(--sp-12);
+  }
+  .lab-cols { padding: 0 var(--sp-16); color: var(--column-head-ink); font-size: var(--fs-12); }
+  .lab-card__row { min-height: var(--sp-40); }
+  .lab-card__code { font-family: var(--font-numeric); font-size: var(--fs-14); color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-cell { font-size: var(--fs-13); color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; font-size: var(--fs-14); color: var(--foreground); text-align: right; }
+  .lab-cols .lab-num { font-family: inherit; font-size: inherit; color: inherit; }
+  /* 「新增優惠碼」＝跟卡片同一種整塊框（寬度吃滿、卡片級圓角），整塊都是按鈕 */
+  .lab-add { width: 100%; border-radius: var(--radius-xl); min-height: var(--sp-64); justify-content: center; }
+  @media (max-width: 560px) {
+    .lab-cols, .lab-card__row { grid-template-columns: minmax(0, 1fr) minmax(0, 4.5rem) var(--sp-48) var(--sp-80) var(--sp-32); }
+    .lab-period { display: none; }
+  }
+  .lab-sec__title { font-family: var(--font-display); font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--foreground); margin: 0 0 var(--sp-12); }
+  .lab-sec__rule { height: 1px; background: var(--border); margin: var(--sp-20) calc(var(--sp-20) * -1); }
+  .lab-pick { display: flex; flex-direction: column; gap: var(--sp-12); }
+  .lab-pick__empty { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0; }
+  .lab-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-16) 0 0; max-width: 770px; }
+  .lab-note b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-reset { margin-top: var(--sp-16); }
+  .lab .code-picker__row { grid-template-columns: var(--sp-16) minmax(0, 1fr) minmax(0, 6.5rem) var(--sp-56) minmax(0, 7.5rem); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro"><div>
+        <h1 class="page-intro__title">優惠碼：卡片列表＋新增彈窗（設計探索）</h1>
+        <p class="page-intro__sub">上層每個碼是一張框起來的卡，底下一顆框線的「新增優惠碼」按鈕。按下去開彈窗：同一頁上半「選擇已建立」、下半「建立新的」，一個「加入」鈕一起處理。已建立但還沒加入的碼只在彈窗裡出現，不佔上層版面。</p>
+      </div></div>
+
+      <div class="lab-stage">
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head"><h3 class="form-section__title">優惠碼</h3></div>
+          <div class="lab-cards" id="lab-cards"></div>
+          <button class="btn btn--outline btn--block lab-add" type="button" id="lab-add"><i data-lucide="plus" class="ztor-icon"></i><span>新增優惠碼</span></button>
+        </section>
+        <button class="btn btn--ghost btn--sm lab-reset" type="button" id="lab-reset">重設 demo</button>
+      </div>
+
+      <p class="lab-note"><b>規則照舊</b>：全店碼一律適用，卡上沒有移除鈕、標「全店」；特定商品的碼可移除（移除＝只是不套用在這個商品，碼本身還在，之後可從彈窗再加入）。已結束或停用的碼不出現在「選擇已建立」。新建的碼隨商品儲存才真的建立，卡上先標「待儲存」。</p>
+
+    </div>
+  </main>
+</div>
+
+<!-- 新增優惠碼彈窗（重用 payout-modal／payout-dialog） -->
+<div class="payout-modal" id="lab-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="lab-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="lab-modal-title">新增優惠碼</h2>
+      <button class="btn btn--icon" type="button" data-lab-close aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <h3 class="lab-sec__title">選擇已建立</h3>
+      <div class="lab-pick" id="lab-pane-pick"></div>
+
+      <div class="lab-sec__rule"></div>
+      <h3 class="lab-sec__title">建立新的</h3>
+      <div class="stack" id="lab-pane-create" style="gap:var(--sp-16)">
+        <div class="field">
+          <div class="field__label">優惠碼 <span class="field__req">*</span></div>
+          <div class="code-picker-modal__row"><input class="input" id="lab-m-code" maxlength="20" autocomplete="off" placeholder="SUMMER25"><button class="btn btn--outline btn--sm" type="button" id="lab-m-gen">自動產生</button></div>
+          <div class="field__hint">8–20 個英文字母或數字，不分大小寫。</div>
+        </div>
+        <div class="field">
+          <div class="field__label">折扣 <span class="field__req">*</span></div>
+          <span class="amount-field amount-field--suffix" style="width:132px"><input class="input amount-field__input" id="lab-m-pct" value="10" inputmode="decimal"><span class="amount-field__unit">%</span></span>
+        </div>
+        <div class="code-picker-modal__dates">
+          <div class="field"><div class="field__label">開始日期</div><input class="input" type="date" id="lab-m-start"></div>
+          <div class="field"><div class="field__label">結束日期</div><input class="input" type="date" id="lab-m-end"></div>
+        </div>
+        <div class="field"><div class="field__label">適用範圍</div><div class="code-picker-modal__scope">特定商品：這件商品（新碼會自動加入）</div></div>
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <p class="payout-dialog__foot-note" id="lab-err" hidden></p>
+      <div class="payout-dialog__foot-actions">
+        <button class="btn btn--outline" type="button" data-lab-close>取消</button>
+        <button class="btn btn--primary" type="button" id="lab-confirm" disabled>加入</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const SEED = () => ({
+    applied: [
+      { code: 'SUMMER25', pct: 25, period: '7/1 – 8/31', scope: 'all', status: 'active' },
+      { code: 'EARLYBIRD10', pct: 10, period: '11/15 – 12/15', scope: 'all', status: 'scheduled' }
+    ],
+    pool: [   /* 已建立、特定商品範圍、還沒加入本商品 */
+      { code: 'TOURVIP15', pct: 15, period: '9/1 – 10/31', scope: 'items', status: 'active' },
+      { code: 'FANDAY20', pct: 20, period: '10/1 – 12/31', scope: 'items', status: 'active' },
+      { code: 'AIKO10', pct: 10, period: '8/1 – 9/30', scope: 'items', status: 'active' }
+    ]
+  });
+  let S = SEED(), tab = 'pick', picked = new Set();
+  const BADGE = { active: ['success', '進行中'], scheduled: ['info', '尚未開始'], pending: ['neutral', '待儲存'] };
+  const badge = s => `<span class="badge badge--${BADGE[s][0]}">${BADGE[s][1]}</span>`;
+
+  function renderCards() {
+    const head = '<div class="lab-cols"><span>優惠碼</span><span>適用範圍</span><span class="lab-num">折扣</span><span class="lab-period">期間</span><span>狀態</span><span></span></div>';
+    $('lab-cards').innerHTML = head + S.applied.map(c =>
+      `<div class="control-group control-group--plain"><div class="lab-card__row">
+         <span class="lab-card__code">${c.code}</span>
+         <span class="lab-cell">${c.scope === 'all' ? '全店' : '特定商品'}</span>
+         <span class="lab-num">${c.pct}%</span>
+         <span class="lab-cell lab-period">${c.period}</span>
+         <span>${badge(c.status)}</span>
+         <span>${c.scope === 'all' ? '' : `<button class="btn btn--icon btn--sm" type="button" data-rm="${c.code}" aria-label="移除 ${c.code}"><i data-lucide="x" class="ztor-icon"></i></button>`}</span>
+       </div></div>`).join('');
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document);
+  }
+  function renderPick() {
+    const host = $('lab-pane-pick');
+    if (!S.pool.length) { host.innerHTML = '<p class="lab-pick__empty">沒有其他可加入的優惠碼，可在下面建立新的。</p>'; return; }
+    host.innerHTML = '<div class="code-picker__tbl">' +
+      '<div class="code-picker__head"><span></span><span>優惠碼</span><span class="code-picker__cell">適用範圍</span><span class="code-picker__num">折扣</span><span class="code-picker__cell code-picker__period">期間</span></div>' +
+      S.pool.map(c => `<label class="code-picker__row${picked.has(c.code) ? '' : ' code-picker__row--off'}"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-pick="${c.code}"${picked.has(c.code) ? ' checked' : ''} aria-label="${c.code}"><span class="zcheck__box"></span></span><span class="code-picker__code">${c.code}</span><span class="code-picker__cell code-picker__scope">特定商品</span><span class="code-picker__num">${c.pct}%</span><span class="code-picker__cell code-picker__period">${c.period}</span></label>`).join('') + '</div>';
+  }
+  const hasNew = () => $('lab-m-code').value.trim() !== '';
+  function syncFoot() {
+    const b = $('lab-confirm'), n = picked.size + (hasNew() ? 1 : 0);
+    b.textContent = n ? `加入（${n}）` : '加入'; b.disabled = !n;
+    $('lab-err').hidden = true;
+  }
+  function openModal() {
+    picked = new Set(); renderPick();
+    ['lab-m-code', 'lab-m-start', 'lab-m-end'].forEach(i => $(i).value = ''); $('lab-m-pct').value = '10';
+    $('lab-modal').hidden = false; document.body.classList.add('is-modal-open');
+    syncFoot();
+    if (window.ztorIcons) window.ztorIcons.applyIcons($('lab-modal'));
+  }
+  function closeModal() { $('lab-modal').hidden = true; document.body.classList.remove('is-modal-open'); }
+  const short = v => { const m = /^\d{4}-(\d{2})-(\d{2})/.exec(v || ''); return m ? (+m[1] + '/' + +m[2]) : ''; };
+  function confirm() {
+    const err = k => { $('lab-err').textContent = k; $('lab-err').hidden = false; };
+    let fresh = null;
+    if (hasNew()) {
+      const code = $('lab-m-code').value.trim();
+      if (!/^[A-Za-z0-9]{8,20}$/.test(code)) return err('優惠碼要 8–20 個英文字母或數字。');
+      const up = code.toUpperCase();
+      if ([...S.applied, ...S.pool].some(c => c.code === up)) return err('這個優惠碼已經存在。');
+      const pct = parseFloat($('lab-m-pct').value);
+      if (!(pct >= 1 && pct <= 100)) return err('折扣要在 1–100% 之間。');
+      const s = $('lab-m-start').value, e = $('lab-m-end').value;
+      if (s && e && e < s) return err('結束日期要晚於開始日期。');
+      fresh = { code: up, pct, period: (s || e) ? ((short(s) || '…') + ' – ' + (short(e) || '…')) : '—', scope: 'items', status: 'pending' };
+    }
+    S.pool.filter(c => picked.has(c.code)).forEach(c => S.applied.push(c));
+    S.pool = S.pool.filter(c => !picked.has(c.code));
+    if (fresh) S.applied.push(fresh);
+    closeModal(); renderCards();
+  }
+
+  $('lab-add').addEventListener('click', openModal);
+  $('lab-reset').addEventListener('click', () => { S = SEED(); renderCards(); });
+  $('lab-confirm').addEventListener('click', confirm);
+  ['lab-m-code'].forEach(i => $(i).addEventListener('input', syncFoot));
+  $('lab-m-gen').addEventListener('click', () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let o = ''; for (let i = 0; i < 10; i++) o += A[Math.floor(Math.random() * A.length)]; $('lab-m-code').value = o; syncFoot(); });
+  $('lab-modal').addEventListener('click', e => { if (e.target === $('lab-modal') || e.target.closest('[data-lab-close]')) closeModal(); });
+  $('lab-modal').addEventListener('change', e => { const k = e.target.getAttribute && e.target.getAttribute('data-pick'); if (!k) return; e.target.checked ? picked.add(k) : picked.delete(k); renderPick(); syncFoot(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('lab-modal').hidden) closeModal(); });
+  $('lab-cards').addEventListener('click', e => {
+    const b = e.target.closest('[data-rm]'); if (!b) return;
+    const i = S.applied.findIndex(c => c.code === b.dataset.rm); if (i < 0) return;
+    const c = S.applied.splice(i, 1)[0]; if (c.status !== 'pending') S.pool.push(c);
+    renderCards();
+  });
+  renderCards();
+})();
+</script>
+</body>
+</html>
