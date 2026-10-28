@@ -2212,6 +2212,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 ---
 
+**`.alert--glass`（2026-10-27，UI-CHANGES 三百六十一）** — 狀態色玻璃面板：與 `.alert--row` 併用，把「整段說明＋一個動作」的頁內提示做成獨立區段（玻璃底＋狀態色 tint、狀態色邊框、圓形圖示晶片；內距 16/20、`--radius-xl`）。目前只定義 `--info`（藍），用在活動詳情「活動上架中，目前只能改庫存」（設定、票務、通知三處）。浮層與內嵌頁裡退回薄膜無模糊。
+
 ### 4.14 Accordion
 
 > **2026-07-10 標註：** 行銷站遺留元件，admin 後台（本產品）未使用／marketing-site legacy, unused in the admin app。內容與 CSS 保留不刪。
@@ -3216,6 +3218,8 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 **間距**：分節橫列與內容之間也是 `--sp-18`（`.nav-sections { margin-top }`），並把 `.list-toolbar` 自己的 8px 歸零，讓間距只有一個來源。不改 `.list-toolbar` 的預設值，是因為在清單頁它底下緊接的是次層篩選列（同一組控制項的上下兩排，8px 是對的）；這裡它底下是內容區，兩者是「控制」與「被控制的東西」，距離該拉開。
 
 **沒有卡片外層的分節左右內縮（2026-10-27，UI-CHANGES 三百五十九）** — `.nav-sections > [data-nav-panel]:not(:has(> .card))` 左右各 `--sp-20`：分節內容直接排在畫布上（小標＋票種卡格、組合包、空狀態）時，起點與上方工作列裡的文字對齊；整節包在一張卡裡的分節不動（卡邊與工作列對齊）。
+
+**停用的主分頁（2026-10-28，UI-CHANGES 三百六十二）** — `.section-nav__item[aria-disabled="true"]` 淡一階（opacity .45）、`not-allowed`，仍可聚焦；用在活動詳情編輯中鎖住其他主分頁（點了由頁面提示原因）。
 
 ### 4.22h1 Stat row · Meter list · Day bars（總覽階段主卡的三支，2026-08-17）
 

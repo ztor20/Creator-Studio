@@ -438,6 +438,31 @@ html[data-embed] .alert--bar {
    寫在狀態變體之後才蓋得掉上面那四條（同權重時後者勝）。 */
 .alert--row .alert__icon { background: transparent; }
 
+/* ── --glass：狀態色玻璃面板（2026-10-27 使用者：「這要有一個 section，藍色玻璃的 style」，UI-CHANGES 三百六十一）──
+   給「整段說明＋一個動作」的頁內提示用（活動上架中只能改庫存）：不再是無底色的清單列，而是一塊獨立的區段——
+   玻璃底（同 .alert--bar 的 layer-1＋blur＋頂緣內光）疊一層狀態色 tint、邊框帶狀態色、圖示用狀態色晶片。
+   目前只定義 --info（藍）；其他狀態要用時照同一組寫法補。與 .alert--row 併用（沿用它的三欄 grid），這裡只覆寫面與內距。 */
+.alert--glass {
+  padding: var(--sp-16) var(--sp-20);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+}
+.alert--glass.alert--info {
+  background: color-mix(in srgb, var(--status-info) 9%, var(--layer-1-surface));
+  border: 1px solid color-mix(in srgb, var(--status-info) 30%, var(--border));
+}
+.alert--glass.alert--info .alert__icon {
+  width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--status-info) 16%, transparent);
+  color: var(--status-info-ink);
+}
+.alert--glass .alert__title { color: var(--foreground); }
+/* 浮層／內嵌裡退回薄膜，同 .alert--bar */
+:is(.payout-dialog, .payout-modal, .dropdown__menu, .zselect__panel, .preview-panel__sheet, .detail-sheet, .overlay-surface) .alert--glass,
+html[data-embed] .alert--glass { backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+
 .alert--warning .alert__cta { color: var(--status-warning-ink); }
 .alert--error   .alert__cta { color: var(--destructive); }
 .alert--success .alert__cta { color: var(--status-success); }
