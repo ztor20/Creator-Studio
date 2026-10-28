@@ -107,16 +107,12 @@
         <!-- Dock 槽（2026-09-11，詳情頁只准一條固定列）：分頁工具列捲到頂列底下時，它的 tabs 進 [data-dock-tabs]、動作進 [data-dock-actions]；js/detail-topbar.js -->
         <div class="detail-topbar__tabs" data-dock-tabs></div>
         <div class="page-intro__actions">
-          <!-- 預覽與在地化（§2.2 主操作 · D319，2026-09-23）：取代原本的「粉絲視角預覽（See as fan）」分割預覽——
-               §2.18 那個畫面主區本身就是同一份粉絲視角完整商品頁，還能改翻譯，頁首不再另設一顆唯讀預覽鈕。
-               href 由下方 inline script 依 ?id 補上；已封存也走得進去（那頁自己唯讀，見 product-localization.html）。 -->
-          <a class="btn btn--outline" href="product-localization.html" data-pd-localize data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="product-detail.btn.localize">Preview &amp; localization</span></a>
-          <!-- 需求數據入口（§2.19 · D360 · S69，僅實體）：開本商品的需求數據彈窗（需求看板的單品切片，口徑一致）。
-               入口形式取頁首動作區的一顆 outline 鈕（規格 §2.19 的呈現參考，與旁邊「預覽與在地化」同一做法）：
-               跨分頁常駐、不佔總覽那排 KPI 磚的位置；捲過頁首後跟著收進頂列只留 icon（data-dock-icon，Q115）。
-               顯隱沿用 data-pd-cat：數位商品整顆收起（applyCat）。封存態仍可開（查看性質，§2.19 其他狀態）。 -->
-          <button class="btn btn--outline" type="button" data-pd-demand-open data-pd-cat="physical" data-feat="S69" data-dock-icon><i data-lucide="chart-column" class="ztor-icon"></i><span data-i18n="product-detail.btn.demand">Demand data</span></button>
-          <!-- 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
+          <!-- 2026-10-28（使用者：「電子商店的詳情頁，要和活動詳情頁的這些按鈕設計一樣」）：頁首動作照活動詳情頁的骨架收斂——
+               只留「解除封存」（已封存時唯一的主要動作，同活動詳情）；「預覽與在地化」搬到分頁工具列右端、「編輯」左邊；
+               「需求數據」搬到左側分節導覽；「上架／下架／顯示／隱藏／封存／刪除」收進分頁工具列右端的「⋯」下拉（#pd-more）。
+               各按鈕的 data-pd-* 屬性與顯隱邏輯（syncPrimaryAction 等）不變，只是搬了位置與樣式。
+               原頁首規則（依狀態互斥、一次只出現一個）的說明保留在下方供查：
+ 頁首主要動作依狀態互斥、一次只出現一個（spec 5.1.5.1 §2.2，主規格 §7.14「封存與不可刪除」· D284，2026-09-18）：
                上架中→「下架」（＝把上架開關切關，同一份資料）；已下架→「封存」（先確認；仍在上架中組合包裡則列出並一同下架）；
                已封存→「解除封存」（不確認、回到已下架、設定照舊、不自動上架；D298 2026-09-22 修訂 D284 的「直接回到上架」）。
                刪除（D307 2026-09-22，修訂 D284「發布過即不可刪除」）：已下架或已封存且零成交時，主要動作旁多一顆「刪除」（紅框次要樣式，不搶主動作）；
@@ -127,12 +123,6 @@
                與上架設定卡的「顯示於商店」開關（`#pd-shown-toggle`）是同一個動作——點擊直接觸發該開關的 click，不複製一份判斷邏輯，
                沿用它現行「不確認」的行為。只有上架中才出現（D265／§7.14：已下架、已封存、草稿時顯示軸本來就不可調）。
                顯隱由 syncPrimaryAction() 依 ListingState 決定，這裡七顆都先 hidden。 -->
-          <button class="btn btn--outline" type="button" data-pd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
-          <button class="btn btn--primary" type="button" data-pd-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.list">List</span></button>
-          <button class="btn btn--outline" type="button" data-pd-hide hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.hide">Hide</span></button>
-          <button class="btn btn--outline" type="button" data-pd-show hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.show">Show</span></button>
-          <button class="btn btn--outline" type="button" data-pd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
-          <button class="btn btn--destructive" type="button" data-pd-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
           <button class="btn btn--primary" type="button" data-pd-unarchive hidden><i data-lucide="archive-restore" class="ztor-icon"></i><span data-i18n="product-detail.btn.unarchive">Unarchive</span></button>
           <div data-dock-actions></div>
           <!-- 2026-09-11 撤除頁級「儲存」：商品設定分頁改成「編輯商品 → 儲存變更」的開關（同活動詳情），
@@ -185,6 +175,8 @@
         <nav class="section-nav" role="tablist" data-tabs aria-label="Product detail sections">
           <button class="section-nav__item section-nav__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
           <button class="section-nav__item" role="tab" data-tab="stock" aria-selected="false" data-pd-cat="physical" data-i18n="product-detail.tab.stock">Stock</button>
+          <!-- 需求數據（§2.19 · D360 · S69，僅實體）：2026-10-28 自頁首搬到左側分節導覽，再改成真正的分頁（使用者：「需求數據要改成分頁，不是 popup」）。 -->
+          <button class="section-nav__item" role="tab" data-tab="demand" aria-selected="false" data-pd-cat="physical" data-feat="S69" data-i18n="product-detail.btn.demand">Demand data</button>
           <button class="section-nav__item" role="tab" data-tab="settings" aria-selected="false" data-i18n="product-detail.tab.settings">Product settings</button>
           <button class="section-nav__item" role="tab" data-tab="links" aria-selected="false" data-i18n="product-detail.tab.links">Links</button>
         </nav>
@@ -339,12 +331,28 @@
               <button type="button" class="tabs__item" data-view-safe data-nav-item="publish" data-i18n="product-detail.nav.publish">Listing &amp; sale</button>
             </nav>
             <div class="list-toolbar__actions">
+              <!-- 預覽與在地化（§2.2 主操作 · D319）：2026-10-28 自頁首搬到這裡、「編輯」左邊，同活動詳情（使用者指示）。href 由下方 inline script 依 ?id 補上；已封存也走得進去。 -->
+              <a class="btn btn--outline" href="product-localization.html" data-pd-localize data-view-safe data-dock-icon><i data-lucide="globe" class="ztor-icon"></i><span data-i18n="product-detail.btn.localize">Preview &amp; localization</span></a>
+
               <button class="btn btn--ghost" type="button" data-view-safe data-pd-edit-cancel hidden data-i18n="payout.cancel">Cancel</button>
               <!-- data-view-safe：這顆就是「進入編輯」的開關本身（同活動詳情的理由） -->
               <button class="btn btn--outline" type="button" data-view-safe data-pd-editmode data-dock-icon aria-pressed="false">
                 <i data-lucide="pencil" class="ztor-icon"></i>
                 <span data-pd-editmode-label data-i18n="product-detail.btn.edit">Edit product</span>
               </button>
+              <!-- 更多動作（2026-10-28 使用者指示，同活動詳情 #ed-more）：頁首原本的下架／上架／顯示／隱藏／封存／刪除收進這顆「⋯」下拉。
+                   顯隱仍由各按鈕自己的 hidden 屬性決定（syncPrimaryAction 等不動）；全部都收起時整顆「⋯」收起（見頁尾 syncPdMore）。 -->
+              <details class="dropdown" id="pd-more" hidden>
+                <summary class="btn btn--outline btn--icon" aria-label="More actions" data-i18n-aria-label="event-detail.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
+                <div class="dropdown__menu" role="menu">
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-pd-hide hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.hide">Hide</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-pd-show hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.show">Show</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-pd-unlist hidden><i data-lucide="eye-off" class="ztor-icon"></i><span data-i18n="product-detail.btn.unlist">Unlist</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-pd-relist hidden><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="product-detail.btn.list">List</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-pd-archive hidden><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="product-detail.btn.archive">Archive</span></button>
+                  <button class="dropdown__item" type="button" role="menuitem" data-view-safe data-pd-delete hidden><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="product-detail.btn.delete">Delete</span></button>
+                </div>
+              </details>
             </div>
           </div>
           <div class="nav-sections">
@@ -1188,6 +1196,37 @@
         </div><!-- /data-nav settings -->
       </div><!-- /tab-panel settings -->
 
+      <!-- ════════ TAB · 需求數據（§2.19 · D360 · S69，僅實體）════════
+           本商品的需求數據＝需求看板（demand-board.html）的單品切片，數字一律取 ztorDemand.productSlice，畫面由 js/demand-board.js 的 ztorDemandView 產生，
+           與看板同一份 renderer、同一口徑。2026-10-28 由彈窗改成分頁（使用者指示）；內容槽 data-dv 同看板：summary／banner／main（table＋focus）／empty／note。 -->
+      <div class="tab-panel" data-panel="demand" role="tabpanel" data-pd-cat="physical" data-feat="S69">
+        <div class="form-section__head form-section__head--actions">
+          <div class="form-section__head-titles">
+            <h2 class="form-section__title" id="pd-demand-title" data-i18n="product-detail.demand.title">Demand data</h2>
+            <p class="form-section__sub" data-pd-demand-sub></p>
+          </div>
+          <div class="form-section__head-actions">
+            <a class="btn btn--ghost" href="demand-board.html" data-pd-demand-board><span data-i18n="product-detail.demand.board">Open in Demand board</span><i data-lucide="arrow-up-right" class="ztor-icon"></i></a>
+          </div>
+        </div>
+        <div data-pd-demand-root>
+          <div class="bento mb-16" data-dv="summary"></div>
+          <div class="info-banner mb-16" data-dv="banner" hidden></div>
+          <div class="bento bento--top bento--stack-lg" data-dv="main">
+            <div class="bento--span-8 pd-demand__table" data-dv="table"></div>
+            <aside class="card bento--span-4 bento__aside demand-focus" data-dv="focus" aria-live="polite"></aside>
+          </div>
+          <section class="card" data-dv="empty" hidden>
+            <div class="empty-card">
+              <span class="empty-card__icon"><i data-lucide="chart-column" class="ztor-icon"></i></span>
+              <h3 class="empty-card__title" data-i18n="demand.empty.title">No demand to count yet</h3>
+              <p class="empty-card__text" data-i18n="demand.empty.text">Numbers appear here once sized products sell through orders or bundles.</p>
+            </div>
+          </section>
+          <p class="field__hint mt-16" data-dv="note"></p>
+        </div>
+      </div><!-- /tab-panel demand -->
+
       <!-- ════════ TAB · 關聯（2026-09-11 使用者指示「新增一個分頁，商品被關聯或是組合使用都放在這」）════════
            這件商品和站上其他東西的關係，兩個方向：被誰用（組合包、項目——只讀、可點過去）、它掛在哪（電影關聯——可改）。
            原總覽的「使用中」卡撤除（組合那一列與庫存去向重複、且是寫死的示範；項目那一列搬來這裡成一區）；
@@ -1263,43 +1302,6 @@
   </section>
 </div>
 
-
-<!-- 需求數據彈窗（§2.19 · D360 · S69）：本商品的需求數據＝需求看板（demand-board.html）的單品切片，數字一律取 ztorDemand.productSlice，
-     畫面由 js/demand-board.js 的 ztorDemandView 產生，與看板同一份 renderer、同一口徑。
-     殼層用 .payout-modal／.payout-dialog（站上彈出層的唯一殼層，Q27；全不透明，Q78）；它是「檢視資料」性質的彈窗，
-     Q27 把 .drawer 留給唯讀用途，但本頁同類的「庫存歷史紀錄」「補貨紀錄」已是 .payout-modal，這裡跟本頁既有做法並記待裁決（STYLE-DECISIONS Q127）。
-     內容槽 data-dv 同看板：summary／banner／main（table＋focus）／empty／note；主排沿用看板的 bento--stack-lg（視窗 < 1440px 時選定對象落到表格下方）。 -->
-<div class="payout-modal" data-pd-demand-modal data-feat="S69" hidden>
-  <section class="payout-dialog payout-dialog--xwide" role="dialog" aria-modal="true" aria-labelledby="pd-demand-title">
-    <div class="payout-dialog__head">
-      <div class="payout-dialog__head-titles">
-        <h2 class="payout-dialog__title" id="pd-demand-title" data-i18n="product-detail.demand.title">Demand data</h2>
-        <p class="payout-dialog__sub" data-pd-demand-sub></p>
-      </div>
-      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="npp.close" data-pd-demand-close><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body" data-pd-demand-root>
-      <div class="bento mb-16" data-dv="summary"></div>
-      <div class="info-banner mb-16" data-dv="banner" hidden></div>
-      <div class="bento bento--top bento--stack-lg" data-dv="main">
-        <div class="bento--span-8 pd-demand__table" data-dv="table"></div>
-        <aside class="card bento--span-4 bento__aside demand-focus" data-dv="focus" aria-live="polite"></aside>
-      </div>
-      <section class="card" data-dv="empty" hidden>
-        <div class="empty-card">
-          <span class="empty-card__icon"><i data-lucide="chart-column" class="ztor-icon"></i></span>
-          <h3 class="empty-card__title" data-i18n="demand.empty.title">No demand to count yet</h3>
-          <p class="empty-card__text" data-i18n="demand.empty.text">Numbers appear here once sized products sell through orders or bundles.</p>
-        </div>
-      </section>
-      <p class="field__hint mt-16" data-dv="note"></p>
-    </div>
-    <div class="payout-dialog__foot">
-      <a class="btn btn--ghost" href="demand-board.html" data-pd-demand-board><span data-i18n="product-detail.demand.board">Open in Demand board</span><i data-lucide="arrow-up-right" class="ztor-icon"></i></a>
-      <button class="btn btn--outline" type="button" data-pd-demand-close data-i18n="npp.close">Close</button>
-    </div>
-  </section>
-</div>
 
 <!-- 鎖定庫存彈窗（2026-09-11 使用者裁示：表格唯讀，鎖定走一次性編輯）：
      卡頭「鎖定庫存」開全部選項組合、列尾 ⋯ 只開那一列；兩者同一個彈窗，差別只在列數。
@@ -4353,17 +4355,34 @@
 })();
 </script>
 <script>
-  /* 需求數據入口（§2.19 · D360 · S69）：開彈窗、畫本商品的需求數據。
+  /* 「⋯」下拉（#pd-more，2026-10-28）：全部項目都收起時整顆收起；點項目或點外面時收起（原生 <details> 不會自己關）。 */
+  (function () {
+    var menu = document.getElementById('pd-more');
+    if (!menu) return;
+    function sync() {
+      var any = Array.prototype.some.call(menu.querySelectorAll('.dropdown__item'), function (b) { return !b.hidden; });
+      var next = !any;
+      if (menu.hidden !== next) menu.hidden = next;
+      if (menu.hidden) menu.removeAttribute('open');
+    }
+    new MutationObserver(sync).observe(menu, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+    document.addEventListener('click', function (e) {
+      if (menu.hasAttribute('open') && (!menu.contains(e.target) || e.target.closest('.dropdown__item'))) menu.removeAttribute('open');
+    });
+    sync();
+  })();
+</script>
+<script>
+  /* 需求數據分頁（§2.19 · D360 · S69）：畫本商品的需求數據。2026-10-28 由彈窗改成分頁——第一次切到這個分頁（含 #demand 深連結）才建 view 並畫。
      與看板同一口徑：ztorDemand.productSlice(id)；計畫生產量與看板選同一商品時共用（同一個 scopeKey）。
-     沒有這件商品的需求資料（剛上架、示範資料沒有）→ 彈窗畫空狀態；沒有 ?id 時用不存在的佔位 id，
+     沒有這件商品的需求資料（剛上架、示範資料沒有）→ 畫空狀態；沒有 ?id 時用不存在的佔位 id，
      避免 productSlice('') 變成「全部商品」。示範開關：?state=empty|no-region 與 Cheat Codes 的 Empty 也生效。 */
   (function () {
-    var modal = document.querySelector('[data-pd-demand-modal]');
-    var opener = document.querySelector('[data-pd-demand-open]');
-    if (!modal || !opener || !window.ztorDemandView) return;
+    var panel = document.querySelector('[data-panel="demand"]');
+    if (!panel || !window.ztorDemandView) return;
     var qs = new URLSearchParams(location.search);
     var pid = qs.get('id') || (window.pdProduct && window.pdProduct.id) || '';
-    var root = modal.querySelector('[data-pd-demand-root]');
+    var root = panel.querySelector('[data-pd-demand-root]');
     function demo() {
       if (document.documentElement.getAttribute('data-data-state') === 'empty') return 'empty';
       var st = qs.get('state');
@@ -4376,25 +4395,22 @@
     }
     function fillSub() {
       var T = function (k, f) { return (window.i18nT && window.i18nT(k)) || f; };
-      var sub = modal.querySelector('[data-pd-demand-sub]');
+      var sub = panel.querySelector('[data-pd-demand-sub]');
       if (sub) sub.textContent = name() + ' · ' + T('product-detail.demand.sub', 'For reference only — it doesn’t change stock or restocking.');
-      var link = modal.querySelector('[data-pd-demand-board]');
+      var link = panel.querySelector('[data-pd-demand-board]');
       if (link) link.href = 'demand-board.html' + (pid ? '?product=' + encodeURIComponent(pid) : '');
     }
     function render() { if (view) view.render(); fillSub(); }
-    function open() {
+    function show() {
       if (!view) view = window.ztorDemandView.create(root, { productId: pid || '_none', idPrefix: 'pd', demo: demo });
-      modal.hidden = false;
-      if (window.ztorIcons) window.ztorIcons.applyIcons(modal);
-      if (window.applyI18n) window.applyI18n(modal);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(panel);
+      if (window.applyI18n) window.applyI18n(panel);
       render();
     }
-    function close() { modal.hidden = true; }
-    opener.addEventListener('click', open);
-    modal.addEventListener('click', function (e) {
-      if (e.target.closest('[data-pd-demand-close]')) close();
-    });
-    document.addEventListener('i18n:applied', function () { if (!modal.hidden) render(); });
+    function isActive() { return panel.classList.contains('tab-panel--active'); }
+    new MutationObserver(function () { if (isActive()) show(); }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    document.addEventListener('i18n:applied', function () { if (isActive() && view) render(); });
+    if (isActive()) show();
   })();
 </script>
 <script src="js/devtools.js?v=r2.2"></script>

@@ -64,6 +64,21 @@
   animation: detail-sheet-veil 180ms ease-out both;
 }
 .detail-sheet[hidden] { display: none; }
+/* 背板的遮罩與模糊（2026-10-29，使用者：「popup 後面應該要有遮罩與背景模糊」）：面板外那一圈留白（--ztu-shell-gutter）原本沒東西壓，
+   底下那頁的側欄與標題清清楚楚露出來。補一層獨立的子層（::before）——不掛在 .detail-sheet 本體上，
+   因為本體一旦有 backdrop-filter 就成了 backdrop root，面板自己的 40px 模糊會「宣告了卻什麼都沒糊」（見上方 2026-08-31 第四輪）；
+   子層是面板的兄弟，兩者各糊各的。面板（position:relative）疊在它上面。
+   旋鈕：--sheet-scrim（暗紗，canvas 色的濃度）、--sheet-scrim-blur（模糊半徑）。 */
+.detail-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ztu-canvas) var(--sheet-scrim, 45%), transparent);
+  backdrop-filter: blur(var(--sheet-scrim-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--sheet-scrim-blur, 16px));
+  pointer-events: none;
+}
+
 
 .detail-sheet__panel {
   display: flex;

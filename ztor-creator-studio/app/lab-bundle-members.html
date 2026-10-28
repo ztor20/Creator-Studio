@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>組合物挑選 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-bundle-members — 建立組合包「組合物」區塊的 UX 探索（2026-10-28）。
+     現況問題：空狀態「還沒有內容」是一句陳述、不是行動；真正的下一步（搜尋欄）長得像普通輸入框、不像主要動作；
+     想不起名字的人沒辦法瀏覽；一次要加好幾個得重複「搜尋→點選」。
+     A／B／C 三個方向，各自可操作（假資料）。只用既有元件，自有樣式 lab- 前綴＋token。 */
+  .lab [hidden] { display: none !important; }
+  .lab-stage { max-width: 770px; margin-top: var(--sp-24); }
+  .lab-tag { display: inline-flex; align-items: center; justify-content: center; min-width: var(--sp-32); height: var(--sp-24); padding: 0 var(--sp-8); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: var(--fs-12); margin-right: var(--sp-8); }
+  .lab-pos { font-size: var(--fs-13); color: var(--muted-foreground); margin: var(--sp-6) 0 var(--sp-16); }
+  .lab-pos b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-rows { display: flex; flex-direction: column; gap: var(--sp-12); }
+  .lab-cols, .lab-row { display: grid; grid-template-columns: minmax(0, 1.6fr) var(--sp-80) var(--sp-96) var(--sp-32); align-items: center; column-gap: var(--sp-12); }
+  .lab-cols { padding: 0 var(--sp-16); color: var(--column-head-ink); font-size: var(--fs-12); }
+  .lab-num { text-align: right; font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+  .lab-name { display: flex; align-items: center; gap: var(--sp-12); min-width: 0; }
+  .lab-thumb { flex: none; width: var(--sp-40); height: var(--sp-40); border-radius: var(--radius-md); background: var(--ztu-film); display: grid; place-items: center; color: var(--muted-foreground); }
+  .lab-txt { min-width: 0; display: flex; flex-direction: column; }
+  .lab-t { font-size: var(--fs-14); color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-s { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-qty { display: inline-flex; align-items: center; gap: var(--sp-4); justify-content: flex-end; }
+  .lab-qty b { min-width: var(--sp-24); text-align: center; font-weight: var(--fw-medium); }
+  /* 整塊框線的加入按鈕（同優惠碼的「新增優惠碼」）；空狀態版放大、虛線 */
+  .lab-add { width: 100%; border-radius: var(--radius-xl); min-height: var(--sp-64); height: auto; justify-content: center; align-items: center; }
+  .lab-rows + .lab-add { margin-top: var(--sp-12); }
+  .lab-empty { width: 100%; border: 1px dashed var(--border); border-radius: var(--radius-xl); background: transparent; color: var(--foreground); padding: var(--sp-32) var(--sp-16); display: flex; flex-direction: column; align-items: center; gap: var(--sp-6); cursor: pointer; }
+  .lab-empty:hover { background: var(--ztu-glass-strong); }
+  .lab-empty__t { font-size: var(--fs-16); display: inline-flex; align-items: center; gap: var(--sp-8); }
+  .lab-empty__s { font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-sum { margin-top: var(--sp-12); font-size: var(--fs-13); color: var(--muted-foreground); text-align: right; }
+  .lab-sum b { color: var(--foreground); font-family: var(--font-numeric); font-weight: var(--fw-medium); }
+  /* 挑選清單（A 彈窗、B 下拉共用的列） */
+  .lab-pickrow { display: grid; grid-template-columns: var(--sp-16) minmax(0, 1fr) var(--sp-80); align-items: center; column-gap: var(--sp-12); padding: var(--sp-10) var(--sp-12); border-top: 1px solid var(--border-soft); cursor: pointer; }
+  .lab-pickrow:first-child { border-top: 0; }
+  .lab-pickrow:hover { background: var(--ztu-glass-strong); }
+  .lab-pickrow[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+  .lab-pickrow--b { grid-template-columns: minmax(0, 1fr) var(--sp-80); }
+  .lab-grp { padding: var(--sp-8) var(--sp-12); font-size: var(--fs-12); color: var(--column-head-ink); background: var(--ztu-film); }
+  .lab-list { border: 1px solid var(--layer-line); border-radius: var(--radius-md); overflow: hidden; max-height: 18rem; overflow-y: auto; }
+  .lab-toolbar { display: flex; gap: var(--sp-8); align-items: center; margin-bottom: var(--sp-12); flex-wrap: wrap; }
+  .lab-toolbar .input { flex: 1 1 12rem; min-width: 0; }
+  .lab-new { border-radius: var(--radius-lg); min-height: var(--sp-48); height: auto; justify-content: center; margin-top: var(--sp-12); }
+  /* B：就地搜尋＋下拉 */
+  .lab-inline { position: relative; margin-top: var(--sp-12); }
+  .lab-dd { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + var(--sp-4)); background: var(--popover, var(--card)); border: 1px solid var(--layer-line); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-float); max-height: 20rem; overflow-y: auto; }
+  .lab-dd__new { display: flex; align-items: center; gap: var(--sp-8); width: 100%; padding: var(--sp-12); border: 0; border-top: 1px solid var(--border-soft); background: transparent; color: var(--foreground); cursor: pointer; font: inherit; }
+  .lab-dd__new:hover { background: var(--ztu-glass-strong); }
+  /* C：挑選牆 */
+  .lab-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: var(--sp-12); margin-top: var(--sp-12); }
+  .lab-tile { position: relative; display: flex; flex-direction: column; gap: var(--sp-8); padding: var(--sp-12); border: 1px solid var(--layer-line); border-radius: var(--radius-xl); background: transparent; color: var(--foreground); text-align: left; cursor: pointer; font: inherit; }
+  .lab-tile:hover { background: var(--ztu-glass-strong); }
+  .lab-tile .lab-thumb { width: 100%; height: var(--sp-64); }
+  .lab-tile.is-on { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+  .lab-tile[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+  .lab-tile__ck { position: absolute; top: var(--sp-8); right: var(--sp-8); }
+  .lab-wallhead { margin-top: var(--sp-16); }
+  @media (max-width: 560px) { .lab-cols, .lab-row { grid-template-columns: minmax(0, 1fr) var(--sp-80) var(--sp-32); } .lab-price { display: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab">
+      <div class="page-intro"><div>
+        <h1 class="page-intro__title">組合物：怎麼挑（設計探索）</h1>
+        <p class="page-intro__sub">現況：表格上方一句「還沒有內容」，下面一個長得像普通欄位的搜尋框。三個方向都改成「第一步一眼看得出要做什麼」，已加入的列表欄位對齊（名稱／原價／每組／移除），規則照舊：一個組合包只能含一場活動，限量商品會標剩餘。</p>
+      </div></div>
+
+      <div class="lab-stage">
+        <section class="form-section form-section--outlined" id="lab-a">
+          <div class="form-section__head"><h3 class="form-section__title"><span class="lab-tag">A</span>組合物</h3></div>
+          <p class="lab-pos"><b>大按鈕＋彈窗挑選。</b>空的時候整塊就是一顆大按鈕；按下去開彈窗，能搜尋、能篩「商品／活動」、能一次勾好幾個再「加入（N）」。底部「建立新商品」。</p>
+          <div data-host></div>
+        </section>
+
+        <section class="form-section form-section--outlined" id="lab-b" style="margin-top:var(--sp-24)">
+          <div class="form-section__head"><h3 class="form-section__title"><span class="lab-tag">B</span>組合物</h3></div>
+          <p class="lab-pos"><b>就地搜尋強化。</b>保留現在的欄位，但點一下就展開「全部可加的商品與活動」（分組、帶價格與剩餘），不必先知道名字；去掉「還沒有內容」。一次加一個，加完欄位留著可接著加。</p>
+          <div data-host></div>
+        </section>
+
+        <section class="form-section form-section--outlined" id="lab-c" style="margin-top:var(--sp-24)">
+          <div class="form-section__head"><h3 class="form-section__title"><span class="lab-tag">C</span>組合物</h3></div>
+          <p class="lab-pos"><b>挑選牆。</b>不開彈窗，直接把可加的商品與活動排成卡片牆，點卡片加入／取消；上面是已選清單。東西不多（約 12 個以內）時最快，多了要靠搜尋與分頁篩選。</p>
+          <div data-host></div>
+        </section>
+        <button class="btn btn--ghost btn--sm" type="button" id="lab-reset" style="margin-top:var(--sp-16)">重設全部 demo</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- A 的挑選彈窗 -->
+<div class="payout-modal" id="lab-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="lab-mt">
+    <div class="payout-dialog__head"><h2 class="payout-dialog__title" id="lab-mt">加入組合物</h2><button class="btn btn--icon" type="button" data-close aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button></div>
+    <div class="payout-dialog__body">
+      <div class="lab-toolbar">
+        <input class="input" id="lab-q" placeholder="搜尋你的商品或活動…" autocomplete="off">
+        <div class="segmented" id="lab-f"><button class="segmented__btn segmented__btn--active" type="button" data-f="all">全部</button><button class="segmented__btn" type="button" data-f="item">商品</button><button class="segmented__btn" type="button" data-f="event">活動</button></div>
+      </div>
+      <div class="lab-list" id="lab-pl"></div>
+      <button class="btn btn--outline btn--block lab-new" type="button" id="lab-newbtn"><i data-lucide="plus" class="ztor-icon"></i><span>建立新商品</span></button>
+    </div>
+    <div class="payout-dialog__foot"><p class="payout-dialog__foot-note" id="lab-note" hidden>一個組合包只能含一場活動。</p>
+      <div class="payout-dialog__foot-actions"><button class="btn btn--outline" type="button" data-close>取消</button><button class="btn btn--primary" type="button" id="lab-ok" disabled>加入</button></div></div>
+  </section>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  const DB = () => ([
+    { id: 'tee',   kind: 'item',  name: '26MS T-Shirt（白）', price: 890,  sub: '實體 · 庫存 48' },
+    { id: 'vinyl', kind: 'item',  name: '錄音室專輯 黑膠',     price: 1200, sub: '實體 · 庫存 21' },
+    { id: 'bag',   kind: 'item',  name: '巡迴帆布袋',           price: 480,  sub: '實體 · 庫存 130' },
+    { id: 'poster',kind: 'item',  name: '限量海報',             price: 350,  sub: '實體 · 限量，剩 12' },
+    { id: 'card',  kind: 'item',  name: '數位歌詞卡',           price: 120,  sub: '數位 · 無上限下載' },
+    { id: 'taipei',kind: 'event', name: '2026 台北演唱會',      price: 2800, sub: '活動 · 3 種票' },
+    { id: 'meet',  kind: 'event', name: '粉絲見面會',           price: 1500, sub: '活動 · 2 種票' }
+  ]);
+  let ITEMS = DB(), extra = 0;
+  const S = { a: [], b: [], c: [] };
+  const $ = (s, r) => (r || document).querySelector(s);
+  const money = n => '$' + n.toLocaleString('en-US');
+  const by = id => ITEMS.find(x => x.id === id);
+  const has = (k, id) => S[k].some(x => x.id === id);
+  const hasEvent = k => S[k].some(x => by(x.id).kind === 'event');
+  const icon = kind => `<i data-lucide="${kind === 'event' ? 'ticket' : 'package'}" class="ztor-icon"></i>`;
+  const redraw = () => window.ztorIcons && window.ztorIcons.applyIcons(document);
+
+  function add(k, id) { if (!has(k, id)) S[k].push({ id, qty: 1 }); render(k); }
+  function newProduct(k) { extra++; const id = 'new' + extra; ITEMS.push({ id, kind: 'item', name: '新商品 ' + extra, price: 0, sub: '剛建立 · 草稿' }); add(k, id); }
+  function blocked(k, it) { return it.kind === 'event' && hasEvent(k) && !has(k, it.id); }
+
+  function listHTML(k) {
+    if (!S[k].length) return '';
+    const head = '<div class="lab-cols"><span>名稱</span><span class="lab-num lab-price">原價</span><span class="lab-num">每組</span><span></span></div>';
+    const rows = S[k].map(m => { const it = by(m.id);
+      return `<div class="control-group control-group--plain"><div class="lab-row">
+        <div class="lab-name"><span class="lab-thumb">${icon(it.kind)}</span><span class="lab-txt"><span class="lab-t">${it.name}</span><span class="lab-s">${it.sub}</span></span></div>
+        <span class="lab-num lab-price">${money(it.price)}</span>
+        <span class="lab-qty"><button class="btn btn--icon btn--sm" data-q="-" data-id="${it.id}" aria-label="減少">−</button><b>${m.qty}</b><button class="btn btn--icon btn--sm" data-q="+" data-id="${it.id}" aria-label="增加">+</button></span>
+        <button class="btn btn--icon btn--sm" data-rm="${it.id}" aria-label="移除 ${it.name}"><i data-lucide="x" class="ztor-icon"></i></button></div></div>`; }).join('');
+    const total = S[k].reduce((s, m) => s + by(m.id).price * m.qty, 0);
+    return `<div class="lab-rows">${head}${rows}</div>`;
+  }
+  const sumHTML = k => S[k].length ? `<p class="lab-sum">原價合計 <b>${money(S[k].reduce((s, m) => s + by(m.id).price * m.qty, 0))}</b></p>` : '';
+
+  function render(k) {
+    const host = $('#lab-' + k + ' [data-host]');
+    if (k === 'a') {
+      host.innerHTML = S.a.length
+        ? listHTML('a') + sumHTML('a') + `<button class="btn btn--outline btn--block lab-add" data-open type="button"><i data-lucide="plus" class="ztor-icon"></i><span>加入更多</span></button>`
+        : `<button class="lab-empty" data-open type="button"><span class="lab-empty__t"><i data-lucide="plus" class="ztor-icon"></i>加入組合物</span><span class="lab-empty__s">挑你的商品或活動，至少一項才能繼續</span></button>`;
+    } else if (k === 'b') {
+      host.innerHTML = listHTML('b') + sumHTML('b') + `<div class="lab-inline"><input class="input" data-q placeholder="搜尋你的商品或活動，或點一下直接瀏覽…" autocomplete="off"><div class="lab-dd" data-dd hidden></div></div>`;
+    } else {
+      const tab = host.dataset.tab || 'all', q = (host.dataset.q || '').toLowerCase();
+      const shown = ITEMS.filter(i => (tab === 'all' || i.kind === tab) && i.name.toLowerCase().includes(q));
+      host.innerHTML = listHTML('c') + sumHTML('c') +
+        `<div class="lab-toolbar lab-wallhead"><input class="input" data-wq placeholder="搜尋…" value="${host.dataset.q || ''}" autocomplete="off"><div class="segmented" data-wf>` +
+        ['all:全部', 'item:商品', 'event:活動'].map(t => { const [v, l] = t.split(':'); return `<button class="segmented__btn${tab === v ? ' segmented__btn--active' : ''}" type="button" data-t="${v}">${l}</button>`; }).join('') + `</div></div>` +
+        `<div class="lab-wall">` + shown.map(i => { const on = has('c', i.id), bl = blocked('c', i);
+          return `<button class="lab-tile${on ? ' is-on' : ''}" type="button" data-tile="${i.id}"${bl ? ' aria-disabled="true" title="一個組合包只能含一場活動"' : ''}><span class="lab-thumb">${icon(i.kind)}</span><span class="lab-t">${i.name}</span><span class="lab-s">${money(i.price)} · ${i.sub}</span>${on ? '<span class="lab-tile__ck badge badge--success">已加入</span>' : ''}</button>`; }).join('') +
+        `<button class="lab-tile" type="button" data-new style="align-items:center;justify-content:center;border-style:dashed"><i data-lucide="plus" class="ztor-icon"></i><span class="lab-t">建立新商品</span></button></div>`;
+      const w = $('#lab-c [data-wq]'); if (w && host.dataset.focus) { w.focus(); w.setSelectionRange(w.value.length, w.value.length); }
+    }
+    redraw();
+  }
+
+  // 共用：列表上的 + − ✕
+  document.addEventListener('click', e => {
+    const sec = e.target.closest('section[id^="lab-"]'); if (!sec) return;
+    const k = sec.id.slice(4);
+    const q = e.target.closest('[data-q]'), rm = e.target.closest('[data-rm]');
+    if (q && q.dataset.id) { const m = S[k].find(x => x.id === q.dataset.id); m.qty = Math.max(1, m.qty + (q.dataset.q === '+' ? 1 : -1)); render(k); return; }
+    if (rm) { S[k] = S[k].filter(x => x.id !== rm.dataset.rm); render(k); return; }
+    if (k === 'a' && e.target.closest('[data-open]')) openModal();
+    if (k === 'c') {
+      const host = $('#lab-c [data-host]');
+      const t = e.target.closest('[data-t]'); if (t) { host.dataset.tab = t.dataset.t; render('c'); return; }
+      const tile = e.target.closest('[data-tile]');
+      if (tile) { const it = by(tile.dataset.tile); if (blocked('c', it)) return; if (has('c', it.id)) S.c = S.c.filter(x => x.id !== it.id); else S.c.push({ id: it.id, qty: 1 }); render('c'); return; }
+      if (e.target.closest('[data-new]')) newProduct('c');
+    }
+  });
+  document.addEventListener('input', e => {
+    if (e.target.matches('#lab-c [data-wq]')) { const h = $('#lab-c [data-host]'); h.dataset.q = e.target.value; h.dataset.focus = '1'; render('c'); }
+    if (e.target.matches('#lab-b [data-q]')) ddB();
+  });
+
+  // B：下拉
+  function ddB() {
+    const inp = $('#lab-b [data-q]'), dd = $('#lab-b [data-dd]'), q = inp.value.trim().toLowerCase();
+    const avail = ITEMS.filter(i => !has('b', i.id) && i.name.toLowerCase().includes(q));
+    const grp = (label, arr) => arr.length ? `<div class="lab-grp">${label}</div>` + arr.map(i => `<div class="lab-pickrow lab-pickrow--b" data-pick="${i.id}"${blocked('b', i) ? ' aria-disabled="true"' : ''}><span class="lab-name"><span class="lab-thumb">${icon(i.kind)}</span><span class="lab-txt"><span class="lab-t">${i.name}</span><span class="lab-s">${i.sub}${blocked('b', i) ? ' · 已含一場活動' : ''}</span></span></span><span class="lab-num">${money(i.price)}</span></div>`).join('') : '';
+    dd.innerHTML = (grp('商品', avail.filter(i => i.kind === 'item')) + grp('活動', avail.filter(i => i.kind === 'event')) || '<div class="lab-grp">沒有符合的商品或活動</div>') + '<button class="lab-dd__new" type="button" data-newb><i data-lucide="plus" class="ztor-icon"></i>建立新商品…</button>';
+    dd.hidden = false; redraw();
+  }
+  document.addEventListener('focusin', e => { if (e.target.matches('#lab-b [data-q]')) ddB(); });
+  document.addEventListener('mousedown', e => {
+    const dd = $('#lab-b [data-dd]');
+    const p = e.target.closest('#lab-b [data-pick]');
+    if (p) { e.preventDefault(); const it = by(p.dataset.pick); if (!blocked('b', it)) { add('b', it.id); const i = $('#lab-b [data-q]'); i.focus(); } return; }
+    if (e.target.closest('#lab-b [data-newb]')) { e.preventDefault(); newProduct('b'); return; }
+    if (dd && !e.target.closest('#lab-b .lab-inline')) dd.hidden = true;
+  });
+
+  // A：彈窗
+  let picked = new Set(), filt = 'all';
+  function plHTML() {
+    const q = $('#lab-q').value.trim().toLowerCase();
+    const rows = ITEMS.filter(i => !has('a', i.id) && (filt === 'all' || i.kind === filt) && i.name.toLowerCase().includes(q));
+    if (!rows.length) return '<div class="lab-grp">沒有符合的商品或活動</div>';
+    const evPicked = [...picked].some(id => by(id).kind === 'event') || hasEvent('a');
+    return rows.map(i => { const on = picked.has(i.id), dis = i.kind === 'event' && !on && evPicked;
+      return `<label class="lab-pickrow" data-prow aria-disabled="${dis}"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-pk="${i.id}"${on ? ' checked' : ''}${dis ? ' disabled' : ''}><span class="zcheck__box"></span></span><span class="lab-name"><span class="lab-thumb">${icon(i.kind)}</span><span class="lab-txt"><span class="lab-t">${i.name}</span><span class="lab-s">${i.sub}${dis ? ' · 已含一場活動' : ''}</span></span></span><span class="lab-num">${money(i.price)}</span></label>`; }).join('');
+  }
+  function paintModal() { $('#lab-pl').innerHTML = plHTML(); const n = picked.size; $('#lab-ok').textContent = n ? `加入（${n}）` : '加入'; $('#lab-ok').disabled = !n; $('#lab-note').hidden = !(hasEvent('a') || [...picked].some(id => by(id).kind === 'event')); redraw(); }
+  function openModal() { picked = new Set(); filt = 'all'; $('#lab-q').value = ''; $('#lab-f').querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.f === 'all')); $('#lab-modal').hidden = false; document.body.classList.add('is-modal-open'); paintModal(); $('#lab-q').focus(); }
+  function closeModal() { $('#lab-modal').hidden = true; document.body.classList.remove('is-modal-open'); }
+  $('#lab-modal').addEventListener('click', e => { if (e.target === $('#lab-modal') || e.target.closest('[data-close]')) closeModal(); });
+  $('#lab-modal').addEventListener('change', e => { const k = e.target.dataset && e.target.dataset.pk; if (!k) return; e.target.checked ? picked.add(k) : picked.delete(k); paintModal(); });
+  $('#lab-q').addEventListener('input', paintModal);
+  $('#lab-f').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; filt = b.dataset.f; $('#lab-f').querySelectorAll('.segmented__btn').forEach(x => x.classList.toggle('segmented__btn--active', x === b)); paintModal(); });
+  $('#lab-ok').addEventListener('click', () => { picked.forEach(id => { if (!has('a', id)) S.a.push({ id, qty: 1 }); }); closeModal(); render('a'); });
+  $('#lab-newbtn').addEventListener('click', () => { closeModal(); newProduct('a'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#lab-modal').hidden) closeModal(); });
+  $('#lab-reset').addEventListener('click', () => { ITEMS = DB(); extra = 0; S.a = []; S.b = []; S.c = []; ['a', 'b', 'c'].forEach(render); });
+  ['a', 'b', 'c'].forEach(render);
+})();
+</script>
+</body>
+</html>

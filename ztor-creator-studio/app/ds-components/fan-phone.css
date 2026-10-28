@@ -19,7 +19,7 @@
    ============================================================ */
 
 .fan-phone {
-  zoom: var(--fan-phone-zoom, 0.75);   /* 與 pdp-preview 同一組數字，兩條建立流程的右欄尺寸一致 */
+  zoom: var(--fan-phone-zoom, 0.66);   /* 360 × 0.66 ≈ 238 ＋外框 2 ＝ 欄寬 240（2026-10-28 由 270 收窄）；三個建立流程右欄同寬 */
   position: relative;                  /* 看詳情彈窗（absolute）只蓋這一框 */
   min-width: 0;
   overflow: hidden;                    /* 粉絲頁的出血與橫向捲動條不撐破右欄 */
@@ -31,9 +31,36 @@
 
 /* 限高欄（.preview-col--tall，建立商品／建立組合包）：頁面比視窗長，框在欄內自己捲、標題留在上面；
    捲軸藏起（同 preview-column.css 的 --tall 卡：手機本來就沒有看得見的捲軸）。 */
-.preview-col--tall > .fan-phone {
+.preview-col--tall > .fan-phone,
+.wizard-split__rail > .fan-phone {
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
-.preview-col--tall > .fan-phone::-webkit-scrollbar { display: none; }
+.preview-col--tall > .fan-phone::-webkit-scrollbar,
+.wizard-split__rail > .fan-phone::-webkit-scrollbar { display: none; }
+
+/* 2026-10-28（UI-CHANGES 400，使用者：「這個不需要，只需要 content」）：預覽只留頁面內容——
+   手機頂欄（返回／願望／購物車）、麵包屑、右欄標題都不畫（標題仍供 aria-labelledby 取名，不顯示）。 */
+.fan-phone .pdp-topbar,
+.fan-phone .page-head__crumbs { display: none; }
+.wizard-split__rail:has(> .fan-phone) > .preview-col__head,
+.preview-col:has(> .fan-phone) > .preview-col__head {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+/* 同一層：整頁放在與左欄表單區塊（form-section--outlined）同一種卡面上——同外框、同圓角、同陰影、底色用黑，
+   不再各塊浮在右欄背景上；卡內不留邊距，頁面直接撐滿。 */
+.fan-phone {
+  background: var(--surface-page);   /* 底色用黑（頁面底），外框／圓角／陰影沿用卡面 */
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  isolation: isolate;
+}
+.fan-phone .fep-shop { background: transparent; }
+.fan-phone .section-bg-page { background: transparent; }
+
+/* 內容左右內距收到 16（使用者：「這個左右 padding 會不會太大」）：窄欄裡 48 縮放後仍有約 32 的留白，主圖被擠小；
+   16 對齊手機版頂欄／購買列的左右內距。 */
+.fan-phone .fep-shop { --container-padding-x: var(--sp-16); }
