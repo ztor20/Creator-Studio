@@ -15,6 +15,73 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-28（三百九十）· 優惠碼選擇改成勾選表（B 反饋導入；lab-code-picker.html 方案 B）
+
+**標籤**：release2.3
+
+使用者在比較頁（`lab-code-picker.html`，四種做法）選定方案 B 並逐步收斂：一張表、要有欄位、少冗詞；「全店、特定品項、特定商品」放同一個欄位；「建立新的優惠碼」在表格內、整列是文字按鈕；未勾的狀態徽章要有停用樣；最後「將 B 改上正式」。
+
+UX：碼不多（現況 10 組以內）時，攤開比藏在下拉好——一眼看完這件商品會有哪些折扣；全店碼（不能取消）跟可勾的碼在同一張表、用「適用範圍」欄說來源，不用再靠「全店」小字或鎖頭分辨；勾選列與同頁「取貨方式」、組合包門票表同一種做法。
+
+- `js/code-picker.js`：render 改成勾選表（`.code-picker__tbl`）；全店碼（autoApplied）固定勾著、停用；可勾的碼＝碼端可選的特定商品碼＋已選＋暫存新碼；勾選以 change 事件寫回 `st.sel`（暫存新碼取消勾＝不建立）；表尾 `data-cpk-new` 開原本的新碼彈窗。下拉相關（menuHTML、搜尋輸入、focusin／input／Esc／點外面關閉）退場。API 不變（mount／get／setLocked／setReadonly／setKey／commit／reset／refresh、hideLabel）。
+- `ds-components/code-picker.css`：新增 `.code-picker__tbl／__head／__row(--off／--fixed)／__code／__cell／__scope／__num／__period／__add`；≤560px 收起期間欄。`.code-picker__auto-chip／__pct／__new-opt／__empty` 與鎖定時的 tag-input 規則退場（墓碑）。
+- `js/i18n.js`：`cpk.col.*`（欄名）、`cpk.scope.all／items`、`cpk.status.active`。
+- `bundle-detail.html`：補連 `checkbox.css`（勾選表的勾選框）。
+- 消費頁不必改：建立商品、商品細節頁、建立組合包、組合商品細節頁、建立活動的組合包編輯器都走同一個元件。
+- 實測：建立商品第二步四列（全店兩列固定勾、特定商品兩列可勾），勾 TOURVIP15 整列轉亮；建立新碼 NEWCODE88 → 新列勾著、狀態「隨儲存建立」；商品細節頁檢視態全停用、無建立鈕，編輯態特定商品可勾；組合商品細節頁價格階梯裡表格寬 557px 正常；三頁 console 無錯誤。建立活動的組合包編輯器沒在瀏覽器操作到。
+- `design-system.md` §4.239 Anatomy／States 改寫、`design-system.html` 兩個展示換成勾選表、元件圖鑑重產。
+- 驗收後補（fresh-context 子代理）：勾選後整塊重畫會讓鍵盤焦點掉到 body，改成重畫後把焦點還給同一格（實測焦點留在 TOURVIP15）；`design-system.html` 目錄列與「給工程師」說明、`design-system.md` 總表舊下拉敘述改成勾選表；`code-picker.css` 檔頭改寫、`.combobox__menu` 的 `:has` 死規則退場。
+
+---
+
+## 2026-10-28（三百八十九）· 勾選框「勾著但停用」改成空心橘，看得出是停用（B 反饋導入）
+
+**標籤**：release2.3
+
+使用者反饋（優惠碼比較頁的全店碼）：勾著且停用的勾選框「看不出來是 disable」。
+
+- `ds-components/checkbox.css`：`:disabled:checked`／`:disabled:indeterminate` 由「實心品牌橘 50% 透明」改成空心橘——淡橘底（`--primary` 18%）＋橘框（45%）＋橘勾、透明度 1（同日先試中性灰，使用者：「還是要有橘色」）。全站共用，一起生效的地方包含組合包上架中鎖定的門票表（`js/tix-tier-table.js`）、建立活動組合包編輯器、商店設定裡停用的勾選。
+- 實測（`lab-code-picker.html` 的 B）：全店／特定品項三列是空心橘（淡底＋橘勾），使用者勾的 TOURVIP15 是實心橘，一眼分得開。
+- `design-system.md`／`design-system.html` Checkbox 條目補一句。
+
+---
+
+## 2026-10-28（三百八十八）· 卡片裡的下拉浮層要真的模糊到卡外（B 反饋導入）
+
+**標籤**：release2.3
+
+使用者反饋：優惠碼下拉「需要背景模糊」——選單伸出「優惠碼」卡、蓋到下一張「取貨方式」卡時，取貨方式的字清楚透過選單。
+
+- 原因：選單本來就有 `backdrop-filter`，但外層 `.form-section--outlined` 也有；掛了 backdrop-filter 的祖先是「背景根」，選單只取樣得到自己那張卡，卡外的內容不會被模糊。
+- `ds-components/form-section.css`：卡裡有開著的 `.combobox__menu`、`.fc-pick__results` 或 `.dropdown[open]` 時，這張卡拿掉自己的 `backdrop-filter` 並抬 z-index；關掉後恢復。全站共用，建立商品／組合包、細節頁、組合物就地搜尋、列尾選單一起受惠。
+- 實測（建立商品第二步、優惠碼下拉）：選單開著時卡的 backdrop-filter 為 none，下一張卡的字被模糊；關掉後回到 blur(24px)。
+- `design-system.md`／`design-system.html` Form section 條目補一句。
+
+---
+
+## 2026-10-28（三百八十七）· 「使用優惠碼」總開關移除，選碼欄常駐；全店碼標「全店」（A spec-derived · D486）
+
+**標籤**：release2.3
+
+使用者裁決（D486，修訂 D458）：全店優惠碼一律套用所有商品，商品端不需要開關，只留選碼欄；並要求先想 UX 再改 UI。
+
+UX 取捨：
+- 開關拿掉後，這一區只剩一件事：「這件商品還要加進哪些特定商品的優惠碼」。所以選碼欄常駐、不再收合，分卡（或價格階梯那一列）的標題已寫「優惠碼」，欄位上不再重複標籤。
+- 全店碼一律適用、不能排除，所以仍列在欄位最前面當脈絡（知道這件商品已經有哪些折扣在跑），但不能移除。原本的小鎖頭被讀成「官方／Admin 鎖定」（使用者實際誤會過），改成 chip 尾端的小字「全店」：直接說出它從哪來、為什麼拿不掉；滑過寫「全店優惠碼，自動適用」。
+- 平台優惠碼（Admin）本來就不在這個欄位，不受影響。
+
+- `js/code-picker.js`：新增 `hideLabel` 參數；全店碼 chip 的鎖頭換成 `.chip__tag`「全店」（`cpk.chip.all`）；檔頭說明改成沒有開關。
+- `ds-components/code-picker.css`：`.code-picker__lock` 退場（墓碑）。
+- `js/discount-codes-store.js`：`applicable()` 不再依開關排除，全店碼一律算；`switchOn`／`setSwitch` 保留給舊呼叫但不再影響結果。
+- `create-product.html`、`product-detail.html`：「使用優惠碼」control-group（開關＋收合）退場，分卡裡直接放選碼欄（`hideLabel`）；儲存不再寫開關。商品細節頁設定概覽的「優惠碼」列改列出全店碼＋選的碼（例「SUMMER25、EARLYBIRD10」），折扣列不再附「使用優惠碼」。
+- `create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js`（建立活動的組合包）：價格階梯的「使用優惠碼」開關列改成只剩標籤「優惠碼」，下一條 --panel 常駐選碼欄；`codesOn`／`discount.stack` 存成 true 給讀舊欄位的地方相容。上架中鎖定照舊。
+- `store-settings.html`：優惠碼範圍浮卡不再標「不適用」（沒有關掉開關的商品了）。
+- `js/i18n.js`：`cpk.chip.all`「全店」，`cpk.auto` 改「全店優惠碼，自動適用」。`cp.discount.stack`／`stack-sub` 字串留著（無人引用）。
+- 實測：建立商品第二步、商品細節頁、建立組合包第三步、組合商品細節頁都沒有開關、選碼欄可見、全店碼兩顆標「全店」、沒有重複的「優惠碼」欄位標籤；商品細節頁編輯態可選碼、檢視態停用；四頁 console 無錯誤。建立活動裡的組合包編輯器只做語法檢查與讀碼，沒在瀏覽器操作到。
+- `design-system.md`／`design-system.html`：Code picker 條目與展示、價格階梯展示同步。
+
+---
+
 ## 2026-10-28（三百八十六）· 優惠碼欄位下方兩行說明拿掉（B 反饋導入）
 
 **標籤**：release2.3

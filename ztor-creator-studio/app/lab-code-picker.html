@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>優惠碼選擇 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2"><!-- B 用分卡裡的勾選表 .bd-tbl -->
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* ── 探索頁專用（2026-10-28 使用者：「除了下拉還有什麼設計，做個 demo 給我」）──
+     同一份資料（全店碼 2 組、特定商品碼 2 組）畫四種做法，左邊是畫面、右邊是取捨。
+     元件全部用站上既有的（form-section--outlined、control-row--check＋zcheck、chip、data-list、payout-modal、code-picker），
+     本頁只留排版用的少量樣式。 */
+  .lab-cp { display: flex; flex-direction: column; gap: var(--sp-40); max-width: 1120px; }
+  .lab-cp__row { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--sp-24); align-items: start; }
+  @media (max-width: 960px) { .lab-cp__row { grid-template-columns: minmax(0, 1fr); } }
+  .lab-cp__label { display: flex; align-items: center; gap: var(--sp-8); margin: 0 0 var(--sp-12); font-size: var(--fs-16); color: var(--foreground); }
+  .lab-cp__note { font-size: var(--fs-13); line-height: var(--lh-relaxed, 1.6); color: var(--foreground-muted); }
+  .lab-cp__note h4 { margin: 0 0 var(--sp-6); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground); }
+  .lab-cp__note ul { margin: 0 0 var(--sp-16); padding-left: var(--sp-18); }
+  .lab-cp__note li + li { margin-top: var(--sp-4); }
+  .lab-cp__group { display: flex; flex-direction: column; gap: var(--sp-8); }
+  .lab-cp__group + .lab-cp__group { margin-top: var(--sp-20); }
+  .lab-cp__group-t { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-cp__code { font-family: var(--font-numeric); letter-spacing: .02em; }
+  .lab-cp__chips { display: flex; flex-wrap: wrap; gap: var(--sp-8); }
+  .lab-cp .chip[data-lab-toggle] { cursor: pointer; }
+  /* B 第二版（2026-10-28 使用者：「太多冗詞，表格用同一個就好，並且要有欄位」）：沿用分卡裡的勾選表 .bd-tbl（同組合包的允許門票表），
+     加一組欄軌：勾選｜優惠碼｜適用範圍｜折扣｜期間｜狀態（同日追加：使用者「全店、特定品項、特定商品可以是一個欄位」）。全店碼列勾選框固定勾著、停用（一律適用、不能取消）。採用後這組欄軌 promote 成 .bd-tbl--codes。 */
+  .lab-cp .bd-tbl--codes .bd-tbl__head,
+  .lab-cp .bd-tbl--codes .bd-tbl__row { grid-template-columns: var(--sp-16) minmax(0, 1fr) minmax(0, 6.5rem) var(--sp-56) minmax(0, 7.5rem) var(--sp-80); }
+  .lab-cp .bd-tbl--codes .bd-tbl__row--fixed { cursor: default; }
+  .lab-cp .bd-tbl--codes .bd-tbl__row--fixed:hover { background: transparent; }
+  .lab-cp .bd-tbl--codes .bd-tbl__period { font-size: var(--fs-13); color: var(--muted-foreground); }
+  /* 未勾的列：狀態徽章也退成停用樣（同日追加：使用者「未選的標籤也要有 disable 狀態」）——去掉狀態色，改中性底＋淡字，
+     跟同列已淡掉的碼名、折扣一起讀成「這組沒套用」；勾了就回到原本的狀態色 */
+  .lab-cp .bd-tbl--codes .bd-tbl__row--off .badge { background: var(--ztu-film); color: var(--muted-foreground); }
+  .lab-cp .bd-tbl--codes .bd-tbl__name { display: flex; align-items: center; gap: var(--sp-8); }
+  /* 表尾一列「建立新的優惠碼」（同日追加：使用者「建立新的優惠碼可以在表格內」→「可以置中，且是一個按鈕，所以應該要有按鈕的規範」）：
+     表格最後一格，跟上面的列同一條分隔線；裡面放站上標準的文字按鈕 .btn.btn--ghost.btn--sm（無外框；hover 底、圓角、焦點環照 button.css；使用者「可以用文字的按鈕」），置中 */
+  /* 再追加（使用者：「應該是一整塊都是按鈕」）：整格就是按鈕——.btn--block 撐滿表格寬、格子不留內距；
+     圓角歸零，hover 底色剛好填滿這一列，下緣兩角由 .bd-tbl 的 overflow:hidden＋圓角收掉 */
+  .lab-cp .bd-tbl--codes .bd-tbl__add { border-top: 1px solid var(--border-soft); }
+  .lab-cp .bd-tbl--codes .bd-tbl__add .btn { border-radius: 0; min-height: var(--sp-48); }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="main">
+    <div class="page lab">
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">優惠碼選擇：四種做法</h1>
+          <p class="page-intro__sub">同一份資料：全店碼 SUMMER25、EARLYBIRD10（一律適用），可選的特定商品碼 TOURVIP15、FANDAY20；B 另示範一組特定品項碼 TEEWEEK12（示範資料）。每種都可以點來試。</p>
+        </div>
+      </div>
+
+      <div class="lab-cp">
+
+        <!-- A · 現行：下拉多選 -->
+        <div class="lab-cp__row">
+          <div>
+            <div class="lab-cp__label">A · 下拉多選（現行）</div>
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head"><h3 class="form-section__title">優惠碼</h3></div>
+              <div data-lab-a></div>
+            </section>
+          </div>
+          <div class="lab-cp__note">
+            <h4>適合</h4><ul><li>碼很多（幾十組），要靠打字找</li><li>版面要省空間</li></ul>
+            <h4>代價</h4><ul><li>可以選哪些碼藏在下拉裡，不點開不知道有什麼</li><li>下拉會蓋住下面的欄位</li><li>全店碼和已選碼擠在同一個輸入框，誰能拿掉、誰不能，要靠小字分</li></ul>
+          </div>
+        </div>
+
+        <!-- B · 勾選清單（推薦） -->
+        <div class="lab-cp__row">
+          <div>
+            <div class="lab-cp__label">B · 勾選清單 <span class="badge badge--success">推薦</span></div>
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head"><h3 class="form-section__title">優惠碼</h3></div>
+              <div class="bd-tbl bd-tbl--codes">
+              <div class="bd-tbl__head"><span></span><span class="bd-tbl__col">優惠碼</span><span class="bd-tbl__col">適用範圍</span><span class="bd-tbl__col bd-tbl__col--num">折扣</span><span class="bd-tbl__col">期間</span><span class="bd-tbl__col">狀態</span></div>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--fixed"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked disabled><span class="zcheck__box"></span></span><span class="bd-tbl__name"><span class="lab-cp__code">SUMMER25</span></span><span class="bd-tbl__period">全店</span><span class="bd-tbl__num">25%</span><span class="bd-tbl__period">7/1 – 8/31</span><span><span class="badge badge--success">進行中</span></span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--fixed"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked disabled><span class="zcheck__box"></span></span><span class="bd-tbl__name"><span class="lab-cp__code">EARLYBIRD10</span></span><span class="bd-tbl__period">全店</span><span class="bd-tbl__num">10%</span><span class="bd-tbl__period">11/15 – 12/15</span><span><span class="badge badge--info">尚未開始</span></span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--fixed"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked disabled><span class="zcheck__box"></span></span><span class="bd-tbl__name"><span class="lab-cp__code">TEEWEEK12</span></span><span class="bd-tbl__period">特定品項</span><span class="bd-tbl__num">12%</span><span class="bd-tbl__period">10/20 – 11/10</span><span><span class="badge badge--success">進行中</span></span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--off"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="bd-tbl__name"><span class="lab-cp__code">TOURVIP15</span></span><span class="bd-tbl__period">特定商品</span><span class="bd-tbl__num">15%</span><span class="bd-tbl__period">9/1 – 10/31</span><span><span class="badge badge--success">進行中</span></span></label>
+              <label class="bd-tbl__row bd-tbl__row--pick bd-tbl__row--off"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="bd-tbl__name"><span class="lab-cp__code">FANDAY20</span></span><span class="bd-tbl__period">特定商品</span><span class="bd-tbl__num">20%</span><span class="bd-tbl__period">10/1 – 12/31</span><span><span class="badge badge--success">進行中</span></span></label>
+              <div class="bd-tbl__add"><button type="button" class="btn btn--ghost btn--block" data-lab-new><i data-lucide="plus" class="ztor-icon"></i><span>建立新的優惠碼</span></button></div>
+              </div>
+            </section>
+          </div>
+          <div class="lab-cp__note">
+            <h4>適合</h4><ul><li>碼不多（10 組以內，現況就是）</li><li>想一眼看完「這件商品會有哪些折扣」</li></ul>
+            <h4>好處</h4><ul><li>一張表、五個欄位：碼、適用範圍、折扣、期間、狀態一眼看完</li><li>「適用範圍」一欄說清楚來源：全店、特定品項（符合這件商品的類型）自動適用、固定勾著；特定商品才能勾選</li><li>勾選列跟同一頁「取貨方式」、組合包的門票表同一種做法</li></ul>
+            <h4>代價</h4><ul><li>碼超過 10 組會很長，到時加搜尋或改 D</li></ul>
+          </div>
+        </div>
+
+        <!-- C · 標籤切換 -->
+        <div class="lab-cp__row">
+          <div>
+            <div class="lab-cp__label">C · 標籤點選</div>
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head"><h3 class="form-section__title">優惠碼</h3></div>
+              <div class="lab-cp__group">
+                <div class="lab-cp__group-t">全店 · 一律適用</div>
+                <div class="lab-cp__chips">
+                  <span class="chip chip--static"><span>SUMMER25</span><span class="code-picker__pct">25%</span></span>
+                  <span class="chip chip--static"><span>EARLYBIRD10</span><span class="code-picker__pct">10%</span><span class="chip__tag">尚未開始</span></span>
+                </div>
+              </div>
+              <div class="lab-cp__group">
+                <div class="lab-cp__group-t">點一下加入或取消</div>
+                <div class="lab-cp__chips">
+                  <button type="button" class="chip" data-lab-toggle><span>TOURVIP15</span><span class="code-picker__pct">15%</span></button>
+                  <button type="button" class="chip" data-lab-toggle><span>FANDAY20</span><span class="code-picker__pct">20%</span></button>
+                  <button type="button" class="chip chip--add" data-lab-new><i data-lucide="plus" class="ztor-icon"></i><span>建立新的優惠碼</span></button>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div class="lab-cp__note">
+            <h4>適合</h4><ul><li>碼少、版面要比 B 緊湊</li></ul>
+            <h4>好處</h4><ul><li>所有可選的碼都攤開，點一下就切換</li><li>比 B 矮很多</li></ul>
+            <h4>代價</h4><ul><li>標籤上放不下期間與狀態，要靠滑過或另外的說明</li><li>「選了」和「沒選」只靠顏色分，對比不夠時容易看錯</li></ul>
+          </div>
+        </div>
+
+        <!-- D · 摘要＋彈窗 -->
+        <div class="lab-cp__row">
+          <div>
+            <div class="lab-cp__label">D · 摘要清單＋彈窗挑選</div>
+            <section class="form-section form-section--outlined">
+              <div class="form-section__head"><h3 class="form-section__title">優惠碼</h3></div>
+              <div class="data-list" data-lab-d-list></div>
+              <div><button class="btn btn--outline btn--sm" type="button" data-lab-d-open>選擇優惠碼</button></div>
+            </section>
+          </div>
+          <div class="lab-cp__note">
+            <h4>適合</h4><ul><li>碼很多，但平常大多只看不改</li><li>商品細節頁的檢視態（只讀摘要，要改才開彈窗）</li></ul>
+            <h4>好處</h4><ul><li>平常只顯示「這件商品正在用的碼」，乾淨</li><li>彈窗空間大，可以搜尋、看完整期間與狀態、就地建立新碼</li></ul>
+            <h4>代價</h4><ul><li>多一層彈窗，改一個碼要多點兩下</li></ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- D 的彈窗：重用 payout-modal／payout-dialog＋control-row--check -->
+<div class="payout-modal" data-lab-d-modal hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="lab-d-title">
+    <div class="payout-dialog__head"><h2 class="payout-dialog__title" id="lab-d-title">選擇優惠碼</h2>
+      <button class="btn btn--icon" type="button" data-lab-d-close aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button></div>
+    <div class="payout-dialog__body"><div class="stack" style="gap:var(--sp-16)">
+      <input class="input" placeholder="搜尋優惠碼…" aria-label="搜尋優惠碼">
+      <div class="lab-cp__group-t">全店優惠碼（一律適用，不能取消）：SUMMER25、EARLYBIRD10</div>
+      <div class="control-group" data-lab-d-checks>
+        <label class="control-row control-row--check">
+          <span><span class="control-row__main"><span class="lab-cp__code">TOURVIP15</span> · 15%</span><span class="control-row__sub">9/1 – 10/31 · 已有 2 件商品</span></span>
+          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" value="TOURVIP15" data-pct="15"><span class="zcheck__box"></span></span>
+        </label>
+        <label class="control-row control-row--check">
+          <span><span class="control-row__main"><span class="lab-cp__code">FANDAY20</span> · 20%</span><span class="control-row__sub">10/1 – 12/31 · 已有 1 件商品</span></span>
+          <span class="zcheck__control"><input class="zcheck__input" type="checkbox" value="FANDAY20" data-pct="20"><span class="zcheck__box"></span></span>
+        </label>
+      </div>
+      <div><button class="btn btn--ghost btn--sm" type="button" data-lab-new><i data-lucide="plus" class="ztor-icon"></i><span>建立新的優惠碼</span></button></div>
+    </div></div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost btn--sm" type="button" data-lab-d-close>取消</button>
+      <button class="btn btn--primary btn--sm" type="button" data-lab-d-save>完成</button>
+    </div>
+  </section>
+</div>
+
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="js/discount-codes-store.js?v=r2.2"></script>
+<script src="js/code-picker.js?v=r2.2"></script>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script>
+(function () {
+  'use strict';
+  /* A：直接掛現行元件（同建立商品，key null＝建立流程） */
+  var a = document.querySelector('[data-lab-a]');
+  if (a && window.ztorCodePicker) window.ztorCodePicker.mount(a, { key: null, hideLabel: true, label: function () { return '示範商品'; } });
+
+  /* C：標籤點一下切換 chip--active */
+  document.querySelectorAll('[data-lab-toggle]').forEach(function (b) {
+    b.addEventListener('click', function () { b.classList.toggle('chip--active'); b.setAttribute('aria-pressed', b.classList.contains('chip--active') ? 'true' : 'false'); });
+  });
+
+  /* B：勾選後整列由灰轉亮（同組合包門票表的 .bd-tbl__row--off） */
+  document.querySelectorAll('.bd-tbl--codes .zcheck__input:not(:disabled)').forEach(function (i) {
+    i.addEventListener('change', function () { i.closest('.bd-tbl__row').classList.toggle('bd-tbl__row--off', !i.checked); });
+  });
+
+  /* 「建立新的優惠碼」在探索頁只示意 */
+  document.querySelectorAll('[data-lab-new]').forEach(function (b) {
+    b.addEventListener('click', function () { alert('這裡會開「建立新的優惠碼」小彈窗（同現行）'); });
+  });
+
+  /* D：摘要清單＋彈窗 */
+  var picked = [];
+  var list = document.querySelector('[data-lab-d-list]');
+  function row(code, meta, badge) {
+    return '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+      '<div class="data-list__title"><span class="lab-cp__code">' + code + '</span></div><div class="data-list__meta">' + meta + '</div>' +
+      '</div></div>' + badge + '</div>';
+  }
+  function renderD() {
+    list.innerHTML =
+      row('SUMMER25', '25% · 7/1 – 8/31', '<span class="badge badge--neutral">全店</span>') +
+      row('EARLYBIRD10', '10% · 11/15 – 12/15 · 尚未開始', '<span class="badge badge--neutral">全店</span>') +
+      picked.map(function (p) { return row(p.code, p.pct + '% · 這件商品已加入', '<span class="badge badge--success">已選</span>'); }).join('');
+  }
+  renderD();
+  var modal = document.querySelector('[data-lab-d-modal]');
+  function close() { modal.hidden = true; document.body.classList.remove('is-modal-open'); }
+  document.querySelector('[data-lab-d-open]').addEventListener('click', function () {
+    modal.querySelectorAll('[data-lab-d-checks] input').forEach(function (i) { i.checked = picked.some(function (p) { return p.code === i.value; }); });
+    modal.hidden = false; document.body.classList.add('is-modal-open');
+  });
+  modal.querySelectorAll('[data-lab-d-close]').forEach(function (b) { b.addEventListener('click', close); });
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  modal.querySelector('[data-lab-d-save]').addEventListener('click', function () {
+    picked = [].slice.call(modal.querySelectorAll('[data-lab-d-checks] input:checked')).map(function (i) { return { code: i.value, pct: i.getAttribute('data-pct') }; });
+    renderD(); close();
+  });
+  if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(document.body);
+})();
+</script>
+</body>
+</html>

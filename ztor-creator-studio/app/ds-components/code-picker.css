@@ -1,46 +1,67 @@
 /* ============================================================
    code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458）
    ------------------------------------------------------------
-   商品與組合包的「使用優惠碼」開關打開後出現的那一塊：
-     「優惠碼」多選（chip＋下拉建議，可選的是範圍含「特定商品」的碼）；
-       已自動適用的碼（範圍是全部商店，不能取消）以鎖定標籤放在輸入框最前面（2026-10-27，原本是欄位上方獨立一群）
-     「建立新的優惠碼」＝下拉清單最上面的一個選項（開小彈窗，適用範圍預帶本商品）
+   商品與組合包的優惠碼勾選表（2026-10-28 起；D486 移除「使用優惠碼」開關、同日由下拉多選改成勾選表）：
+     全店碼一律適用、固定勾著；範圍含「特定商品」的碼可勾；表尾整列「建立新的優惠碼」（開小彈窗，適用範圍預帶本商品）。
    選碼＝把這個商品加進該碼的「特定商品」範圍；資料仍存在優惠碼端（js/discount-codes-store.js）。
-   markup 與互動由 js/code-picker.js（window.ztorCodePicker.mount）產生；開關本身由消費頁自己放
-   （control-row 或 price-ladder 開關列），本元件只管開關打開後的內容。
+   markup 與互動由 js/code-picker.js（window.ztorCodePicker.mount）產生。
+   2026-10-28 D486：總開關移除，消費頁直接放本元件、常駐顯示；外層已寫「優惠碼」時用 hideLabel 不再重複欄位標籤。
 
-   anatomy
+   anatomy（2026-10-28 起：勾選表；原下拉多選退場，lab-code-picker.html 方案 B）
      .code-picker                       整塊（直排、gap 由容器持有）
-       .code-picker__field              「優惠碼」多選欄
-         .code-picker__auto-chip（.chip.chip--static）  輸入框最前面、鎖定不能移除的自動適用碼；內含 .code-picker__lock 小鎖頭
-         .code-picker__pct              折扣 % 小字
-         .combobox > .tag-input__field（chip＋輸入）＋ .combobox__menu（建議清單，重用 combobox.css）
-         .chip__tag                     chip 內的狀態小字（已結束／已停用／已用完／隨商品儲存）
-       .code-picker__new-opt            下拉清單最上面的「建立新的優惠碼」選項（.combobox__opt，下方分隔線）
-     [data-locked]                      組合包上架中：輸入與按鈕停用、chip 不能移除
+       .code-picker__field              （hideLabel 時沒有欄位標籤）
+         .code-picker__tbl              表：外框 --layer-line、圓角 --radius-md（同組合包門票表 .bd-tbl 的語言）
+           .code-picker__head           欄名：勾選｜優惠碼｜適用範圍｜折扣｜期間｜狀態
+           .code-picker__row ×N         一碼一列（<label>，點整列就勾）；--off＝沒勾（淡字＋徽章退停用樣）、--fixed＝不能改（全店碼、鎖定、唯讀）
+             .code-picker__code／__scope／__num／__period＋.badge
+           .code-picker__add            表尾整列「建立新的優惠碼」（.btn.btn--ghost.btn--block）；鎖定／唯讀時不出現
+     [data-locked]                      組合包上架中或詳情頁檢視態：所有勾選框停用（checkbox.css 的空心橘＝勾著但不能改）
      彈窗＝重用 payout-modal／payout-dialog（ds-components/payout-modal.css），欄位用 .field／.input／.amount-field。
-   surface：坐在 control-group__body、price-ladder 的 --panel 列或 form-section 卡面上（白或略深一階）；
-   chip 底吃 --chip-surface，邊界靠欄位的 1px 邊，兩層都成立。
    ============================================================ */
 .code-picker { display: flex; flex-direction: column; gap: var(--sp-12); min-width: 0; }
-/* 墓碑 2026-10-27：.code-picker__auto／__label／__chips（欄位上方獨立的「已自動適用」群組）退場，改成輸入框裡的 __auto-chip */
-.code-picker__pct,
-.chip__tag { font-size: var(--fs-11); color: var(--muted-foreground); }
 .code-picker__field { display: flex; flex-direction: column; gap: var(--sp-6); }
-.code-picker__field .tag-input__field .chip { cursor: default; }
-.code-picker__lock { width: var(--sp-12); height: var(--sp-12); flex: none; color: var(--muted-foreground); }
-.code-picker__new-opt { border-bottom: 1px solid var(--border); gap: var(--sp-8); }
-.code-picker__new-opt .ztor-icon { flex: none; }
-.code-picker__empty { font-size: var(--fs-12); color: var(--muted-foreground); padding: var(--sp-8); }
-.code-picker[data-locked] .tag-input__field { opacity: .6; cursor: not-allowed; }
-.code-picker[data-locked] .tag-input__entry { pointer-events: none; }
-.code-picker[data-locked] .chip__remove { display: none; }
+.chip__tag { font-size: var(--fs-11); color: var(--muted-foreground); }
+/* 墓碑 2026-10-28（勾選表）：.code-picker__auto-chip／__pct／__new-opt／__empty 與 [data-locked] 的 tag-input／chip 規則退場（下拉多選整個換掉）。
+   更早的墓碑：.code-picker__auto／__label／__chips（2026-10-27）、.code-picker__lock（D486）。 */
+.code-picker__tbl {
+  border: 1px solid var(--layer-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.code-picker__head,
+.code-picker__row {
+  display: grid;
+  grid-template-columns: var(--sp-16) minmax(0, 1fr) minmax(0, 6.5rem) var(--sp-56) minmax(0, 7.5rem) var(--sp-80);
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+}
+.code-picker__head { color: var(--column-head-ink); font-size: var(--fs-12); }
+.code-picker__row { border-top: 1px solid var(--border-soft); cursor: pointer; }
+.code-picker__row:hover { background: var(--ztu-glass-strong); }
+.code-picker__row--fixed { cursor: default; }
+.code-picker__row--fixed:hover { background: transparent; }
+.code-picker__code { font-family: var(--font-numeric); font-size: var(--fs-14); color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-picker__cell { font-size: var(--fs-13); color: var(--muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-picker__num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; font-size: var(--fs-14); color: var(--foreground); text-align: right; }
+.code-picker__head .code-picker__num { font-family: inherit; font-size: inherit; color: inherit; }
+/* 沒勾的列：碼與折扣淡掉、狀態徽章退成停用樣（中性底＋淡字），勾了回原本的狀態色 */
+.code-picker__row--off .code-picker__code,
+.code-picker__row--off .code-picker__num { color: var(--muted-foreground); }
+.code-picker__row--off .badge { background: var(--ztu-film); color: var(--muted-foreground); }
+/* 表尾整列就是按鈕（使用者：「建立新的優惠碼可以在表格內」「置中，且是一個按鈕」「可以用文字的按鈕」「一整塊都是按鈕」） */
+.code-picker__add { border-top: 1px solid var(--border-soft); }
+.code-picker__add .btn { border-radius: 0; min-height: var(--sp-48); }
+/* 窄寬：期間欄收起（碼、範圍、折扣、狀態仍在一列） */
+@media (max-width: 560px) {
+  .code-picker__head,
+  .code-picker__row { grid-template-columns: var(--sp-16) minmax(0, 1fr) minmax(0, 5rem) var(--sp-48) var(--sp-80); }
+  .code-picker__period { display: none; }
+}
 .code-picker-modal__scope { font-size: var(--fs-13); color: var(--foreground-muted); }
 .code-picker-modal__row { display: flex; align-items: center; gap: var(--sp-8); }
 .code-picker-modal__row .input { flex: 1 1 auto; min-width: 0; }
 .code-picker-modal__dates { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-12); }
 /* 2026-10-20：價格階梯為了圓角把 overflow 設成 hidden，會把下拉清單裁掉；有選碼欄時放開（圓角由內層列自己負責） */
 .price-ladder:has(.code-picker__field) { overflow: visible; }
-/* 下拉展開時，把所在的卡拉到後面同層卡片的上面（卡片都是 position:relative、z-index:auto，後面的卡會蓋住往下長的下拉） */
-.form-section:has(.code-picker .combobox__menu:not([hidden])),
-.control-group:has(.code-picker .combobox__menu:not([hidden])) { position: relative; z-index: 20; }
+/* 墓碑 2026-10-28：下拉展開時抬高所在卡片的 :has(.combobox__menu) 規則退場（勾選表沒有下拉） */

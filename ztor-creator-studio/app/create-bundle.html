@@ -553,17 +553,14 @@
           </div>
         </div>
 
-        <!-- 使用優惠碼（D458，2026-10-20；原「可與優惠碼疊加」）：這個組合包的優惠碼總開關，定義見 5.1.5.4 F7／5.1.5.2 F13。
-             關閉＝不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選特定商品範圍的碼、或建立新碼（js/code-picker.js）。
-             開關列的右欄是開關，打開後接一條 --panel 列放選擇欄；組合包上架前（建立流程）不鎖。 -->
+        <!-- 優惠碼（D458；2026-10-28 D486：「使用優惠碼」總開關移除——全店碼一律適用，這一列只剩標籤，選碼欄常駐在下一條 --panel 列）。
+             墓碑：[data-cb-stack] 開關、price-ladder__s「關閉時，任何商店優惠碼都不能用在這裡」、[data-cb-codes-body] 的 hidden 收合。 -->
         <div class="price-ladder__step">
           <div class="price-ladder__k">
-            <span class="price-ladder__t" data-i18n="cp.discount.stack">Use discount codes</span>
-            <span class="price-ladder__s" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</span>
+            <span class="price-ladder__t" data-i18n="cpk.title">Discount codes</span>
           </div>
-          <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" data-cb-stack aria-label="Use discount codes" data-i18n-aria-label="cp.discount.stack"></div></div>
         </div>
-        <div class="price-ladder__step price-ladder__step--panel" data-cb-codes-body hidden>
+        <div class="price-ladder__step price-ladder__step--panel" data-cb-codes-body>
           <div class="price-ladder__codes" data-cb-codes-host></div>
         </div>
       </div>
@@ -854,16 +851,12 @@
     if (FAN.tier && p.tierIds.indexOf(FAN.tier) < 0) FAN.tier = null;
   }
 
-  /* ── 使用優惠碼（D458：原「可與優惠碼疊加」純開關改為優惠碼總開關；打開才露出 js/code-picker.js 的選擇欄）──
+  /* ── 優惠碼（D458；D486 起沒有總開關，js/code-picker.js 的選擇欄常駐）──
      選取與暫存的新碼留在元件裡，doCreate 存檔時才 commit 進碼端範圍。 */
   const cbCodesBody = document.querySelector('[data-cb-codes-body]');
   const cbCodesHost = document.querySelector('[data-cb-codes-host]');
-  const cbCodes = (cbCodesHost && window.ztorCodePicker) ? window.ztorCodePicker.mount(cbCodesHost, { key: null, label: () => ((document.getElementById('cb-name') || document.querySelector('[data-cb-name]') || {}).value || '').trim() }) : null;
-  document.querySelectorAll('[data-cb-stack]').forEach(t => {
-    const flip = () => { const on = t.getAttribute('aria-checked') !== 'true'; t.setAttribute('aria-checked', on ? 'true' : 'false'); t.classList.toggle('switch--on', on); if (cbCodesBody) cbCodesBody.hidden = !on; };
-    t.addEventListener('click', flip);
-    t.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
-  });
+  const cbCodes = (cbCodesHost && window.ztorCodePicker) ? window.ztorCodePicker.mount(cbCodesHost, { key: null, hideLabel: true, label: () => ((document.getElementById('cb-name') || document.querySelector('[data-cb-name]') || {}).value || '').trim() }) : null;
+  /* 墓碑 2026-10-28（D486）：[data-cb-stack] 總開關的點擊／鍵盤處理退場（選碼欄常駐） */
 
   /* ── 電影關聯（可搜尋多選；同建立商品；共用 partials/film-picker）── */
   let linkedFilms = [];
@@ -2219,8 +2212,7 @@
     const nm = bundleName();
     const pr = moneyFrom(finalPrice(), priceRange());
     const bundleId = 'cb-' + Date.now().toString(36);
-    const cbSw = document.querySelector('[data-cb-stack]');
-    const cbCodesOn = !!(cbSw && cbSw.getAttribute('aria-checked') === 'true');
+    const cbCodesOn = true;   /* D486：總開關移除，優惠碼一律可用；codesOn／discount.stack 照舊寫 true，給讀舊欄位的地方相容 */
     const following = !!ticketMember();
     const tbC = following ? tbCtx() : null;
     const tbEff = tbC ? TB.effective(tbState, tbC.et) : {};
@@ -2264,7 +2256,6 @@
         stack: cbCodesOn
       } : null)
     };
-    if (window.ztorCodes) window.ztorCodes.setSwitch(bundleId, cbCodesOn);
     if (cbCodes) cbCodes.commit(bundleId, nm || bundleId);   /* D458：選取與暫存的新碼隨組合包儲存寫進碼端的特定商品範圍 */
     rec.members.forEach(m => {
       if (m.kind === 'ticket') return;   /* 票券的鎖定住在票種池（原型只到呈現，見 ASSUMPTIONS BDL-001） */

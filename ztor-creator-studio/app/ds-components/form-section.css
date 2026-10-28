@@ -59,6 +59,18 @@
    被下面三張設定卡蓋住就是這個）。用 :has() 只在真的開著時抬升，平常不動層級、
    避免整頁卡片互相搶層。 */
 .form-section:has(.dropdown[open]) { position: relative; z-index: 2; }
+/* 浮層要真的模糊到卡外（2026-10-28 使用者：優惠碼下拉「需要背景模糊」）：選單自己有 backdrop-filter（--float-blur），
+   但 `.form-section--outlined` 也有——掛了 backdrop-filter 的祖先是「背景根」，裡面的選單只取樣得到這張卡自己，
+   選單伸出卡外蓋到下一張卡時，下一張卡的字原樣透過 72% 的面（實測：取貨方式的標題清楚浮在選單上）。
+   選單開著的那段時間把這張卡的 backdrop-filter 拿掉，選單的背景根回到頁面，模糊才涵蓋卡外的內容；
+   卡本身只是少了那層星空模糊，面色與邊不變。同時抬層級（同上一條）。涵蓋站上三種會伸出卡外的浮層：
+   .combobox__menu（優惠碼、分類等多選）、.fc-pick__results（組合物就地搜尋）、.dropdown[open]（列尾選單）。 */
+.form-section--outlined:has(.combobox__menu:not([hidden]), .fc-pick__results:not([hidden]), .dropdown[open]) {
+  position: relative;
+  z-index: 2;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 
 /* ── 卡底動作列（.form-section__actions，2026-09-09 promote）────────────────────
    卡片進入「編輯模式」（例：商品明細的鎖定就地編輯）時，取消／儲存放卡底靠右，

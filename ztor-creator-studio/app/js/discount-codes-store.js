@@ -12,13 +12,12 @@
      overlay    localStorage 'ztor.codes.v1'：
                   created  商品端或優惠碼端新建的碼（Phase 1 只有自用碼）
                   scope    { 碼: { add:[商品 key], rem:[商品 key] } } 對 SEED 範圍的增減
-                  sw       { 商品 key: bool } 商品端優惠碼總開關（沒記＝讀商品資料的預設）
+                  sw       { 商品 key: bool } 商品端優惠碼總開關（D458；D486 起不再影響結果，只留舊資料）
                   names    { 商品 key: 名稱 } 建立流程裡新建商品的顯示名稱（商品本身不在 ProductsStore）
                 關掉分頁不會清掉（localStorage）；ztorCodes.reset() 回到 SEED。
 
-   開關語意（D458）：關閉＝這個商品／組合包不能用任何商店優惠碼（連「全部商店」的碼也不適用）；
-   開啟＝全部商店的碼自動適用，再加上選取的碼；開啟但沒選碼成立。applicable(key) 回傳實際可用的碼清單，
-   價格示範若要算碼就問它——關閉回空陣列。
+   2026-10-28 D486：商品端總開關移除——全部商店的碼一律適用，再加上選取的碼；沒選碼成立。applicable(key) 回傳實際可用的碼清單。
+   （沿革 D458：關閉＝連全部商店的碼也不適用。sw／switchOn／setSwitch 留著給舊資料，不再影響結果。）
 
    事件：寫入後在 document 上發 'ztor:codes-changed'。
    ============================================================ */
@@ -73,7 +72,7 @@
   var USABLE = { active: 1, scheduled: 1 };
   function usable(c) { return !!USABLE[c.status]; }
 
-  /* 這個商品能用的碼（D458）：開關關閉＝空；開啟＝全部商店的碼＋選取的碼 */
+  /* 這個商品能用的碼（D458；D486 起沒有開關）：全部商店的碼＋選取的碼 */
   /* 商品資料的預設開關（D458 推導 15）：明寫 codesOn 優先；否則沿用舊欄位 discount.stack
      （既有「開啟疊加」→ 開、其餘 → 關）。查不到商品（建立流程的暫時 key、活動組合包）＝關 */
   function defaultOn(key) {
@@ -92,8 +91,8 @@
     return all().filter(function (c) { return !c.all && c.items.indexOf(key) >= 0; }).map(function (c) { return c.code; });
   }
   function autoApplied() { return all().filter(function (c) { return c.all && usable(c); }); }
-  function applicable(key, fallbackOn) {
-    if (!switchOn(key, fallbackOn)) return [];   /* 關閉＝一律不適用，連「全部商店」的碼也不算（D458） */
+  function applicable(key) {
+    /* 2026-10-28 D486：商品端總開關移除——全店碼一律適用；codesOn／discount.stack／o.sw 都不再影響結果（switchOn 保留給舊呼叫，回傳值不再被用來排除） */
     var sel = selectedFor(key);
     return all().filter(function (c) { return usable(c) && (c.all || sel.indexOf(c.code) >= 0); });
   }

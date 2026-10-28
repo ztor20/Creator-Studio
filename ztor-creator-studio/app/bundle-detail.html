@@ -42,6 +42,7 @@
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 2026-10-28：優惠碼勾選表的勾選框 -->
 <link rel="stylesheet" href="ds-components/code-picker.css?v=r2.2"><!-- D458：優惠碼總開關的選擇欄 -->
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2"><!-- 2026-09-18 D292：成員列的數量（每套用量）.zstep -->
@@ -495,17 +496,14 @@
               </div>
             </div>
 
-            <!-- 使用優惠碼（D458，2026-10-20；原「可與優惠碼疊加」，同建立組合 5.1.5.4 F7）：這個組合包的優惠碼總開關。
-                 關閉＝不能用任何商店優惠碼；開啟＝全部商店的碼自動適用，另可多選特定商品範圍的碼、或建立新碼（js/code-picker.js）。
-                 開關 id 沿用 bd-stack-codes。編輯時機：組合包上架中時開關與選碼鎖定（bdStockLockApply 同一條路徑），下架後才能改。 -->
+            <!-- 優惠碼（D458；2026-10-28 D486：總開關 #bd-stack-codes 移除——全店碼一律適用，這一列只剩標籤，選碼欄常駐在下一條 --panel 列；
+                 上架中選碼鎖定照舊（bdStockLockApply）。墓碑：開關、price-ladder__s「關閉時，任何商店優惠碼都不能用在這裡」、[data-bd-codes-body] 的 hidden 收合）。 -->
             <div class="price-ladder__step">
               <div class="price-ladder__k">
-                <span class="price-ladder__t" data-i18n="cp.discount.stack">Use discount codes</span>
-                <span class="price-ladder__s" data-i18n="cp.discount.stack-sub">Off means no store discount code can be used here</span>
+                <span class="price-ladder__t" data-i18n="cpk.title">Discount codes</span>
               </div>
-              <div class="price-ladder__v price-ladder__v--switch"><div class="switch" role="switch" aria-checked="false" tabindex="0" id="bd-stack-codes" aria-label="Use discount codes" data-i18n-aria-label="cp.discount.stack"></div></div>
             </div>
-            <div class="price-ladder__step price-ladder__step--panel" data-bd-codes-body hidden>
+            <div class="price-ladder__step price-ladder__step--panel" data-bd-codes-body>
               <div class="price-ladder__codes" data-bd-codes-host></div>
             </div>
 
@@ -2441,18 +2439,12 @@
       }
       bdRecalc();
     });
-    /* 使用優惠碼（D458，原「可與優惠碼疊加」純開關）：開關初始值先看碼端資料層（儲存過就以它為準），沒有紀錄時
-       由組合包資料的預設帶入（seed.codesOn 明寫優先，否則沿用舊欄位 discount.stack；選碼不預選）。 */
-    const stackToggle = document.getElementById('bd-stack-codes');
-    const bdCodesBody = document.querySelector('[data-bd-codes-body]');
+    /* 優惠碼選擇欄（D458；2026-10-28 D486 起沒有總開關、常駐）：選碼讀碼端資料層的特定商品範圍；全店碼一律列在最前面。
+       墓碑：stackToggle（#bd-stack-codes）初始值、paintSw、bdWireLadderSwitch 收合。 */
     const bdCodesKey = (bundle && bundle.evSeed && bundle.event) ? ('evbundle:' + bundle.event.id + ':' + bundle.id) : ((bundle && bundle.id) || 'bundle');
-    const bdCodesOn = window.ztorCodes ? window.ztorCodes.switchOn(bdCodesKey, detail.codesOn != null ? !!detail.codesOn : !!(detail.discount && detail.discount.stack)) : !!(detail.discount && detail.discount.stack);
-    paintSw(stackToggle, bdCodesOn);
-    if (bdCodesBody) bdCodesBody.hidden = !bdCodesOn;
     const bdCodesHost = document.querySelector('[data-bd-codes-host]');
     window.bdCodes = (bdCodesHost && window.ztorCodePicker)
-      ? window.ztorCodePicker.mount(bdCodesHost, { key: bdCodesKey, readonly: true, label: () => (bundle && bundle.name) || bdCodesKey }) : null;
-    bdWireLadderSwitch(stackToggle, on => { if (bdCodesBody) bdCodesBody.hidden = !on; if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview(); });
+      ? window.ztorCodePicker.mount(bdCodesHost, { key: bdCodesKey, readonly: true, hideLabel: true, label: () => (bundle && bundle.name) || bdCodesKey }) : null;
     if (bundle) bdRecalc();
 
     /* 庫存版本（2026-10-12 改版：form-ask「要另設販售上限嗎？」不限量／限量，segmented 二選一；限量才露出販售上限列）*/
@@ -2598,9 +2590,9 @@
       const ovPrice = bdHeroPrice ? bdHeroPrice.textContent : (bdSellEl ? bdSellEl.textContent : '');
       rows.push({ g: 'pricing', go: 'price', key: 'cb.pricing', fb: 'Bundle price', v: ovPrice + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
       const salePct = v('bd-sale-percent');
-      /* 最終版（S105）：限時折扣是購買條件的一種（下方「購買條件」那一列會講），這一列只講使用優惠碼 */
+      /* 最終版（S105）：限時折扣是購買條件的一種（下方「購買條件」那一列會講）；D486 起優惠碼不再是開關，這一列不再附「使用優惠碼」 */
       const saleRow = window.bdSaleOn ? window.bdSaleOn() : on('bd-sale-toggle');
-      rows.push({ g: 'pricing', go: 'price', key: 'cp.discount.title', fb: 'Discount settings', v: [saleRow ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : '', on('bd-stack-codes') ? T('cp.discount.stack', 'Use discount codes') : ''].filter(Boolean).join(' · ') || T('product-detail.setov.off', 'Off') });
+      rows.push({ g: 'pricing', go: 'price', key: 'cp.discount.title', fb: 'Discount settings', v: [saleRow ? (T('cp.discount.limited', 'Limited-time discount') + (salePct ? ' −' + salePct + '%' : '')) : ''].filter(Boolean).join(' · ') || T('product-detail.setov.off', 'Off') });
       /* 庫存與交付：鎖定套數（值＝N 套／未鎖定，點過去到組合庫存分頁） */
       const lockN = LS ? LS.bundleLockSets(bundleModel) : null;
       const uniRow = !!(window.ztorPurchaseConds && window.ztorPurchaseConds.uniOn());   /* D463（最終版）：這一列改講購買條件（限購是其中一種） */
@@ -3065,8 +3057,8 @@
         if (e.target.closest('[data-bd-editmode]')) {
           const editing = sp.getAttribute('data-mode') === 'edit';
           if (editing) {
-            /* D458：優惠碼總開關與選碼隨儲存寫回碼端的特定商品範圍（上架中鎖定時選取沒動，commit 等於原樣） */
-            if (window.bdCodes && window.ztorCodes) { window.ztorCodes.setSwitch(bdCodesKey, !!(stackToggle && stackToggle.getAttribute('aria-checked') === 'true')); window.bdCodes.commit(bdCodesKey, (bundle && bundle.name) || bdCodesKey); }
+            /* D458：選碼隨儲存寫回碼端的特定商品範圍（上架中鎖定時選取沒動，commit 等於原樣；D486 起沒有總開關） */
+            if (window.bdCodes && window.ztorCodes) { window.bdCodes.commit(bdCodesKey, (bundle && bundle.name) || bdCodesKey); }
             SNAP = null; setMode(false); renderBdSettingsOverview(); bdStockSync();
           }
           else { SNAP = snapshot(); setMode(true); bdStockLockApply(); setTimeout(bdStockLockApply, 0); }   /* D438：上架中只開放上架與開賣兩節；renderTB／renderLimits 的延後重畫之後再補鎖一次 */

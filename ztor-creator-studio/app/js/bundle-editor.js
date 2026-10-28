@@ -2222,12 +2222,12 @@
               '<small data-bd-save>' + esc(saveText(b)) + '</small></div>' +
           '</div>' +
           saleRows +
-          /* 使用優惠碼（F7，D458：原「可與優惠碼疊加」）：優惠碼總開關＋打開後的選擇欄（js/code-picker.js，render 後掛進 host） */
+          /* 優惠碼（F7，D458；2026-10-28 D486：總開關移除——全店碼一律適用，這一列只剩標籤，選碼欄常駐；js/code-picker.js，render 後掛進 host）。
+             墓碑：ladderSwitch('data-bd-stack-toggle')、price-ladder__s「關閉時…」、--panel 的 hidden 收合。b.stack 欄位保留不再讀。 */
           '<div class="price-ladder__step" data-feat="S64">' +
-            ladderK(esc(T('cp.discount.stack')), T('cp.discount.stack-sub')) +
-            ladderSwitch('data-bd-stack-toggle', !!b.stack, false, T('cp.discount.stack')) +
+            ladderK(esc(T('cpk.title')), '') +
           '</div>' +
-          '<div class="price-ladder__step price-ladder__step--panel" data-feat="S64"' + (b.stack ? '' : ' hidden') + '>' +
+          '<div class="price-ladder__step price-ladder__step--panel" data-feat="S64">' +
             '<div class="price-ladder__codes" data-bd-codes-host></div>' +
           '</div>' +
           /* 粉絲實付（平時）；限時折扣生效時下面一行「期間 $Y」 */
@@ -3219,10 +3219,10 @@
           window.ZTOR_PARTIALS.createFilmPicker(fh, { selected: bb.films || [], onChange: function (ids) { bb.films = ids.slice(); onChange(BUNDLES); } });
           if (window.applyI18n) window.applyI18n(fh);
         }
-        /* D458：優惠碼選擇欄（開關打開才有 host 可見）；每次重畫都是新節點，狀態從 b.codes／b.codesNew 帶回 */
+        /* D458：優惠碼選擇欄（D486 起常駐、沒有總開關）；每次重畫都是新節點，狀態從 b.codes／b.codesNew 帶回 */
         var ch = card.querySelector('[data-bd-codes-host]');
         if (ch && window.ztorCodePicker) {
-          window.ztorCodePicker.mount(ch, { key: null, selected: bb.codes || [], pending: bb.codesNew || [], label: function () { return bb.name || ''; },
+          window.ztorCodePicker.mount(ch, { key: null, hideLabel: true, selected: bb.codes || [], pending: bb.codesNew || [], label: function () { return bb.name || ''; },
             onChange: function (st) { bb.codes = st.codes; bb.codesNew = st.pending; onChange(BUNDLES); } });
         }
         var c = tbCtx(bb); if (c) c.TB.syncErrors(card, bb, c, T);
@@ -3899,7 +3899,7 @@
         render({ blur: true });
         return;
       }
-      if (SPLIT && e.target.closest('[data-bd-stack-toggle]')) { b.stack = !b.stack; render({ blur: true }); return; }
+      /* 墓碑 2026-10-28（D486）：[data-bd-stack-toggle] 總開關的點擊處理退場 */
       if (SPLIT && e.target.closest('[data-bd-shown-toggle]')) {
         if (e.target.closest('[data-bd-shown-toggle]').getAttribute('aria-disabled') === 'true') return;   /* D363：活動隱藏中不能切 */
         b.shown = b.shown === false; render({ blur: true }); return;
