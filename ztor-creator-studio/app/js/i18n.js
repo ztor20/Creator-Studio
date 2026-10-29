@@ -7664,7 +7664,7 @@
     'orders.btn.export':    { en: 'Export',                  zh: '匯出' },
     /* F1 summary cards */
     'orders.kpi.toship':    { en: 'To ship',                 zh: '待出貨' },
-    'orders.kpi.pending':   { en: 'Pending',                 zh: '待處理' },
+    'orders.kpi.pending':   { en: 'Unpaid',                  zh: '待付款' },
     /* 2026-09-09（D253）：由 orders.kpi.refund 改名——平台不提供退款動作，「已取消」
        取代「已退款」；kpi() 的資料欄位同步改名 cancelDisputed，見 orders-store.js */
     'orders.kpi.canceldisp': { en: 'Cancelled / disputed',   zh: '已取消／爭議' },

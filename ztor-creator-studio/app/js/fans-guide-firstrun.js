@@ -38,7 +38,7 @@
     try { v = new URLSearchParams(location.search).get("version"); } catch (e) {}
     if (!v) { try { v = (JSON.parse(localStorage.getItem("ztor.devstate") || "{}") || {}).version; } catch (e) {} }
     if (!v) return true;
-    return v === "full" || v === "funding-test" || v === "deck-for-sony" || !/^(release\d+\.\d+|next)$/.test(v);
+    return v === "full" || v === "funding-test" || v === "deck-for-sony" || v === "stock-ui-test" || !/^(release\d+\.\d+|next)$/.test(v);
   }
   var onFullBase = fullBaseVersion();
 
