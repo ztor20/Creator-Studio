@@ -15,6 +15,24 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-29（四百一十三）· 訂單管理頂端「待處理」磚改名「待付款」（A spec-derived；D490）
+
+**標籤**：release2.2
+
+- 規格 D490（2026-10-29）：訂單管理 F1 的「待處理」磚改名「待付款（Unpaid）」，口徑就是付款狀態為待付款的訂單數（原型一直只算這個）。使用者看到原型仍叫「待處理」後追問，確認磚名一併改。
+- `orders.html` 磚標籤與 `js/i18n.js` 的 `orders.kpi.pending`：待處理／Pending → 待付款／Unpaid；`orders-store.js` 的 `kpi()` 不變。
+
+## 2026-10-29（四百一十二）· 測試版新增「庫存UI測試」：建立商品改接庫存設定 demo（D 基礎建設）
+
+使用者：「在原型中測試版新增一項庫存UI測試，把這個 demo 放進去」。
+
+- 版本切換面板（cheat code）多一項「庫存UI測試」（鍵 `stock-ui-test`、類型測試），規則 `route:create-product.html=lab-stock-settings.html`：選了之後所有指向建立商品的連結改接 `lab-stock-settings.html`，其餘同最終版。
+- demo 內容：商品選項（單一選項／多選項）、庫存量（單一＝欄位；多選項＝矩陣含留倉與鎖定庫存量）、三個開關（不限量賣完轉預購、限量標籤、鎖定庫存）、粉絲端預覽與「模擬賣出」。
+- 同步：`feature-scope-map.md` 開發版本配置表（面板選項的來源）、`js/devtools.js`（後備版本表＋`isFullBaseVersion`）、`js/sidebar.js`、`js/fans-guide-firstrun.js` 的「最終版基底」白名單，讓這版不減功能、導覽全開。
+- 這是設計探索的承接頁，不是正式功能；demo 不進產品規則。
+
+---
+
 ## 2026-10-29（四百一十一）· 重新上架改成檢查保存的排程：有已過的就擋下並列出、都沒過就直接恢復，活動彈窗另外提示成員單品已下架的組合包（A spec-derived）
 
 **標籤**：release2.2、release2.3
