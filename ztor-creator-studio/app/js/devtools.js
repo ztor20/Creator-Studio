@@ -128,6 +128,7 @@
     ['release2.4', 'release2.4', '開發', 'tier:release2.2,release2.3,release2.4', '已交付（🟢 release2.2）＋ release2.3（🔵）＋粉絲管理與媒體庫（🟣 release2.4）；未排定與未標記者隱藏'],
     ['funding-test', 'funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
     ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同最終版'],
+    ['stock-ui-test', '庫存UI測試', '測試', 'route:create-product.html=lab-stock-settings.html', '建立商品改接庫存設定 demo，其餘同最終版'],
   ];
   /* 舊瀏覽器的 devstate 可能還存著已退場的版本鍵（p1／p1-next／p1-next-tbd／golive-4step／home-canvas）。
      未知鍵一律回到 full：否則 isFullBaseVersion() 判 false，會被當成限縮版、導覽少一半。
@@ -263,7 +264,7 @@
      其餘同 Phase 4 的特殊版（funding-test、deck-for-sony）。這些版本不減功能，
      故 full-only 頁面與跨頁連結照常可見。新增同型特殊版時把 key 加進這裡。 */
   /* 已退場的鍵（golive-4step、home-canvas）不再列：load() 會把未知鍵改寫成 full，這裡不必再兜底。 */
-  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony'; }
+  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony' || v === 'stock-ui-test'; }
   /* FULL_ROUTES 的值：1＝只在最終版類版本；功能 ID＝該功能在目前版本內才放行（不看 showFuture：預覽不是權限）。 */
   function routeOpen(route) {
     var v = FULL_ROUTES[route];

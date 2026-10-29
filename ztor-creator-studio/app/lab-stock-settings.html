@@ -28,6 +28,10 @@
 <style>
   /* lab-stock-settings — 「設定庫存量」區段 demo（2026-10-29）。不改原型，只用既有元件，自有樣式 lab- 前綴＋token。
      一個庫存量欄位＋三個互相獨立的開關：不限量（賣完轉預購）／限量標籤（前台標記）／鎖定庫存（暫時保留一部分不賣）。 */
+  /* 不要背景與側欄：只留表單與預覽。星空裝飾（html／body 的偽元素）一併關掉 */
+  html::before, html::after, body::before, body::after { display: none; }
+  html body { background: var(--background) !important; }
+  .lab-wrap { padding: var(--sp-24); }
   .lab [hidden] { display: none !important; }
   .lab-col { display: grid; align-content: start; }   /* 區塊間距交給 .form-section 自己的 margin-top，與原型一致 */
   .lab-bar { display: flex; flex-wrap: wrap; gap: var(--sp-24); margin-top: var(--sp-20); }
@@ -59,19 +63,12 @@
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="app-topbar" id="sidebar"></header>
-  <main class="main">
-    <div class="page lab">
-
-      <div class="page-intro"><div>
-        <h1 class="page-intro__title">設定庫存量（設計探索）</h1>
-        <p class="page-intro__sub">一個「庫存量」欄位加三個各自獨立的開關：不限量、限量標籤、鎖定庫存。右邊是粉絲端預覽，可以按「模擬賣出」看賣完時會變成預購還是售罄。這是 demo，不改原型。</p>
-      </div></div>
+<main class="lab-wrap">
+    <div class="lab">
 
       <div class="lab-grid">
         <div class="lab-col">
-        <section class="form-section form-section--outlined">
+        <section class="form-section form-section--outlined" style="order:0">
           <div class="form-section__head">
             <h3 class="form-section__title">商品選項</h3>
             <p class="form-section__sub">同款商品的不同尺寸或顏色——各有自己的價格與庫存。</p>
@@ -154,23 +151,10 @@
         </aside>
       </div>
 
-      <section class="card lab-gap" style="max-width:770px">
-        <div class="card__head"><h2 class="card__title">這個版本怎麼處理</h2></div>
-        <ul class="lab-list">
-          <li><b>庫存量</b>：現在手上能賣的件數，必填。</li>
-          <li><b>開啟不限量</b>：庫存賣到 0 之後，商品轉成預購，前台按鈕變「預購」、可繼續下單；關閉時賣完顯示「已售完」。</li>
-          <li><b>開啟限量標籤</b>：只是前台商品圖上的「限量」標記，跟庫存數字無關，三個開關各自獨立。</li>
-          <li><b>鎖定庫存</b>：打開後多一個「鎖定庫存量」＝目前開放給前台賣的件數，其餘暫留倉（例：庫存 20、鎖定 5 → 可售 5、留倉 15）。賣得好就調高鎖定庫存量放出更多；不能超過庫存量。</li>
-          <li><b>多選項</b>：每個選項各自一列庫存量；開鎖定時每列各自多出「留倉」與「鎖定庫存量」。</li>
-          <li><b>待你裁決</b>：「不限量」與「限量標籤」同時開是否允許（目前允許，兩者各管各的）。</li>
-        </ul>
-      </section>
 
     </div>
-  </main>
-</div>
+</main>
 <script src="js/icons.js?v=r2.2"></script>
-<script src="js/sidebar.js?v=r2.2"></script>
 <script>
 (function () {
   const $ = id => document.getElementById(id);
@@ -220,6 +204,7 @@
     if (cg.parentNode !== host) host.appendChild(cg);
     cg.style.marginTop = S.multi ? '' : 'var(--sp-16)';
     $('lab-sec-b').hidden = !S.multi;
+    $('lab-sec-b').style.order = '1'; $('lab-sec-a').style.order = S.multi ? '2' : '1';   /* 多選項：庫存設定在庫存量矩陣上面 */
     $('lab-sec-a-t').textContent = S.multi ? '庫存量' : '設定庫存量';
     $('lab-lockbody').hidden = !S.lock || S.multi;
     $('lab-vt').classList.toggle('lab-vt--lock', S.lock);

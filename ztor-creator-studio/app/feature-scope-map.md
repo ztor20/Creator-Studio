@@ -49,6 +49,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 | `release2.4` | release2.4 | 開發 | `tier:release2.2,release2.3,release2.4` | 已交付（🟢 release2.2）＋ release2.3（🔵）＋粉絲管理與媒體庫（🟣 release2.4）；⚪ 未排定、`full` 保留 gate 與未標記的新功能都隱藏 |
 | `funding-test` | funding-test | 測試 | `route:create-project.html=funding-test/create-campaign.html` | 建立專案改接募資建立流程（create-campaign 部署複本），其餘同最終版 |
 | `deck-for-sony` | Deck for Sony | Demo | `route:earnings.html=earnings-sony.html` | 收入管理改接 Sony 簡報版（earnings-sony.html），其餘同最終版 |
+| `stock-ui-test` | 庫存UI測試 | 測試 | `route:create-product.html=lab-stock-settings.html` | 建立商品改接庫存設定 demo（lab-stock-settings.html：庫存量＋不限量／限量標籤／鎖定庫存），其餘同最終版 |
 
 **交付輪替（2026-09-23 起；2026-10-07 改用 release 編號）**：已交付的版本不留在 `main` 的面板上，改由 monorepo 的凍結分支代表——release2.2＝`release2.2` 分支（原名 `phase1`；版本鎖死、獨立網址、只收明確要進 release2.2 的修正，升版記在該分支的 `RELEASE2.2-CHANGES.md`）。下一期範圍確定時：
 1. 把要做的功能標 `🔵 release2.3`
