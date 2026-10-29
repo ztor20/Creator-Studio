@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時詢問是否恢復排程（D481） -->
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的排程有問題的提示（D488） -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
@@ -1220,7 +1220,7 @@
 <script src="partials/product-post-modal.js?v=r2.2"></script>
 <script src="js/store-profile-store.js?v=r2.2"></script><!-- 店面資料（商店設定在編輯的那一份），預覽讀同一份 -->
 <script src="partials/fan-store.js?v=r2.2"></script>
-<script src="partials/relist-restore.js?v=r2.2"></script><!-- D481：重新上架時詢問是否恢復下架時保存的排程（三類列與組合包閘門共用） -->
+<script src="partials/relist-restore.js?v=r2.2"></script><!-- D488：重新上架時檢查下架時保存的排程（三類列與組合包閘門共用） -->
 <script src="partials/bundle-relist.js?v=r2.2"></script><!-- 組合包上架的成員閘門（D289／D298），與組合包詳情頁共用 -->
 <script>
   /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
@@ -2365,9 +2365,9 @@
     /* 封存（§7.14 · D288 修正 D284）：只看「已下架」、單純確認，不再檢查組合包——成員的連動在下架時已處理
        （下架入口在細節頁，見 product-detail.html 的 askUnlist）。確認後列離開目前篩選（只在「已封存」出現）。 */
     /* 上架（2026-09-23 使用者裁決；D290 沿用、D289 沿用）：已下架列回到上架中。
-       開賣退回未開賣（ListingState.relist），所以不恢復時上架後的常態是「即將開賣」，要販售得再到細節頁設開賣；拍賣則是未開拍。
-       D481（2026-10-27）：三類列都一樣——下架時保存、還沒過的排程先問「恢復原本的排程／不恢復」（partials/relist-restore.js），
-       沒有就直接上架。單售與拍賣沒有其他確認（反方向不連動：單售上架不拉組合包）；組合包走共用的 partials/bundle-relist.js——
+       開賣退回未開賣（ListingState.relist）；下架時保存的開賣時間還沒到就恢復為定時開賣，沒有開賣時間則上架後是「即將開賣」，要販售得再到細節頁設開賣；拍賣則是未開拍。
+       D488（2026-10-29，取代 D481 的詢問）：三類列都一樣——先檢查下架時保存的排程（partials/relist-restore.js），
+       有已過的就擋下並列出、不改任何資料；都沒過就直接上架並恢復。單售與拍賣沒有其他確認（反方向不連動：單售上架不拉組合包）；組合包走共用的 partials/bundle-relist.js——
        成員已封存 → 擋下並列出，提示先解除封存；成員已下架 → 先確認會一起被拉上來，確認後連帶上架。
        與組合包詳情頁的上架開關是同一份判斷，不各寫一次（D298 退場的清單版 doRelist 於此復活、改為共用）。 */
     function doRelist(row) {
@@ -2387,9 +2387,8 @@
       const RR = window.ZtorRelistRestore;
       const plan = RR ? RR.plan([{ entity: m.entity, name: rowName(row) }]) : { any: false };
       if (!plan.any) { L.relist(m.entity); S.commit(m.entity); finish(); return; }
-      RR.ask({
-        title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', rowName(row)), plan, T, auction: !!m.auction,
-        onChoose: restore => { L.relist(m.entity, restore ? { restore: true, skip: RR.skipOf(plan)(m.entity) } : null); S.commit(m.entity); finish(); }
+      RR.block({
+        title: T('rr.title', '“{n}” can’t be listed yet').replace('{n}', rowName(row)), plan, T, auction: !!m.auction
       });
     }
     function askArchive(row) {

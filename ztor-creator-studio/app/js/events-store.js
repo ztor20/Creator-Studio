@@ -756,11 +756,17 @@
         { id: 'bd-tc-floor-tee', name: 'Standing zone ＋ 巡演官方 Tee', desc: '站區票加一件巡演官方 Tee，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 3413, sold: 0, cap: 100, lockSets: 100, listed: false, stopped: true,
-          /* D481 示範（2026-10-27）：下架前另設了開賣與停售時間，下架時保存但暫停（paused；sched＝另設的格子）。
-             組合商品細節頁按「上架」、或活動下架再重新上架時的 D448 彈窗，會列出這兩個時間問要不要恢復；
-             停售時間超出活動上架期間，恢復時照既有檢查不通過、不恢復並寫原因（〔推導 4〕）。 */
+          /* D488 示範（2026-10-29；資料沿用 D481 示範）：下架前另設了開賣與停售時間，下架時保存但暫停（paused；sched＝另設的格子）。
+             開賣還沒到，但停售時間超出活動上架期間——恢復照既有時間檢查不通過（D488〔推導 2〕），組合商品細節頁按「上架」會被擋下並列出原因；
+             活動下架再重新上架時的 D448 彈窗也把它列在「這次不會上架」那一區。 */
           paused: { listAt: null, unlistAt: null, saleStart: '2026-11-01T12:00', saleEnd: '2026-11-25T12:00', onSale: true,
                     sched: { saleStart: '2026-11-01T12:00', saleEnd: '2026-11-25T12:00' } } },
+        /* D489 示範（2026-10-29）：成員單品（巡演精裝寫真誌）在電子商店已下架，組合包跟著一同下架（D288）。
+           活動下架再重新上架時，D448 彈窗不把它列進「同時上架」，另外提示要先到組合商品細節頁把單品上架或從組合包移除。
+           listed:false 是商品成員的替身欄位（原型對不到真商品時用，見 relistBundlesPlan）；組合商品細節頁上架時照 D289 連帶上架、寫回拿掉。 */
+        { id: 'bd-tc-floor-zine', name: 'Standing zone ＋ 巡演精裝寫真誌', desc: '站區票加一本巡演精裝寫真誌，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
+          products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000, listed: false }],
+          disc: 10, price: 3773, sold: 0, cap: 50, listed: false, stopped: true },
         /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200、美元覆寫 */
         { id: 'bd-tc-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
@@ -2982,12 +2988,42 @@
       var ev = window.ztorEvents.get(id);
       return ev ? (ev.bundles || []).filter(function (b) { return b.listed !== false && !b.archived && !b.deleted; }) : [];
     },
-    /* D448（2026-10-19）：活動重新上架前，問要不要同時上架的組合包——含本活動票券、目前已下架的（已封存、已刪除的不列）。
+    /* D448（2026-10-19）：活動重新上架前，問要不要同時上架的組合包——含本活動票券、目前已下架的（已封存、已刪除的不列；
+       D489 起成員有已下架或已封存單品的也不列，見下方 relistBundlesPlan）。
        已結束的活動，組合包本來就不能重新上架（D437 決定一；D457：已封存的活動整頁唯讀、不會走到這裡），回空陣列、不問。活動詳情「重新上架」用這一支。 */
     relistBundlesOf: function (id) {
-      var ev = window.ztorEvents.get(id);
-      if (!ev || ev.status === 'ended' || ev.archived) return [];
-      return (ev.bundles || []).filter(function (b) { return b.listed === false && !b.archived && !b.deleted; });
+      return window.ztorEvents.relistBundlesPlan(id).bundles;
+    },
+    /* D489（2026-10-29，修訂 D448 決定 5）：relistBundlesOf 的完整版——把已下架的組合包依成員單品分三種：
+         bundles      ＝ 可以列進「同時上架」的（成員單品都在上架中）；之後 D448 彈窗再各自檢查保存的排程（D488 決定 7）
+         memberBlocked＝ 成員中有已下架（未封存）單品的：不能與活動一起上架、不列入選項，彈窗另外提示 [{ bundle, members:[名稱] }]
+         成員有已封存單品的：照 D448 不列入彈窗（不回傳）。
+       成員單品的狀態：頁面有載 ProductsStore 時用名稱對回真商品（同 bundle-detail 的對法）；對不到就看 events-store 那筆
+       商品成員自己的示範欄位 listed:false／archived:true（原型替身，ASSUMPTIONS 呈現假設）。 */
+    relistBundlesPlan: function (id) {
+      var ev = window.ztorEvents.get(id), out = { bundles: [], memberBlocked: [] };
+      if (!ev || ev.status === 'ended' || ev.archived) return out;
+      var PS = window.ProductsStore, LS = window.ListingState;
+      var stateOf = function (pr) {
+        var real = null;
+        if (PS && PS.all && PS.get) Object.keys(PS.all()).forEach(function (k) { if (!real) { var p = PS.get(k); if (p && p.name === pr.name) real = p; } });
+        if (real) {
+          if (LS ? LS.isArchived(real) : real.archived) return 'archived';
+          if (LS ? LS.isUnlisted(real) : real.listed === false) return 'unlisted';
+          return 'listed';
+        }
+        if (pr.archived) return 'archived';
+        return pr.listed === false ? 'unlisted' : 'listed';
+      };
+      (ev.bundles || []).forEach(function (b) {
+        if (b.listed !== false || b.archived || b.deleted) return;
+        var st = (b.products || []).map(function (pr) { return { name: pr.name, st: stateOf(pr) }; });
+        if (st.some(function (x) { return x.st === 'archived'; })) return;
+        var down = st.filter(function (x) { return x.st === 'unlisted'; }).map(function (x) { return x.name; });
+        if (down.length) out.memberBlocked.push({ bundle: b, members: down });
+        else out.bundles.push(b);
+      });
+      return out;
     },
     removeDraft: function (id) {
       var ev = window.ztorEvents.get(id);

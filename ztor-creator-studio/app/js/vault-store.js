@@ -706,6 +706,9 @@
     },
     {
       id: "signing", icon: "pencil", status: "unlisted",
+      /* D488 示範（2026-10-29）：下架前排了定時下架，下架時保存但暫停；那個時間已經過了——按「重新上架」時對話框提示已過、
+         欄位亮錯、確認擋下，要先改成未來的時間或關掉定時下架。對照：東岸巡迴（backstage）設了未來的定時下架，下架再重新上架會直接帶回。 */
+      paused: { listAt: null, unlistAt: rel(-3, 23, 59) },
       name: { en: "Signing session · Taipei", zh: "簽名會現場 · 台北" },
       note: { en: "The photographer's full set — including the frames we never posted.", zh: "攝影師完整檔——包含沒有貼出來的那些。" },
       rules: [{ items: [{ t: "attended", v: "album-signing-taipei" }] }],
@@ -819,14 +822,14 @@
     v.unlistAt = opt.unlistAt || null;
     commitUnlocks(v);
   }
-  /* 上架或排定上架之後，下架時保存的排程（paused，D483 比照電子商店 D481）就交給了對話框的選擇：
-     選「恢復」時保存的下架時間已帶進 opt.unlistAt，選「不恢復」時沒帶——兩種都把保存的這份清掉。 */
+  /* 上架或排定上架之後，下架時保存的排程（paused，D483）就清掉：D488 起保存的下架時間沒過就直接帶進對話框的定時下架欄位
+     （＝opt.unlistAt，恢復後就是現行排程、沒有另一份舊記錄），已過的要先改掉才能確認。 */
   function clearPaused(v) { if (v) delete v.paused; }
   /* 取消排程：回到沒有排程的同一個狀態（草稿或已下架）。 */
   function cancelSchedule(v) { v.listAt = null; v.unlistAt = null; }
   /* 下架：先把當下看得到的人記進解開紀錄（重新上架後恢復），再把排程時間移出生效欄位（D477 第二輪第 1 題）。
      2026-10-27（D483，比照電子商店 D481）：手動或定時下架到期都一樣——排程時間先存進 v.paused、暫停不觸發，
-     重新上架時 restorableTimes() 列出還沒到的下架時間，創作者選恢復或不恢復。排程（S125）不在版本內時照舊直接清掉。 */
+     重新上架時照 D488 檢查保存的下架時間（relistBlockers）：已過的先改、沒過的直接恢復。排程（S125）不在版本內時照舊直接清掉。 */
   function unlist(v) {
     commitUnlocks(v);
     v.status = "unlisted";
@@ -835,13 +838,22 @@
     v.listAt = null;
     v.unlistAt = null;
   }
-  /* 重新上架時可以恢復的排程（D483 比照 D481）：只有還沒到的下架時間；保存的上架時間不列——按下重新上架就是此刻上架。
-     回 [{ key:"unlistAt", at }]，形狀同 ListingState.restorableTimes，好直接交給 partials/relist-restore.js 的 blockHTML。 */
+  /* 重新上架時會直接恢復的排程（D488，修訂 D483）：只有還沒到的下架時間；保存的上架時間不查不恢復——按下重新上架就是此刻上架。
+     回 [{ key:"unlistAt", at }]，形狀同 ListingState.restorableTimes。 */
   function restorableTimes(v, nowMs) {
     var p = v && v.paused, now = nowMs || Date.now(), out = [];
     if (!p || !schedOn() || v.status !== "unlisted") return out;
     var ms = toMs(p.unlistAt);
     if (ms != null && ms > now) out.push({ key: "unlistAt", at: p.unlistAt });
+    return out;
+  }
+  /* 重新上架前的檢查（D488 決定 5）：保存的下架日期與時間已過＝不讓上架。回 [{ key:"unlistAt", at, passed:true, reason:null }]，
+     形狀同 ListingState.relistBlockers，好直接交給 partials/relist-restore.js 的 blockHTML；空陣列＝沒問題。 */
+  function relistBlockers(v, nowMs) {
+    var p = v && v.paused, now = nowMs || Date.now(), out = [];
+    if (!p || !schedOn() || v.status !== "unlisted") return out;
+    var ms = toMs(p.unlistAt);
+    if (ms != null && ms <= now) out.push({ key: "unlistAt", at: p.unlistAt, end: null, passed: true, reason: null });
     return out;
   }
   /* 時間到了就自動上架／下架。原型沒有後端，由頁面定時呼叫；有變動回 true。 */
@@ -980,6 +992,7 @@
     cancelSchedule: cancelSchedule,
     unlist: unlist,
     restorableTimes: restorableTimes,
+    relistBlockers: relistBlockers,
     applySchedules: applySchedules,
     deleteImpact: deleteImpact,
     removeVault: removeVault,

@@ -15,6 +15,20 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-10-29（四百一十一）· 重新上架改成檢查保存的排程：有已過的就擋下並列出、都沒過就直接恢復，活動彈窗另外提示成員單品已下架的組合包（A spec-derived）
+
+**標籤**：release2.2、release2.3
+
+- 依據：D488（修訂 D481 裁決二、D483）、D489（修訂 D448 決定 5）；主規格 §7.14「重新上架時檢查保存的排程」「活動下架時連動組合包」、5.1.5 F4、5.1.5.1 §2.2／§2.16、5.1.5.8 §2.2、5.1.5.9 §2.2／§2.16、5.1.6.3 §2.1、5.1.7.3 F10。原型原本還是 D481 的「恢復原本的排程／不恢復」兩選一（三百零五）。
+- `js/listing-state.js`：新增 `relistBlockers(entity, now, check)`——只查開賣、停售、定時下架三種保存的時間（拍賣：開拍與定時下架，停售隨開拍不另查；上架時間不查；活動組合包只查自己另設的格子），已過或沒通過既有檢查的一次全列。`relist()` 拿掉 `restore`／`skip`，一律直接恢復還沒到的時間；`relistBundle()` 改收 `{ check }`，只查組合包自己，有問題回 `timeBlockers`、成員也不帶上來；連帶上架的成員回到上架＋未開賣、不恢復自己保存的時間（`asMember`，見 ASSUMPTIONS UIA-315 第 3 項）。
+- `partials/relist-restore.js`：`ask()`／`bindChoice()`／`skipOf()` 退場，改成 `plan()`＋`block()`（自帶 leave-dialog 殼，只有一顆「知道了」）；`blockHTML()` 改列「要先改的時間」（哪一種＋日期與時間＋原因）；新增 `memberBlockHTML()` 給 D489。`ds-components/sched-restore.css`：`.sched-restore__choice`、`.sched-restore__item--skip` 退場（檔頭墓碑），元件改成「擋下時的提示內容」；`design-system.html` §4.77a demo 卡與說明、元件表那一列、`design-system.md` 條目同步，`design-components.html` 重新生成。
+- 入口：`product-detail.html`、`auction-detail.html`（頁首「上架」與上架開關）、`e-shop.html`（三類列的「上架」）、`partials/bundle-relist.js`＋`bundle-detail.html`（組合包：先查本組合的時間，沒問題才走 D289 成員確認）。被擋下時開關畫回關、什麼都不改。
+- 活動詳情 `event-detail.html` 的 D448 彈窗：`js/events-store.js` 新增 `relistBundlesPlan()`，把已下架組合包分成可一起上架、成員單品已下架（D489）、成員已封存（不列）三種；可一起上架的再各自查時間（D488 決定 7）。彈窗列出會一起上架的組合包，另外兩區提示「這次不會上架：時間有問題」與「成員單品已下架」；一個都不能一起上架時改成只有提示、主鈕「上架活動」。拿掉 `radio-list.css` 連結（只給兩選一用）。
+- 媒體庫 `js/media-vault.js`＋`js/vault-store.js`（新增 `relistBlockers`）：重新上架對話框不再有選擇；保存的下架時間沒過就直接帶進定時下架欄位，已過就在最上面提示、欄位亮錯、確認擋下，改成未來時間或關掉定時下架後提示收起。
+- 文案 `js/i18n.js`：`rr.*` 重寫（新增 `rr.title`、`rr.why.passed`、`rr.members.*` 等；兩選一那批鍵留墓碑註解），`e-shop.unlist.body`／`blocked-body`、`ad.unlist.body`、`vault.unlist.li2` 的後半句改成「還沒到的直接恢復、已過的要先改」，D448 彈窗新增提示文案。
+- 示範資料：單售 membership＝直接恢復；杯墊組 coaster＝擋下（下架與開賣時間已過）；後台茶水組 backstage-set＝直接恢復（連帶杯墊組，不查成員）；拍賣 setlist-sheet＝直接恢復；活動組合包 bd-tc-floor-tee＝擋下（停售超出活動上架區間）；新增 bd-tc-floor-zine（成員寫真誌已下架，D489 示範）；媒體庫「簽名會現場」＝保存的下架時間已過。
+- ⚠ 改到 E-Shop（🟢 release2.2）的重新上架，標籤先寫兩個；是否同步進凍結的 release2.2 待使用者決定。媒體庫屬 🟣 release2.4／⚪ 範圍，未另標。
+
 ## 2026-10-29（四百一十）· 電子商店的「商店預覽」欄上下緣改成與建立流程預覽欄一致（B 反饋導入）
 
 **標籤**：release2.2、release2.3

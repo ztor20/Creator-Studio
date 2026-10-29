@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>設定庫存量 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-stock-settings — 「設定庫存量」區段 demo（2026-10-29）。不改原型，只用既有元件，自有樣式 lab- 前綴＋token。
+     一個庫存量欄位＋三個互相獨立的開關：不限量（賣完轉預購）／限量標籤（前台標記）／鎖定庫存（暫時保留一部分不賣）。 */
+  .lab [hidden] { display: none !important; }
+  .lab-col { display: grid; align-content: start; }   /* 區塊間距交給 .form-section 自己的 margin-top，與原型一致 */
+  .lab-bar { display: flex; flex-wrap: wrap; gap: var(--sp-24); margin-top: var(--sp-20); }
+  .lab-bar__item { display: grid; gap: var(--sp-6); }
+  .lab-bar__label { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-grid { display: grid; grid-template-columns: minmax(0, 770px) minmax(0, 300px); gap: var(--sp-24); align-items: start; margin-top: var(--sp-20); }
+  @media (max-width: 1100px) { .lab-grid { grid-template-columns: minmax(0, 1fr); } }
+  .lab-gap { margin-top: var(--sp-16); }
+  .lab-sep { border-top: 1px solid var(--border-soft); }
+  .lab-lockbody { display: grid; gap: var(--sp-12); padding: var(--sp-4) var(--sp-16) var(--sp-16); }
+  .lab-lblrow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-12); }
+  .lab-avail { font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-avail b { color: var(--foreground); font-family: var(--font-numeric); font-weight: var(--fw-medium); }
+  /* 多選項矩陣沿用 variant-table 表格；只換欄軌（規格｜庫存量｜[鎖定庫存量｜留倉]） */
+  .lab-vt { min-width: 0; }
+  .lab-vt .variant-table__head, .lab-vt .variant-table__row { grid-template-columns: minmax(96px, max-content) minmax(0, 1fr); }
+  .lab-vt--lock .variant-table__head, .lab-vt--lock .variant-table__row { grid-template-columns: minmax(96px, max-content) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr); }
+  .lab-vt__avail { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+  /* 粉絲端預覽 */
+  .lab-pv { position: sticky; top: var(--sp-16); }
+  .lab-tile { margin-top: var(--sp-12); border: 1px solid var(--layer-line); border-radius: var(--radius-xl); padding: var(--sp-12); display: grid; gap: var(--sp-12); }
+  .lab-tile__img { position: relative; height: 10rem; border-radius: var(--radius-lg); background: var(--ztu-film); display: grid; place-items: center; color: var(--muted-foreground); }
+  .lab-tile__tag { position: absolute; top: var(--sp-8); left: var(--sp-8); }
+  .lab-tile__t { font-size: var(--fs-14); }
+  .lab-tile__state { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-tile__state b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-sim { display: flex; gap: var(--sp-8); margin-top: var(--sp-12); flex-wrap: wrap; }
+  .lab-list { margin: var(--sp-12) 0 0; padding-left: var(--sp-20); font-size: var(--fs-14); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab">
+
+      <div class="page-intro"><div>
+        <h1 class="page-intro__title">設定庫存量（設計探索）</h1>
+        <p class="page-intro__sub">一個「庫存量」欄位加三個各自獨立的開關：不限量、限量標籤、鎖定庫存。右邊是粉絲端預覽，可以按「模擬賣出」看賣完時會變成預購還是售罄。這是 demo，不改原型。</p>
+      </div></div>
+
+      <div class="lab-grid">
+        <div class="lab-col">
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title">商品選項</h3>
+            <p class="form-section__sub">同款商品的不同尺寸或顏色——各有自己的價格與庫存。</p>
+          </div>
+          <div class="segmented radio-cards" id="lab-var">
+            <button class="segmented__btn segmented__btn--active" type="button" data-v="single">單一選項</button>
+            <button class="segmented__btn" type="button" data-v="multiple">多選項</button>
+          </div>
+        </section>
+        <section class="form-section form-section--outlined" id="lab-sec-a">
+          <div class="form-section__head"><h3 class="form-section__title" id="lab-sec-a-t">庫存量</h3></div>
+
+          <div id="lab-single">
+            <div class="field">
+              <div class="field__label">庫存量 <span class="field__req">*</span></div>
+              <input class="input" id="lab-stock" inputmode="numeric" value="20" placeholder="0">
+            </div>
+          </div>
+
+          <div id="lab-multi" hidden>
+            <div class="variant-table-wrap"><div class="variant-table lab-vt" id="lab-vt">
+              <div class="variant-table__head"><span>規格</span><span>庫存量</span><span data-lockcol>留倉</span><span data-lockcol>鎖定庫存量</span></div>
+              <div id="lab-rows"></div>
+            </div></div>
+          </div>
+        </section>
+        <section class="form-section form-section--outlined" id="lab-sec-b">
+          <div class="form-section__head"><h3 class="form-section__title">庫存設定</h3></div>
+          <div class="control-group" id="lab-cg">
+            <!-- 1 不限量 -->
+            <div class="control-row">
+              <div>
+                <div class="control-row__main">開啟不限量</div>
+                <div class="control-row__sub">庫存賣完後，可轉為預購，前台可持續以預購下單。</div>
+              </div>
+              <div class="switch" id="lab-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lab-sep"></div>
+            <!-- 2 限量標籤 -->
+            <div class="control-row">
+              <div>
+                <div class="control-row__main">開啟限量標籤</div>
+                <div class="control-row__sub">在前台標記為限量商品。</div>
+              </div>
+              <div class="switch" id="lab-sw-tag" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lab-sep"></div>
+            <!-- 3 鎖定庫存 -->
+            <div class="control-row">
+              <div>
+                <div class="control-row__main">鎖定庫存</div>
+                <div class="control-row__sub">暫時只開放部分庫存販售，可隨時調整。</div>
+              </div>
+              <div class="switch" id="lab-sw-lock" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+            <div class="lab-lockbody" id="lab-lockbody" hidden>
+              <div class="field" id="lab-f-lock">
+                <div class="field__label lab-lblrow"><span>鎖定庫存量</span><span class="lab-avail" id="lab-avail"></span></div>
+                <input class="input" id="lab-lock" inputmode="numeric" value="5" placeholder="0">
+                <p class="field__error" id="lab-lock-err" hidden>鎖定庫存量不能超過庫存量。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        </div>
+        <aside class="lab-pv">
+          <section class="card">
+            <div class="card__head"><h2 class="card__title">粉絲端預覽</h2></div>
+            <div class="lab-tile">
+              <div class="lab-tile__img"><i data-lucide="package" class="ztor-icon"></i><span class="lab-tile__tag badge" id="lab-pv-tag" hidden>限量</span></div>
+              <div class="lab-tile__t">26MS T-Shirt（白）</div>
+              <div class="lab-tile__state"><span id="lab-pv-state"></span><button class="btn btn--primary btn--sm" type="button" id="lab-pv-btn">加入購物車</button></div>
+            </div>
+            <div class="lab-sim">
+              <button class="btn btn--outline btn--sm" type="button" id="lab-sell">模擬賣出 1 件</button>
+              <button class="btn btn--ghost btn--sm" type="button" id="lab-reset">重設</button>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="card lab-gap" style="max-width:770px">
+        <div class="card__head"><h2 class="card__title">這個版本怎麼處理</h2></div>
+        <ul class="lab-list">
+          <li><b>庫存量</b>：現在手上能賣的件數，必填。</li>
+          <li><b>開啟不限量</b>：庫存賣到 0 之後，商品轉成預購，前台按鈕變「預購」、可繼續下單；關閉時賣完顯示「已售完」。</li>
+          <li><b>開啟限量標籤</b>：只是前台商品圖上的「限量」標記，跟庫存數字無關，三個開關各自獨立。</li>
+          <li><b>鎖定庫存</b>：打開後多一個「鎖定庫存量」＝目前開放給前台賣的件數，其餘暫留倉（例：庫存 20、鎖定 5 → 可售 5、留倉 15）。賣得好就調高鎖定庫存量放出更多；不能超過庫存量。</li>
+          <li><b>多選項</b>：每個選項各自一列庫存量；開鎖定時每列各自多出「留倉」與「鎖定庫存量」。</li>
+          <li><b>待你裁決</b>：「不限量」與「限量標籤」同時開是否允許（目前允許，兩者各管各的）。</li>
+        </ul>
+      </section>
+
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const S = { multi: false, unl: false, tag: false, lock: false, sold: 0 };
+  const opts = [{ n: '黑 / S', s: 12, l: 2 }, { n: '黑 / M', s: 20, l: 5 }, { n: '白 / M', s: 8, l: 0 }];
+  const num = v => { const n = parseInt(String(v).replace(/,/g, ''), 10); return isNaN(n) ? 0 : Math.max(0, n); };
+  function setSwitch(el, on) { el.classList.toggle('switch--on', on); el.setAttribute('aria-checked', on ? 'true' : 'false'); }
+  function bind(id, key) {
+    const el = $(id), tog = () => { S[key] = !S[key]; render(); };
+    el.addEventListener('click', tog);
+    el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); tog(); } });
+  }
+  bind('lab-sw-unl', 'unl'); bind('lab-sw-tag', 'tag'); bind('lab-sw-lock', 'lock');
+  $('lab-var').querySelectorAll('.segmented__btn').forEach(b => b.addEventListener('click', () => {
+    $('lab-var').querySelectorAll('.segmented__btn').forEach(x => x.classList.remove('segmented__btn--active'));
+    b.classList.add('segmented__btn--active'); S.multi = b.dataset.v === 'multiple'; S.sold = 0; render();
+  }));
+  ['lab-stock', 'lab-lock'].forEach(id => $(id).addEventListener('input', () => { S.sold = 0; render(); }));
+  $('lab-sell').addEventListener('click', () => { S.sold++; render(); });
+  $('lab-reset').addEventListener('click', () => { S.sold = 0; render(); });
+
+  function rowsHTML() {
+    return opts.map((o, i) => `<div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">${o.n}</span></span>`
+      + `<input class="input" data-s="${i}" value="${o.s}" inputmode="numeric">`
+      + `<span class="lab-vt__avail" data-lockcol data-a="${i}"></span>`
+      + `<input class="input" data-l="${i}" value="${o.l}" inputmode="numeric" data-lockcol></div>`).join('');
+  }
+  $('lab-rows').innerHTML = rowsHTML();
+  $('lab-rows').addEventListener('input', e => {
+    const t = e.target, i = t.dataset.s != null ? t.dataset.s : t.dataset.l; if (i == null) return;
+    opts[i][t.dataset.s != null ? 's' : 'l'] = num(t.value); S.sold = 0; render();
+  });
+
+  function totals() {
+    if (S.multi) {
+      const stock = opts.reduce((a, o) => a + o.s, 0), sell = S.lock ? opts.reduce((a, o) => a + Math.min(o.l, o.s), 0) : stock;
+      return { stock, sell };
+    }
+    const stock = num($('lab-stock').value), sell = S.lock ? Math.min(num($('lab-lock').value), stock) : stock;
+    return { stock, sell };
+  }
+  function render() {
+    setSwitch($('lab-sw-unl'), S.unl); setSwitch($('lab-sw-tag'), S.tag); setSwitch($('lab-sw-lock'), S.lock);
+    $('lab-single').hidden = S.multi; $('lab-multi').hidden = !S.multi;
+    /* 單一規格：欄位與三個開關同一個 section；多選項：矩陣與設定分兩個 section */
+    const cg = $('lab-cg'), host = S.multi ? $('lab-sec-b') : $('lab-sec-a');
+    if (cg.parentNode !== host) host.appendChild(cg);
+    cg.style.marginTop = S.multi ? '' : 'var(--sp-16)';
+    $('lab-sec-b').hidden = !S.multi;
+    $('lab-sec-a-t').textContent = S.multi ? '庫存量' : '設定庫存量';
+    $('lab-lockbody').hidden = !S.lock || S.multi;
+    $('lab-vt').classList.toggle('lab-vt--lock', S.lock);
+    document.querySelectorAll('#lab-multi [data-lockcol]').forEach(el => { el.hidden = !S.lock; });
+    opts.forEach((o, i) => { const a = document.querySelector(`[data-a="${i}"]`); if (a) a.textContent = Math.max(0, o.s - Math.min(o.l, o.s)); });
+    const t = totals();
+    const over = !S.multi && S.lock && num($('lab-lock').value) > t.stock;
+    $('lab-lock-err').hidden = !over;
+    const sellable = t.sell;
+    $('lab-avail').innerHTML = `可售 <b>${sellable}</b> 件・留倉 <b>${t.stock - sellable}</b> 件`;
+    // 粉絲端
+    const left = Math.max(0, sellable - S.sold);
+    $('lab-pv-tag').hidden = !S.tag;
+    const st = $('lab-pv-state'), btn = $('lab-pv-btn');
+    if (left > 0) { st.innerHTML = `現貨 <b>${left}</b> 件`; btn.textContent = '加入購物車'; btn.disabled = false; }
+    else if (S.unl) { st.innerHTML = '<b>預購中</b>'; btn.textContent = '預購'; btn.disabled = false; }
+    else { st.innerHTML = '<b>已售完</b>'; btn.textContent = '已售完'; btn.disabled = true; }
+  }
+  render();
+  if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+})();
+</script>
+</body>
+</html>

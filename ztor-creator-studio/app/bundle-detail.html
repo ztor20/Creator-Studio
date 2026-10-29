@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- 封存態／因成員封存而下架的說明（D284） -->
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
-<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時詢問是否恢復排程（D481） -->
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的排程有問題的提示（D488） -->
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
 <!-- 2026-09-11 D268：多選項成員展開的逐組合列列首唯讀縮圖 .variant-thumb--ro（定義在 variant-builder.css） -->
@@ -785,7 +785,7 @@
 <script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 create-bundle 共用） -->
-<script src="partials/relist-restore.js?v=r2.2"></script><!-- D481：重新上架時詢問是否恢復下架時保存的排程 -->
+<script src="partials/relist-restore.js?v=r2.2"></script><!-- D488：重新上架時檢查下架時保存的排程 -->
 <script src="partials/bundle-relist.js?v=r2.2"></script><!-- 組合包上架的成員閘門（D289／D298），與電子商店清單共用 -->
 <script>
   /* bundle-detail 互動：定價模式切換 + See as fan 分割預覽（§6.7 同源）。display-only demo。 */
@@ -889,7 +889,9 @@
         if (store0 && store0.all) Object.keys(store0.all()).forEach(k => { if (!key) { const p = store0.get(k); if (p && p.name === pr.name) { key = k; real = p; } } });
         if (!key) {
           key = 'evp:' + b.id + ':' + i;
-          extraProducts[key] = { id: key, kind: 'product', name: pr.name, imgSrc: pr.img || '', price: Number(pr.price) || 0, pool: { total: 'unlimited', locks: { single: null, bundles: {} } }, listed: true, onSale: true };
+          /* D489 示範（2026-10-29）：events-store 的商品成員可帶 listed:false＝這件單品在電子商店已下架（原型對不到真商品時的替身）；
+             本頁上架時照 D289 列進「會一起上架的成員」，確認後由 evBundlePersist 寫回（拿掉 listed:false） */
+          extraProducts[key] = { id: key, kind: 'product', name: pr.name, imgSrc: pr.img || '', price: Number(pr.price) || 0, pool: { total: 'unlimited', locks: { single: null, bundles: {} } }, listed: pr.listed !== false, onSale: true };
         }
         const qty = Number(pr.qty) > 0 ? Number(pr.qty) : 1;
         const amt = real ? (Number(String(real.price || '').replace(/[^0-9.]/g, '')) || 0) : (Number(pr.price) || 0);
@@ -1861,10 +1863,15 @@
         const s = {};
         Object.keys(bundleModel.sched || {}).forEach(k => { const v = bundleModel.sched[k]; if (typeof v === 'string' && v) s[k] = v; });
         put('sched', s, {});
-        put('paused', bundleModel.paused || null, null);   /* D481：下架時保存但暫停的排程；重新上架（本頁或活動詳情 D448 彈窗）時讀它問要不要恢復 */
+        put('paused', bundleModel.paused || null, null);   /* D481：下架時保存但暫停的排程；重新上架（本頁或活動詳情 D448 彈窗）時讀它檢查並恢復（D488） */
         /* D447：限量總量（cap；null＝不限量）也寫回——活動詳情「庫存設為 0」把總量收到已售後，這裡調高總量或改回不限量才會留住 */
         put('cap', (bundleModel.cap === undefined ? null : bundleModel.cap), null);
       }
+      /* D489 示範：連帶上架（D289）把替身商品成員拉上來後，events-store 那筆的 listed:false 一併拿掉，活動詳情的 D448 彈窗才不會再把它當已下架 */
+      (b.products || []).forEach((pr, i) => {
+        const ex = extraProducts['evp:' + b.id + ':' + i];
+        if (ex && pr.listed === false && ex.listed !== false) { delete pr.listed; changed = true; }
+      });
       if (changed) EV.saveEdits(ev.id, { bundles: ev.bundles });
     }
     window.bdEvPersist = evBundlePersist;
@@ -3240,7 +3247,7 @@
         if (listErr) listErr.hidden = true;
         askConfirm({
           title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', bname()),
-          body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are cleared; set the sale again after relisting.'),
+          body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Its schedules are paused. When you list it again, times that haven’t come yet pick up where they were; any that have passed need changing first.'),
           okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
           /* D481（修訂 D290 的清除）：四個排程時間保存但暫停（ListingState.unlist → bundleModel.paused）。活動組合包的時間是逐格「跟隨活動／另設」，
              另設的格子一併搬進 paused.sched、生效值回到跟隨（UIA-303，取代 UIA-270 的清除）；paint() → mirror → evBundlePersist 寫回 events-store。 */
@@ -3258,8 +3265,8 @@
           bundle: bundleModel,
           getProduct: productOf,   /* 2026-10-16：先查本頁假商品（票券成員 tix:、活動組合包對不到的商品 evp:）再查 store——原本只查 store，活動組合包的成員查不到就被當成已封存 */
           name: bname(), askConfirm, T,
-          checkOf: restoreCheckOf,   /* D481〔推導 4〕：恢復照既有時間檢查（活動組合包另設的時間要落在活動上架區間內、定時下架或停售不得讓活動沒有可賣的東西） */
-          onCancel: () => paint(),   /* 恢復排程的確認取消＝不上架，上架開關畫回關 */
+          checkOf: restoreCheckOf,   /* D488〔推導 2〕：恢復照既有時間檢查（活動組合包另設的時間要落在活動上架區間內、定時下架或停售不得讓活動沒有可賣的東西） */
+          onCancel: () => paint(),   /* 排程有問題被擋下、或成員確認取消＝不上架，上架開關畫回關 */
           commit: e => { if (store && store.commit && e !== bundleModel) store.commit(e); },   /* 組合包自己由 paint() 的 mirror() 寫回 */
           onDone: () => {
             paint();
@@ -3268,9 +3275,9 @@
           }
         });
       }
-      /* D481〔推導 4〕：恢復視同重新設定這些時間，照既有時間檢查——只有活動組合包有額外的檢查（純商品組合包與成員商品回 null）：
+      /* D488〔推導 2〕：恢復視同重新設定這些時間，照既有時間檢查——只有活動組合包有額外的檢查（純商品組合包回 null；成員不檢查，D488 決定 6）：
          另設的格子用 js/ticket-bundle.js 的 schedErrors（要落在活動上架區間內、停售不晚於活動停售）；
-         下架、停售時間另看 hasOtherSellable（到那個時間活動不能沒有可賣的東西，同 schedBlocked）。不通過的不恢復、確認裡寫原因。 */
+         下架、停售時間另看 hasOtherSellable（到那個時間活動不能沒有可賣的東西，同 schedBlocked）。沒通過視同不能用：擋下上架、提示寫原因。 */
       function restoreCheckOf(entity) {
         if (entity !== bundleModel || !seed || !seed.isEventBundle) return null;
         return (key, at) => {

@@ -18,19 +18,19 @@
        commit,                  // 可省略：上架成功後逐一寫回工作階段（組合包＋連帶上架的成員）
        onDone,                  // 可省略：上架成功後重畫，收到 ListingState.relistBundle 的回傳
        ticketBlocked,           // 可省略：(ticketPlanItem) => true 表示這筆票券成員現在不能賣；省略＝用下方 defaultTicketBlocked
-       checkOf,                 // 可省略（D481）：entity => (key, iso) => 不通過既有時間檢查的原因或 null（活動組合包另設的時間要落在活動上架區間內等）
-       onCancel                 // 可省略（D481）：恢復排程的確認被取消時呼叫（上架開關要切回去）
+       checkOf,                 // 可省略（D488）：entity => (key, iso) => 不通過既有時間檢查的原因或 null（活動組合包另設的時間要落在活動上架區間內等）
+       onCancel                 // 可省略：被擋下的提示關掉、或成員確認取消時呼叫（上架開關要切回去）
      })
-   恢復排程（D481，2026-10-27；主規格 §7.14「重新上架時詢問是否恢復排程」）：本組合或連帶上架的成員有下架時保存、還沒過的排程時，
-     「一起上架的成員」與「恢復原本的排程／不恢復」放在同一個確認裡（partials/relist-restore.js 的 ask），連帶上架的成員套用同一個選擇〔推導 8〕；
-     都沒有還沒過的時間時照舊：有已下架成員走原本的成員確認、沒有就直接上架。
+   檢查保存的排程（D488，2026-10-29；主規格 §7.14「重新上架時檢查保存的排程」，取代 D481 的詢問）：只檢查本組合自己保存的時間，
+     不檢查成員（成員的時間是單獨販售用的，組合包不繼承，D488 決定 6）。有已過或沒通過的 → 擋下並一次列出（partials/relist-restore.js 的 block），
+     成員也不帶上來；沒問題時照舊：有已下架成員走原本的成員確認（D289）、沒有就直接上架，保存的時間直接恢復。
    票券成員（活動組合包，2026-10-16 修正）：票券不是商品，不查封存／下架——ListingState.bundleRelistPlan 把它放在 plan.tickets。
      可不可賣看活動與門票本身，口徑沿用 bundle-detail 的 evBoundsOf().canList 與 e-shop 的 eventBundleModel()（D292／D363）：
        活動狀態為已排程／售票中／進行中且未下架 → 可上架；草稿、已結束、已取消、活動已下架、活動查不到 → 擋；
        （D437 決定一，2026-10-16：已結束移出可上架，與 D352「活動結束自動下架」一致；已結束／已取消擋下時改用 ticket-ended-body 那一句）
        允許的門票全部已隨場次刪除（D391 第 13 題 goneAllOf）→ 擋。擋下時用另一組文案（不是「先解除封存」）。
    已封存的組合包不從這裡走（要先按「解除封存」回到已下架，D298）——傳進來一律直接 return。
-   consumer：bundle-detail.html、e-shop.html（恢復排程的確認另依賴 partials/relist-restore.js，兩頁都要載入）。 */
+   consumer：bundle-detail.html、e-shop.html（排程有問題的提示另依賴 partials/relist-restore.js，兩頁都要載入）。 */
 (function () {
   'use strict';
 
@@ -106,29 +106,24 @@
 
     var RR = window.ZtorRelistRestore;
     var checkOf = typeof o.checkOf === 'function' ? o.checkOf : function () { return null; };
-    var memberProducts = plan.unlisted.map(function (m) { return m.product; }).filter(Boolean);
-    var rp = RR ? RR.plan([{ entity: bundle, name: name, check: checkOf(bundle) }].concat(memberProducts.map(function (p) {
-      return { entity: p, name: p.name || p.id, check: checkOf(p) };
-    }))) : { any: false, groups: [] };
+    /* D488 決定 6：只查本組合自己的時間，不查成員 */
+    var rp = RR ? RR.plan([{ entity: bundle, name: name, check: checkOf(bundle) }]) : { any: false, groups: [] };
+    if (rp.any) {
+      RR.block({
+        title: T('rr.title', '“{n}” can’t be listed yet').replace('{n}', name),
+        plan: rp, T: T, onClose: o.onCancel
+      });
+      return;
+    }
 
-    var go = function (restore) {
-      var r = LS.relistBundle(bundle, getP, undefined, restore ? { restore: true, skipOf: RR.skipOf(rp) } : null);
+    var go = function () {
+      var r = LS.relistBundle(bundle, getP, undefined, { check: checkOf(bundle) });
       if (typeof o.commit === 'function' && r.ok) {
         o.commit(bundle);
         r.relisted.forEach(o.commit);
       }
       if (typeof o.onDone === 'function') o.onDone(r);
     };
-
-    /* D481：有還沒過的保存排程 → 成員清單與恢復選擇同一個確認 */
-    if (rp.any) {
-      RR.ask({
-        title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', name),
-        plan: rp, members: plan.unlisted.map(memberName), T: T,
-        onChoose: go, onCancel: o.onCancel
-      });
-      return;
-    }
 
     /* 連帶上架先確認：列出會被一起拉上來的已下架成員 */
     if (plan.unlisted.length) {
@@ -137,13 +132,13 @@
         body: T('e-shop.relist.members-body', 'These unlisted items are relisted with it:'),
         items: plan.unlisted.map(memberName),
         okKey: 'e-shop.relist.members-confirm', okFallback: 'Relist all',
-        onConfirm: function () { go(false); },
+        onConfirm: function () { go(); },
         onCancel: o.onCancel
       });
       return;
     }
 
-    go(false);
+    go();
   }
 
   window.ZtorBundleRelist = { run: run };
