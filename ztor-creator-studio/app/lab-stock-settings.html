@@ -163,12 +163,12 @@
   const opts = [{ n: '黑 / S', s: 12, l: 2 }, { n: '黑 / M', s: 20, l: 5 }, { n: '白 / M', s: 8, l: 0 }];
   const num = v => { const n = parseInt(String(v).replace(/,/g, ''), 10); return isNaN(n) ? 0 : Math.max(0, n); };
   function setSwitch(el, on) { el.classList.toggle('switch--on', on); el.setAttribute('aria-checked', on ? 'true' : 'false'); }
-  function bind(id, key) {
-    const el = $(id), tog = () => { S[key] = !S[key]; render(); };
+  function bind(id, key, after) {
+    const el = $(id), tog = () => { S[key] = !S[key]; if (after) after(S[key]); render(); };
     el.addEventListener('click', tog);
     el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); tog(); } });
   }
-  bind('lab-sw-unl', 'unl'); bind('lab-sw-tag', 'tag'); bind('lab-sw-lock', 'lock');
+  bind('lab-sw-unl', 'unl', on => { S.sold = on ? 1e9 : 0; });   /* 開啟不限量：預覽先切到現貨 0，讓人看到預購狀態 */ bind('lab-sw-tag', 'tag'); bind('lab-sw-lock', 'lock');
   $('lab-var').querySelectorAll('.segmented__btn').forEach(b => b.addEventListener('click', () => {
     $('lab-var').querySelectorAll('.segmented__btn').forEach(x => x.classList.remove('segmented__btn--active'));
     b.classList.add('segmented__btn--active'); S.multi = b.dataset.v === 'multiple'; S.sold = 0; render();
@@ -222,7 +222,7 @@
     $('lab-pv-tag').hidden = !S.tag;
     const st = $('lab-pv-state'), btn = $('lab-pv-btn');
     if (left > 0) { st.innerHTML = `現貨 <b>${left}</b> 件`; btn.textContent = '加入購物車'; btn.disabled = false; }
-    else if (S.unl) { st.innerHTML = '<b>預購中</b>'; btn.textContent = '預購'; btn.disabled = false; }
+    else if (S.unl) { st.innerHTML = '現貨 <b>0</b> 件'; btn.textContent = '預購'; btn.disabled = false; }
     else { st.innerHTML = '<b>已售完</b>'; btn.textContent = '已售完'; btn.disabled = true; }
   }
   render();
