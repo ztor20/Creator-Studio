@@ -562,7 +562,7 @@
     /* 以最終版為基底的版本（不減功能、只改接個別頁面）：nav 全開。
        與 devtools.js 的 isFullBaseVersion() 同一份白名單，新增同型特殊版時兩處都要加。
        已退場的鍵（golive-4step、home-canvas）由 devtools.js 的 load() 改寫成 full，這裡不再兜底。 */
-    return v === "full" || v === "funding-test" || v === "deck-for-sony";
+    return v === "full" || v === "funding-test" || v === "deck-for-sony" || v === "stock-ui-test";
   }
   function routeAllowed(href) {
     const route = (href || "").split(/[?#]/)[0].toLowerCase();
