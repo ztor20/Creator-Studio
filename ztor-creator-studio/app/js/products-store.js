@@ -820,8 +820,8 @@
     'lyric-sheet':        { id: 'lyric-sheet', nameKey: 'e-shop.a4.name', img: 'notebook.webp', listed: false, shown: true, saleStart: daysFromNow(-40), duration: 5, bids: 11, bidders: 6 },
     /* 零出價、已下架（2026-09-22 · D307「拍賣的刪除」）：從未有人出價，已下架——清單「已下架」列與細節頁都有「刪除」（2026-10-27 起改成還沒開拍就下架，見下）。
        對照 tour-enamel-pin（流標但仍上架中 → 要先下架才能刪）與 lyric-sheet（已下架但曾有出價 → 只能封存）。 */
-    /* D481 示範（2026-10-27）：改成「排了定時開拍、還沒開拍就下架」——開拍時間保存但暫停（paused），重新上架時詢問是否恢復；
-       恢復＝定時開拍、結標跟著開拍＋時長（〔推導 9〕）。從未出價，D307 的刪除示範不變。 */
+    /* D488 示範（2026-10-29；資料沿用 D481 示範）：「排了定時開拍、還沒開拍就下架」——開拍時間保存但暫停（paused）、還沒到，
+       重新上架時直接恢復為定時開拍、結標跟著開拍＋時長（D488〔推導 6〕），不跳確認。從未出價，D307 的刪除示範不變。 */
     'setlist-sheet':      { id: 'setlist-sheet', nameKey: 'e-shop.a8.name', img: 'notebook.webp', listed: false, shown: true, saleStart: null, onSale: false, duration: 5, bids: 0, bidders: 0,
                             paused: { listAt: null, unlistAt: null, saleStart: daysFromNow(6, 20), saleEnd: null, onSale: true } },
     /* 已封存（Archived）：只在「已封存」篩選下出現、細節頁唯讀 */
@@ -837,7 +837,7 @@
      回到 e-shop 與組合詳情頁要看得到 roadie-set 已下架＋原因），所以把上架軸的五個欄位記進 sessionStorage，
      seed 時套回去。只記這五個欄位、只活在同一個分頁；不是持久化、不模擬後端。 */
   var SESSION_KEY = 'ztor.listing.session';
-  var SESSION_FIELDS = ['listed', 'listAt', 'unlistAt', 'archived', 'unlistReason', 'saleStart', 'saleEnd', 'onSale', 'paused'];   /* saleStart／saleEnd／onSale：D290；paused：下架時保存但暫停的排程（D481） */
+  var SESSION_FIELDS = ['listed', 'listAt', 'unlistAt', 'archived', 'unlistReason', 'saleStart', 'saleEnd', 'onSale', 'paused'];   /* saleStart／saleEnd／onSale：D290；paused：下架時保存但暫停的排程（D481；重新上架檢查 D488） */
   function sessionRead() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {}; } catch (_) { return {}; } }
   function sessionWrite(o) { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(o)); } catch (_) {} }
   function kindOf(e) { return (e && e.members) ? 'bundle' : ((e && e.duration !== undefined) ? 'auction' : 'product'); }
@@ -1079,8 +1079,8 @@
     song:    { saleEnd: '2026-08-20T23:59:00' },
     /* 已下架：總閘門關掉，粉絲端頁面顯示「已下架」、不能購買（D415）。尚無銷售、不在任何組合包裡 → D307（2026-09-22）零成交可刪除的正例：清單列與細節頁都有「刪除」 */
     membership: { listed: false,
-      /* D481 示範（2026-10-27）：下架時保存但暫停的排程——上架時間已過（不列）、下架、開賣、停售都還沒到。
-         細節頁頁首「上架」、上架開關、電子商店清單列的「上架」都會先跳確認列出這三個時間，選「恢復原本的排程」或「不恢復」。 */
+      /* D488 示範「直接恢復」（2026-10-29；資料沿用 D481 示範）：下架時保存但暫停的排程——上架時間已過（不查）、下架、開賣、停售都還沒到。
+         細節頁頁首「上架」、上架開關、電子商店清單列的「上架」都直接上架並恢復這三個時間（定時開賣），不跳確認。 */
       paused: { listAt: daysFromNow(-20, 10), unlistAt: daysFromNow(90, 23), saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(45, 23), onSale: true } },
     /* ⚠ 這裡曾經放過 hoodie 的「排定上架、時間還沒到」示範（2026-09-09 加、同日撤）。
        撤掉的原因：hoodie 同時是 e-shop F5 粉絲端預覽的第 5 張卡，而那段的過濾只看
@@ -1122,8 +1122,9 @@
     patch:    { locks: { single: 60 }, holds: { single: 10, free: 0, bundles: {} } },
     /* 定時下架已到期（D288）：coaster 在 2026-09-15 依排程下架，上架中的 backstage-set 由載入時的自動連動一併下架 */
     coaster:  { unlistAt: '2026-09-15T23:59:00',
-      /* D481 示範（2026-10-27）：定時下架到期時開賣已過、停售還沒到——載入時 expireScheduled() 把它下架、時間存進 paused；
-         後台茶水組重新上架時，同一個確認列出它的停售時間（開賣已過不列，〔推導 3〕） */
+      /* D488 示範「擋下提示」（2026-10-29；資料沿用 D481 示範）：定時下架到期時開賣已過、停售還沒到——載入時 expireScheduled() 把它下架、
+         時間存進 paused。細節頁或清單按「上架」：保存的下架與開賣時間都已過，擋下並一次列出這兩個（D488〔推導 3〕），什麼都不改。
+         後台茶水組重新上架時把它連帶帶上來：組合包不檢查成員的時間（D488 決定 6），它回到上架＋未開賣、保存的時間不恢復（規則手冊 bundles.html）。 */
       saleStart: daysFromNow(-30, 12), saleEnd: daysFromNow(60, 23) }
   };
 
@@ -1417,8 +1418,8 @@
       description: '杯墊組＋六片帽，後台休息時間的標配。',
       members: [{ productId: 'coaster' }, { productId: 'cap' }],
       cap: null, listed: true, listAt: null, unlistAt: null,
-      /* D481 示範（2026-10-27）：被 coaster 連動下架前排了定時開賣與停售——連動下架時保存但暫停（paused），
-         重新上架（細節頁或清單）時與「一起上架的成員：杯墊組」放在同一個確認裡，問要不要恢復 */
+      /* D488 示範（2026-10-29；資料沿用 D481 示範）：被 coaster 連動下架前排了定時開賣與停售——連動下架時保存但暫停（paused），
+         兩個都還沒到。重新上架（細節頁或清單）只檢查本組合自己的時間：沒問題，照 D289 確認「會一起上架的成員：杯墊組」後直接恢復 */
       shown: true, privateLink: null, saleStart: daysFromNow(4, 12), saleEnd: daysFromNow(50, 23), lowThreshold: 0,
       discountPct: 5, discount: null,
       sales: { units: 4, gross: '$100', net: '$80' }

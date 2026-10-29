@@ -1,29 +1,30 @@
 /* ----------------------------------------------------------------
-   Schedule restore — 重新上架時「恢復原本的排程／不恢復」的確認內容
-   spec 0-設計規格書 §7.14「重新上架時詢問是否恢復排程」（D481，2026-10-27）
+   Schedule restore — 重新上架時「保存的排程有問題、先去改」的提示內容
+   spec 0-設計規格書 §7.14「重新上架時檢查保存的排程」（D488，2026-10-29；取代 D481 的「恢復／不恢復」詢問）
 
-   一段可塞進任何確認殼的內容區塊：
-     · 一起上架的成員（選配，組合包連帶上架時，D289）
-     · 暫停中的排程：每個還沒過的時間一列（哪一種時間＋日期與時間），
-       多個販售管道時依名稱分組；沒通過既有時間檢查的那一列多一句「不會恢復：原因」
-     · 兩個選項：radio-list 的「恢復原本的排程」「不恢復」（一定要選一個，確認鈕才可按）
-   殼：leave-dialog（partials/relist-restore.js 的 ask() 注入，商品／組合包／拍賣細節頁與電子商店清單共用）
-       與活動詳情的 #ed-confirm（D448 彈窗把同一段內容放進 body）。
-   markup 與行為：partials/relist-restore.js（blockHTML／bindChoice），頁面不自己拼。
+   一段可塞進任何確認殼的內容區塊，兩種內容共用同一組 class：
+     · 有問題的時間（blockHTML）：下架時保存、已過或沒通過既有時間檢查的時間一列一個（哪一種時間＋日期與時間＋原因），
+       多個販售管道時依名稱分組。按「上架」被擋下時出現；沒問題時直接上架、不出現。
+     · 已下架的成員單品（memberBlockHTML，D489）：活動重新上架的組合包彈窗裡，不能一起上架的組合包當分組、已下架的成員一列一個。
+   殼：leave-dialog（partials/relist-restore.js 的 block() 注入，商品／組合包／拍賣細節頁與電子商店清單共用）、
+       活動詳情的 #ed-confirm（D448 彈窗）、媒體庫重新上架對話框（payout-modal）。
+   markup：partials/relist-restore.js（blockHTML／memberBlockHTML），頁面不自己拼。
    全值引用 _tokens.css 的設計 token。
 
    anatomy
      .sched-restore
-       .sched-restore__label            段落小標（一起上架的成員／暫停中的排程）
-       .sched-restore__group            分組名稱（多個販售管道時才出現）
+       .sched-restore__label            段落小標（有問題的時間／已下架的成員單品）
+       .sched-restore__group            分組名稱（多個販售管道、或 D489 的組合包名稱）
        ul.sched-restore__list
-         li.sched-restore__item (--skip)
+         li.sched-restore__item
            .ztor-icon
            .sched-restore__text
-             .sched-restore__what       哪一種時間
-             .sched-restore__when       日期與時間
-             .sched-restore__note       不會恢復：原因（--skip 才有）
-       .radio-list.sched-restore__choice
+             .sched-restore__what       哪一種時間（成員單品時：狀態）
+             .sched-restore__when       日期與時間（成員單品時：名稱）
+             .sched-restore__note       原因（已過／沒通過哪一條檢查）
+
+   墓碑（2026-10-29 · D488）：.sched-restore__choice（radio-list 的「恢復原本的排程／不恢復」）與
+     .sched-restore__item--skip（「不會恢復」的刪除線列）退場——重新上架不再詢問，有問題的時間整列都是要改的。
    ---------------------------------------------------------------- */
 
 .sched-restore { display: flex; flex-direction: column; margin: 0 0 var(--sp-20); }
@@ -52,7 +53,3 @@
 .sched-restore__what { color: var(--muted-foreground); }
 .sched-restore__when { font-variant-numeric: tabular-nums; }
 .sched-restore__note { flex-basis: 100%; font-size: var(--fs-12); color: var(--status-warning-ink); line-height: var(--lh-comfy); }
-/* 不會恢復的那一列：時間轉灰（說明句維持警示色），一眼分得出哪些會恢復 */
-.sched-restore__item--skip .sched-restore__when { color: var(--muted-foreground); text-decoration: line-through; }
-
-.sched-restore__choice { margin-top: var(--sp-4); }

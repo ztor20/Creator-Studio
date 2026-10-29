@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
-<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時詢問是否恢復排程（D481） -->
+<link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的排程有問題的提示（D488） -->
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-more.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
@@ -1346,7 +1346,7 @@
 <script src="partials/radio-list.js?v=r2.2"></script>
 <!-- listing-state 必須早於 products-store：store 在 IIFE 裡就抓 window.ListingState 做庫存推導。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
-<script src="partials/relist-restore.js?v=r2.2"></script><!-- D481：重新上架時詢問是否恢復下架時保存的排程 -->
+<script src="partials/relist-restore.js?v=r2.2"></script><!-- D488：重新上架時檢查下架時保存的排程 -->
 <script src="js/link-field.js?v=r2.2"></script>
 <script src="js/apparel-taxonomy.js?v=r2.2"></script><!-- D360：服飾配件分類／系統屬性／尺寸顏色標準清單（window.ztorApparel） -->
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · S69：需求資料與算法（window.ztorDemand；須在 apparel-taxonomy 之後） -->
@@ -2262,8 +2262,8 @@
     document.querySelectorAll('[data-pd-hide],[data-pd-show]').forEach(b => b.addEventListener('click', () => { if (shownToggle) shownToggle.click(); }));
     /* 上架（2026-09-23 使用者裁決）：頁首「上架」鈕與上架開關切開是同一個動作，兩個入口共用這一支——
        D290：走 ListingState.relist，回來是未開賣，開賣卡由 paintSaleCard 重畫。
-       D481（2026-10-27）：下架時保存、還沒過的排程先問「恢復原本的排程／不恢復」（partials/relist-restore.js）；
-       沒有任何還沒過的時間就不問、直接上架（〔推導 5〕）。確認被取消＝不上架，開關由 pdPaintListingCard 畫回資料的樣子。 */
+       D488（2026-10-29，取代 D481 的詢問）：檢查下架時保存的開賣、停售、定時下架時間（partials/relist-restore.js）——
+       有已過的 → 擋下、提示一次列出、不改任何資料，開關由 pdPaintListingCard 畫回關；都沒過 → 直接上架並恢復，不跳確認。 */
     function pdRelist() {
       const L = window.ListingState, RR = window.ZtorRelistRestore;
       const done = () => {
@@ -2273,10 +2273,9 @@
       };
       const plan = RR ? RR.plan([{ entity: product, name: product.name }]) : { any: false };
       if (!plan.any) { L.relist(product); done(); return; }
-      RR.ask({
-        title: T('e-shop.relist.title', 'Relist “{n}”?').replace('{n}', product.name || ''), plan, T,
-        onChoose: restore => { L.relist(product, restore ? { restore: true, skip: RR.skipOf(plan)(product) } : null); done(); },
-        onCancel: () => { if (window.pdPaintListingCard) window.pdPaintListingCard(); }
+      RR.block({
+        title: T('rr.title', '“{n}” can’t be listed yet').replace('{n}', product.name || ''), plan, T,
+        onClose: () => { if (window.pdPaintListingCard) window.pdPaintListingCard(); }
       });
     }
     /* 切開＝上架；切關由 initArchiveState 攔下先確認 */
@@ -2638,7 +2637,7 @@
         syncListingCard();
         applyArchived();
       }
-      window.pdPaintListingCard = paintListingCard;   /* D481：pdRelist（上架開關與頁首「上架」）在恢復排程的確認之後才重畫 */
+      window.pdPaintListingCard = paintListingCard;   /* D488：pdRelist（上架開關與頁首「上架」）被擋下時用它把開關畫回關 */
       /* 確認彈窗：同 e-shop 的三種內容之二（封存／擋下），殼在 </body> 前 */
       /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
       const getDialog = () => document.querySelector('[data-pd-confirm-dialog]');
@@ -2698,7 +2697,7 @@
         }
         askConfirm({
           title: T('e-shop.unlist.title', 'Unlist “{n}”?').replace('{n}', name),
-          body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are cleared; set the sale again after relisting.'),
+          body: T('e-shop.unlist.body', 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Its schedules are paused. When you list it again, times that haven’t come yet pick up where they were; any that have passed need changing first.'),
           okKey: 'e-shop.unlist.confirm', okFallback: 'Unlist',
           onConfirm: () => { L.unlist(product); commit(); paintListingCard(); }
         });
@@ -2708,7 +2707,7 @@
          paintListingCard() 把開關、排程欄、徽章與未開賣提醒一起畫回資料的樣子，頁首那顆也跟著換成「封存」（反向連動）。 */
       if (btnRelist) btnRelist.addEventListener('click', () => {
         if (L.isArchived(product) || !L.isUnlisted(product)) return;
-        pdRelist();   /* D481：commit 與重畫在 pdRelist 裡（有恢復排程的確認時，選完才做） */
+        pdRelist();   /* D488：commit 與重畫在 pdRelist 裡（保存的排程有問題時擋下、不 commit） */
       });
       /* 封存只看「已下架」、單純確認，不再檢查組合包（D288 修正 D284 裁決四） */
       if (btnArchive) btnArchive.addEventListener('click', () => {

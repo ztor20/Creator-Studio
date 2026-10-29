@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-10-29 D488／D489 原型同步（UI-CHANGES 四百一十一、ASSUMPTIONS UIA-315；E-Shop 🟢 release2.2 是否同步待使用者決定、活動 🔵 release2.3）**：主規格 §7.14「重新上架時檢查保存的排程」「活動下架時連動組合包」、5.1.5 F4、5.1.5.1 §2.2／§2.16、5.1.5.8 §2.2、5.1.5.9 §2.2／§2.16、5.1.6.3 §2.1、5.1.7.3 F10 → `js/listing-state.js`（`relistBlockers`、`relist` 直接恢復、`relistBundle` 只查組合包）、`partials/relist-restore.js`＋`ds-components/sched-restore.css`（擋下提示、D489 成員清單）、`partials/bundle-relist.js`、`product-detail.html`／`bundle-detail.html`／`auction-detail.html`（頁首「上架」與上架開關）、`e-shop.html`（三類列的「上架」）、`event-detail.html`＋`js/events-store.js` `relistBundlesPlan()`（D448 彈窗）、`js/media-vault.js`＋`js/vault-store.js`（庫房重新上架對話框）。取代 2026-10-27 D481 那列的「詢問是否恢復」部分。
+
 > **2026-10-28 建立商品、建立組合包右欄預覽改手機版、三流程預覽去外框（UI-CHANGES 三百九十七、ASSUMPTIONS UIA-314；E-Shop 🟢 release2.2 是否同步待使用者決定，先標 release2.3）**：5.1.5.2／5.1.5.4 即時預覽 → `create-product.html`、`create-bundle.html` 右欄改畫粉絲端商品頁／組合包頁手機版（`partials/fan-phone.js`、`ds-components/fan-phone.css`）；`create-event.html` 一併去外框。呈現變更、規格不動。
 
 > **2026-10-28 建立活動右欄預覽改手機版（UI-CHANGES 三百九十四、ASSUMPTIONS UIA-313；S72 🔵 release2.3）**：5.1.6.1 §5.2.5 即時預覽 → `create-event.html` 第 2／3／4／7 步右欄改畫粉絲端活動頁手機版（`ds-components/fan-phone.css`、`wizard-split.css` `--phone`、`js/fan-event-page.js`），呈現變更、規格不動。
@@ -39,7 +41,7 @@
 
 > **2026-10-23 D477 原型同步（UI-CHANGES 三百、ASSUMPTIONS UIA-298；新功能 S112–S114 ⚪，不標交付版）**：5.1.7.3 F10 庫房狀態與排程、F1 每列狀態 → `media-vault.html` 側欄 `.vault-row__status`、庫房標頭狀態列與動作（發布／取消排程／下架／重新上架／刪除）、發布視窗（立刻或定時上架、定時下架、發布前檢查）、下架與刪除確認視窗、無庫房引導；F2 可見性 → 檢視身分進不了時的上鎖卡（進庫方法逐列）；F3、F8 解開紀錄 → 總覽「解開紀錄」卡、每件清單「累計解開過」、抽屜兩格人數、改任務保留已解開者；F4 → 非上架中的「上架前不能領鑰匙」；F5 → 單件設定「只能線上看與播放」；F6 → 指定一位粉絲（搜尋示範名單、靠什麼進來、三種狀態已解開／需要條件／未解開）；F9 → 非上架中分享連結停用並寫原因。資料與計算 `js/vault-store.js`，渲染 `js/media-vault.js`，文案 `vault.*`。
 
-> **2026-10-27 D481 原型同步（UI-CHANGES 三百零五、ASSUMPTIONS UIA-303；tier 🔵 release2.3，兩個版本都有，拍賣部分只在最終版）**：主規格 §7.14「下架的副作用」「重新上架時詢問是否恢復排程」、5.1.5 F4、5.1.5.1 §2.2／§2.16、5.1.5.8 §2.2、5.1.5.9 §2.2／§2.3、5.1.6.3 §2.1（D448） → `js/listing-state.js`（保存但暫停與恢復）、`partials/relist-restore.js`＋`ds-components/sched-restore.css`（確認內容）、`partials/bundle-relist.js`（成員與恢復同一個確認）、`product-detail.html`／`bundle-detail.html`／`auction-detail.html`（頁首「上架」與上架開關）、`e-shop.html`（三類列的「上架」）、`event-detail.html`（D448 彈窗）。「組合包：限量與鎖定」上架中改限量 → `bundle-detail.html` 說明句（數量卡本已放行）、`ed.stockonly.body`。媒體庫 D477 不在範圍。
+> **2026-10-27 D481 原型同步（重新上架的詢問 2026-10-29 由 D488 取代，見上方 UI-CHANGES 四百一十一；UI-CHANGES 三百零五、ASSUMPTIONS UIA-303；tier 🔵 release2.3，兩個版本都有，拍賣部分只在最終版）**：主規格 §7.14「下架的副作用」「重新上架時詢問是否恢復排程」、5.1.5 F4、5.1.5.1 §2.2／§2.16、5.1.5.8 §2.2、5.1.5.9 §2.2／§2.3、5.1.6.3 §2.1（D448） → `js/listing-state.js`（保存但暫停與恢復）、`partials/relist-restore.js`＋`ds-components/sched-restore.css`（確認內容）、`partials/bundle-relist.js`（成員與恢復同一個確認）、`product-detail.html`／`bundle-detail.html`／`auction-detail.html`（頁首「上架」與上架開關）、`e-shop.html`（三類列的「上架」）、`event-detail.html`（D448 彈窗）。「組合包：限量與鎖定」上架中改限量 → `bundle-detail.html` 說明句（數量卡本已放行）、`ed.stockonly.body`。媒體庫 D477 不在範圍。
 
 > **2026-10-27 限量數位商品只設上限（UI-CHANGES 三百零四、ASSUMPTIONS UIA-302；S45 🔵 release2.3）**：5.1.5.2 類型差異表「數位商品限量僅設上限、無在庫」、D480 決定 4 → `js/products-store.js` 示範資料與 `poolTotal()`、`e-shop.html` 庫存欄與列操作、`product-detail.html` 上限欄事實句與設定概覽、`create-product.html`（撤除剩餘份數欄）、`create-bundle.html`／`js/lock-alloc.js` 數位成員、`product-localization.html`。5.1.5.1 §2.10 未寫數位商品的庫存區，記 UIA-302 第 1 項（產品缺口）。
 

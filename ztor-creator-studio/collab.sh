@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Ztor Creator Studio · 發版到 monorepo（ztor20/Creator-Studio）
 # 在 vault 的 site/ 編輯 → 同步進 monorepo 的 ztor-creator-studio/ 子目錄 → 開 PR。
-# 用法: ./collab.sh "簡短變更說明"
+# 用法: ./collab.sh "簡短變更說明（標題，短、講領域）" ["摘要檔.md（PR 內文主體，選配）"]
 #
 # 背景（2026-06-18 起）：站點在 monorepo ztor20/Creator-Studio 的 `ztor-creator-studio/`
 #   子目錄；本機 site/ 的 repo 根對應該子目錄，層級對不上所以不能直接 push。
@@ -172,7 +172,8 @@ fi
 #   只改最終版的條目不寫標籤，PR 也就不掛標籤。標籤不存在就先建（--force 對已存在的只更新說明）。
 UIC="$SUBDIR/app/UI-CHANGES.md"
 ADDED="$(git diff --cached --unified=0 main -- "$UIC" 2>/dev/null | grep '^+' | grep -v '^+++' | sed 's/^+//' || true)"
-HEADS="$(printf '%s\n' "$ADDED" | grep '^## ' | sed 's/^## /- /' || true)"
+# 條目編號一律寫阿拉伯數字（2026-10-29 使用者：「條目的『四百一十』應該用阿拉伯數字」）：檔內標題維持中文數字，只有貼進 PR 內文時轉成「- #410 · 2026-10-29 · …」
+HEADS="$(printf '%s\n' "$ADDED" | grep '^## ' | sed 's/^## /- /' | python3 "$SITE/zh2num.py" || true)"
 LABELS="$(printf '%s\n' "$ADDED" | grep '^\*\*標籤\*\*' | grep -oE 'release[0-9]+\.[0-9]+' | sort -u || true)"
 LABEL_ARGS=()
 for L in $LABELS; do
@@ -180,13 +181,31 @@ for L in $LABELS; do
     --description "會進 ${L} 交付版的改動" --force >/dev/null 2>&1 || true
   LABEL_ARGS+=(--label "$L")
 done
-BODY="由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。發版前已跑 pull.sh 做真 git merge。"
-if [ -n "$HEADS" ]; then
-  BODY="${BODY}
+# PR 內文規則（2026-10-29 使用者：「以後都照這個規則」）：標題短、內文先摘要、按領域分組、再寫注意事項與交付版；
+#   自動產生的條目清單退到最後的摺疊區當索引。摘要與分組要靠人寫——第二個參數給一個 markdown 檔，內容當 PR 內文主體；
+#   沒給就退回舊做法（只有固定說明＋條目清單）。規則全文見記憶 feedback_pr_description_format。
+SUMMARY_FILE="${2:-}"
+if [ -n "$SUMMARY_FILE" ] && [ -f "$SUMMARY_FILE" ]; then
+  BODY="$(cat "$SUMMARY_FILE")"
+  if [ -n "$HEADS" ]; then
+    BODY="${BODY}
+
+<details>
+<summary>本次新增的 UI-CHANGES 條目（索引）</summary>
+
+${HEADS}
+
+</details>"
+  fi
+else
+  BODY="由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。發版前已跑 pull.sh 做真 git merge。"
+  if [ -n "$HEADS" ]; then
+    BODY="${BODY}
 
 **本次新增的 UI-CHANGES 條目**
 
 ${HEADS}"
+  fi
 fi
 if [ -n "$LABELS" ]; then
   BODY="${BODY}

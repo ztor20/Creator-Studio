@@ -408,7 +408,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 183 支；主 class 前 5 個）
+## 元件（ds-components/，共 185 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -461,7 +461,7 @@
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer
 - `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗）
 - `fact-list.css` — .fact-list, .fact-list__item ｜ Fact list · 唯讀事實列（2026-08-19）
-- `fan-phone.css` — .fan-phone, .preview-col--tall ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
+- `fan-phone.css` — .fan-phone, .preview-col--tall, .wizard-split__rail, .preview-col ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
 - `fan-shop.css` — .fep-shop, .fep-shop--event ｜ fan-shop.css · 前台活動頁鏡像（發布前預覽確認的預覽檢視，D305 使用者裁決 2
 - `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ fan-store.css · 粉絲端創作者頁的手機版鏡像（See-as-fan 預覽）
 - `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide
@@ -497,6 +497,7 @@
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
 - `media-preview.css` — .mpreview, .mpreview__stage, .mpreview--image, .mpreview--clip, .mpreview__glyph ｜ media-preview.css · 單件媒體預覽（照片大圖／影片播放／音檔播放條）
 - `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
+- `member-picker.css` — .member-picker__empty, .member-picker__empty-t, .member-picker__empty-s, .member-picker__more, .member-picker__toolbar ｜ member-picker.css · 組合物挑選（2026-10-28，建立組合包「組合物」區
 - `member-table.css` — .member-table, .member-table__row, .member-table__exp, .member-table__head, .member-table__name ｜ member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示
 - `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
 - `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線）
@@ -514,6 +515,7 @@
 - `post-composer.css` — .post-composer, .card, .post-composer__stub, .post-composer__head, .post-composer__foot ｜ Post composer · 發文框（2026-08-18 promote，自 progres
 - `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-split--phone, .preview-col ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
+- `preview-dock.css` — .preview-dock-toggle, .preview-dock__close, .wizard ｜ preview-dock.css · 建立流程的預覽欄（右側整高欄，可開關）
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
 - `price-ladder.css` — .price-ladder, .price-ladder__step, .price-ladder__k, .price-ladder__t, .price-ladder__s ｜ price-ladder.css · 價格階梯（2026-10-12，建立組合包改版；使用者在示
 - `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-

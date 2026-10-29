@@ -2933,34 +2933,33 @@
        單售仍在上架中組合包裡時列出組合包、主鈕「一同下架這些組合包」。組合包重新上架擋下＝列出未上架成員、只有一顆「知道了」。 */
     'e-shop.unlist.title':      { en: 'Unlist “{n}”?',                     zh: '要下架「{n}」嗎？' },
     /* D290（2026-09-18）：下架清四個排程時間、開賣退回未開賣——彈窗多一句讓人知道重新上架後要再設開賣 */
-    'e-shop.unlist.body':       { en: 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Listing and sale schedules are paused; when you list it again you can restore the ones that haven’t come yet.', zh: '粉絲會看到它的頁面已下架、不能購買，購物車裡的會顯示已失效。上架與開賣排程會暫停，重新上架時可以選擇恢復還沒到的時間。' },   /* D415 決定七、八（取代 D284 下架即無粉絲端頁面） */
+    'e-shop.unlist.body':       { en: 'Fans see its page as unlisted and can’t buy; anything in their carts shows as unavailable. Its schedules are paused. When you list it again, times that haven’t come yet pick up where they were; any that have passed need changing first.', zh: '粉絲會看到它的頁面已下架、不能購買，購物車裡的會顯示已失效。排程會暫停：重新上架時，還沒到的時間直接恢復；已經過了的要先改掉才能上架。' },   /* D415 決定七、八（取代 D284 下架即無粉絲端頁面）；D488 改後半句 */
     'e-shop.unlist.confirm':    { en: 'Unlist',                            zh: '下架' },
     'e-shop.unlist.blocked-title': { en: '“{n}” is still in listed bundles', zh: '「{n}」仍在上架中的組合包裡' },
-    'e-shop.unlist.blocked-body':  { en: 'Listing and sale schedules are paused; when you list it again you can restore the ones that haven’t come yet. Unlisting it also unlists these bundles:', zh: '上架與開賣排程會暫停，重新上架時可以選擇恢復還沒到的時間。下架後這些組合包也會一同下架：' },
+    'e-shop.unlist.blocked-body':  { en: 'Its schedules are paused; when you list it again, times that haven’t come yet pick up where they were, and any that have passed need changing first. Unlisting it also unlists these bundles:', zh: '排程會暫停：重新上架時，還沒到的時間直接恢復，已經過了的要先改掉。下架後這些組合包也會一同下架：' },   /* D488 */
     'e-shop.unlist.blocked-confirm': { en: 'Unlist these bundles too',     zh: '一同下架這些組合包' },
     /* 組合包重新上架（D289，取代 D288 裁決三的「擋下」）：已下架成員先確認、一起重新上架；已封存成員才擋下。
        2026-09-22 · D298 起這組只由 bundle-detail 的上架開關（已下架→上架）觸發，e-shop 的已封存列改走解除封存、不再進這裡。 */
     'e-shop.relist.title':         { en: 'Relist “{n}”?',                  zh: '要重新上架「{n}」嗎？' },
     'e-shop.relist.members-body':  { en: 'These unlisted items are relisted with it:', zh: '這些已下架的成員會一起重新上架：' },   /* D290：重新上架不等於開賣，英文原句 go back on sale 改掉 */
     'e-shop.relist.members-confirm': { en: 'Relist all',                   zh: '一併重新上架' },
-    /* 重新上架時詢問是否恢復排程（D481，2026-10-27；partials/relist-restore.js，商品／組合包／拍賣細節頁、電子商店清單、活動詳情 D448 彈窗共用） */
-    'rr.body':          { en: 'These schedules were paused when it was unlisted and haven’t come yet.', zh: '下架時暫停的排程還沒到。' },
-    'rr.members':       { en: 'Listed with it',                 zh: '一起上架的成員' },
-    'rr.times':         { en: 'Paused schedules',               zh: '暫停中的排程' },
+    /* 重新上架時檢查保存的排程（D488，2026-10-29，取代 D481 的「恢復／不恢復」詢問；partials/relist-restore.js，
+       商品／組合包／拍賣細節頁、電子商店清單、活動詳情 D448 彈窗、媒體庫共用）。
+       墓碑：rr.restore、rr.restore.sub、rr.keep、rr.keep.sub、rr.keep.sub.auction、rr.skip、rr.members、rr.ok.all、rr.cancel 隨兩選一退場。 */
+    'rr.title':         { en: '“{n}” can’t be listed yet',       zh: '「{n}」還不能上架' },
+    'rr.body':          { en: 'Some times saved when it was unlisted have passed or can’t be used. Change them to a future time or clear them, then list it again.', zh: '下架時保存的時間有的已經過了或不能用。先把它們改成未來的時間或清除，再按「上架」。' },
+    'rr.times':         { en: 'Times to fix',                   zh: '要先改的時間' },
     'rr.k.unlistAt':    { en: 'Unlist time',                    zh: '下架時間' },
     'rr.k.saleStart':   { en: 'Sale start',                     zh: '開賣時間' },
     'rr.k.saleEnd':     { en: 'Sale end',                       zh: '停售時間' },
     'rr.k.auctionStart': { en: 'Auction start',                 zh: '開拍時間' },
     'rr.k.auctionEnd':  { en: 'ends {t}',                       zh: '結標 {t}' },
-    'rr.skip':          { en: 'Won’t be restored: {why}',       zh: '不會恢復：{why}' },
-    'rr.restore':       { en: 'Restore the original schedule',  zh: '恢復原本的排程' },
-    'rr.restore.sub':   { en: 'Each time takes effect when it comes.', zh: '時間到了照常生效。' },
-    'rr.keep':          { en: 'Don’t restore',                  zh: '不恢復' },
-    'rr.keep.sub':      { en: 'It goes back listed but not on sale — set the sale start again.', zh: '上架後是未開賣，要再設開賣。' },
-    'rr.keep.sub.auction': { en: 'It goes back listed but not started — set the auction start again.', zh: '上架後是未開拍，要再設開拍。' },
-    'rr.ok':            { en: 'List',                           zh: '上架' },
-    'rr.ok.all':        { en: 'List all',                       zh: '全部上架' },
-    'rr.cancel':        { en: 'Cancel',                         zh: '取消' },
+    'rr.why.passed':    { en: 'This time has passed',           zh: '這個時間已經過了' },
+    'rr.ok':            { en: 'Got it',                         zh: '知道了' },
+    'rr.close':         { en: 'Close',                          zh: '關閉' },
+    /* D489：活動 D448 彈窗裡，成員單品已下架、不能一起上架的組合包 */
+    'rr.members.label': { en: 'Unlisted items',                 zh: '已下架的成員單品' },
+    'rr.members.state': { en: 'Unlisted',                       zh: '已下架' },
     'rr.why.last':      { en: 'when this time comes the event would have nothing on sale', zh: '到這個時間活動會沒有可賣的東西' },
     'e-shop.relist.confirm':       { en: 'Relist',                         zh: '重新上架' },
     'e-shop.relist.blocked-title': { en: '“{n}” has archived items',       zh: '「{n}」有成員已封存' },
@@ -5884,7 +5883,7 @@
     'ca.start.off':        { en: 'Not started',                     zh: '未開拍' },
     'ca.start.off-sub':    { en: 'Bidding stays closed until you set a start', zh: '出價未開放，設定開拍後才會開始' },
     'ad.sale.relist-note': { en: 'Relisted without a start — set one to open bidding.', zh: '重新上架後未開拍，請設定開拍。' },
-    'ad.unlist.body':      { en: 'Fans see its page as unlisted and can’t bid or buy; anything in their carts shows as unavailable. Listing schedule and start time are paused; when you list it again you can restore the start if it hasn’t come yet.', zh: '粉絲會看到它的頁面已下架、不能出價或購買，購物車裡的會顯示已失效。上架排程與開拍時間會暫停，重新上架時可以選擇恢復還沒到的開拍時間。' },   /* D415 決定七、八 */
+    'ad.unlist.body':      { en: 'Fans see its page as unlisted and can’t bid or buy; anything in their carts shows as unavailable. Its listing schedule and start time are paused. When you list it again, a start time that hasn’t come yet picks up where it was; one that has passed needs changing first.', zh: '粉絲會看到它的頁面已下架、不能出價或購買，購物車裡的會顯示已失效。上架排程與開拍時間會暫停：重新上架時，還沒到的開拍時間直接恢復；已經過了的要先改掉才能上架。' },   /* D415 決定七、八；D488 改後半句 */
     'ca.start.time':        { en: 'Start time',                       zh: '開拍時間' },
     'ca.start.end':         { en: 'Ends',                             zh: '結標時間' },
     'ca.start.end-hint':    { en: 'Start time + duration; set automatically', zh: '開拍時間＋競標時長，由系統算出' },
@@ -10529,9 +10528,13 @@
     /* D448（2026-10-19）：重新上架前，有含本活動票券、已下架的組合包就彈窗問要不要同時上架 */
     'event-detail.relist.bundles.title': { en: 'Relist the bundles too?', zh: '要同時上架組合包嗎？' },
     'event-detail.relist.bundles.body':  { en: 'These unlisted bundles include this event’s tickets. They don’t come back on their own — relist them together with the event, or relist only the event and bring them back one by one later.', zh: '這些已下架的組合包含有這場活動的門票，不會自己回來：可以跟活動一起上架，或只上架活動、之後再各自上架。' },
-    'event-detail.relist.bundles.note':  { en: 'Bundles relisted here go back to listed but not on sale — set each one’s sale start for fans to buy.', zh: '這裡一起上架的組合包會回到「上架、未開賣」，要各自再設開賣，粉絲才買得到。' },
-    /* D481（2026-10-27）：有組合包保存著還沒到的排程時，note 換成這句、下方接恢復排程的選擇（partials/relist-restore.js），一個選擇套用到全部 */
-    'event-detail.relist.bundles.note-rr': { en: 'Choose once for every bundle relisted here.', zh: '這裡一起上架的組合包都套用同一個選擇。' },
+    'event-detail.relist.bundles.note':  { en: 'Bundles relisted here pick up their saved schedules; any without a sale start go back to listed but not on sale — set one for fans to buy.', zh: '這裡一起上架的組合包直接恢復下架時保存的排程；沒有開賣時間的會回到「上架、未開賣」，要再設開賣，粉絲才買得到。' },   /* D488 */
+    /* 墓碑（2026-10-29 · D488）：event-detail.relist.bundles.note-rr（「一個選擇套用到全部」）隨恢復／不恢復的選擇退場。
+       D488 決定 7：時間有問題的組合包這次不上架；D489：成員單品已下架的組合包不能一起上架。兩種都在同一個彈窗另外提示。 */
+    'event-detail.relist.bundles.time-note':   { en: 'These bundles won’t be listed this time — a saved time has passed or can’t be used. Change it on each bundle’s page, then list it there:', zh: '這些組合包這次不會上架：下架時保存的時間已經過了或不能用。請到各自的組合商品細節頁改好時間，再在那裡上架：' },
+    'event-detail.relist.bundles.member-note': { en: 'These bundles can’t be listed with the event because some of their items are unlisted. On each bundle’s page, list those items again or remove them from the bundle first:', zh: '這些組合包有成員單品已下架，不能跟活動一起上架。請先到各自的組合商品細節頁，把單品上架或從組合包移除：' },
+    'event-detail.relist.bundles.hint-title':  { en: 'Some bundles can’t be listed with the event', zh: '有組合包不能跟活動一起上架' },
+    'event-detail.relist.bundles.hint-ok':     { en: 'List the event', zh: '上架活動' },
     'event-detail.relist.bundles.ok':    { en: 'Relist event and bundles', zh: '同時上架活動與組合包' },
     'event-detail.relist.bundles.alt':   { en: 'Relist event only', zh: '只上架活動' },
     /* D375 決定三：bookyay 狀態同步上下架 */
@@ -11593,11 +11596,12 @@
     'vault.toast.auto.unlisted': { en: '“{n}” unlisted on schedule', zh: '「{n}」已依排程下架' },
     'vault.unlist.title':      { en: 'Unlist “{n}”?', zh: '要下架「{n}」嗎？' },
     'vault.unlist.li1':        { en: 'Fans can’t see this vault any more — including fans who already unlocked items.', zh: '粉絲看不到這座庫房，已經解開過內容的粉絲也看不到。' },
-    'vault.unlist.li2':        { en: 'The unlisting time you set is saved and paused — you can restore it when you relist.', zh: '已設的下架日期與時間會保存並暫停，重新上架時可以選擇恢復。' },
+    'vault.unlist.li2':        { en: 'The unlisting time you set is saved and paused. When you relist, it comes back if it hasn’t passed; if it has, you’ll change it first.', zh: '已設的下架日期與時間會保存並暫停。重新上架時沒過就直接恢復，已經過了就要先改。' },   /* D488 */
     'vault.unlist.li3':        { en: 'Relist it later and fans who unlocked items get them back without redoing anything.', zh: '之後重新上架，解開過的粉絲直接恢復，不用重解。' },
-    /* D483（比照電子商店 D481）：重新上架對話框裡「恢復原本的排程／不恢復」兩個選項的說明（標題沿用 rr.*） */
-    'vault.rr.restore.sub':    { en: 'The unlisting time comes back below and unlists it automatically when it comes.', zh: '下架時間帶回下方，時間到了自動下架。' },
-    'vault.rr.keep.sub':       { en: 'The saved unlisting time is cleared — it stays listed until you unlist it.', zh: '保存的下架時間會清除，上架後不會自動下架。' },
+    /* D488（2026-10-29，修訂 D483）：重新上架時保存的下架時間已過——對話框最上面的提示（rr.* 共用其餘文案）。
+       墓碑：vault.rr.restore.sub、vault.rr.keep.sub 隨恢復／不恢復的選擇退場。 */
+    'vault.rr.blocked':        { en: 'The unlisting time saved when it was unlisted has passed. Change it to a future time, or turn off scheduled unlisting to clear it, then relist.', zh: '下架時保存的下架時間已經過了。先改成未來的時間，或關掉定時下架清除它，再重新上架。' },
+    'vault.rr.times':          { en: 'Saved unlisting time', zh: '保存的下架時間' },
     'vault.del.title':         { en: 'Delete “{n}”?', zh: '要刪除「{n}」嗎？' },
     'vault.del.fans':          { en: '<b>{n}</b> fans lose these items', zh: '將有 <b>{n}</b> 位粉絲失去這些內容' },
     'vault.del.fans.one':      { en: '<b>1</b> fan loses these items', zh: '將有 <b>1</b> 位粉絲失去這些內容' },
