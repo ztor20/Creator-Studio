@@ -6154,6 +6154,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.lctl__head` > `.lctl__titles`（`.lctl__title` ＋ `.lctl__hint`）＋ `.lctl__control` — 左標題右控制
 - `.lctl__body[hidden]` — head 底下的整列寬控制（收合式 radio-list，或關掉「顯示於商店」時展開的 `link-field`）
 - `.lctl__sched[hidden]` > `.lctl__grid` > `.field` ×2 — 排程欄，兩個時間欄並排，720px 以下收成一欄
+- `.lctl__rule--flush`（2026-10-30）— 畫在 `.control-group` 的開關列之間（列自己有內距、群組沒有），`margin-inline: 0`，線只到群組內緣、不往外凸；首個消費：建立商品庫存的三個開關。
 - `.lctl__rule` — 主決定與第 2 層之間的髮絲線（2026-09-04 使用者裁示）。用負左右外距抵銷母卡的 `--card-pad`、畫到卡的內緣：它分的是這個區塊的「決定」與「決定之後的事」兩段，不是第 2 層那個盒子自己的邊（在盒子上加 `border-top` 只會停在它的圓角框裡）。；`.lctl__rule--group`（2026-10-12）畫在 `.control-group--plain` 線框盒裡面時，線拉到盒子內緣（左右外距 `--sp-16`），用於建立組合包盒內「上架日期與時間｜定時下架」「開賣日期與時間｜定時停售」之間，隨選定時上架／定時開賣才出現（`[hidden]` 收起）
 - `.lctl__derived[hidden]` — 第 2 層附屬設定（2026-09-04 · D245）：主決定成立之後才存在的一組設定。要不要有外框由消費頁決定：加 `.control-group.control-group--plain`（1px 內描邊、無填色、卡片級圓角）就有框。2026-09-04 兩次裁示的結果是**上架設定的第 2 層有框**（它可能同時裝上架時間與定時下架，框把「排程」圈成一組）、**開賣設定的第 2 層沒有框**，本類只管內部節奏（`gap`）與把 `.field` 的下邊距交回容器。markup：`<div class="control-group control-group--plain lctl__derived">`
 - `.lctl__note` — 整區共用的一行淡說明（目前是時區待確認），吃 `--faint-ink`

@@ -284,12 +284,53 @@
     <!-- ⑥ 數量（F4 庫存；D266 鎖定、D292 上限）：標題列右側「最多可賣 N 組」 -->
     <section class="form-section form-section--outlined cb-sec" data-form-step="2" data-st-section="qty" data-outline-group="sale">
       <div class="form-section__head form-section__head--actions">
-        <h3 class="form-section__title" data-i18n="cb.sec.qty">Quantity</h3>
+        <h3 class="form-section__title" data-i18n="cp.stock.title.cfg">Stock settings</h3>
         <div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k" data-i18n="cb.qty.max">Can sell</span><span class="form-tally__v" data-cb-sets>—</span></span></div>
       </div>
       <div class="stack">
-        <!-- 販售上限（F4 庫存版本）：不限量／限量二選一；限量的上限不得大於成員能供應的組數（D292）。
-             D480（2026-10-23）：限量會自動鎖定成員庫存，所以移到鎖定之前；上限超過成員還能鎖的套數＝擋下並寫出缺幾套 -->
+        <!-- 2026-10-30（使用者：「組合包也要照這個方向改」，同建立商品的 lab-stock-settings）：數量區改成三個開關——
+             開啟不限量（賣完轉預購）／開啟限量標籤（前台標記）／鎖定庫存（沿用既有鎖定機制：鎖定組數＋逐成員分配，D266／D268）。
+             不限量與限量標籤互斥。原「販售上限」（限量二選一＋上限組數，D292／D480）退場，下方原 markup 留著但收起、狀態固定不限量，
+             鎖定的二選一同樣收起、由第三個開關代操作。 -->
+        <div class="control-group" data-cb-stock-sw>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
+              <div class="control-row__sub" data-i18n="cb.unl.sub">After the bundle sells out, switch to pre-order so fans can keep ordering.</div>
+            </div>
+            <div class="switch" id="cb-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="lctl__rule lctl__rule--flush"></div>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.tag.title">Limited-edition tag</div>
+              <div class="control-row__sub" data-i18n="cb.tag.sub">Mark this bundle as limited on the storefront.</div>
+            </div>
+            <div class="switch" id="cb-sw-tag" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="lctl__rule lctl__rule--flush"></div>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.lock.title">Hold back stock</div>
+              <div class="control-row__sub" data-i18n="cb.lock.sub">Lock some member stock for this bundle only; adjust any time.</div>
+            </div>
+            <div class="switch" id="cb-sw-lock" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="form-ask__body control-group__body" data-cb-lock-body hidden>
+            <div class="form-ask__row form-ask__row--lockset">
+              <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-cb-sets-hint></span><span class="lockset__sets-hint" data-cb-lock-auto hidden></span></span><!-- D480：限量時鎖定跟著限量走，二選一收起、鎖定組數唯讀，改顯示這一句（2026-10-27 放在鎖定組數標籤底下） -->
+              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="0" step="1" value="" id="cb-lock-sets" aria-label="Locked sets" data-i18n-aria-label="cb.lock.sets" disabled><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
+            </div>
+            <div class="field bd-field--table" data-cb-alloc-field hidden>
+              <div class="lockset" id="cb-alloc">
+                <div class="lockset__head"><span data-i18n="cb.lock.col.member">Member</span><span data-i18n="bd.lock.col.stock">Item stock</span><span data-i18n="stock.free">Unlocked</span><span data-i18n="bd.lock.col.locked">Locked</span><span></span></div>
+              </div>
+              <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
+            </div>
+          </div>
+        </div>
+        <!-- 退場的舊控制項（狀態與 JS 仍引用，不顯示）：販售上限二選一、鎖定二選一 -->
+        <div hidden>
         <div class="form-ask">
           <div class="form-ask__t" data-i18n="cb.cap.q">Set your own sales cap?</div>
           <div class="form-ask__s" data-i18n="cb.cap.s">A cap only limits how many sets this bundle sells. It doesn’t lock stock.</div>
@@ -305,26 +346,11 @@
             <div class="field__hint field__hint--warn" data-cb-capmax hidden></div>
           </div>
         </div>
-        <!-- 鎖定（D266）：要不要先把庫存鎖給這個組合；鎖定組數靠右，成員鎖定量由 ListingState 推導、唯讀；
-             多選項成員可展開逐規格「選填」分配（D268）。空白＝不鎖定（同既有語意）。 -->
-        <div class="form-ask">
-          <div class="form-ask__t" data-i18n="cb.lock.q">Lock stock for this bundle?</div>
-          <div class="form-ask__s" data-i18n="cb.lock.s">Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</div>
+          <div class="form-ask">
           <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-cb-lockmode>
             <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
             <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
           </div>
-          <div class="form-ask__body" data-cb-lock-body hidden>
-            <div class="form-ask__row form-ask__row--lockset">
-              <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-cb-sets-hint></span><span class="lockset__sets-hint" data-cb-lock-auto hidden></span></span><!-- D480：限量時鎖定跟著限量走，二選一收起、鎖定組數唯讀，改顯示這一句（2026-10-27 放在鎖定組數標籤底下） -->
-              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="0" step="1" value="" id="cb-lock-sets" aria-label="Locked sets" data-i18n-aria-label="cb.lock.sets" disabled><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-            </div>
-            <div class="field bd-field--table" data-cb-alloc-field hidden>
-              <div class="lockset" id="cb-alloc">
-                <div class="lockset__head"><span data-i18n="cb.lock.col.member">Member</span><span data-i18n="bd.lock.col.stock">Item stock</span><span data-i18n="stock.free">Unlocked</span><span data-i18n="bd.lock.col.locked">Locked</span><span></span></div>
-              </div>
-              <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
-            </div>
           </div>
         </div>
       </div>
@@ -1480,6 +1506,36 @@
     discToggle.addEventListener('click', flip);
     discToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   }
+
+  /* ── 三個開關（2026-10-30，同建立商品）：不限量（賣完轉預購）與限量標籤互斥；鎖定庫存代操作收起來的鎖定二選一 ── */
+  const swUnl = document.getElementById('cb-sw-unl'), swTag = document.getElementById('cb-sw-tag'), swLock = document.getElementById('cb-sw-lock');
+  function syncBundleSw() {
+    const lockYes = !!lockBody && !lockBody.hidden;
+    [[swUnl, !!bundleDraft.preorder], [swTag, !!bundleDraft.limitedTag], [swLock, lockYes]].forEach(([el, on]) => {
+      if (!el) return; el.classList.toggle('switch--on', on); el.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    if (swUnl) swUnl.setAttribute('aria-disabled', bundleDraft.limitedTag ? 'true' : 'false');
+    if (swTag) swTag.setAttribute('aria-disabled', bundleDraft.preorder ? 'true' : 'false');
+  }
+  function toggleBundleSw(k) {
+    const el = { unl: swUnl, tag: swTag, lock: swLock }[k];
+    if (!el || el.getAttribute('aria-disabled') === 'true') return;
+    if (k === 'unl') bundleDraft.preorder = !bundleDraft.preorder;
+    else if (k === 'tag') bundleDraft.limitedTag = !bundleDraft.limitedTag;
+    else {
+      const yes = !!lockBody && !lockBody.hidden;
+      const btn = lockModeEl && lockModeEl.querySelector('[data-cb-lock="' + (yes ? 'no' : 'yes') + '"]');
+      if (btn) btn.click();
+    }
+    syncBundleSw();
+    if (k !== 'lock') recompute();
+  }
+  [['unl', swUnl], ['tag', swTag], ['lock', swLock]].forEach(([k, el]) => {
+    if (!el) return;
+    el.addEventListener('click', () => toggleBundleSw(k));
+    el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleBundleSw(k); } });
+  });
+  syncBundleSw();
   /* 限量二選一：限量才顯示上限欄 */
   if (editionGrid) editionGrid.querySelectorAll('[data-cb-edition]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2263,6 +2319,7 @@
       pickupSession: cbPickupApi ? cbPickupApi.get() : null,
       cap: bundleDraft.cap,
       lockSets: bundleDraft.lockSets,
+      preorder: !!bundleDraft.preorder, limitedTag: !!bundleDraft.limitedTag,   /* 2026-10-30 呈現假設（UIA-321）：賣完轉預購／前台限量標籤 */
       alloc: bundleDraft.alloc || {},
       /* 含票券成員（D293；D342 改寫）：四個時間逐格跟隨活動或另設——sched 記另設的格子（null＝跟隨），
          listAt／unlistAt／saleStart／saleEnd 存生效值（跟隨＝活動的值）；購買條件 rules:null＝跟隨所含門票、物件＝建立時另設（2026-10-22）。
@@ -2441,7 +2498,8 @@
       members,
       price: { priceObj: prices[0].priceObj, priceKey: prices[0].key, wasObj: { base, amount: baseTotal(), override: {} },
                from: priceRange(), pct: discInfo().pct },
-      stock: sellableSets()
+      stock: sellableSets(),
+      limitedTag: !!bundleDraft.limitedTag   /* 前台 .pdp-buy__badge「限量」 */
     };
   }
   /* 發布前檢核＝表單擋關 gateWhy() 的同一組條件（只換成「項目＋是否通過」的形狀，同建立商品 stageChecks），
