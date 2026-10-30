@@ -266,6 +266,7 @@
       /* ── 純商品套組的購買欄（前台 bundleBuyHtml）── */
       var meta = el('div', 'pdp-buy__meta');
       meta.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--yellow', esc(T('fep.bd.tag', 'Bundle'))));
+      if (m.limitedTag) meta.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--yellow', esc(T('fpp.badge.limited', 'Limited'))));
       buy.appendChild(meta);
       buy.appendChild(slot(api, 'h1', 'pdp-buy__title', m.name, T('cpp.bd.untitled.ev', 'Untitled bundle')));
       var hr = hostRow(); if (hr) buy.appendChild(hr);
@@ -316,6 +317,7 @@
       }
       meta2.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--cat', esc(T('fep.bd.tag', 'Bundle'))));
       if (ev.typeLabel) meta2.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--cat', esc(ev.typeLabel)));
+      if (m.limitedTag) meta2.appendChild(el('span', 'pdp-buy__badge status-tag status-tag--yellow', esc(T('fpp.badge.limited', 'Limited'))));
       buy.appendChild(meta2);
       if (ev.name) {
         var kicker = el('a', 'pdp-buy__kicker pdp-set__host', esc(ev.name + ' ›'));

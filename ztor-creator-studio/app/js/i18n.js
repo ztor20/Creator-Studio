@@ -6099,6 +6099,10 @@
     'cp.var.single-note':   { en: 'One price for this product — set it in Price below.', zh: '此商品僅單一價格——在下方「價格」區設定。' },
     /* §4.1③ 拆塊後的區塊標題（價格／庫存／逐規格表）*/
     'cp.price.title':       { en: 'Pricing',                          zh: '定價' },
+    'fpp.badge.limited':    { en: 'Limited',                          zh: '限量' },   // 前台商品頁 .pdp-buy__badge（限量標籤）
+    'cb.unl.sub':           { en: 'After the bundle sells out, switch to pre-order so fans can keep ordering.', zh: '組合包賣完後，可轉為預購，前台可持續以預購下單。' },   // 2026-10-30 組合包庫存設定三開關
+    'cb.tag.sub':           { en: 'Mark this bundle as limited on the storefront.', zh: '在前台標記為限量組合包。' },
+    'cb.lock.sub':          { en: 'Lock some member stock for this bundle only; adjust any time.', zh: '暫時把部分成員庫存留給這個組合包，可隨時調整。' },
     'cp.stock.title.set':   { en: 'Set stock quantity',               zh: '設定庫存量' },   // 2026-10-30 實體庫存設定（lab-stock-settings 定案）
     'cp.stock.title.cfg':   { en: 'Stock settings',                   zh: '庫存設定' },
     'cp.unl.title':         { en: 'Allow pre-orders after sell-out',  zh: '開啟不限量' },
