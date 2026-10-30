@@ -22,6 +22,10 @@
 
   function widthOf(el, sel) {
     var n = el.querySelector(sel);
+    /* 只有真的被釘住（position: sticky）的格子才算「邊緣」：頁面把表頭第一格改成不釘時
+       （例：fan-detail 的三張表，第一欄是文字、不是握把），它的寬度不該變成淡出帶的寬度——
+       否則 250px 寬的第一欄會讓左邊整片內容在捲動時被吃掉（2026-10-30 使用者回報「漸消寬度太長」）。 */
+    if (n && getComputedStyle(n).position !== 'sticky') return 0;
     return n ? n.getBoundingClientRect().width : 0;
   }
   function fadeOf(el) {

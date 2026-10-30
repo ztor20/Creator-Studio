@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
@@ -106,6 +107,15 @@
   .product-list--fd-points .product-list__row,
   .product-list--fd-spend .product-list__row,
   .product-list--fd-part .product-list__row { min-height: 72px; }
+  /* 2026-10-30 使用者回報窄視窗下表格壞掉：三張表改包 .product-list-scroll（同商品列表的橫捲、點字拉桿、兩端淡出），
+     欄寬加總放不下時橫向捲動，不再壓壞版面。product-list-scroll 預設把表頭第一格／最後一格釘住（給握把與動作欄用）；
+     這三張表第一欄是「行為／項目」文字、並非握把，表頭釘住但資料列不釘會讓欄名在捲動時跟資料錯位，所以表頭第一格一律不釘；
+     最後一欄只有點數表是真的動作欄（⋮ 會釘右），消費、參與兩張的最後一欄是金額／箭頭，表頭也不釘。 */
+  .product-list--fd-points .product-list__head > [role="columnheader"]:first-child,
+  .product-list--fd-spend .product-list__head > [role="columnheader"]:first-child,
+  .product-list--fd-part .product-list__head > [role="columnheader"]:first-child,
+  .product-list--fd-spend .product-list__head > [role="columnheader"]:last-child,
+  .product-list--fd-part .product-list__head > [role="columnheader"]:last-child { position: static; }
   .fd-cell { font-size: var(--fs-13); color: var(--foreground-muted); font-variant-numeric: tabular-nums; }
   .fd-cell--num { text-align: right; justify-self: end; }
   .fd-cell--pts { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--sp-8); color: var(--foreground); justify-self: end; font-size: var(--fs-14); }
@@ -201,12 +211,12 @@
             <div class="kpi__value">$1,420</div>
             <div class="kpi__meta" data-i18n="fan-detail.kpi.spent-meta">Lifetime · 18 orders</div>
           </div>
-          <div class="kpi bento--span-3" data-feat="S118">
+          <div class="kpi bento--span-3" data-feat="S128">
             <div class="kpi__label" data-i18n="fan-detail.kpi.progress">Next tier progress</div>
             <div class="kpi__value">92%</div>
             <div class="kpi__meta" data-i18n="fan-detail.kpi.progress-meta">Already top tier — retention focus</div>
           </div>
-          <div class="kpi bento--span-3" data-feat="S118">
+          <div class="kpi bento--span-3" data-feat="S128">
             <div class="kpi__label" data-i18n="fan-detail.kpi.last-active">Last active</div>
             <div class="kpi__value" style="font-size: var(--fs-22)" data-i18n="fan-detail.kpi.last-active-val">2 days ago</div>
             <div class="kpi__meta" data-i18n="fan-detail.kpi.last-active-meta">Opened the Kowloon After Dark OST drop</div>
@@ -237,7 +247,7 @@
           </div>
         </div>
         <div class="bento">
-          <section class="card bento--span-12" data-feat="S118">
+          <section class="card bento--span-12" data-feat="S127">
             <div class="card__head">
               <h3 class="card__title" data-i18n="fan-detail.timeline.title">Points ledger</h3>
               <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.timeline.sub">Every action across modules and the points it earned</span>
@@ -245,7 +255,8 @@
 
 
             <!-- 2026-10-27：點數明細改成有欄位的表格（行為／分類／日期與時間／金額／點數／⋮），依時間由新到舊；原「本週／更早」分組由日期欄取代。 -->
-            <section class="product-list product-list--fd-points" role="table" aria-label="Points ledger" data-i18n-aria-label="fan-detail.timeline.title">
+            <div class="product-list-scroll">
+<section class="product-list product-list--fd-points" role="table" aria-label="Points ledger" data-i18n-aria-label="fan-detail.timeline.title">
               <div class="product-list__head" role="row">
                 <div role="columnheader" data-i18n="fan-detail.col.action">Action</div>
                 <div role="columnheader" data-i18n="fan-detail.col.category">Category</div>
@@ -309,6 +320,246 @@
                 <div class="fd-cell" role="cell">2026/10/23 22:47</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="badge badge--neutral" data-i18n="fan-detail.pts.cap">Cap reached</span><span class="fd-pts">0</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="5">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s07">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
+                <div class="fd-cell" role="cell">2026/10/22 21:48</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+5</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="10">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s08">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
+                <div class="fd-cell" role="cell">2026/10/20 18:03</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+10</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="88">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s01">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
+                <div class="fd-cell" role="cell">2026/10/18 11:02</div>
+                <div class="fd-cell fd-cell--num" role="cell">$35</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+88</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="50">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s13">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
+                <div class="fd-cell" role="cell">2026/10/17 08:50</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="200">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s14">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
+                <div class="fd-cell" role="cell">2026/10/09 08:44</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+200</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="50">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s15">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
+                <div class="fd-cell" role="cell">2026/10/02 09:05</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="105">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s02">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
+                <div class="fd-cell" role="cell">2026/09/30 20:41</div>
+                <div class="fd-cell fd-cell--num" role="cell">$42</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+105</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="8">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s09">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
+                <div class="fd-cell" role="cell">2026/09/28 12:30</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+8</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="160">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s03">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
+                <div class="fd-cell" role="cell">2026/09/12 15:27</div>
+                <div class="fd-cell fd-cell--num" role="cell">$64</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+160</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="event" data-pts="60">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s05">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
+                <div class="fd-cell" role="cell">2026/09/06 19:10</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+60</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="12">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s10">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
+                <div class="fd-cell" role="cell">2026/09/02 22:15</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+12</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="135">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s04">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
+                <div class="fd-cell" role="cell">2026/08/22 13:15</div>
+                <div class="fd-cell fd-cell--num" role="cell">$54</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+135</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="referral" data-pts="50">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="user-plus" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s11">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
+                <div class="fd-cell" role="cell">2026/08/05 09:40</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="event" data-pts="65">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s06">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
+                <div class="fd-cell" role="cell">2026/07/19 14:20</div>
+                <div class="fd-cell fd-cell--num" role="cell">$25</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+65</span></div>
+                <div class="product-list__actions" role="cell">
+                  <details class="dropdown" data-admin-only hidden>
+                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                    <div class="dropdown__menu" role="menu">
+                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
+                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="referral" data-pts="150">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="user-plus" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s12">x</div></div></div>
+                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
+                <div class="fd-cell" role="cell">2026/04/28 17:55</div>
+                <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+150</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
                     <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
@@ -385,6 +636,7 @@
               </div>
               </div>
             </section>
+            </div>
 
             <p class="text-sub" id="fd-pts-empty" style="font-size: var(--fs-13);margin:16px 0 0" data-i18n="fan-detail.pts.empty" hidden>No entries in this category yet.</p>
             <p class="text-sub" style="font-size: var(--fs-11);margin:16px 0 0" data-i18n="fan-detail.pts.note">Each row shows the points it earned when it happened.</p>
@@ -432,7 +684,8 @@
             <h3 class="card__title" data-i18n="fan-detail.spend.title">Spending records</h3>
             <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.spend.sub">Products, tickets, project support</span>
           </div>
-          <section class="product-list product-list--fd-spend" role="table" aria-label="Spending records" data-i18n-aria-label="fan-detail.spend.title">
+          <div class="product-list-scroll">
+<section class="product-list product-list--fd-spend" role="table" aria-label="Spending records" data-i18n-aria-label="fan-detail.spend.title">
             <div class="product-list__head" role="row">
               <div role="columnheader" data-i18n="fan-detail.col.item">Item</div>
               <div role="columnheader" data-i18n="fan-detail.spend.src.label">Source</div>
@@ -469,6 +722,7 @@
               <div class="fd-cell" role="cell"><i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i></div>
             </div>
           </section>
+          </div>
         </section>
       </div>
 
@@ -480,7 +734,8 @@
             <h3 class="card__title" data-i18n="fan-detail.tab.participation">Participation</h3>
             <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.part.sub">Events and projects</span>
           </div>
-          <section class="product-list product-list--fd-part" role="table" aria-label="Participation" data-i18n-aria-label="fan-detail.tab.participation">
+          <div class="product-list-scroll">
+<section class="product-list product-list--fd-part" role="table" aria-label="Participation" data-i18n-aria-label="fan-detail.tab.participation">
             <div class="product-list__head" role="row">
               <div role="columnheader" data-i18n="fan-detail.col.item">Item</div>
               <div role="columnheader" data-i18n="fan-detail.col.type">Type</div>
@@ -517,6 +772,7 @@
                 <div class="fd-cell fd-cell--num" role="cell" style="color:var(--foreground)">—</div>
               </div>
           </section>
+          </div>
         </section>
       </div>
 
@@ -619,9 +875,13 @@
       <div class="field">
         <span class="field__label" data-i18n="fan-detail.adjust.amount">Points</span>
         <div class="flex-row" style="margin-top:var(--sp-8)">
-          <span class="amount-field amount-field--suffix" style="width:150px">
-            <input class="input amount-field__input" type="number" inputmode="numeric" min="1" id="fd-adjust-amount" aria-label="Points" data-i18n-aria-label="fan-detail.adjust.amount">
+          <span class="amount-field amount-field--suffix amount-field--readonly zstep" style="width:150px">
             <span class="amount-field__unit" data-i18n="fans.unit.points">pts</span>
+            <input class="input amount-field__input zstep__input" type="number" inputmode="numeric" min="1" step="1" id="fd-adjust-amount" aria-label="Points" data-i18n-aria-label="fan-detail.adjust.amount">
+            <span class="zstep__btns">
+              <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+              <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+            </span>
           </span>
         </div>
         <p class="field__error" id="fd-adjust-err-amount" hidden data-i18n="fan-detail.adjust.err.amount">Enter the number of points.</p>
@@ -654,9 +914,13 @@
       <p class="text-sub" style="font-size:var(--fs-12);margin:0 0 var(--sp-16)" id="fd-entry-lede"></p>
       <div class="field" id="fd-entry-pts-field">
         <span class="field__label" data-i18n="fan-detail.adjust.amount">Points</span>
-        <span class="amount-field amount-field--suffix" style="width:150px;margin-top:var(--sp-8)">
-          <input class="input amount-field__input" type="number" inputmode="numeric" min="0" id="fd-entry-amount" aria-label="Points" data-i18n-aria-label="fan-detail.adjust.amount">
+        <span class="amount-field amount-field--suffix amount-field--readonly zstep" style="width:150px;margin-top:var(--sp-8)">
           <span class="amount-field__unit" data-i18n="fans.unit.points">pts</span>
+          <input class="input amount-field__input zstep__input" type="number" inputmode="numeric" min="0" step="1" id="fd-entry-amount" aria-label="Points" data-i18n-aria-label="fan-detail.adjust.amount">
+          <span class="zstep__btns">
+            <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+            <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+          </span>
         </span>
         <p class="field__error" id="fd-entry-err-amount" hidden></p>
       </div>
@@ -733,6 +997,8 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="partials/stepper.js?v=r2.2"></script>
+<script src="partials/list-scroll.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script>
 (function () {

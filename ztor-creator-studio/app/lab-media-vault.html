@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>媒體庫改版 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-media-vault — 媒體庫 UX 改版 demo（2026-10-29）。不改正式頁 media-vault.html；
+     只用既有元件，自有樣式一律 lab- 前綴＋token。規劃文件：note/媒體庫UX重新規劃.md。
+     結構：庫房列（橫向）→ 庫房標頭 → 檢查表 → 設定｜成效 →
+     左欄兩道門（第一道：誰進得來；第二道：進來後看得到哪幾件），右欄常駐「粉絲看到的樣子」。 */
+  .lab [hidden] { display: none !important; }
+  .lab-note { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+
+  /* 實驗頁標示 */
+  .lab-flag { display: inline-flex; align-items: center; gap: var(--sp-6); }
+
+  /* ── 庫房列 ── */
+  .lab-shell { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: var(--sp-24); align-items: start; margin-top: var(--sp-16); }
+  .lab-stage { min-width: 0; }
+  .lab-rail { position: sticky; top: var(--sp-16); display: grid; gap: var(--sp-10); max-height: calc(100dvh - var(--sp-32)); grid-template-rows: auto auto minmax(0, 1fr); }
+  .lab-rail__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-8); }
+  .lab-rail__title { font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+  .lab-rail__filter { flex-wrap: wrap; }
+  .lab-strip { display: grid; gap: var(--sp-6); align-content: start; overflow-y: auto; padding: var(--sp-2); }
+  .lab-vcard { width: 100%; display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: var(--sp-10); align-items: center; text-align: left; padding: var(--sp-10); border-radius: var(--radius-lg); border: 1px solid var(--layer-line); background: var(--layer-1-surface); color: var(--foreground); cursor: pointer; font: inherit; transition: box-shadow var(--duration) var(--easing), border-color var(--duration) var(--easing); }
+  .lab-vcard:hover { box-shadow: var(--shadow-float); }
+  .lab-vcard--active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+  .lab-vcard--dim { opacity: .55; }
+  .lab-vcard__cover { width: 2.75rem; height: 2.75rem; border-radius: var(--radius-sm); background: var(--ztu-film) center/cover no-repeat; display: grid; place-items: center; color: var(--muted-foreground); }
+  .lab-vcard__name { font-size: var(--fs-14); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lab-vcard__meta { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-6); margin-top: var(--sp-4); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-vcard--new { border-style: dashed; background: transparent; grid-template-columns: 2.75rem minmax(0, 1fr); color: var(--muted-foreground); }
+  .lab-vcard--new .lab-vcard__cover { background: transparent; border: 1px dashed var(--border); }
+  .lab-vcard__input { width: 100%; }
+
+  /* ── 工作區 ── */
+  .lab-work { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: var(--sp-24); align-items: start; }
+  .lab-work--wide { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 1360px) { .lab-work { grid-template-columns: minmax(0, 1fr); } .lab-side { position: static; } }
+  @media (max-width: 900px) { .lab-shell { grid-template-columns: minmax(0, 1fr); } .lab-rail { position: static; max-height: none; } .lab-strip { grid-auto-flow: column; grid-auto-columns: 13.5rem; overflow-x: auto; } }
+  .lab-main { display: grid; gap: var(--sp-16); min-width: 0; }
+  .lab-side { position: sticky; top: var(--sp-16); display: grid; gap: var(--sp-12); }
+
+  /* 標頭 */
+  .lab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-16); }
+  .lab-head__title { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; }
+  .lab-head__name { font-size: var(--fs-22); font-weight: var(--fw-semibold); background: none; border: 0; color: var(--foreground); padding: 0; cursor: text; font-family: var(--font-display); text-align: left; }
+  .lab-head__name:hover { text-decoration: underline dotted; text-underline-offset: 4px; }
+  .lab-head__nameinput { font-size: var(--fs-18); max-width: 22rem; }
+  .lab-head__sub { margin-top: var(--sp-6); font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-head__actions { display: flex; align-items: center; gap: var(--sp-8); flex-shrink: 0; position: relative; }
+  .lab-menu { position: absolute; right: 0; top: calc(100% + var(--sp-6)); z-index: 20; min-width: 13rem; padding: var(--sp-6); border-radius: var(--radius-lg); background: var(--popover); border: 1px solid var(--border); box-shadow: var(--shadow-overlay); display: grid; gap: var(--sp-2); }
+  .lab-menu__item { display: flex; align-items: center; gap: var(--sp-8); width: 100%; padding: var(--sp-8) var(--sp-10); border: 0; background: none; color: var(--foreground); font: inherit; font-size: var(--fs-13); text-align: left; border-radius: var(--radius-sm); cursor: pointer; }
+  .lab-menu__item:hover { background: var(--accent); }
+  .lab-menu__item[disabled] { color: var(--faint-ink); cursor: not-allowed; background: none; }
+  .lab-menu__item--danger { color: var(--destructive-ink); }
+  .lab-menu__hint { font-size: var(--fs-12); color: var(--muted-foreground); padding: 0 var(--sp-10) var(--sp-6); }
+
+  /* 檢查表 */
+  .lab-check { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8); }
+  .lab-step { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-10); align-items: start; padding: var(--sp-12); border-radius: var(--radius-lg); border: 1px solid var(--layer-line); background: var(--layer-2-surface); text-align: left; font: inherit; color: var(--foreground); cursor: pointer; }
+  .lab-step:hover { background: var(--accent); }
+  .lab-step__mark { width: 1.5rem; height: 1.5rem; border-radius: var(--radius-pill); display: grid; place-items: center; border: 1px solid var(--border); color: var(--muted-foreground); font-size: var(--fs-12); }
+  .lab-step--done .lab-step__mark { background: var(--status-success-fill); border-color: transparent; color: var(--status-success-ink); }
+  .lab-step--warn .lab-step__mark { background: color-mix(in srgb, var(--status-warning) 22%, transparent); border-color: transparent; color: var(--status-warning-ink); }
+  .lab-step--block .lab-step__mark { background: var(--destructive-fill); border-color: transparent; color: var(--destructive-ink); }
+  .lab-step__t { font-size: var(--fs-14); font-weight: var(--fw-medium); }
+  .lab-step__s { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+  @media (max-width: 900px) { .lab-check { grid-template-columns: minmax(0, 1fr); } }
+
+  /* 門（區段） */
+  .lab-gate { display: grid; gap: var(--sp-14); }
+  .lab-gate__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-12); }
+  .lab-gate__eyebrow { font-size: var(--fs-12); color: var(--brand-ink); letter-spacing: .04em; }
+  .lab-gate__title { font-size: var(--fs-18); font-weight: var(--fw-semibold); margin-top: var(--sp-2); }
+  .lab-gate__sub { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-4); }
+
+  /* 觸及結果 */
+  .lab-reach { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-16); align-items: center; padding: var(--sp-12) var(--sp-14); border-radius: var(--radius-lg); background: var(--layer-2-surface); border: 1px solid var(--layer-line); }
+  .lab-reach__n { font-size: var(--fs-32); font-weight: var(--fw-semibold); line-height: var(--lh-none); }
+  .lab-reach__l { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-4); }
+  .lab-cov { display: grid; gap: var(--sp-6); }
+  .lab-cov__row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 4.5rem; gap: var(--sp-8); align-items: center; font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-cov__track { height: 6px; border-radius: var(--radius-pill); background: var(--ztu-film); overflow: hidden; }
+  .lab-cov__fill { height: 100%; border-radius: inherit; background: var(--primary); }
+  .lab-cov__v { text-align: right; color: var(--foreground-muted); }
+  @media (max-width: 640px) { .lab-reach { grid-template-columns: minmax(0, 1fr); } .lab-row { grid-template-columns: auto 2.75rem minmax(0, 1fr) auto; } .lab-row__nums { grid-column: 3 / -1; text-align: left; } .lab-head { flex-direction: column; } }
+  .lab-split { font-size: var(--fs-12); color: var(--muted-foreground); grid-column: 1 / -1; }
+
+  /* 進庫方法卡 */
+  .lab-routes { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--sp-12); align-items: stretch; }
+  .lab-route { position: relative; display: grid; gap: var(--sp-10); align-content: start; padding: var(--sp-12); border-radius: var(--radius-lg); border: 1px solid var(--layer-line); background: var(--layer-1-surface); }
+  .lab-route__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-8); }
+  .lab-route__t { font-size: var(--fs-13); font-weight: var(--fw-medium); }
+  .lab-route__n { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-route__conds { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-6); }
+  .lab-and { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-route__empty { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-route__x { position: absolute; top: var(--sp-6); right: var(--sp-6); }
+  .lab-route--x .lab-route__head { padding-right: var(--sp-28); }
+  .lab-or { font-size: var(--fs-11); color: var(--brand-ink); margin-right: var(--sp-4); }
+  .lab-route--key { background: var(--layer-2-surface); }
+  .lab-route--add { border-style: dashed; background: transparent; place-items: center; align-content: center; color: var(--muted-foreground); cursor: pointer; font: inherit; min-height: 7rem; }
+  .lab-route--add:hover { background: var(--accent); color: var(--foreground); }
+  .lab-keyrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-8); align-items: center; font-size: var(--fs-12); padding-top: var(--sp-8); border-top: 1px solid var(--border-soft); }
+  .lab-keyrow__code { font-family: var(--font-mono); color: var(--foreground); }
+  .lab-keyrow__m { color: var(--muted-foreground); }
+
+  /* 加條件選單 */
+  .lab-pop { position: fixed; z-index: 75; width: 19rem; max-height: 24rem; overflow: auto; padding: var(--sp-8); border-radius: var(--radius-lg); background: var(--popover); border: 1px solid var(--border); box-shadow: var(--shadow-overlay); }
+  .lab-pop__g { font-size: var(--fs-11); color: var(--muted-foreground); padding: var(--sp-8) var(--sp-8) var(--sp-4); letter-spacing: .04em; }
+  .lab-pop__i { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); width: 100%; padding: var(--sp-8); border: 0; background: none; color: var(--foreground); font: inherit; font-size: var(--fs-13); border-radius: var(--radius-sm); cursor: pointer; text-align: left; }
+  .lab-pop__i:hover { background: var(--accent); }
+  .lab-pop__i[disabled] { color: var(--faint-ink); cursor: not-allowed; background: none; }
+  .lab-pop__c { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+  /* 內容清單 */
+  .lab-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); flex-wrap: wrap; }
+  .lab-batch { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; padding: var(--sp-8) var(--sp-12); border-radius: var(--radius-lg); background: var(--selected-surface); border: 1px solid var(--border); position: sticky; top: var(--sp-8); z-index: 5; }
+  .lab-batch__n { font-size: var(--fs-13); margin-right: auto; }
+  .lab-group { display: grid; gap: var(--sp-2); }
+  .lab-group__head { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13); color: var(--foreground-muted); padding: var(--sp-8) 0 var(--sp-4); }
+  .lab-group__empty { font-size: var(--fs-12); color: var(--muted-foreground); padding: var(--sp-4) 0 var(--sp-8) var(--sp-24); }
+  .lab-row { display: grid; grid-template-columns: auto 2.75rem minmax(0, 1fr) auto auto; gap: var(--sp-12); align-items: center; padding: var(--sp-8) var(--sp-10); border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; }
+  .lab-row:hover { background: var(--accent); }
+  .lab-row--sel { background: var(--selected-surface); border-color: var(--border); }
+  .lab-thumb { width: 2.75rem; height: 2.75rem; border-radius: var(--radius-sm); background: var(--ztu-film) center/cover no-repeat; display: grid; place-items: center; color: var(--muted-foreground); }
+  .lab-row__name { font-size: var(--fs-14); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: var(--sp-6); }
+  .lab-row__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); display: flex; gap: var(--sp-10); flex-wrap: wrap; align-items: center; }
+  .lab-row__nums { font-size: var(--fs-12); color: var(--muted-foreground); text-align: right; min-width: 7.5rem; }
+  .lab-row__nums b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-taskpill { display: inline-flex; align-items: center; gap: var(--sp-4); padding: var(--sp-2) var(--sp-8); border-radius: var(--radius-sm); border: 1px solid var(--border-soft); background: transparent; color: var(--foreground-muted); font: inherit; font-size: var(--fs-12); cursor: pointer; }
+  .lab-taskpill:hover { border-color: var(--border); color: var(--foreground); }
+  .lab-taskpill--warn { color: var(--status-warning-ink); border-color: color-mix(in srgb, var(--status-warning) 40%, transparent); }
+  .lab-drop { display: grid; place-items: center; gap: var(--sp-6); padding: var(--sp-20); border-radius: var(--radius-lg); border: 1px dashed var(--border); color: var(--muted-foreground); font-size: var(--fs-13); text-align: center; cursor: pointer; }
+  .lab-drop:hover, .lab-drop--over { background: var(--accent); color: var(--foreground); }
+
+  /* ── 右欄：粉絲看到的樣子 ── */
+  .lab-pv__lens { display: grid; gap: var(--sp-8); }
+  .lab-pv__tiers { display: flex; flex-wrap: wrap; gap: var(--sp-6); }
+  .lab-phone { border-radius: var(--radius-xl); border: 1px solid var(--layer-line); background: var(--surface-preview); overflow: hidden; }
+  .lab-phone__cover { height: 6.5rem; background: var(--ztu-film) center/cover no-repeat; position: relative; }
+  .lab-phone__cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 30%, var(--scrim-media)); }
+  .lab-phone__ribbon { position: absolute; z-index: 1; left: var(--sp-10); top: var(--sp-10); }
+  .lab-phone__body { padding: var(--sp-12); display: grid; gap: var(--sp-10); color: var(--on-media); }
+  .lab-phone__name { font-size: var(--fs-16); font-weight: var(--fw-semibold); margin-top: calc(-1 * var(--sp-28)); position: relative; z-index: 1; }
+  .lab-phone__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); }
+  .lab-tile { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); background: var(--ztu-film) center/cover no-repeat; overflow: hidden; display: grid; place-items: center; color: var(--on-media-muted); }
+  .lab-tile--veil::before { content: ""; position: absolute; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: var(--overlay-tint); }
+  .lab-tile__tag { position: absolute; left: var(--sp-4); right: var(--sp-4); bottom: var(--sp-4); z-index: 1; font-size: var(--fs-11); line-height: var(--lh-tight); color: var(--on-media); text-align: center; }
+  .lab-tile__ico { position: relative; z-index: 1; }
+  .lab-tile__star { position: absolute; top: var(--sp-4); right: var(--sp-4); z-index: 1; color: var(--ztu-orange-hi); }
+  .lab-lock { display: grid; gap: var(--sp-8); padding: var(--sp-12); border-radius: var(--radius-md); background: var(--overlay-tint); font-size: var(--fs-12); color: var(--on-media-muted); }
+  .lab-lock__t { display: flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-14); color: var(--on-media); font-weight: var(--fw-medium); }
+  .lab-lock__route { padding-left: var(--sp-10); border-left: 2px solid var(--border); color: var(--on-media); }
+  .lab-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8); }
+  .lab-nums__i { padding: var(--sp-10); border-radius: var(--radius-md); background: var(--layer-2-surface); border: 1px solid var(--layer-line); }
+  .lab-nums__v { font-size: var(--fs-20); font-weight: var(--fw-semibold); }
+  .lab-nums__l { font-size: var(--fs-11); color: var(--muted-foreground); margin-top: var(--sp-2); line-height: var(--lh-snug); }
+
+  /* 成效 */
+  .lab-meter { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) 7rem; gap: var(--sp-12); align-items: center; font-size: var(--fs-13); padding: var(--sp-6) 0; border-bottom: 1px solid var(--border-soft); }
+  .lab-meter__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lab-meter__track { position: relative; height: 8px; border-radius: var(--radius-pill); background: var(--ztu-film); overflow: hidden; }
+  .lab-meter__ever { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--primary) 30%, transparent); border-radius: inherit; }
+  .lab-meter__now { position: absolute; inset: 0 auto 0 0; background: var(--primary); border-radius: inherit; }
+  .lab-meter__v { text-align: right; font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-legend { display: flex; gap: var(--sp-16); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-legend i { display: inline-block; width: 10px; height: 10px; border-radius: var(--radius-pill); margin-right: var(--sp-6); vertical-align: -1px; }
+  .lab-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-16); }
+  @media (max-width: 900px) { .lab-two { grid-template-columns: minmax(0, 1fr); } }
+
+  /* 彈窗內 */
+  .lab-dlg { display: grid; gap: var(--sp-16); }
+  .lab-dlg__pv { height: 11rem; border-radius: var(--radius-lg); background: var(--surface-preview) center/contain no-repeat; display: grid; place-items: center; color: var(--on-media-muted); }
+  .lab-dlg__facts { display: flex; gap: var(--sp-12); flex-wrap: wrap; font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-dlg__foot { display: flex; justify-content: space-between; gap: var(--sp-8); align-items: center; padding-top: var(--sp-4); }
+  .lab-dlg__btns { display: flex; gap: var(--sp-8); margin-left: auto; }
+  [data-modal] .segmented__btn[disabled], [data-modal] .chip[disabled] { opacity: .45; cursor: not-allowed; }
+  .lab-tiers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-8); }
+  .lab-list { display: grid; gap: var(--sp-6); font-size: var(--fs-13); padding-left: var(--sp-18); }
+  .lab-fans { display: grid; gap: var(--sp-2); max-height: 12rem; overflow: auto; }
+  .lab-fan { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); width: 100%; padding: var(--sp-6) var(--sp-8); border: 0; background: none; color: var(--foreground); font: inherit; font-size: var(--fs-13); border-radius: var(--radius-sm); cursor: pointer; text-align: left; }
+  .lab-fan:hover { background: var(--accent); }
+  .lab-fan__t { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+  /* 新增庫房：全畫面建立流程（版型照 create-project／create-event 的 .wizard），蓋在頁面上 */
+  .lab-wizlayer { position: fixed; inset: 0; z-index: 70; }
+  .lab-wiz-open body { overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+  <main class="main">
+    <div class="page lab" id="lab">
+
+      <div class="page-crumb">
+        <a href="media-vault.html" class="card__link">媒體庫（現行版）</a>
+        <span style="margin:0 6px">/</span>
+        <span>改版 demo</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">媒體庫</h1>
+          <div class="page-intro__lede"><p class="page-intro__sub">開幾座庫房，決定誰進得來，再決定進來後每件內容要做什麼才看得到。</p></div>
+        </div>
+        <div class="page-intro__actions">
+          <span class="badge badge--accent lab-flag"><i data-lucide="sparkles" class="ztor-icon ztor-icon--xs"></i>設計探索・資料只存在這一頁</span>
+        </div>
+      </div>
+
+      <div class="lab-shell">
+      <!-- 庫房列表（F1）：左側欄（2026-10-30 使用者：「庫房列表可以是在左右側欄」），新增庫房在最上面 -->
+      <aside class="lab-rail" aria-label="庫房">
+        <div class="lab-rail__head"><span class="lab-rail__title">庫房</span><span class="lab-note" data-strip-count></span></div>
+        <nav class="filter-tabs lab-rail__filter" role="tablist" aria-label="庫房狀態" data-strip-filter></nav>
+        <div class="lab-strip" data-strip></div>
+      </aside>
+      <div class="lab-stage">
+
+      <!-- 沒有任何庫房 -->
+      <div class="empty-card empty-card--framed" data-none hidden>
+        <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="archive" class="ztor-icon"></i></span>
+        <p class="empty-card__title">還沒有庫房</p>
+        <p class="empty-card__text">庫房是放獨家照片、影片、音檔的地方。先取個名字，接著決定誰進得來。</p>
+        <button class="btn btn--primary empty-card__cta" type="button" data-act="new-vault"><i data-lucide="plus" class="ztor-icon"></i>建立第一座庫房</button>
+      </div>
+
+      <div class="lab-work" data-work>
+        <div class="lab-main">
+          <!-- 標頭（F10） -->
+          <div class="lab-head" data-head></div>
+          <!-- 檢查表：草稿、已下架才出現 -->
+          <div class="lab-check" data-check hidden></div>
+
+          <div class="segmented" role="tablist" aria-label="檢視" data-mode-seg style="justify-self:start">
+            <button class="segmented__btn segmented__btn--active" type="button" data-mode="setup">設定</button>
+            <button class="segmented__btn" type="button" data-mode="stats">成效</button>
+          </div>
+
+          <!-- 照建立順序：先放內容，再設誰開得了（2026-10-30 使用者） -->
+          <div data-pane="setup" class="lab-main">
+            <section class="card lab-gate" id="sec-content" data-gate2></section>
+            <section class="card lab-gate" id="sec-access" data-gate1></section>
+          </div>
+
+          <div data-pane="stats" class="lab-main" hidden></div>
+        </div>
+
+        <!-- 右欄：粉絲看到的樣子（F6） -->
+        <aside class="lab-side" data-side></aside>
+      </div>
+      </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<input type="file" accept="image/*,video/*,audio/*" multiple hidden data-file>
+<div class="lab-pop" data-pop hidden></div>
+
+<!-- 新增庫房：取名 → 放內容 → 誰開得了（2026-10-30 使用者：「原本的 stepper 可以留著，參考創建流程」） -->
+<div class="wizard lab-wizlayer lab" data-wiz hidden>
+  <div class="wizard__sheet wizard__sheet--sectioned">
+    <header class="wizard__top">
+      <div class="wizard__top-bar">
+        <div class="wizard__top-lead">
+          <button class="wizard__back" type="button" data-act="wiz-exit" aria-label="返回媒體庫"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+          <div class="wizard__top-titlewrap">
+            <span class="wizard__top-title">建立庫房</span>
+            <span class="wizard__top-sub" data-wiz-sub>新庫房</span>
+          </div>
+        </div>
+        <div class="wizard__progress" data-wiz-progress></div>
+        <div class="wizard__top-actions">
+          <span class="wizard__save-status" data-state="saved" data-wiz-saved hidden><i class="wizard__save-status__dot"></i><span>已存成草稿</span></span>
+        </div>
+      </div>
+    </header>
+    <div class="wizard__body wizard__body--form wizard__body--narrow" data-wiz-body-wrap></div>
+  </div>
+  <footer class="wizard__bottom wizard__bottom--end">
+    <div class="wizard__bottom-actions" data-wiz-foot></div>
+  </footer>
+</div>
+
+<div class="payout-modal" data-modal hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="lab-dlg-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="lab-dlg-title" data-modal-title></h2>
+      <button class="btn btn--icon" type="button" data-act="modal-close" aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" data-modal-body></div>
+  </section>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/lab-media-vault.js?v=r2.2"></script>
+</body>
+</html>
