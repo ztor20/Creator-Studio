@@ -53,6 +53,12 @@
      列的玻璃卡 hover、直線分隔、橫捲＋兩端固定欄與點字拉桿全部由元件提供，本頁只留欄寬。
      舊值：表頭 .table-head＋資料列 .data-list__row（無 hover 浮起、橫捲時沒有固定欄）。 */
   .product-list--fans .product-list__head,
+  /* KPI 卡標題旁 ⓘ 的提示泡泡：預設 .tip__bubble 以 ⓘ 為基準靠右對齊、往左長，第一張卡的泡泡會跑到側欄底下被遮住（2026-10-30 使用者回報）。
+     改成以標題列（.kpi__label，position:relative）為基準，從卡片左緣往右長、最寬不超過標題列，四張卡都留在自己上方。 */
+  .kpi__label .fans-tip { position: static; }
+  .kpi__label .fans-tip .tip__bubble { left: 0; right: auto; max-width: min(100%, 260px); width: max-content; }
+  /* 流失風險小字外層的 .tip：KPI 卡是直向 flex，不設會被拉滿整張卡寬，徽章就跑到中間（2026-10-30 使用者回報奇怪的間距） */
+  [data-risk-tip] { align-self: flex-start; }
   .fan-row {
     /* 忠誠點數欄 96px：欄名「Loyalty points」單行需 90px，原本的 78px 會斷成兩行。
        排名欄 36→28、分級欄 108→94（2026-08-01）：兩欄原本是為舊內容留的寬度
@@ -154,9 +160,11 @@
   .fans-tier-row:has(> .ztd-ver-hidden) { grid-template-columns: minmax(0, 1fr); }
 
   /* 右欄只有 ~330px：圓餅置中在上、圖例在下。並排的話圖例的金額欄會先被壓爛。 */
-  .fans-compose { display: flex; flex-direction: column; gap: var(--sp-16); }
-  .fans-compose .pie { margin-inline: auto; }
-  .fans-compose__legend { min-width: 0; }
+  /* 2026-10-30 搬回主頁（D495）：整列寬，圓餅在左、圖例在右；窄視窗改上下排 */
+  .fans-compose { display: flex; flex-direction: row; align-items: center; gap: var(--sp-32); }
+  .fans-compose .pie { flex: none; }
+  .fans-compose__legend { min-width: 0; flex: 1; }
+  @media (max-width: 700px) { .fans-compose { flex-direction: column; } .fans-compose .pie { margin-inline: auto; } }
   .fans-compose .source-row { grid-template-columns: 14px minmax(0, 1fr) auto; row-gap: 2px; }
   .fans-compose .source-row > span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fans-compose .source-row__pct { grid-column: 2 / -1; font-size: var(--fs-11); }
@@ -198,7 +206,7 @@
       <div class="alert alert--bar alert--inset-card" role="status">
         <div class="alert__body">
           <span class="alert__title" data-i18n="fans.alert.title">5 fans at risk of dropping</span>
-          <span class="alert__meta" data-i18n="fans.alert.meta">Super Fans · 14+ days without a touchpoint</span>
+          <span class="alert__meta" data-i18n="fans.alert.meta">Super Fans · quiet 21/90d</span>
         </div>
         <a class="alert__cta" href="#" data-msg-open data-msg-to="risk" data-i18n="fans.alert.cta">Message them</a>
         <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#fans-risk-alert').remove()">×</button>
@@ -239,13 +247,51 @@
         <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label">
           <span data-i18n="fans.kpi.risk">At risk</span>
           <span class="tip fans-tip" tabindex="0" aria-label="Valuable fans whose recent engagement dropped sharply."><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.risk.tip">Valuable fans whose recent engagement dropped sharply (a flag, not a score).</span></span>
-        </div><div class="kpi__value" data-risk-value>5</div><div class="kpi__delta kpi__delta--neg" data-risk-meta data-i18n="fans.kpi.risk-meta">Super Fans · 14d+</div></div>
+        </div><div class="kpi__value" data-risk-value>7</div>
+        <!-- 2026-10-30 使用者要求：小字只寫分級最高的那一級；滑鼠移上去（或鍵盤聚焦）列出每一級的人數與沉默天數，高的在前（D493 補充） -->
+        <span class="tip tip--btn" tabindex="0" data-risk-tip data-feat="S131"><span class="kpi__delta kpi__delta--neg" data-risk-meta>Inner Circle · quiet 10/90d</span><span class="tip__bubble" role="tooltip" data-risk-list></span></span></div>
         <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label" data-i18n="fans.kpi.revenue">Revenue (active)</div><div class="kpi__value">$20,700</div><div class="kpi__meta" data-i18n="fans.kpi.revenue-meta">Trailing 90 days</div></div>
         <div class="kpi bento--span-3"><div class="kpi__label">
           <span data-i18n="fans.kpi.rep">Avg loyalty points</span>
           <span class="tip fans-tip" tabindex="0" aria-label="A fan's overall value score."><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.rep.tip">Loyalty points are a fan’s overall value score, credited the moment they earn them.</span></span>
         </div><div class="kpi__value">642</div><div class="kpi__delta" data-i18n="fans.kpi.rep-meta">+12 vs last month</div></div>
       </div>
+
+      <!-- 2026-10-30 D495 第 4 項：分級分布放回主頁（規格 5.1.7 F3 的位置），人數用活躍粉絲算（各級加總＝活躍粉絲數）；
+           排行榜仍列全部粉絲。原本搬進分級設定彈窗沒留紀錄。
+           粉絲組成：分級的結果，人數是算出來的，所以沒有編輯鈕。
+           用圓餅不用長條：這裡問的是「這一整塊是怎麼被分掉的」，不是「誰比誰長」。 -->
+      <section class="card mt-24" data-feat="S118">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
+        </div>
+        <div class="fans-compose">
+          <div class="pie" aria-hidden="true" data-pie
+               style="--pie-size:150px;--pie-stops:
+                 var(--primary) 0 1%,
+                 var(--status-info) 0 10%,
+                 var(--status-success) 0 30%,
+                 var(--foreground-muted) 0 100%"></div>
+          <div class="fans-compose__legend">
+            <!-- 名稱與百分比拆成兩個節點（2026-08-01）：改「前 % 名」時這裡的人數要
+                 跟著即時重算（見下方 <script> 的 updateComposition()），而百分比
+                 文字如果還黏在同一個 data-i18n 字串裡，切語言時 applyI18n 會把它
+                 蓋回寫死的「1%」，剛算出來的數字就丟了。拆開後名稱仍走 i18n、
+                 百分比與人數改由 JS 直接寫值。 -->
+            <div class="source-list" id="fans-tier-list">
+              <div class="source-row" data-tier-share="1" data-rev="4140"><span class="source-row__swatch" style="background:var(--primary)"></span><span><span data-i18n="fans.tier.inner">Inner Circle</span> · <span class="source-row__sharepct">1%</span></span><span class="source-row__amt">13 fans</span><span class="source-row__pct">$4,140</span></div>
+              <div class="source-row" data-tier-share="9" data-rev="6830"><span class="source-row__swatch" style="background:var(--status-info)"></span><span><span data-i18n="fans.tier.super">Super Fans</span> · <span class="source-row__sharepct">9%</span></span><span class="source-row__amt">115 fans</span><span class="source-row__pct">$6,830</span></div>
+              <div class="source-row" data-tier-share="20" data-rev="5180"><span class="source-row__swatch" style="background:var(--status-success)"></span><span><span data-i18n="fans.tier.devoted">Ranked Fans</span> · <span class="source-row__sharepct">20%</span></span><span class="source-row__amt">257 fans</span><span class="source-row__pct">$5,180</span></div>
+              <div class="source-row" data-tier-share="70" data-rev="4550"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span><span data-i18n="fans.tier.fan">Fan</span> · <span class="source-row__sharepct">70%</span></span><span class="source-row__amt">898 fans</span><span class="source-row__pct">$4,550</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden。 -->
+        <div class="insight-row hidden" id="fans-pareto" hidden>
+          <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
+          <p class="insight-row__text" id="fans-pareto-text"></p>
+        </div>
+      </section>
 
 
       <!-- 分頁列（2026-07-31 改版）：三個分頁按主題分——排行榜與名人堂是「人」，
@@ -671,6 +717,7 @@
               <option value="recovered" data-i18n="msg.to.recovered">Recovered (18)</option>
             </select>
             <p class="msg-tokens__hint" id="msg-to-note" hidden data-i18n="msg.to.singlenote">Messaging one fan — pick a segment above to broadcast.</p>
+            <p class="msg-tokens__hint" id="msg-filter-note" hidden data-i18n="msg.to.filternote">Your current search or tag filter isn’t carried over.</p>
           </div>
 
           <!-- Subject -->
@@ -994,39 +1041,7 @@
 
       </div>
 
-      <!-- 粉絲組成：分級的結果，人數是算出來的，所以沒有編輯鈕。
-           用圓餅不用長條：這裡問的是「這一整塊是怎麼被分掉的」，不是「誰比誰長」。 -->
-      <section class="card" data-feat="S118">
-        <div class="card__head">
-          <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
-        </div>
-        <div class="fans-compose">
-          <div class="pie" aria-hidden="true" data-pie
-               style="--pie-size:150px;--pie-stops:
-                 var(--primary) 0 1%,
-                 var(--status-info) 0 10%,
-                 var(--status-success) 0 30%,
-                 var(--foreground-muted) 0 100%"></div>
-          <div class="fans-compose__legend">
-            <!-- 名稱與百分比拆成兩個節點（2026-08-01）：改「前 % 名」時這裡的人數要
-                 跟著即時重算（見下方 <script> 的 updateComposition()），而百分比
-                 文字如果還黏在同一個 data-i18n 字串裡，切語言時 applyI18n 會把它
-                 蓋回寫死的「1%」，剛算出來的數字就丟了。拆開後名稱仍走 i18n、
-                 百分比與人數改由 JS 直接寫值。 -->
-            <div class="source-list" id="fans-tier-list">
-              <div class="source-row" data-tier-share="1" data-rev="4140"><span class="source-row__swatch" style="background:var(--primary)"></span><span><span data-i18n="fans.tier.inner">Inner Circle</span> · <span class="source-row__sharepct">1%</span></span><span class="source-row__amt">13 fans</span><span class="source-row__pct">$4,140</span></div>
-              <div class="source-row" data-tier-share="9" data-rev="6830"><span class="source-row__swatch" style="background:var(--status-info)"></span><span><span data-i18n="fans.tier.super">Super Fans</span> · <span class="source-row__sharepct">9%</span></span><span class="source-row__amt">115 fans</span><span class="source-row__pct">$6,830</span></div>
-              <div class="source-row" data-tier-share="20" data-rev="5180"><span class="source-row__swatch" style="background:var(--status-success)"></span><span><span data-i18n="fans.tier.devoted">Ranked Fans</span> · <span class="source-row__sharepct">20%</span></span><span class="source-row__amt">257 fans</span><span class="source-row__pct">$5,180</span></div>
-              <div class="source-row" data-tier-share="70" data-rev="4550"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span><span data-i18n="fans.tier.fan">Fan</span> · <span class="source-row__sharepct">70%</span></span><span class="source-row__amt">898 fans</span><span class="source-row__pct">$4,550</span></div>
-            </div>
-          </div>
-        </div>
-        <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden。 -->
-        <div class="insight-row hidden" id="fans-pareto" hidden>
-          <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
-          <p class="insight-row__text" id="fans-pareto-text"></p>
-        </div>
-      </section>
+      <!-- 2026-10-30 D495 第 4 項：「粉絲組成」搬回主頁（摘要指標下方），見主頁同名區塊 -->
 
       </div>
     </div>
@@ -1189,12 +1204,28 @@
     /* 流失風險 KPI 卡兩個狀態（2026-10-27，UIA-312）：有風險＝紅色小標「最高風險級別 · 沉默天數」；零風險＝0＋綠色「無」。
        無資料（新創作者）整排 KPI 本來就退位，不在這裡處理。小標文字一律最短：數字已在上面，不重複寫「N 位」「未互動」。 */
     const val = document.querySelector('[data-risk-value]'), meta = document.querySelector('[data-risk-meta]');
-    if (val && meta) {
-      val.textContent = hasRisk ? '5' : '0';
+    /* 示意資料：流失風險粉絲依分級分組，高的在前；M＝幾天沒行為就掉一級（Admin 設定，預設 90）。D493 */
+    const RISK = [{ tier: 'inner', n: 2, days: 10 }, { tier: 'super', n: 5, days: 21 }], M = 90;
+    const T = k => (window.i18nT && window.i18nT(k)) || k;
+    const fill = (k, g) => T(k).replace('{n}', g.n).replace('{tier}', T('fans.tier.' + g.tier)).replace('{d}', g.days).replace('{m}', M);
+    const total = RISK.reduce((s, g) => s + g.n, 0);
+    function paintRisk() {
+      if (!val || !meta) return;
+      const tip = document.querySelector('[data-risk-tip]'), list = document.querySelector('[data-risk-list]');
+      val.textContent = hasRisk ? String(total) : '0';
       meta.classList.toggle('kpi__delta--neg', hasRisk);
-      meta.setAttribute('data-i18n', hasRisk ? 'fans.kpi.risk-meta' : 'fans.kpi.risk-none');
-      if (window.i18nT) meta.textContent = window.i18nT(hasRisk ? 'fans.kpi.risk-meta' : 'fans.kpi.risk-none') || meta.textContent;
+      meta.textContent = hasRisk ? fill('fans.risk.short', RISK[0]) : T('fans.kpi.risk-none');
+      if (list) {
+        list.innerHTML = '';
+        if (hasRisk) RISK.forEach((g, i) => { if (i) list.appendChild(document.createElement('br')); list.appendChild(document.createTextNode(fill('fans.risk.line', g))); });
+        list.hidden = !hasRisk;
+      }
+      if (tip && !hasRisk) tip.removeAttribute('tabindex');
+      const am = document.querySelector('.alert__meta'); if (am && hasRisk) am.textContent = fill('fans.risk.short', RISK[0]);
+      const at = document.querySelector('.alert__title'); if (at && hasRisk) at.textContent = T('fans.alert.title').replace(/\d+/, String(total));
     }
+    paintRisk();
+    document.addEventListener('i18n:applied', paintRisk);
   })();
 
   /* 列尾 ⋮ 選單的上下翻轉：清單外框（.product-list-scroll）是自己捲動的容器，會把往下展開的選單在最後幾列切掉
@@ -1420,6 +1451,16 @@
     e.preventDefault();
     let to = trigger.dataset.msgTo || 'all';
     let name = null;
+    /* 2026-10-30 D495 第 1 項：名冊工具列的「群發訊息」——篩的是分級就帶那一級；
+       其他篩選（搜尋、標籤）無法對應到收件分群，帶全部粉絲並提示「目前的篩選不會帶入」。 */
+    let filterNote = false;
+    if (to === 'all' && trigger.closest('.list-toolbar')) {
+      const act = document.querySelector('#fans-tier-filter .filter-tabs__item--active');
+      const tierNow = act ? act.dataset.tier : 'all';
+      const s = document.getElementById('fans-search'), tg = document.getElementById('fans-chips');
+      if (tierNow && tierNow !== 'all') to = tierNow;
+      else filterNote = !!((s && s.value.trim()) || (tg && tg.value && tg.value !== 'all'));
+    }
     // per-row send button — read the row's name + tier
     if (trigger.classList.contains('fan-row__msg')) {
       const row = trigger.closest('.fan-row');
@@ -1429,6 +1470,7 @@
       }
     }
     openModal(to, name);
+    const fn = document.getElementById('msg-filter-note'); if (fn) fn.hidden = !filterNote;
   });
 
   closeBtn.addEventListener('click', closeModal);

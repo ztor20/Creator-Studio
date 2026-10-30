@@ -99,7 +99,7 @@
   /* 2026-10-27 使用者裁示：分頁裡的清單一律是有欄位的表格，且都有「日期與時間」欄——沿用清單頁的 .product-list
      （表頭小標、列分隔、hover 浮起），欄數為本頁專屬所以欄寬留頁內（比照 events.html）。 */
   .product-list--fd-points .product-list__head,
-  .product-list--fd-points .product-list__row { grid-template-columns: minmax(200px, 1fr) 96px 136px 64px 168px 32px; gap: var(--sp-16); }
+  .product-list--fd-points .product-list__row { grid-template-columns: minmax(200px, 1fr) 96px 136px 64px 104px 72px 32px; gap: var(--sp-16); }
   .product-list--fd-spend .product-list__head,
   .product-list--fd-spend .product-list__row { grid-template-columns: minmax(200px, 1fr) 104px 136px 88px 24px; gap: var(--sp-16); }
   .product-list--fd-part .product-list__head,
@@ -116,8 +116,16 @@
   .product-list--fd-part .product-list__head > [role="columnheader"]:first-child,
   .product-list--fd-spend .product-list__head > [role="columnheader"]:last-child,
   .product-list--fd-part .product-list__head > [role="columnheader"]:last-child { position: static; }
+  /* 2026-10-30 點數調整紀錄彈窗：修改前／修改後／修改額各一欄 */
+  .product-list--fd-log .product-list__head,
+  .product-list--fd-log .product-list__row { grid-template-columns: minmax(200px, 1fr) 72px 72px 72px 136px; gap: var(--sp-16); }
+  .product-list--fd-log .product-list__head > [role="columnheader"]:first-child,
+  .product-list--fd-log .product-list__head > [role="columnheader"]:last-child { position: static; }
   .fd-cell { font-size: var(--fs-13); color: var(--foreground-muted); font-variant-numeric: tabular-nums; }
   .fd-cell--num { text-align: right; justify-self: end; }
+  .fd-cell--tag { justify-self: start; }
+  /* 詳情頁頂列精簡態的頭像（粉絲沒有封面圖，用頭像字代替 .detail-topbar__cover） */
+  .fd-mini-avatar { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--primary); color: var(--primary-foreground); font-size: var(--fs-12); font-weight: var(--fw-medium); }
   .fd-cell--pts { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--sp-8); color: var(--foreground); justify-self: end; font-size: var(--fs-14); }
   .fd-cell--status { justify-self: start; }
   /* 加／減分：跟右側步進欄同一個 .zstep__btns，鏡像放到輸入框左緣；選中那顆亮起（同步進鈕 hover 樣式，＋−都白字） */
@@ -136,12 +144,23 @@
   <main class="main">
     <div class="page">
 
-      <!-- Breadcrumb -->
+      <!-- 2026-10-30 使用者要求「1 應該像 2」：改用詳情頁共用頂列（.detail-topbar ＋ js/detail-topbar.js，同活動／商品詳情）。
+           往下捲過頁首後，頂列以玻璃樣式固定在上緣，顯示返回＋頭像＋名字；點數明細的分類分頁捲到頂列底下時收進同一條列（詳情頁只准一條固定列）。 -->
+      <div class="detail-topbar">
       <div class="page-crumb page-crumb--back">
         <a class="btn btn--icon-circle btn--sm page-crumb__back" href="fans-crm.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
         <a href="fans-crm.html" class="card__link" data-i18n="fan-detail.crumb.fans">Fans</a>
         <span style="margin:0 6px">/</span>
         <span data-i18n="fan-detail.name">Wei Yu-han</span>
+      </div>
+        <div class="detail-topbar__mini" data-fd-mini hidden>
+          <span class="fd-mini-avatar" id="fd-mini-avatar" aria-hidden="true"></span>
+          <span class="detail-topbar__name" id="fd-mini-name"></span>
+        </div>
+        <div class="detail-topbar__tabs" data-dock-tabs></div>
+        <div class="page-intro__actions">
+          <div data-dock-actions></div>
+        </div>
       </div>
 
       <!-- F7 · Fan hero: avatar / name / tier / loyalty points / status -->
@@ -205,7 +224,7 @@
       <div class="tab-panel tab-panel--active" data-panel="points">
         <!-- KPI strip（2026-10-27 使用者裁示：版面改成「左側分節導覽＋右側內容」，頁首的 KPI 排搬進第一頁忠誠點數的最上方；
              其他分頁需要數字卡時也放在各自內容的最上方）: loyalty points / spent / progress / status -->
-        <div class="bento" style="margin-bottom:6px">
+        <div class="bento bento--fill" style="margin-bottom:6px">
           <div class="kpi bento--span-3">
             <div class="kpi__label" data-i18n="fan-detail.kpi.points">Loyalty points</div>
             <div class="kpi__value" data-fd-points>874</div>
@@ -235,7 +254,8 @@
         <!-- 2026-10-27 使用者裁示：標題列改用清單頁同一條工作列 .list-toolbar（同電子商店）——
              左側是點數分類（原本卡片裡那排 pill，搬上來改成底線分頁），右側動作群放「調整點數」。
              「調整點數」仍只在 Admin 代管態出現（D476 第 8 項、S110）。舊值：.section-head 標題＋說明＋按鈕。 -->
-        <div class="list-toolbar fd-points-bar">
+        <!-- 2026-10-30：往下捲時這一列收進詳情頁頂列（data-dock-source，js/detail-topbar.js）；先前試過的 .list-dock 貼頂已撤，詳情頁只准一條固定列 -->
+        <div class="list-toolbar fd-points-bar" data-dock-source>
         <!-- 2026-10-27 demo（UIA-304）：時間軸與點數明細併成一份清單；分類沿用右側「點數來源」的五類，
              「調整」只在 Admin 代管態出現（創作者看不看得到調整紀錄未定，UIA-296）。 -->
         <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="fd-pts-filter" role="tablist" aria-label="Points category" data-i18n-aria-label="fan-detail.pts.filter.label">
@@ -245,7 +265,7 @@
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="interact"><span data-i18n="fan-detail.repmix.interact">Interactions</span><span class="tabs__item-count" data-cat-count></span></button>
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="referral"><span data-i18n="fan-detail.repmix.referral">Referrals</span><span class="tabs__item-count" data-cat-count></span></button>
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="platform"><span data-i18n="fan-detail.repmix.platform">Platform activities</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="adjust" data-admin-only hidden><span data-i18n="fan-detail.pts.filter.adjust">Adjustments</span><span class="tabs__item-count" data-cat-count></span></button>
+          <!-- 2026-10-30 使用者要求：拿掉「調整」分頁——調整列仍在「全部」裡（分類欄寫「調整」），完整紀錄改看卡片右上的「調整紀錄」 -->
         </nav>
           <div class="list-toolbar__actions">
             <button class="btn btn--outline btn--sm" type="button" data-fd-adjust-open data-admin-only data-feat="S110" hidden><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="fan-detail.adjust.btn">Adjust points</span></button>
@@ -255,7 +275,10 @@
           <section class="card bento--span-12" data-feat="S127">
             <div class="card__head">
               <h3 class="card__title" data-i18n="fan-detail.timeline.title">Points ledger</h3>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.timeline.sub">Every action across modules and the points it earned</span>
+              <!-- 2026-10-30 使用者要求：「調整紀錄」從工作列搬到卡片標題列最右邊 -->
+              <div class="flex-row" style="gap:var(--sp-12)">
+                <button class="btn btn--outline btn--sm" type="button" data-fd-log-open data-admin-only data-feat="S110" hidden><i data-lucide="history" class="ztor-icon"></i><span data-i18n="fan-detail.log.btn">History</span></button>
+              </div>
             </div>
 
 
@@ -267,6 +290,7 @@
                 <div role="columnheader" data-i18n="fan-detail.col.category">Category</div>
                 <div role="columnheader" data-i18n="fan-detail.col.datetime">Date &amp; time</div>
                 <div role="columnheader" class="fd-cell--num" data-i18n="fan-detail.col.amount">Amount</div>
+                <div role="columnheader" data-i18n="fan-detail.col.status">Status</div>
                 <div role="columnheader" class="fd-cell--pts" data-i18n="fan-detail.col.points">Points</div>
                 <div role="columnheader" aria-label="Actions"></div>
               </div>
@@ -276,6 +300,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
                 <div class="fd-cell" role="cell">2026/10/25 14:32</div>
                 <div class="fd-cell fd-cell--num" role="cell">$48</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+120</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -292,6 +317,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
                 <div class="fd-cell" role="cell">2026/10/24 21:05</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+5</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -308,6 +334,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
                 <div class="fd-cell" role="cell">2026/10/24 09:12</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -324,7 +351,8 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
                 <div class="fd-cell" role="cell">2026/10/23 22:47</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="badge badge--neutral" data-i18n="fan-detail.pts.cap">Cap reached</span><span class="fd-pts">0</span></div>
+                <div class="fd-cell fd-cell--tag" role="cell"><span class="badge badge--neutral" data-i18n="fan-detail.pts.cap">Cap reached</span></div>
+                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">0</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
                     <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
@@ -340,6 +368,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
                 <div class="fd-cell" role="cell">2026/10/22 21:48</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+5</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -356,6 +385,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
                 <div class="fd-cell" role="cell">2026/10/20 18:03</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+10</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -372,6 +402,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
                 <div class="fd-cell" role="cell">2026/10/18 11:02</div>
                 <div class="fd-cell fd-cell--num" role="cell">$35</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+88</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -388,6 +419,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
                 <div class="fd-cell" role="cell">2026/10/17 08:50</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -404,6 +436,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
                 <div class="fd-cell" role="cell">2026/10/09 08:44</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+200</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -420,6 +453,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
                 <div class="fd-cell" role="cell">2026/10/02 09:05</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -436,6 +470,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
                 <div class="fd-cell" role="cell">2026/09/30 20:41</div>
                 <div class="fd-cell fd-cell--num" role="cell">$42</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+105</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -452,6 +487,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
                 <div class="fd-cell" role="cell">2026/09/28 12:30</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+8</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -468,6 +504,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
                 <div class="fd-cell" role="cell">2026/09/12 15:27</div>
                 <div class="fd-cell fd-cell--num" role="cell">$64</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+160</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -484,6 +521,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
                 <div class="fd-cell" role="cell">2026/09/06 19:10</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+60</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -500,6 +538,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
                 <div class="fd-cell" role="cell">2026/09/02 22:15</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+12</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -516,6 +555,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
                 <div class="fd-cell" role="cell">2026/08/22 13:15</div>
                 <div class="fd-cell fd-cell--num" role="cell">$54</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+135</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -532,6 +572,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
                 <div class="fd-cell" role="cell">2026/08/05 09:40</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -548,6 +589,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
                 <div class="fd-cell" role="cell">2026/07/19 14:20</div>
                 <div class="fd-cell fd-cell--num" role="cell">$25</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+65</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -564,6 +606,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
                 <div class="fd-cell" role="cell">2026/04/28 17:55</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+150</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -580,6 +623,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
                 <div class="fd-cell" role="cell">2026/04/12 19:30</div>
                 <div class="fd-cell fd-cell--num" role="cell">$60</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+210</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -596,6 +640,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
                 <div class="fd-cell" role="cell">2026/03/02 11:20</div>
                 <div class="fd-cell fd-cell--num" role="cell">$200</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+200</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -612,6 +657,7 @@
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
                 <div class="fd-cell" role="cell">2026/02/20 16:08</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+100</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -623,11 +669,13 @@
                   </details>
                 </div>
               </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="adjust" data-pts="50" data-admin-only hidden>
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.adjust1">x</div></div></div>
+              <!-- 2026-10-30 D495 第 3 項：調整列創作者也看得到（分類「調整」），標題只寫「點數調整」；原因與操作者只在 Admin 的調整紀錄 -->
+              <div class="product-list__row fd-ledger-row" role="row" data-cat="adjust" data-pts="50">
+                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.pts.adjust-title">x</div></div></div>
                 <div class="fd-cell" role="cell" data-i18n="fan-detail.pts.filter.adjust">x</div>
                 <div class="fd-cell" role="cell">2026/02/10 10:00</div>
                 <div class="fd-cell fd-cell--num" role="cell">—</div>
+                <div class="fd-cell fd-cell--tag" role="cell"></div>
                 <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
                 <div class="product-list__actions" role="cell">
                   <details class="dropdown" data-admin-only hidden>
@@ -644,18 +692,8 @@
             </div>
 
             <p class="text-sub" id="fd-pts-empty" style="font-size: var(--fs-13);margin:16px 0 0" data-i18n="fan-detail.pts.empty" hidden>No entries in this category yet.</p>
-            <p class="text-sub" style="font-size: var(--fs-11);margin:16px 0 0" data-i18n="fan-detail.pts.note">Each row shows the points it earned when it happened.</p>
           </section>
 
-          <!-- D476 第 8 項：點數調整紀錄——每次調整是帳本的一筆（帶操作者、時間、原因）。
-               只在 Admin 代管態顯示；創作者看不看得到這份紀錄未定（UIA-296）。掛 S110（⚪）。 -->
-          <section class="card bento--span-12" data-admin-only data-feat="S110" hidden>
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="fan-detail.adjust.log">Point adjustments</h3>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.adjust.log-sub">Each adjustment is one ledger entry</span>
-            </div>
-            <div class="data-list" data-fd-adjust-log></div>
-          </section>
         </div>
       </div>
 
@@ -858,13 +896,34 @@
       </div><!-- /section-nav-layout -->
 
     </div>
-
-    <footer class="app-footer">
-      <span data-i18n="fan-detail.footer1">Fan profile · part of Fans CRM</span>
-      <span>·</span>
-      <span data-i18n="fan-detail.footer2">Points credited instantly · demotion checked weekly</span>
-    </footer>
   </main>
+</div>
+
+<!-- D476 第 8 項：點數調整紀錄——每次調整是帳本的一筆（帶操作者、時間、原因）。2026-10-30 起從頁面卡片改成彈窗，
+     由點數明細工具列的「點數調整紀錄」按鈕打開；只在 Admin 代管態（UIA-296）。殼同下方調整彈窗。 -->
+<div class="payout-modal" id="fd-log-modal" hidden>
+  <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="fd-log-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="fd-log-title" data-i18n="fan-detail.adjust.log">Point adjustments</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="fan-detail.log.close" data-fd-log-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="text-sub" style="font-size:var(--fs-12);margin:0 0 var(--sp-16)" data-i18n="fan-detail.adjust.log-sub">Each adjustment is one ledger entry</p>
+      <div class="product-list-scroll">
+      <section class="product-list product-list--fd-log" role="table" aria-label="Point adjustments" data-i18n-aria-label="fan-detail.adjust.log">
+        <div class="product-list__head" role="row">
+          <div role="columnheader" data-i18n="fan-detail.log.col.what">Adjustment</div>
+          <div role="columnheader" class="fd-cell--num" data-i18n="fan-detail.log.col.before">Before</div>
+          <div role="columnheader" class="fd-cell--num" data-i18n="fan-detail.log.col.after">After</div>
+          <div role="columnheader" class="fd-cell--num" data-i18n="fan-detail.log.col.delta">Change</div>
+          <div role="columnheader" data-i18n="fan-detail.col.datetime">Date &amp; time</div>
+        </div>
+        <div data-fd-adjust-log></div>
+      </section>
+      </div>
+      <p class="text-sub" style="font-size:var(--fs-13);margin:0" data-fd-log-empty hidden data-i18n="fan-detail.log.empty">No adjustments yet.</p>
+    </div>
+  </section>
 </div>
 
 <!-- D476 第 8 項 手動調整點數（Admin 代管態）。殼照 Q27 用 .payout-modal／.payout-dialog；
@@ -1009,6 +1068,7 @@
 <script src="js/toast.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>
 <script src="partials/list-scroll.js?v=r2.2"></script>
+<script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script>
 (function () {
@@ -1034,6 +1094,7 @@
       t.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === id));
+    if (window.ZtorDetailTopbar && window.ZtorDetailTopbar.resync) window.ZtorDetailTopbar.resync();
   }));
 
   /* ── D476 第 8 項：手動調整點數（只有 Admin）──────────────────────────
@@ -1059,20 +1120,33 @@
     document.querySelectorAll('[data-fd-points-sum]').forEach(el => { el.textContent = points.toLocaleString('en-US'); });
     if (!logBox) return;
     logBox.innerHTML = '';
+    /* 每筆一列：調整內容（標題＋原因）／修改前／修改後／修改額／時間。新增一筆沒有「修改前」，刪除一筆沒有「修改後」 */
+    const sig = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('en-US');
+    const num = v => v == null ? '—' : v.toLocaleString('en-US').replace('-', '−');
     adjustments.forEach(a => {
       const row = document.createElement('div');
-      row.className = 'data-list__row';
-      row.innerHTML = '<div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div>' +
-        '<div class="data-list__body"><div class="data-list__title"></div><div class="data-list__meta"></div></div></div>' +
-        '<div class="data-list__amount"></div>';
-      let title = a.reasonKey ? T(a.reasonKey) : a.reason;
-      if (a.kind === 'edit') title = T('fan-detail.entry.log-edit').replace('{t}', a.title).replace('{a}', a.from).replace('{b}', a.to).replace('{r}', a.reason);
-      if (a.kind === 'delete') title = T('fan-detail.entry.log-delete').replace('{t}', a.title).replace('{a}', a.from).replace('{r}', a.reason);
-      row.querySelector('.data-list__title').textContent = title;
-      row.querySelector('.data-list__meta').textContent = a.when + ' · Admin';
-      row.querySelector('.data-list__amount').textContent = (a.delta >= 0 ? '+' : '−') + Math.abs(a.delta).toLocaleString('en-US') + ' ' + T('fans.unit.points', 'pts');
+      row.className = 'product-list__row';
+      row.setAttribute('role', 'row');
+      row.innerHTML = '<div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div>' +
+        '<div class="product-list__body"><div class="product-list__title"></div><div class="product-list__meta"></div></div></div>' +
+        '<div class="fd-cell fd-cell--num" role="cell"></div><div class="fd-cell fd-cell--num" role="cell"></div>' +
+        '<div class="fd-cell fd-cell--num fd-pts" role="cell"></div><div class="fd-cell" role="cell"></div>';
+      let title, before = null, after = null;
+      if (a.kind === 'edit') { title = T('fan-detail.log.kind.edit').replace('{t}', a.title); before = a.from; after = a.to; }
+      else if (a.kind === 'delete') { title = T('fan-detail.log.kind.delete').replace('{t}', a.title); before = a.from; }
+      else { title = T('fan-detail.log.kind.add'); after = a.delta; }
+      const c = row.querySelectorAll('[role="cell"]');
+      row.querySelector('.product-list__title').textContent = title;
+      row.querySelector('.product-list__meta').textContent = a.reasonKey ? T(a.reasonKey) : a.reason;
+      c[1].textContent = num(before);
+      c[2].textContent = num(after);
+      c[3].textContent = sig(a.delta); c[3].classList.toggle('is-neg', a.delta < 0);
+      c[4].innerHTML = '';
+      c[4].append(a.when, document.createElement('br'), 'Admin');
       logBox.appendChild(row);
     });
+    const logEmpty = document.querySelector('[data-fd-log-empty]');
+    if (logEmpty) logEmpty.hidden = adjustments.length > 0;
     if (window.ztorIcons) window.ztorIcons.applyIcons(logBox);
   }
   const modal = document.getElementById('fd-adjust-modal');
@@ -1102,8 +1176,8 @@
     const stamp = d.getFullYear() + '/' + p2(d.getMonth() + 1) + '/' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
     row.innerHTML = '<div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title"></div></div></div>' +
       '<div class="fd-cell" role="cell"></div><div class="fd-cell" role="cell"></div><div class="fd-cell fd-cell--num" role="cell">—</div>' +
-      '<div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts"></span></div><div class="product-list__actions" role="cell">' + KEBAB + '</div>';
-    row.querySelector('.product-list__title').textContent = reason;
+      '<div class="fd-cell fd-cell--tag" role="cell"></div><div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts"></span></div><div class="product-list__actions" role="cell">' + KEBAB + '</div>';
+    const tt = row.querySelector('.product-list__title'); tt.setAttribute('data-i18n', 'fan-detail.pts.adjust-title'); tt.textContent = T('fan-detail.pts.adjust-title', 'Points adjustment');   /* D495：原因只進調整紀錄 */
     const cells = row.querySelectorAll('.fd-cell');
     cells[0].setAttribute('data-i18n', 'fan-detail.pts.filter.adjust'); cells[0].textContent = T('fan-detail.pts.filter.adjust', 'Adjustments');
     cells[1].textContent = stamp;
@@ -1120,6 +1194,14 @@
   }
   function closeAdjust() { if (modal) modal.hidden = true; }
   document.querySelectorAll('[data-fd-adjust-open]').forEach(b => b.addEventListener('click', openAdjust));
+  const logModal = document.getElementById('fd-log-modal');
+  if (logModal) {
+    const closeLog = () => { logModal.hidden = true; };
+    document.querySelectorAll('[data-fd-log-open]').forEach(b => b.addEventListener('click', () => { if (isAdmin()) { renderLog(); logModal.hidden = false; } }));
+    logModal.querySelectorAll('[data-fd-log-close]').forEach(b => b.addEventListener('click', closeLog));
+    logModal.addEventListener('click', e => { if (e.target === logModal) closeLog(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !logModal.hidden) closeLog(); });
+  }
   if (modal) {
     modal.querySelectorAll('[data-fd-adjust-close]').forEach(b => b.addEventListener('click', closeAdjust));
     modal.addEventListener('click', e => { if (e.target === modal) closeAdjust(); });
@@ -1213,7 +1295,7 @@
           const tag = document.createElement('span');
           tag.className = 'badge badge--neutral'; tag.setAttribute('data-fd-edited', '');
           tag.setAttribute('data-i18n', 'fan-detail.entry.edited'); tag.textContent = T('fan-detail.entry.edited', 'Edited');
-          const amt = cur.querySelector('.fd-cell--pts'); amt.insertBefore(tag, amt.firstChild);
+          cur.querySelector('.fd-cell--tag').appendChild(tag);   /* 2026-10-30 標記（已人工修改、已達上限）獨立成「狀態」欄 */
         }
       } else {
         adjustments.unshift({ kind: 'delete', delta: -old, when: stamp, title, from: old, reason });
@@ -1442,5 +1524,24 @@
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
+<script>
+  /* 詳情頁共用頂列（2026-10-30）：頁首（.fan-hero）整個捲掉之後，頂列切成固定、顯示返回＋頭像＋名字 */
+  (function () {
+    var bar = document.querySelector('.detail-topbar');
+    if (!bar || !window.ZtorDetailTopbar) return;
+    window.ZtorDetailTopbar.init({
+      bar: bar,
+      hero: document.querySelector('.fan-hero'),
+      mini: document.querySelector('[data-fd-mini]'),
+      crumb: bar.querySelector('.page-crumb'),
+      onStick: function () {
+        var a = document.getElementById('fd-mini-avatar'), src = document.querySelector('.fan-hero__avatar');
+        var n = document.getElementById('fd-mini-name'), name = document.querySelector('.fan-hero__name');
+        if (a && src) a.textContent = src.textContent;
+        if (n && name) n.textContent = name.textContent;
+      }
+    });
+  })();
+</script>
 </body>
 </html>

@@ -164,7 +164,7 @@
   const num = v => { const n = parseInt(String(v).replace(/,/g, ''), 10); return isNaN(n) ? 0 : Math.max(0, n); };
   function setSwitch(el, on) { el.classList.toggle('switch--on', on); el.setAttribute('aria-checked', on ? 'true' : 'false'); }
   function bind(id, key, after) {
-    const el = $(id), tog = () => { S[key] = !S[key]; if (after) after(S[key]); render(); };
+    const el = $(id), tog = () => { if (el.getAttribute('aria-disabled') === 'true') return; S[key] = !S[key]; if (after) after(S[key]); render(); };
     el.addEventListener('click', tog);
     el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); tog(); } });
   }
@@ -200,6 +200,9 @@
   }
   function render() {
     setSwitch($('lab-sw-unl'), S.unl); setSwitch($('lab-sw-tag'), S.tag); setSwitch($('lab-sw-lock'), S.lock);
+    /* 不限量與限量標籤互斥：一個開著，另一個變淡不可開 */
+    $('lab-sw-unl').setAttribute('aria-disabled', S.tag ? 'true' : 'false');
+    $('lab-sw-tag').setAttribute('aria-disabled', S.unl ? 'true' : 'false');
     $('lab-single').hidden = S.multi; $('lab-multi').hidden = !S.multi;
     /* 單一規格：欄位與三個開關同一個 section；多選項：矩陣與設定分兩個 section */
     const cg = $('lab-cg'), host = S.multi ? $('lab-sec-b') : $('lab-sec-a');

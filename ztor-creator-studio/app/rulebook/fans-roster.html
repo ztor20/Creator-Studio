@@ -172,7 +172,7 @@ table.map td:nth-child(2){width:22%}
   <span class="dg-a" data-t="聯絡一群粉絲" style="grid-row:3;grid-column:6"></span>
   <div class="dg-node end" style="grid-row:1;grid-column:7">粉絲詳情<small>按這一列的「詳情」</small></div>
   <div class="dg-node end" style="grid-row:2;grid-column:7">群發訊息<small>按這一列的「發訊息」，收件對象帶入這位粉絲</small></div>
-  <div class="dg-node end" style="grid-row:3;grid-column:7">群發訊息<small>按「Message segment」，收件對象帶入目前的分級或篩選</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">群發訊息<small>按「Message segment」，收件對象帶入目前的分級</small></div>
 </div>
 </div>
 <p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
@@ -183,7 +183,7 @@ table.map td:nth-child(2){width:22%}
     <ul class="plain">
       <li>看這位粉絲：按這一列的「詳情」，進入<a href="fans-roster-detail.html">粉絲詳情</a></li>
       <li>聯絡這位粉絲：按這一列的「發訊息」，開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</li>
-      <li>聯絡一群粉絲：按「群發訊息（Message segment）」，收件對象帶入目前的分級或篩選</li>
+      <li>聯絡一群粉絲：按「群發訊息（Message segment）」，收件對象帶入目前的分級</li>
     </ul>
   </li>
 </ol>
@@ -249,7 +249,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>提醒橫幅</td><td>有粉絲被判定為流失風險時才出現</td><td>放在頁面最上方，在頁首之上<br>標題寫有幾位粉絲有流失風險，例如「5 位粉絲有流失風險」（人數為假設）<br>副標寫分級與沉默天數，例如「超級粉絲 · 已 14+ 天未互動」</td></tr>
+    <tr><td>提醒橫幅</td><td>有粉絲被判定為流失風險時才出現</td><td>放在頁面最上方，在頁首之上<br>標題寫有幾位粉絲有流失風險，例如「5 位粉絲有流失風險」（人數為假設）<br>副標的寫法同<a href="#roster-kpi">摘要指標</a>的流失風險小字，例如「超級粉絲 · 沉默 21/90 天」（數字為假設）</td></tr>
     <tr><td>Message them</td><td>提醒出現時</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入有流失風險的粉絲</td></tr>
     <tr><td>關閉</td><td>提醒出現時</td><td>關閉這則提醒</td></tr>
   </tbody>
@@ -276,11 +276,38 @@ table.map td:nth-child(2){width:22%}
     <tr><td>平均忠誠點數（Avg loyalty points）</td><td>活躍粉絲的平均忠誠點數</td><td>與上月比較</td></tr>
   </tbody>
 </table></div>
+<p>每個指標依數字換樣子，各狀態如下；完全沒有粉絲時四個指標都不出現，見<a href="#roster-empty">沒有資料時</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">活躍粉絲</td></tr>
+    <tr><td>有活躍粉絲</td><td>至少一位活躍粉絲</td><td>數字是活躍粉絲數，小字寫總粉絲數，例如「共 1,840 位」（人數為假設）</td></tr>
+    <tr><td>沒有活躍粉絲</td><td>有粉絲，但沒有一位是活躍</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">流失風險</td></tr>
+    <tr><td>有流失風險</td><td>至少一位粉絲被判定為流失風險，判定見<a href="#status">粉絲狀態</a></td><td>數字是流失風險人數<br>小字寫「分級 · 沉默 N/M 天」，例如「超級粉絲 · 沉默 21/90 天」（數字為假設）</td></tr>
+    <tr><td>小字的分級</td><td>流失風險粉絲分屬好幾個分級</td><td>寫分級最高的那一級（核心圈 &gt; 超級粉絲 &gt; 上榜粉絲 &gt; 一般粉絲）</td></tr>
+    <tr><td>完整清單</td><td>滑鼠移到小字上</td><td>每一個有流失風險的分級一行，分級高的在前，例如：<br>「2 位核心圈 · 沉默 10/90 天」<br>「5 位超級粉絲 · 沉默 21/90 天」（數字為假設）</td></tr>
+    <tr><td>小字的 N</td><td>—</td><td>該級流失風險粉絲裡，最近一次有行為的那一位，距今幾天；也就是這群人每一位都至少沉默 N 天</td></tr>
+    <tr><td>小字的 M</td><td>—</td><td>幾天沒有行為就往下掉一級，由 Admin 設定，預設 90 天，見<a href="fans-tiers.html#decay">衰減與沉睡</a></td></tr>
+    <tr><td>剛有行為</td><td>N 是 0</td><td>小字只寫分級，例如「超級粉絲」</td></tr>
+    <tr><td>沒有流失風險</td><td>流失風險人數是 0</td><td>數字是 0，小字寫「無」</td></tr>
+    <tr class="grp"><td colspan="3">活躍粉絲收入</td></tr>
+    <tr><td>有收入</td><td>活躍粉絲在統計期間有消費</td><td>數字是收入，小字寫統計期間，例如「近 90 天」</td></tr>
+    <tr><td>沒有活躍粉絲</td><td>有粉絲，但沒有一位是活躍</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">平均忠誠點數</td></tr>
+    <tr><td>比上月多</td><td>這個月平均高於上月</td><td>數字是平均點數，小字寫跟上月比較；上升怎麼標示<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>比上月少</td><td>這個月平均低於上月</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>跟上月一樣</td><td>兩個月平均相同</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>上個月沒有資料</td><td>粉絲在這個月才開始有點數</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>沒有活躍粉絲</td><td>有粉絲，但沒有一位是活躍</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="roster-tiers">分級分布</h3>
 <p>分級分布顯示各分級的人數與貢獻比例，作為經營與設計福利的依據。分級的定義見<a href="fans-tiers.html#tiers">四個分級</a>。</p>
 <ul class="plain">
   <li>比例長條顯示四個分級各自的人數與占比</li>
+  <li>人數只算活躍粉絲，四級加總等於摘要指標的活躍粉絲數；排行榜仍列全部粉絲</li>
   <li>自動產生一行洞察，例如「最小的 X% 粉絲貢獻 Y% 收入」</li>
   <li>洞察挑的是人數占比最小、而且收入占比大於人數占比的分級</li>
   <li>沒有符合的分級時，洞察整行隱藏，不顯示 0%</li>
@@ -316,7 +343,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>發訊息（每一列）</td><td>每一列</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</td></tr>
     <tr><td>詳情（每一列）</td><td>每一列</td><td>進入這位粉絲的<a href="fans-roster-detail.html">粉絲詳情</a></td></tr>
     <tr><td>載入更多（Load more）</td><td>有粉絲時</td><td>每次載入 25 列，一開始顯示 25 列<br>顯示已載入與總數，例如「Showing 25 of 30」</td></tr>
-    <tr id="roster-message"><td>群發訊息（Message segment）</td><td>見頁尾尚待確認</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入目前的分級或篩選</td></tr>
+    <tr id="roster-message"><td>群發訊息（Message segment）</td><td>見頁尾尚待確認</td><td>開啟<a href="fans-broadcast.html">群發訊息</a><br>篩的是分級：收件對象帶入那一級<br>只用了搜尋或標籤：收件對象是全部粉絲，並提示「目前的搜尋或標籤篩選不會帶入」</td></tr>
     <tr id="roster-export"><td>匯出 CSV（Export CSV）</td><td>見頁尾尚待確認</td><td>把粉絲名單匯出成 CSV</td></tr>
   </tbody>
 </table></div>
@@ -336,7 +363,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>有粉絲但查不到</td><td>清單顯示「查無符合的粉絲」，並提供清除條件</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.7 F1～F6、F12、頁面狀態；5.1.7.5 F4；主規格 §6.10、§7.5；D069、D150、D169。</p>
+<p class="note">依據：5.1.7 F1～F6、F12、頁面狀態；5.1.7.5 F4；主規格 §6.10、§7.5；D069、D150、D169、D493、D495。</p>
 
 <h2 id="status"><span class="n"></span>粉絲狀態</h2>
 <p>粉絲狀態自動判定，三種狀態依序轉換，條件如下。</p>
@@ -362,7 +389,7 @@ table.map td:nth-child(2){width:22%}
   <p class="k">來源</p>
   <ul>
     <li>規格：<code>5.1.7-粉絲關係管理.md</code>（最後更新 2026-10-05）、<code>5.1.7.5-粉絲系統說明.md</code> F4、<code>0-設計規格書.md §6.10／§7.5</code></li>
-    <li>決策：D069、D150、D169</li>
+    <li>決策：D069、D150、D169、D493、D495</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -371,9 +398,12 @@ table.map td:nth-child(2){width:22%}
     <li>完全沒有粉絲時，群發訊息（Message segment）與匯出 CSV 是否照樣出現</li>
     <li>匯出 CSV 匯出的是全部粉絲還是目前篩選出的粉絲，以及包含哪些欄位</li>
     <li>流失風險提醒關閉後，什麼時候會再出現</li>
+    <li>摘要指標：活躍粉絲收入的統計期間固定是近 90 天，還是可以切換</li>
+    <li>摘要指標：平均忠誠點數跟上月比，上升、下降、持平各怎麼顯示；上個月沒有資料時顯示什麼</li>
+    <li>摘要指標：有粉絲但活躍粉絲是 0 時，活躍粉絲收入與平均忠誠點數顯示什麼</li>
     <li>粉絲詳情相關的待確認列在<a href="fans-roster-detail.html">粉絲詳情</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-23（D476 點數即時入帳與升降級時機）；2026-10-19（粉絲詳情拆成獨立一頁；排行榜欄位名改中文附英文；補說明開關與粉絲系統說明入口）；2026-10-09</p>
+  <p class="k">最近同步：2026-10-30（D495：群發訊息只帶入分級、分級分布只算活躍粉絲；摘要指標補上各狀態；D493 流失風險小字定為「分級 · 沉默 N/M 天」）；2026-10-23（D476 點數即時入帳與升降級時機）；2026-10-19（粉絲詳情拆成獨立一頁；排行榜欄位名改中文附英文；補說明開關與粉絲系統說明入口）；2026-10-09</p>
 </details>
 </div>
 <script>
