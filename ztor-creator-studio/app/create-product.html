@@ -506,11 +506,50 @@
     <!-- §4.1③⑤ 庫存（庫存版本 Edition 置頂，控制下方/表格欄位；單一規格在此填在庫，多規格改由表格）· spec 5.1.5.2 §4.1③⑤ / §4.2 / D064 -->
     <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical digital">
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.stock.title">Stock</h3>
+        <h3 class="form-section__title" id="cp-stock-title" data-i18n="cp.stock.title">Stock</h3>
       </div>
-      <!-- 庫存版本 Edition：一顆「限量商品」開關（2026-10-28；原不限量／限量兩張卡退場）。
-           關＝不限量（預設，畫面不出現「不限量」一詞）、開＝限量；資料仍是同一條版本型態軸 state.edition。 -->
-      <div class="control-group">
+      <!-- 實體（2026-10-30，使用者選定 lab-stock-settings 方向）：單一規格＝庫存量欄位＋三個開關（不限量／限量標籤／鎖定庫存）；
+           多選項＝只留三個開關，庫存量在下方逐規格表（多兩欄「留倉」「鎖定庫存量」）。「不限量」與「限量標籤」互斥。
+           原「限量商品」開關與上限數量欄退場，只留給數位商品（下方 data-cp-show="digital"）。 -->
+      <div class="field" data-cp-show="physical" data-when-var="single">
+        <div class="field__label"><span data-i18n="stock.pool">Stock quantity</span> <span class="field__req">*</span></div>
+        <input class="input" placeholder="0" id="cp-stock" inputmode="numeric">
+      </div>
+      <div class="control-group" id="cp-stock-sw" data-cp-show="physical" style="margin-top:var(--sp-16)">
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
+            <div class="control-row__sub" data-i18n="cp.unl.sub">After stock runs out, switch to pre-order so fans can keep ordering.</div>
+          </div>
+          <div class="switch" id="cp-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="lctl__rule lctl__rule--group"></div>
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.tag.title">Limited-edition tag</div>
+            <div class="control-row__sub" data-i18n="cp.tag.sub">Mark this item as limited on the storefront.</div>
+          </div>
+          <div class="switch" id="cp-sw-tag" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="lctl__rule lctl__rule--group"></div>
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.lock.title">Hold back stock</div>
+            <div class="control-row__sub" data-i18n="cp.lock.sub">Sell only part of your stock for now; adjust any time.</div>
+          </div>
+          <div class="switch" id="cp-sw-lock" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="control-group__body" id="cp-lockbody" data-when-var="single" hidden>
+          <div class="field">
+            <div class="field__label field__label--split"><span data-i18n="cp.lock.qty">Stock on sale</span><span class="field__label-aside" id="cp-lock-readout"></span></div>
+            <input class="input" placeholder="0" id="cp-lock-qty" inputmode="numeric">
+            <p class="field__error" data-cp-lock-err hidden data-i18n="cp.lock.over-err">Stock on sale can't exceed the stock quantity.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 數位：沿用「限量商品」開關（開＝設上限數量；關＝不限量、不收庫存），2026-10-28 D487 -->
+      <div class="control-group" data-cp-show="digital">
         <div class="control-row">
           <div>
             <div class="control-row__main" data-i18n="cp.limited.title">Limited edition</div>
@@ -518,29 +557,14 @@
           </div>
           <div class="switch" id="cp-edition" role="switch" aria-checked="false" tabindex="0"></div>
         </div>
-      <!-- 單一規格的在庫欄位（多規格時改由逐規格表）-->
-      <div class="control-group__body" data-when-var="single">
-        <div class="form-grid">
-          <!-- 上限 Total Quantity：限量才出現（實體+數位）-->
-          <div class="field" data-when-edition="limited">
+        <div class="control-group__body" data-when-edition="limited">
+          <div class="field">
             <div class="field__label"><span data-i18n="cp.total">Total quantity</span> <span class="field__req">*</span></div>
             <input class="input" placeholder="0" id="cp-total">
           </div>
-          <!-- 實體：目前在庫（spec §7.14 · D241）。這一欄收的是「這件商品總共有幾件」，
-               分給單售與各組合包的鎖定量不在建立流程收（單售在商品細節頁、組合在建立組合流程）。 -->
-          <div class="field" data-cp-show="physical">
-            <div class="field__label" data-i18n="stock.pool">Stock quantity</div>
-            <input class="input" placeholder="0" id="cp-stock">
-            <div class="field__hint" id="cp-stock-hint" data-i18n="cp.stock.pool-hint-off">Restock without a cap — it only shows sold out when it hits zero.</div>
-            <p class="field__error" data-cp-stock-err hidden data-i18n="cp.stock.over-err">In stock can't exceed the total quantity.</p>
-          </div>
-          <!-- 墓碑 2026-10-27（UIA-301 第 5 項）：數位限量原有「剩餘份數」必填欄（#cp-dcopies）。5.1.5.2 類型差異表寫明
-               數位商品「限量僅設上限、無在庫」，剩餘份數＝上限 − 已售由系統算，建立時就等於上限，不另收；只留上方「上限數量」。 -->
         </div>
-  <!-- 數位商品關閉限量：沒有庫存欄，只說明（spec 5.1.5.2 類型差異表）-->
-      <p class="field__hint" style="margin:0" data-cp-show="digital" data-when-edition="unlimited" data-i18n="cp.limited.digital-off">Fans can buy and download without a cap — no stock to enter.</p>
       </div>
-      </div>
+      <p class="field__hint" style="margin:var(--sp-12) 0 0" data-cp-show="digital" data-when-edition="unlimited" data-i18n="cp.limited.digital-off">Fans can buy and download without a cap — no stock to enter.</p>
 
       <!-- 低庫存提醒（實體；單一與多規格皆適用）。門檻預設＝庫存上限的 10%（spec §7.2 / D105）。
            逐商品自訂（S31.1）由下方輸入格提供、cheat code「版本」控制其呈現 -->
@@ -569,7 +593,7 @@
     <section class="form-section form-section--outlined" data-form-step="1" data-cp-show="physical" data-when-var="multiple" hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.var.table.title">Pricing per variation</h3>
-        <p class="form-section__sub" data-i18n="cp.var.table.sub">Each variation has its own price and stock — Limited edition adds a cap column.</p>
+        <p class="form-section__sub" data-i18n="cp.var.table.sub">Each variation has its own price and stock — holding back stock adds two columns.</p>
       </div>
       <div class="variant-table-wrap" id="cp-var-table-wrap" hidden>
         <!-- 逐規格縮圖（2026-08-10）併在規格名那一格、不另開欄（2026-09-12 使用者裁決，STYLE-DECISIONS Q117）：表頭從「規格」開始 -->
@@ -578,7 +602,8 @@
             <span data-i18n="cp.var.col.variant">Variant</span>
             <span data-i18n="cp.var.col.price">Price</span>
             <span data-i18n="cp.var.col.stock">Stock</span>
-            <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
+            <span class="variant-cell--held" data-i18n="cp.var.col.held">Held back</span>
+            <span class="variant-cell--lockqty" data-i18n="cp.var.col.lock">On sale</span>
             <span data-i18n="cp.var.col.sku">SKU</span>
             <span data-i18n="cp.var.col.cost">Cost</span>
             <span></span>
@@ -1076,7 +1101,7 @@
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const assets = {};                              // 模擬已上傳的素材
-  const state = { type: 'physical', varMode: 'single', edition: 'unlimited', ship: true, qr: false, limitOn: false };   /* D470：取貨方式改勾選（ship／qr 各自一格，新建預設勾物流配送〔推導〕） */
+  const state = { type: 'physical', varMode: 'single', edition: 'unlimited', unl: false, tag: false, lock: false, ship: true, qr: false, limitOn: false };   /* D470：取貨方式改勾選（ship／qr 各自一格，新建預設勾物流配送〔推導〕） */
   /* 服飾配件的分類與系統屬性（D360 · S70）：與 products-store 的 category／subCategory／audience／attrs 同形，
      值一律是 window.ztorApparel 的 key（不存顯示字）。customSpecs 沿用 #spec-rows 的逐列 DOM。 */
   const apparel = { category: '', sub: '', audience: '', attrs: {} };
@@ -1089,6 +1114,9 @@
   const fPrice = document.getElementById('cp-price');
   const fTotal = document.getElementById('cp-total');
   const fStock = document.getElementById('cp-stock');
+  const fLock = document.getElementById('cp-lock-qty');
+  /* 「限量商品」開關（上限數量）只剩數位商品用；實體改用不限量／限量標籤／鎖定庫存三開關（2026-10-30） */
+  const isLimited = () => state.edition === 'limited' && state.type === 'digital';
   const fShipWeight = document.getElementById('cp-ship-weight');
   /* 限購（D398；D427 起只剩每人總限購）：開關打開才算；那一欄是 1 以上的整數就算填好（D428 定案，5.1.5.2 §4.6） */
   const PL = window.ztorPurchaseLimits;
@@ -1198,13 +1226,14 @@
     const allPriced = active.length > 0 && active.every(k => {
       const d = varData[k] || {};
       const base = d.price && d.price.trim() && d.stock && d.stock.trim();
-      return state.edition === 'limited' ? (base && d.total && d.total.trim()) : base;
+      return state.lock ? (base && d.lock && d.lock.trim()) : base;
     });
     return { hasRows: active.length > 0, allPriced };
   }
   function syncVariantLimited() {
     const tbl = document.getElementById('cp-var-table');
-    if (tbl) tbl.classList.toggle('variant-table--limited', state.edition === 'limited');
+    if (tbl) tbl.classList.toggle('variant-table--lock', !!state.lock);
+    syncHeld();
   }
   /* 選項改「收合列＋單一展開編輯」（2026-07-20，Mobbin: Webflow）：
      設定好的選項收成一行，只有 editingOpt 指到的那組展開成編輯器。 */
@@ -1371,7 +1400,8 @@
         `<span class="variant-cell--variant">${variantThumbHTML(key, d)}<span class="variant-cell__text">${esc(key)}</span></span>`
         + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="price" value="${esc(d.price || '')}" placeholder="0.00"></span>`
         + `<input class="input" data-vk="${esc(key)}" data-vf="stock" value="${esc(d.stock || '')}" placeholder="0">`
-        + `<input class="input variant-cell--total" data-vk="${esc(key)}" data-vf="total" value="${esc(d.total || '')}" placeholder="0">`
+        + `<span class="variant-cell--held" data-vheld="${esc(key)}"></span>`
+        + `<input class="input variant-cell--lockqty" data-vk="${esc(key)}" data-vf="lock" value="${esc(d.lock || '')}" placeholder="0">`
         + `<input class="input" data-vk="${esc(key)}" data-vf="sku" value="${esc(d.sku || '')}" placeholder="SKU">`
         + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="cost" value="${esc(d.cost || '')}" placeholder="0.00"></span>`
         + `<button class="variant-row__remove" type="button" data-vexclude="${esc(key)}" aria-label="Exclude variant"><i data-lucide="x" class="ztor-icon"></i></button>`;
@@ -1428,10 +1458,11 @@
   });
 
   /* ---- 就緒檢查項（依狀態動態組合）· spec §4.4 ---- */
-  function capOk() {
-    const tot = fTotal && fTotal.value.trim(), st = fStock && fStock.value.trim();
-    if (!tot || !st) return false;
-    return Number(tot) >= Number(st);
+  /* 鎖定庫存（實體單一規格）：鎖定庫存量要填、且不超過庫存量 */
+  function lockOk() {
+    const lk = fLock && fLock.value.trim(), st = fStock && fStock.value.trim();
+    if (!lk || !st) return false;
+    return Number(lk) <= Number(st);
   }
   function digitalCapOk() { return has(fTotal); }   /* 數位限量只收上限（UIA-301 第 5 項） */
   /* D148（2026-07-21）：物流配送四欄只有重量必填——尺寸與寄件地改選填、不列入就緒檢查
@@ -1457,7 +1488,7 @@
         a.push({ id: 'var-priced', labelKey: 'cp.qc.var-priced', step: CP_STEP.price, k: 'Every variation priced & stocked', done: () => variantState().allPriced });
       } else {
         a.push({ id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price', done: () => has(fPrice) });
-        if (state.edition === 'limited') a.push({ id: 'cap', labelKey: 'cp.qc.cap', step: CP_STEP.stock, k: 'Total quantity ≥ stock', done: () => capOk() });
+        if (state.lock) a.push({ id: 'lock', labelKey: 'cp.qc.lock', step: CP_STEP.stock, k: 'Stock on sale ≤ stock', done: () => lockOk() });
       }
       a.push({ id: 'specs', labelKey: 'cp.qc.specs', step: CP_STEP.specs, k: 'Specifications', done: () => specCount() >= 1 });   /* D466：硬性必填（進第三步時擋），所在的「商品資訊」節在本頁大綱裡跟著算必填 */
       /* D470（5.1.5.2 §4.6〔推導〕）：取貨方式至少勾一種；勾了物流配送要有重量。兩項都列在第二步、進入第三步時擋 */
@@ -1475,7 +1506,7 @@
       { id: 'desc',  labelKey: 'cp.qc.desc',  step: CP_STEP.info,  k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
       { id: 'price', labelKey: 'cp.qc.price', step: CP_STEP.price, k: 'Price',                done: () => has(fPrice) },
     ];
-    if (state.edition === 'limited') a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity', done: () => digitalCapOk() });
+    if (isLimited()) a.push({ id: 'digicap', labelKey: 'cp.qc.digicap', step: CP_STEP.stock, k: 'Total quantity', done: () => digitalCapOk() });
     if (!cpUni() && state.limitOn) a.push({ id: 'limit', labelKey: 'cp.qc.limit', step: CP_STEP.limits, k: 'Purchase limit', done: () => limitOk() });
     if (cpUni() && cpCondsAny()) a.push({ id: 'conds', labelKey: 'pc.qc', step: CP_STEP.conds, k: 'Purchase conditions', done: () => cpCondsOk() });   /* D463（S105） */
     return a;
@@ -1598,7 +1629,7 @@
     const catSel = state.type === 'digital' ? document.getElementById('cp-cat-digi') : document.getElementById('cp-cat-phys');
     const cat = apparelCatLabel() || ((catSel && catSel.selectedIndex >= 0) ? (catSel.options[catSel.selectedIndex].text || '').trim() : '');
     let stock = 'unlimited';
-    if (state.edition === 'limited') {
+    if (isLimited()) {
       stock = ((fStock && fStock.value.trim()) || (fTotal && fTotal.value.trim()) || '0');
     }
     let variants = 0;
@@ -1612,7 +1643,7 @@
        （單售鎖定在商品細節頁、組合鎖定在建立組合流程），所以一律送 null 與空的 bundles。 */
     const listed = listingMode !== 'none';
     const val = id => { const el = document.getElementById(id); return (el && el.value) ? el.value : null; };
-    const poolTotal = state.edition === 'limited'
+    const poolTotal = isLimited()
       ? (Number(stock) || 0)
       : (fStock && fStock.value.trim() !== '' ? Number(fStock.value.trim()) : 'unlimited');
     /* D360：服飾配件另帶 group／category／subCategory／audience／attrs／customSpecs（products-store 的新欄位），
@@ -1620,6 +1651,8 @@
     const ap = apparelRecord();
     return {
       type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants,
+      /* 2026-10-30 實體庫存設定（呈現假設，見 ASSUMPTIONS）：賣完轉預購／前台限量標籤／鎖定庫存量（null＝沒鎖） */
+      ...(state.type === 'physical' ? { preorder: !!state.unl, limitedTag: !!state.tag, lockQty: state.lock && state.varMode === 'single' && fLock && fLock.value.trim() !== '' ? Number(fLock.value.trim()) : null } : {}),
       ...(ap || {}),
       options: state.type === 'physical' && state.varMode === 'multiple' ? optionRecords() : [],
       listed: listed,
@@ -1772,7 +1805,8 @@
   }
   /* 庫存：限量才給「目前還剩幾件」（前台只在 ≤10 件時提示）；不限量或沒填＝null */
   function stageStock() {
-    if (state.edition !== 'limited') return null;
+    if (!isLimited() && state.type !== 'physical') return null;
+    if (state.type === 'physical') return null;   /* 實體不再有「限量才提示剩餘」；2026-10-30 */
     if (state.type === 'digital') return has(fTotal) ? numVal(fTotal.value) : null;   /* 數位限量：建立時剩餘額度＝上限（尚無已售） */
     if (isMulti()) {
       const ks = activeCombos().filter(k => ((varData[k] || {}).stock || '').trim() !== '');
@@ -2122,6 +2156,7 @@
     });
     syncDelivery();
     syncLowStock();   // 低庫存自訂門檻的顯示＋預填隨 type/edition 連動（S31.1）
+    if (typeof syncStockSwitches === 'function') syncStockSwitches();
   }
 
   /* ---- 類型：唯一選擇入口＝閘門（2026-08-10 使用者指示，做法對齊建立活動）----
@@ -2399,7 +2434,7 @@
   let thrUserEdited = false;
   function lowStockOn() { return !!(lowToggle && lowToggle.classList.contains('switch--on')); }
   function lowStockRef() {
-    const raw = state.edition === 'limited' ? (fTotal && fTotal.value.trim()) : (fStock && fStock.value.trim());
+    const raw = isLimited() ? (fTotal && fTotal.value.trim()) : (fStock && fStock.value.trim());
     const n = Number(raw);
     return (raw && isFinite(n) && n > 0) ? n : null;
   }
@@ -2428,16 +2463,68 @@
   });
   [fTotal, fStock].forEach(el => { if (el) el.addEventListener('input', syncLowStock); });
 
-  /* 限量：目前在庫不能超過上限（capOk 本來只擋就緒檢查，這裡補就地紅字）。兩欄任一邊改動就重算 */
+  /* 鎖定庫存（2026-10-30）：鎖定庫存量不能超過庫存量；右上讀數「可售 N 件・留倉 M 件」。
+     多選項時每列各自算「留倉」（庫存量 − 鎖定庫存量）。名稱沿用 syncStockErr，讓既有呼叫點照舊。 */
   function syncStockErr() {
-    const err = document.querySelector('[data-cp-stock-err]');
-    if (!err) return;
-    const tot = fTotal && fTotal.value.trim(), st = fStock && fStock.value.trim();
-    const over = state.edition === 'limited' && state.type === 'physical' && tot && st && Number(st) > Number(tot);
-    err.hidden = !over;
-    if (fStock) fStock.setAttribute('aria-invalid', over ? 'true' : 'false');
+    const err = document.querySelector('[data-cp-lock-err]');
+    const st = fStock && fStock.value.trim(), lk = fLock && fLock.value.trim();
+    const n = v => (v && isFinite(Number(v))) ? Number(v) : 0;
+    const over = state.lock && state.type === 'physical' && state.varMode === 'single' && lk && st && n(lk) > n(st);
+    if (err) err.hidden = !over;
+    if (fLock) fLock.setAttribute('aria-invalid', over ? 'true' : 'false');
+    const ro = document.getElementById('cp-lock-readout');
+    if (ro) {
+      if (state.lock && state.varMode === 'single') {
+        const sell = Math.min(n(lk), n(st)), held = Math.max(0, n(st) - sell);
+        ro.textContent = T('cp.lock.readout', 'On sale {a} · held back {b}').replace('{a}', sell).replace('{b}', held);
+      } else ro.textContent = '';
+    }
+    syncHeld();
   }
+  /* 多選項表：每列「留倉」＝庫存量 − 鎖定庫存量（鎖定庫存量大於庫存量時算 0） */
+  function syncHeld() {
+    document.querySelectorAll('[data-vheld]').forEach(el => {
+      const d = varData[el.getAttribute('data-vheld')] || {};
+      const st = Number(d.stock) || 0, lk = Math.min(Number(d.lock) || 0, st);
+      el.textContent = String(Math.max(0, st - lk));
+    });
+  }
+  /* 三個開關：不限量（賣完轉預購）與限量標籤互斥，一個開著另一個停用；鎖定庫存獨立 */
+  var SW = { unl: 'cp-sw-unl', tag: 'cp-sw-tag', lock: 'cp-sw-lock' };
+  function syncStockSwitches() {
+    Object.keys(SW).forEach(k => {
+      const el = document.getElementById(SW[k]); if (!el) return;
+      el.classList.toggle('switch--on', !!state[k]);
+      el.setAttribute('aria-checked', state[k] ? 'true' : 'false');
+    });
+    const u = document.getElementById(SW.unl), t = document.getElementById(SW.tag);
+    if (u) u.setAttribute('aria-disabled', state.tag ? 'true' : 'false');
+    if (t) t.setAttribute('aria-disabled', state.unl ? 'true' : 'false');
+    const body = document.getElementById('cp-lockbody');
+    if (body) body.hidden = !(state.lock && state.varMode === 'single' && state.type === 'physical');
+    const title = document.getElementById('cp-stock-title');
+    if (title) {
+      const k = state.type === 'digital' ? 'cp.stock.title' : (state.varMode === 'multiple' ? 'cp.stock.title.cfg' : 'cp.stock.title.set');
+      const fb = { 'cp.stock.title': 'Stock', 'cp.stock.title.cfg': 'Stock settings', 'cp.stock.title.set': 'Set stock quantity' }[k];
+      title.setAttribute('data-i18n', k); title.textContent = T(k, fb);
+    }
+    syncVariantLimited(); syncStockErr();
+  }
+  function toggleStockSw(k) {
+    const el = document.getElementById(SW[k]);
+    if (!el || el.getAttribute('aria-disabled') === 'true') return;
+    state[k] = !state[k];
+    if (k === 'lock' && !state.lock) { if (fLock) fLock.value = ''; Object.keys(varData).forEach(key => { delete varData[key].lock; }); }
+    syncStockSwitches(); refresh();
+  }
+  Object.keys(SW).forEach(k => {
+    const el = document.getElementById(SW[k]); if (!el) return;
+    el.addEventListener('click', () => toggleStockSw(k));
+    el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleStockSw(k); } });
+  });
+  if (fLock) fLock.addEventListener('input', () => { syncStockErr(); refresh(); });
   [fTotal, fStock].forEach(el => { if (el) el.addEventListener('input', syncStockErr); });
+  syncStockSwitches();
   /* §4.2 F11 內容檔案：數位下載檔上傳格隨數位次分類切換（音樂／專輯／影片／會員卡／其他）*/
   const catDigi = document.getElementById('cp-cat-digi');
   const cfileTitle = document.getElementById('cp-cfile-title');
@@ -2593,7 +2680,7 @@
   const rowsHost = document.getElementById('cp-var-rows');
   rowsHost.addEventListener('input', e => {
     const cell = e.target.closest('[data-vk]');
-    if (cell) { (varData[cell.dataset.vk] = varData[cell.dataset.vk] || {})[cell.dataset.vf] = cell.value; refresh(); }
+    if (cell) { (varData[cell.dataset.vk] = varData[cell.dataset.vk] || {})[cell.dataset.vf] = cell.value; syncHeld(); refresh(); }
   });
   rowsHost.addEventListener('click', e => {
     const ex = e.target.closest('[data-vexclude]');

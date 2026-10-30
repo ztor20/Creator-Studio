@@ -156,6 +156,10 @@
       var br = bar.getBoundingClientRect();
       var pl = parseFloat(getComputedStyle(bar).paddingLeft) || 0;
       var w = Math.max(0, tabsLeft - (br.left + pl));
+      /* 2026-10-30（粉絲詳情）：頁面沒有左側分節導覽時，tabs 幾乎貼著內容左緣，量出來只有個位數，
+         身分槽會被擠到看不見名稱、頭像壓在第一個 tab 上。這種情況不對齊內容欄，改用身分槽的自然寬度
+         （拿掉變數＝CSS 的 var(--dock-id-w, auto) 退回 auto）。 */
+      if (w < 160) { bar.style.removeProperty('--dock-id-w'); return; }
       bar.style.setProperty('--dock-id-w', w + 'px');
     }
     function dock(tb) {

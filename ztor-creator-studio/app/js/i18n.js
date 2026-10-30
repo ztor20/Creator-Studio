@@ -142,7 +142,7 @@
     'fg.earn.engage': { en: 'Engagement', zh: '投入類' },
     'fg.earn.engage-v': { en: 'Interactions and referrals, capped per 90 days', zh: '互動與推薦，每 90 天有上限' },
     'fg.earn.platform': { en: 'Platform activities', zh: '全站活動' },
-    'fg.earn.platform-v': { en: 'Credited to the primary creator the fan picks on their first claim', zh: '計入粉絲首次領取時選定的主要應援對象' },
+    'fg.earn.platform-v': { en: 'Credited to the fan’s current primary creator — fans can switch anytime', zh: '計入粉絲當下選定的主要應援對象，粉絲可隨時換' },   // 2026-10-30 D495 第 5 項（舊：首次領取時選定）
     'fg.earn.fade': { en: 'Fading', zh: '衰減' },
     'fg.earn.fade-v': { en: 'Half value after 45 days', zh: '45 天後價值剩一半' },
     'fg.earn.recompute': { en: 'Points and tiers', zh: '入帳與升降級' },
@@ -2001,7 +2001,7 @@
     /* 2026-07-28（L 裁示）：warning 由欄中段 info-banner 改為卡底 actionable toast，
        拆成 title / meta / cta 三鍵（文案與 fans-crm #fans-risk-alert 同源）。 */
     'dash.fans.risk.title':    { en: '5 Super Fans at risk of dropping', zh: '5 位超級粉絲有流失風險' },
-    'dash.fans.risk.meta':     { en: '14+ days without a touchpoint',   zh: '已 14+ 天未互動' },
+    'dash.fans.risk.meta':     { en: 'Quiet 21/90d',                     zh: '沉默 21/90 天' },   // 2026-10-30 D493：沉默 N/M 天（分級已寫在標題）
     'dash.fans.risk.cta':      { en: 'Send a private update',           zh: '發送私訊更新' },
 
     'dash.audience.title':       { en: 'Fan trend',          zh: '粉絲趨勢' },
@@ -2721,7 +2721,7 @@
     'store-settings.codes.scope.kind.type': { en: 'Item type', zh: '品項類型' },
     /* 儲存（D299）：格式、重複（不分大小寫）、範圍空的三種擋下＋成功提示。 */
     'store-settings.codes.err.format': { en: 'Use 8–20 letters or digits.', zh: '請用 8–20 個英數字。' },
-    'store-settings.codes.err.taken': { en: 'That code is already in use — letter case doesn’t make it different.', zh: '這組碼已經有了；大小寫不同也算同一組。' },
+    'store-settings.codes.err.taken': { en: 'That code is already in use somewhere on ztor — letter case doesn’t make it different.', zh: '這組碼已經有人用了（全平台不重複，含其他創作者與平台優惠碼）；大小寫不同也算同一組。' },
     'store-settings.codes.err.scope': { en: 'Pick at least one item.', zh: '至少勾一件。' },
     'store-settings.codes.toast.saved': { en: 'Code saved', zh: '已儲存優惠碼' },
     /* ── F8.2 使用次數（Usage limits，D272）：以「件」計，拆成三個各自獨立的條件 ─────── */
@@ -4309,6 +4309,9 @@
     'events.r.lrh-studio-live.meta':                   { en: 'Virtual Event', zh: '線上活動' },
     'events.r.lrh-studio-live.datetime':               { en: 'Dec 23, 2026 · 9:00 PM', zh: '2026/12/23 · 晚上 9:00' },
     'events.r.lrh-studio-live.venue':                  { en: 'Online', zh: '線上' },
+    'events.r.test-event-relist.title':                { en: 'Test: event bundle with an unlisted item', zh: '測試：活動組合包成員已下架' },
+    'events.r.test-event-relist.meta':                 { en: 'Concert · relist-flow test data', zh: '演唱會 · 重新上架流程測試資料' },
+    'events.r.test-event-relist.venue':                { en: 'Taipei Music Center', zh: '台北流行音樂中心' },
     'events.r.fubon-postgame-taipei.title':            { en: 'Fubon Guardians post-game show — Taipei Dome', zh: '富邦悍將賽後演唱會 — 臺北大巨蛋' },
     'events.r.fubon-postgame-taipei.meta':             { en: 'Concert', zh: '演唱會' },
     'events.r.fubon-postgame-taipei.datetime':         { en: 'Today · 7:30 PM', zh: '今天 · 晚上 7:30' },
@@ -4641,8 +4644,10 @@
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
     'fans.kpi.active-meta':  { en: 'of 1,840 total',                        zh: '共 1,840 位' },
     'fans.kpi.risk':         { en: 'At risk',                               zh: '流失風險' },
-    'fans.kpi.risk-meta':    { en: 'Super Fans · 14d+',                      zh: '超級粉絲 · 14 天+' },   // 2026-10-27 縮短（原「5 位超級粉絲 >14 天未互動」：數字已在卡上，不重複）
-    'fans.kpi.risk-none':    { en: 'None',                                  zh: '無' },   // 2026-10-27 零風險狀態
+    'fans.kpi.risk-meta':    { en: 'Super Fans · quiet 21/90d',              zh: '超級粉絲 · 沉默 21/90 天' },   // 2026-10-30 D493：分級 · 沉默 N/M 天（N＝該級最近有行為那位距今天數，M＝掉級天數）   // 2026-10-27 縮短（原「5 位超級粉絲 >14 天未互動」：數字已在卡上，不重複）
+    'fans.kpi.risk-none':    { en: 'None',                                  zh: '無' },
+    'fans.risk.short':       { en: '{tier} · quiet {d}/{m}d', zh: '{tier} · 沉默 {d}/{m} 天' },   // 2026-10-30 小字：分級最高的那一級
+    'fans.risk.line':        { en: '{n} {tier} · quiet {d}/{m}d', zh: '{n} 位{tier} · 沉默 {d}/{m} 天' },   // 2026-10-30 hover 清單每一級一行   // 2026-10-27 零風險狀態
     'fans.kpi.revenue':      { en: 'Revenue (active)',                      zh: '活躍粉絲收入' },
     'fans.kpi.revenue-meta': { en: 'Trailing 90 days',                      zh: '近 90 天' },
     'fans.kpi.rep':          { en: 'Avg loyalty points',                    zh: '平均忠誠點數' },
@@ -4663,7 +4668,7 @@
     'fans.tier.devoted-cnt': { en: '257 fans',                              zh: '257 位' },
     'fans.tier.fan-cnt':     { en: '898 fans',                              zh: '898 位' },
     'fans.alert.title':      { en: '5 fans at risk of dropping',            zh: '5 位粉絲有流失風險' },
-    'fans.alert.meta':       { en: 'Super Fans · 14+ days without a touchpoint', zh: '超級粉絲 · 已 14+ 天未互動' },
+    'fans.alert.meta':       { en: 'Super Fans · quiet 21/90d', zh: '超級粉絲 · 沉默 21/90 天' },   // 2026-10-30 D493：同 KPI 卡小字
     'fans.alert.cta':        { en: 'Message them',                          zh: '發訊息' },
     'fans.tab.leaderboard':  { en: 'Leaderboard',                           zh: '排行榜' },
     'fans.tab.hof':          { en: 'Hall of fame',                          zh: '名人堂' },
@@ -6094,9 +6099,23 @@
     'cp.var.single-note':   { en: 'One price for this product — set it in Price below.', zh: '此商品僅單一價格——在下方「價格」區設定。' },
     /* §4.1③ 拆塊後的區塊標題（價格／庫存／逐規格表）*/
     'cp.price.title':       { en: 'Pricing',                          zh: '定價' },
+    'cp.stock.title.set':   { en: 'Set stock quantity',               zh: '設定庫存量' },   // 2026-10-30 實體庫存設定（lab-stock-settings 定案）
+    'cp.stock.title.cfg':   { en: 'Stock settings',                   zh: '庫存設定' },
+    'cp.unl.title':         { en: 'Allow pre-orders after sell-out',  zh: '開啟不限量' },
+    'cp.unl.sub':           { en: 'After stock runs out, switch to pre-order so fans can keep ordering.', zh: '庫存賣完後，可轉為預購，前台可持續以預購下單。' },
+    'cp.tag.title':         { en: 'Limited-edition tag',              zh: '開啟限量標籤' },
+    'cp.tag.sub':           { en: 'Mark this item as limited on the storefront.', zh: '在前台標記為限量商品。' },
+    'cp.lock.title':        { en: 'Hold back stock',                  zh: '鎖定庫存' },
+    'cp.lock.sub':          { en: 'Sell only part of your stock for now; adjust any time.', zh: '暫時只開放部分庫存販售，可隨時調整。' },
+    'cp.lock.qty':          { en: 'Stock on sale',                    zh: '鎖定庫存量' },
+    'cp.lock.over-err':     { en: "Stock on sale can't exceed the stock quantity.", zh: '鎖定庫存量不能超過庫存量。' },
+    'cp.lock.readout':      { en: 'On sale {a} · held back {b}',      zh: '可售 {a} 件・留倉 {b} 件' },
+    'cp.var.col.held':      { en: 'Held back',                        zh: '留倉' },
+    'cp.var.col.lock':      { en: 'On sale',                          zh: '鎖定庫存量' },
+    'cp.qc.lock':           { en: 'Stock on sale ≤ stock quantity',   zh: '鎖定庫存量不超過庫存量' },
     'cp.stock.title':       { en: 'Stock',                            zh: '庫存' },
     'cp.var.table.title':   { en: 'Pricing per variation',            zh: '各選項組合價格與庫存' },
-    'cp.var.table.sub':     { en: 'Each variation has its own price and stock — Limited edition adds a cap column.', zh: '每個選項組合各自定價與庫存；選限量會多一欄上限。' },
+    'cp.var.table.sub':     { en: 'Each variation has its own price and stock — holding back stock adds two columns.', zh: '每個選項各有自己的價格與庫存——開啟鎖定庫存會多出兩欄。' },
     'cp.var.empty':         { en: 'Add an option above to generate the variation table.', zh: '先在上方新增至少一個選項，才會生成選項組合表。' },
     /* §4.1⑤ / §4.2 庫存版本 Edition (D064) */
     'cp.edition':           { en: 'Edition',                          zh: '庫存版本' },
@@ -6280,7 +6299,8 @@
     'cpk.m.cancel':         { en: 'Cancel',                         zh: '取消' },
     'cpk.m.save':           { en: 'Create code',                    zh: '建立' },
     'cpk.err.format':       { en: 'Use 8–20 letters or digits.',    zh: '代碼需為 8–20 個英數字。' },
-    'cpk.err.taken':        { en: 'That code already exists.',      zh: '這組代碼已經存在。' },
+    'cpk.err.taken':        { en: 'That code is already in use.',      zh: '這組代碼已經有人用了。' },
+    'pprom.code.err.taken': { en: 'That code is already in use — codes are unique across ztor, letter case doesn’t make it different.', zh: '這組碼已經有人用了（全平台不重複，含創作者優惠碼）；大小寫不同也算同一組。' },
     'cpk.err.pct':          { en: 'Discount must be 1–100%.',       zh: '折扣需為 1–100%。' },
     'cpk.err.range':        { en: 'The end date must be after the start date.', zh: '結束日需晚於開始日。' },
     'cpk.toast.created':    { en: 'Code created and selected',      zh: '已建立並選入' },
@@ -8682,7 +8702,7 @@
     /* Fans CRM — tabs / Pareto / list ops / Recovered / load-more (5.1.7 F1–F6) */
     'fans.btn.explain':      { en: 'Learn how fans work', zh: '認識粉絲系統' },   // 2026-10-27 使用者裁示：粉絲模組各頁統一改名（原「系統說明」）並另起一行
     'fans.kpi.active.tip':     { en: 'Fans active in the trailing 90 days.', zh: '近 90 天內活躍的粉絲。' },
-    'fans.kpi.risk.tip':       { en: 'Valuable fans whose recent engagement dropped sharply (a flag, not a score).', zh: '近期互動驟降的有價值粉絲（布林旗標，非機率分數）。' },
+    'fans.kpi.risk.tip':       { en: 'Fans who used to be active and were worth something to you (spent money, or in the top 3 tiers), but whose activity in the last 30 days fell by 60% or more.', zh: '以前很活躍、對你有價值（有消費過，或屬於前三個分級），但最近 30 天的互動比之前少了六成以上的粉絲。' },   // 2026-10-30 使用者：「看不懂」，改成白話並對上流失風險的判定條件
     'fans.kpi.rep.tip': { en: 'Loyalty points are a fan’s overall value score, credited the moment they earn them.', zh: '忠誠點數是粉絲的整體價值分，即時入帳。' },
     'fans.status.recovered':   { en: 'Recovered', zh: '已挽回' },
     'fans.row.message':        { en: 'Message', zh: '發訊息' },
@@ -8893,6 +8913,7 @@
     'msg.to.risk':        { en: 'At risk (5)', zh: '流失風險 (5)' },
     'msg.to.recovered':   { en: 'Recovered (18)', zh: '已挽回 (18)' },
     'msg.to.singlenote':  { en: 'Messaging one fan — pick a segment above to broadcast.', zh: '正在傳訊給單一粉絲——選上方分群即可群發。' },
+    'msg.to.filternote':  { en: 'Your current search or tag filter isn’t carried over.', zh: '目前的搜尋或標籤篩選不會帶入。' },   // 2026-10-30 D495
     'msg.subject':        { en: 'Subject', zh: '主旨' },
     'msg.subject.ph':     { en: 'e.g., Something special is coming…', zh: '例如：有個特別的東西要來了…' },
     'msg.body':           { en: 'Message', zh: '內文' },
@@ -11276,7 +11297,8 @@
     'fan-detail.btn.message': { en: 'Message', zh: '傳訊息' },
     'fan-detail.btn.tier-settings': { en: 'Tier settings', zh: '分級設定' },
     'fan-detail.kpi.points': { en: 'Loyalty points', zh: '忠誠點數' },
-    'fan-detail.kpi.points-delta': { en: '+38 since the last weekly recompute', zh: '比上次每週重算 +38' },
+    'fan-detail.kpi.points-delta': { en: '+38 in the last 7 days', zh: '近 7 天入帳 +38' },   // 2026-10-30 D495 第 2 項（舊：比上次每週重算 +38）
+    'fan-detail.pts.adjust-title': { en: 'Points adjustment', zh: '點數調整' },   // 2026-10-30 D495 第 3 項
     'fan-detail.kpi.spent': { en: 'Spent', zh: '消費額' },
     'fan-detail.kpi.spent-meta': { en: 'Lifetime · 18 orders', zh: '累計 · 18 筆訂單' },
     'fan-detail.kpi.progress': { en: 'Next tier progress', zh: '下一級進度' },
@@ -11468,6 +11490,16 @@
     'fan-detail.adjust.done': { en: 'Points adjusted', zh: '已調整點數' },
     'fan-detail.adjust.log': { en: 'Point adjustments', zh: '點數調整紀錄' },
     'fan-detail.adjust.log-sub': { en: 'Each adjustment is one ledger entry', zh: '每次調整都是帳本的一筆分錄' },
+    'fan-detail.log.close': { en: 'Close', zh: '關閉' },
+    'fan-detail.log.empty': { en: 'No adjustments yet.', zh: '還沒有調整紀錄。' },
+    'fan-detail.log.btn': { en: 'History', zh: '調整紀錄' },
+    'fan-detail.log.col.what': { en: 'Adjustment', zh: '調整內容' },
+    'fan-detail.log.col.before': { en: 'Before', zh: '修改前' },
+    'fan-detail.log.col.after': { en: 'After', zh: '修改後' },
+    'fan-detail.log.col.delta': { en: 'Change', zh: '修改額' },
+    'fan-detail.log.kind.add': { en: 'Added points', zh: '新增點數' },
+    'fan-detail.log.kind.edit': { en: 'Edited “{t}”', zh: '修改「{t}」' },
+    'fan-detail.log.kind.delete': { en: 'Deleted “{t}”', zh: '刪除「{t}」' },
     'fan-detail.adjust.demo-reason': { en: 'Points missed when the Sep 28 check-in scan failed', zh: '補發 9/28 活動報到掃碼失敗漏給的點數' },
 
     /* Tier settings & benefits (5.1.7 F8) */

@@ -555,7 +555,7 @@
      不看 showFuture）。與 devtools.js FULL_ROUTES 裡值寫成功能 ID 的那幾頁必須一致。
      粉絲名冊／粉絲詳情屬 🟣 release2.4：release2.4 看得到粉絲總覽，release2.3 照舊整個 Fans 群組收起。 */
   /* 2026-10-23：媒體庫（S120 🟣，需求網址 MVP 範圍）同樣依功能放行。 */
-  const TIER_ROUTES = { "fans-crm.html": "S115", "fan-detail.html": "S117", "media-vault.html": "S120" };
+  const TIER_ROUTES = { "fans-crm.html": "S115", "fan-detail.html": "S117", "media-vault.html": "S120", "fans-guide.html": "S130" };
   function fullVersion() {
     const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
       || document.documentElement.getAttribute("data-version") || "full";

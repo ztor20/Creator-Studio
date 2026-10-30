@@ -165,6 +165,8 @@
     S120: 'release2.4',   // 2026-10-23 媒體庫頁本身（頁級 data-page-feat、兩份 FULL_ROUTES 依功能放行）
     S121: 'tbd', S122: 'tbd', S123: 'tbd', S124: 'tbd', S125: 'tbd',   // 2026-10-23 release2.4 不放的媒體庫功能：大彩蛋／其餘六種行動任務／鑰匙／待補規格的數字／排程（只在最終版）
     S115: 'release2.4', S116: 'release2.4', S117: 'release2.4',   // 2026-10-23 release2.4 粉絲管理 P0（粉絲名冊／分級設定唯讀／粉絲詳情）
+    S131: 'tbd',   // 2026-10-30 使用者裁示不進 release2.4：流失風險卡的小字（分級 · 沉默 N/M 天）與 hover 完整清單，只在最終版
+    S130: 'release2.4',   // 2026-10-30 使用者裁示加進：粉絲系統說明頁（fans-guide.html）
     S129: 'release2.4',   // 2026-10-30 使用者裁示加進：粉絲名冊的國家、升級進度、狀態三欄（自 S118 拆出）
     S128: 'release2.4',   // 2026-10-30 使用者裁示加進：粉絲詳情的下一級進度、最近活躍兩張 KPI（自 S118 拆出）
     S127: 'release2.4',   // 2026-10-30 使用者裁示加進：粉絲詳情的點數明細（自 S118 拆出）
@@ -208,7 +210,7 @@
        導致低版本下導覽藏得掉、頁內連結卻還點得進去（版本 gate 漏水）。 */
     /* 2026-10-23：媒體庫改依 S120（🟣 release2.4）放行，sidebar.js 的 TIER_ROUTES 同步。 */
     'tier-benefits.html': 1, 'media-vault.html': 'S120', 'brand-campaigns.html': 1,
-    'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1,
+    'brand-campaign-detail.html': 1, 'fans-guide.html': 'S130',   /* 2026-10-30 改依 S130（🟣）放行 */ 'manage-ip.html': 1,
     /* 2026-07-31 D158：受眾分析新頁（Fans 群組第 6 個目的地）。 */
     'fan-analytics.html': 1,
     /* 2026-08-09 D181：粉絲分析拆兩頁，新頁只用 ztor 拿得到的資料。 */

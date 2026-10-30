@@ -14,7 +14,7 @@
              .variant-cell--variant（flex 橫排：.variant-thumb(.--own)(.--ro) ＋ .variant-cell__text）
                縮圖併在規格名這一格、不另開欄（2026-09-12 使用者裁決，STYLE-DECISIONS Q117）；
                --own＝這個組合自己的圖（實線）、--ro＝唯讀縮圖（不可點、無 hover）
-             .variant-cell--total / .variant-row__remove
+             .variant-cell--total / .variant-cell--held / .variant-cell--lockqty（--lock 才顯示）/ .variant-row__remove
    Editable cells reuse .input; value chips reuse .chip--removable.
    --limited adds the Total Quantity column (Limited Edition, §4.1⑤).
    ============================================================ */
@@ -306,6 +306,15 @@
 .variant-table--limited .variant-table__row {
   grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
 }
+/* --lock（2026-10-30，建立商品「鎖定庫存」）：在庫右邊多兩欄——「留倉」（唯讀讀數＝庫存量 − 鎖定庫存量）與「鎖定庫存量」（可改的 .input，
+   即目前開放販售的件數）。取代建立商品原本「限量商品」的「上限」欄；兩欄平常不顯示，表格掛 --lock 才出現。 */
+.variant-table--lock .variant-table__head,
+.variant-table--lock .variant-table__row {
+  grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 72px 96px 116px minmax(92px, 1fr) 34px;
+}
+.variant-cell--held, .variant-cell--lockqty { display: none; }
+.variant-table--lock .variant-cell--held, .variant-table--lock .variant-cell--lockqty { display: block; }
+.variant-cell--held { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
 /* 2026-09-12 退場：表格層的 `--img` 修飾類（2026-08-10 建，列首獨立 34px 圖片欄）與它疊在 --limited／--preview／
    --stock／--fluid 上的欄軌。使用者看商品細節庫存表「Image Variant」表頭擠在一起、看起來沒對齊，裁決縮圖併進
    Variant 格（STYLE-DECISIONS Q117）；欄軌回到沒有縮圖欄的原狀，縮圖由 .variant-cell--variant 自己排。 */

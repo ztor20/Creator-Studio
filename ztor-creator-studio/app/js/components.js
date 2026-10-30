@@ -1865,7 +1865,7 @@
         risk: {
           href: 'fans-crm.html?msg=risk',
           titleKey: 'dash.fans.risk.title', title: '5 Super Fans at risk of dropping',
-          metaKey: 'dash.fans.risk.meta',   meta: '14+ days without a touchpoint',
+          metaKey: 'dash.fans.risk.meta',   meta: 'Quiet 21/90d',
           ctaKey: 'dash.fans.risk.cta',     cta: 'Send a private update'
         },
         linkKey: 'dash.fans.link', link: 'Open Fans', linkHref: 'fans-crm.html'
