@@ -450,7 +450,7 @@
     var tools = '<div class="lab-toolbar"><nav class="filter-tabs" role="tablist" aria-label="任務">' + tf.map(function (f) {
       var c = v.items.filter(function (it) { return f[0] === "all" || (f[0] === "none" ? !it.task : it.task && it.task.type === f[0]); }).length;
       return '<button class="filter-tabs__item' + (state.taskFilter === f[0] ? " filter-tabs__item--active" : "") + '" type="button" data-act="task-filter" data-v="' + f[0] + '">' + f[1] + ' <span class="filter-tabs__count">' + c + "</span></button>";
-    }).join("") + "</nav>" + (state.lens ? '<span class="lab-note">' + ico("eye", "ztor-icon--xs") + " 右邊欄位顯示「" + esc(lensName()) + "」的狀態</span>" : '<span class="lab-note">右邊數字：目前看得到 · 累計解開過</span>') + "</div>";
+    }).join("") + "</nav>" + (state.lens ? '<span class="lab-note">' + ico("eye", "ztor-icon--xs") + " 卡片顯示「" + esc(lensName()) + "」的狀態</span>" : '<span class="lab-note">人數：目前看得到 · 累計解開過</span>') + "</div>";
 
     var groups = GROUPS.map(function (g) {
       var all = v.items.filter(function (it) { return it.kind === g.k; });
@@ -458,7 +458,7 @@
       var head2 = '<div class="lab-group__head">' + ico(kindIcon(g.k), "ztor-icon--sm") + g.n + ' <span class="lab-note">' + all.length + "</span></div>";
       if (!all.length) return "";   /* 2026-10-30 使用者：只上傳一種，就只列那一種 */
       if (!list.length) return "";
-      return '<div class="lab-group">' + head2 + list.map(function (it) {
+      return '<div class="lab-group">' + head2 + '<div class="lab-mgrid' + (nSel ? " lab-mgrid--selecting" : "") + '">' + list.map(function (it) {
         var sel = !!state.sel[it.id];
         var now = itemVisible(v, it, R), ever = itemEver(v, it, R);
         var low = it.task && it.task.type === "tier" && it.task.tier > floor;
@@ -472,20 +472,22 @@
             : s.s === "open" ? '<span class="badge badge--success">已解開</span>'
             : s.s === "need" ? '<span class="badge badge--warning">' + esc(s.t) + "</span>"
             : '<span class="badge badge--neutral">未解開 · ' + esc(s.t) + "</span>";
-          right = '<div class="lab-row__nums">' + right + "</div>";
+          right = '<div class="lab-mcard__nums">' + right + "</div>";
         } else {
           var noTarget = it.task && it.task.k === "shop" && !it.task.target;
-          right = '<div class="lab-row__nums">' + (noTarget ? '<span>還沒選指定商品</span>' : pending ? '<span title="這種任務目前沒有逐人資料，判定方式待確認">人數無法計算</span>' : "<b class='lab-num'>" + fmt(now) + "</b>") + ' · <span class="lab-num">' + fmt(ever) + "</span>" + (isLive(v) ? "" : "<br><span>上架後</span>") + "</div>";
+          right = '<div class="lab-mcard__nums">' + (noTarget ? '<span>還沒選指定商品</span>' : pending ? '<span title="這種任務目前沒有逐人資料，判定方式待確認">人數無法計算</span>' : "<b class='lab-num'>" + fmt(now) + "</b>") + ' · <span class="lab-num">' + fmt(ever) + "</span>" + (isLive(v) ? "" : " <span>（上架後）</span>") + "</div>";
         }
-        return '<div class="lab-row' + (sel ? " lab-row--sel" : "") + '" data-act="open-item" data-v="' + it.id + '">' +
-          '<label class="zcheck__control" data-stop><input class="zcheck__input" type="checkbox" data-act="sel" data-v="' + it.id + '"' + (sel ? " checked" : "") + ' aria-label="選取 ' + esc(it.name) + '"><span class="zcheck__box"></span></label>' +
-          '<span class="lab-thumb" style="' + (it.img ? "background-image:url(" + it.img + ")" : "") + '">' + (it.img ? "" : ico(it.kind === "audio" ? "play" : kindIcon(it.kind))) + "</span>" +
-          '<div style="min-width:0"><div class="lab-row__name">' + esc(it.name) + (it.grand ? ' <span class="badge badge--orange">' + ico("star", "ztor-icon--xs") + " 大彩蛋</span>" : "") + "</div>" +
-          '<div class="lab-row__meta"><span>' + it.size + (it.dur ? " · " + it.dur : "") + " · " + it.added + "</span>" +
-          '<button class="lab-taskpill' + (low ? " lab-taskpill--warn" : "") + '" type="button" data-act="open-item" data-v="' + it.id + '" title="' + (low ? "低於目前進庫方法的分級下限（處理方式待產品確認）" : "改任務") + '">' + ico(it.task ? (it.task.type === "tier" ? "award" : "check-circle") : "circle", "ztor-icon--xs") + esc(taskLabel(it.task)) + (pending ? " · 判定方式待確認" : "") + (low ? " · 低於下限" : "") + "</button></div></div>" +
-          right +
-          '<button class="btn btn--icon btn--ghost btn--sm" type="button" data-act="open-item" data-v="' + it.id + '" aria-label="設定">' + ico("chevron-right") + "</button></div>";
-      }).join("") + "</div>";
+        /* 卡片橫排（2026-10-30 使用者：「每件內容用卡片橫的列出」）：上＝縮圖（勾選框、大彩蛋疊在角落），下＝名稱、檔案資訊、任務、人數 */
+        return '<div class="lab-mcard' + (sel ? " lab-mcard--sel" : "") + '" data-act="open-item" data-v="' + it.id + '">' +
+          '<div class="lab-mcard__thumb" style="' + (it.img ? "background-image:url(" + it.img + ")" : "") + '">' + (it.img ? "" : ico(it.kind === "audio" ? "music" : kindIcon(it.kind), "ztor-icon--lg")) +
+          (it.dur ? '<span class="lab-mcard__dur">' + (it.kind === "audio" ? "" : ico("play", "ztor-icon--xs") + " ") + it.dur + "</span>" : "") +
+          '<label class="zcheck__control lab-mcard__check" data-stop><input class="zcheck__input" type="checkbox" data-act="sel" data-v="' + it.id + '"' + (sel ? " checked" : "") + ' aria-label="選取 ' + esc(it.name) + '"><span class="zcheck__box"></span></label>' +
+          (it.grand ? '<span class="badge badge--orange lab-mcard__grand">' + ico("star", "ztor-icon--xs") + " 大彩蛋</span>" : "") + "</div>" +
+          '<div class="lab-mcard__body"><div class="lab-mcard__name">' + esc(it.name) + "</div>" +
+          '<div class="lab-mcard__meta">' + it.size + " · " + it.added + "</div>" +
+          '<button class="lab-taskpill' + (low ? " lab-taskpill--warn" : "") + '" type="button" data-act="open-item" data-v="' + it.id + '" title="' + (low ? "低於目前進庫方法的分級下限（處理方式待產品確認）" : "改任務") + '">' + ico(it.task ? (it.task.type === "tier" ? "award" : "check-circle") : "circle", "ztor-icon--xs") + '<span class="lab-taskpill__t">' + esc(taskLabel(it.task)) + (pending ? " · 判定方式待確認" : "") + (low ? " · 低於下限" : "") + "</span></button>" +
+          right + "</div></div>";
+      }).join("") + "</div></div>";
     }).join("");
     el.innerHTML = head + tools + bar + '<div style="display:grid;gap:var(--sp-4)">' + groups + "</div>" +
       '<div class="lab-drop" data-act="upload" data-drop style="padding:var(--sp-12)">' + ico("upload") + "<span>拖檔案到這裡繼續加</span></div>";
@@ -535,20 +537,11 @@
     if (lensOn && state.lens.type === "fan" && lr.can) note = '<span class="lab-note" style="color:var(--on-media-muted)">靠 ' + lr.how.join("、") + " 進來</span>";
     var ribbon = live ? "" : '<span class="badge badge--neutral lab-phone__ribbon">尚未開放 · 以下是上架後的樣子</span>';
 
-    /* 三個數字（整座庫房） */
-    var now = vaultNow(v, R.all);
-    var n1 = lensOn ? (state.lens.type === "tier" ? fmt(lr.n) + '<span class="lab-note"> / ' + fmt(lr.of) + "</span>" : (lr.can ? "進得來" : "進不來")) : fmt(R.all.size);
-    var nums = '<div class="lab-nums">' +
-      '<div class="lab-nums__i"><div class="lab-nums__v lab-num">' + n1 + '</div><div class="lab-nums__l">' + (lensOn ? (state.lens.type === "tier" ? "這一級打得開" : "這位粉絲") : (live ? "現在打得開" : "上架後打得開")) + "</div></div>" +
-      '<div class="lab-nums__i"><div class="lab-nums__v lab-num">' + fmt(v.ever) + '</div><div class="lab-nums__l">累計解開過<br>只增不減</div></div>' +
-      '<div class="lab-nums__i"><div class="lab-nums__v lab-num">' + fmt(now) + '</div><div class="lab-nums__l">' + (live ? "目前看得到" : "上架後看得到") + '<br>至少一件</div></div></div>';
-
     (el || q("[data-side]")).innerHTML =
       '<div class="card lab-pv__lens"><div class="card__head" style="margin:0"><div class="card__title-group"><span class="card__title-icon">' + ico("eye") + '</span><h3 class="card__title">粉絲看到的樣子</h3></div>' +
       (lensOn ? '<button class="btn btn--ghost btn--sm" type="button" data-act="lens-reset">回到我的視角</button>' : "") + "</div>" + kinds + sub + "</div>" +
       '<div class="lab-phone"><div class="lab-phone__cover" style="' + (cover ? "background-image:url(" + cover + ")" : "") + '">' + ribbon + '</div><div class="lab-phone__body"><div class="lab-phone__name">' + esc(v.name) + "</div>" + note + body + "</div></div>" +
-      '<p class="lab-note">示意：粉絲端庫房頁的畫面還沒有規格（§8.31 第 15 項），這裡只用來確認誰看得到哪幾件。</p>' +
-      nums;
+      '<p class="lab-note">示意：粉絲端庫房頁的畫面還沒有規格（§8.31 第 15 項），這裡只用來確認誰看得到哪幾件。</p>';
   }
   function fanList(term) {
     term = (term || "").toLowerCase();
@@ -558,27 +551,24 @@
   }
 
   /* ── 成效 ─────────────────────────────────────── */
+  /* 成效放在最上面（2026-10-30 使用者：「成效可以放在上面」）：整座庫房的三個數字只住這裡。
+     內容摘要不放；鑰匙使用情況留在「誰開得了」的鑰匙卡（同日使用者指示）。
+     每件內容的兩個數字在各自的卡片上，不再另開一個分頁重列一次。 */
   function renderStats(v) {
-    var R = reach(v).all, max = Math.max(1, R.size);
-    var rows = v.items.map(function (it) {
-      var now = itemVisible(v, it, R), ever = itemEver(v, it, R);
-      return '<div class="lab-meter"><span class="lab-meter__name">' + esc(it.name) + '</span><span class="lab-meter__track"><span class="lab-meter__ever" style="width:' + Math.min(100, ever / max * 100) + '%"></span><span class="lab-meter__now" style="width:' + (now == null ? 0 : Math.min(100, now / max * 100)) + '%"></span></span><span class="lab-meter__v lab-num">' + (now == null ? "無法計算" : fmt(now)) + " · " + fmt(ever) + "</span></div>";
-    }).join("") || '<p class="lab-note">還沒有內容。</p>';
-    var keys = v.keys.length ? v.keys.map(function (k) { return '<div class="lab-meter" style="grid-template-columns:minmax(0,1fr) auto"><span>' + k.code + " · " + esc(k.label) + '</span><span class="lab-meter__v">' + (k.revoked ? "已撤銷" : k.claimed.length + " / " + k.uses + " 已領") + "</span></div>"; }).join("") : '<p class="lab-note">還沒有發鑰匙。</p>';
-    var byType = { none: 0, action: 0, tier: 0 };
-    v.items.forEach(function (it) { byType[it.task ? it.task.type : "none"] += 1; });
-    q('[data-pane="stats"]').innerHTML =
-      '<section class="card"><div class="card__head"><div class="card__title-group"><h3 class="card__title">每件內容</h3></div><div class="lab-legend"><span><i style="background:var(--primary)"></i>目前看得到</span><span><i style="background:color-mix(in srgb, var(--primary) 30%, transparent)"></i>累計解開過</span></div></div>' + rows +
-      '<p class="lab-note" style="margin-top:var(--sp-10)">兩個數字分開看、不相加：累計解開過只增不減；目前看得到會因掉級或庫房下架變少。' + (isLive(v) ? "" : "庫房還沒上架，目前看得到是上架後的試算。") + "</p></section>" +
-      '<div class="lab-two"><section class="card"><div class="card__head"><div class="card__title-group"><span class="card__title-icon">' + ico("key") + '</span><h3 class="card__title">鑰匙使用情況</h3></div></div>' + keys + "</section>" +
-      '<section class="card"><div class="card__head"><div class="card__title-group"><span class="card__title-icon">' + ico("layers") + '</span><h3 class="card__title">內容摘要</h3></div></div>' +
-      '<div class="lab-meter" style="grid-template-columns:1fr auto"><span>不設任務</span><span class="lab-num">' + byType.none + '</span></div><div class="lab-meter" style="grid-template-columns:1fr auto"><span>行動任務</span><span class="lab-num">' + byType.action + '</span></div><div class="lab-meter" style="grid-template-columns:1fr auto"><span>等級任務</span><span class="lab-num">' + byType.tier + "</span></div></section></div>" +
-      '<section class="card card--muted"><div class="card__head"><div class="card__title-group"><h3 class="card__title">觀看次數與熱門內容</h3></div><span class="badge badge--neutral">待補規格</span></div><p class="lab-note">粉絲實際看了幾次、哪一件最受歡迎，規格還沒定（§8.31 第 18 項）。解開人數不等於觀看次數。</p></section>';
+    var R = reach(v), lr = lensReach(v, R.all), live = isLive(v), lensOn = !!state.lens;
+    var now = vaultNow(v, R.all);
+    var n1 = lensOn ? (state.lens.type === "tier" ? fmt(lr.n) + '<span class="lab-stat__of"> / ' + fmt(lr.of) + "</span>" : (lr.can ? "進得來" : "進不來")) : fmt(R.all.size);
+    var tile = function (val, label, sub) { return '<div class="lab-stat"><div class="lab-stat__v lab-num">' + val + '</div><div class="lab-stat__l">' + label + "</div>" + (sub ? '<div class="lab-stat__s">' + sub + "</div>" : "") + "</div>"; };
+    q("[data-stats]").innerHTML =
+      '<div class="lab-stats__head"><h3 class="card__title">成效</h3>' + (live ? "" : '<span class="badge badge--neutral">尚未上架・以下是上架後的試算</span>') + "</div>" +
+      '<div class="lab-stats">' +
+      tile(n1, lensOn ? (state.lens.type === "tier" ? TIERS[state.lens.ti].n + "打得開" : esc(state.lens.d.name)) : (live ? "現在打得開" : "上架後打得開"), "共 " + fmt(TOTAL) + " 位粉絲") +
+      tile(fmt(v.ever), "累計解開過", "只增不減") +
+      tile(fmt(now), live ? "目前看得到" : "上架後看得到", "至少一件") +
+      "</div>" +
+      '<p class="lab-note">觀看次數與熱門內容還沒有規格（§8.31 第 18 項），解開人數不等於觀看次數。</p>';
   }
 
-  /* ── 新增庫房的三步精靈 ─────────────────────────
-     取名 → 放內容 → 誰開得了。第 1 步按「下一步」就建立草稿，之後隨時可以離開，庫房留在草稿。
-     發布只受「有沒有內容」控制；沒設權限只提醒（F10）。 */
   /* 版型照站上的建立流程（建立專案、建立活動）：全畫面 .wizard，頂列＝返回＋標題＋分段進度條＋已存草稿，
      中間 .wizard__body，底列 .wizard__bottom 放上一步／下一步；不放粉絲預覽（2026-10-30 使用者）。 */
   var WIZ_STEPS = [
@@ -655,10 +645,7 @@
     var v = vault();
     renderHead(v);
     renderCheck(v);
-    Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"), function (b) { b.classList.toggle("segmented__btn--active", b.getAttribute("data-mode") === state.mode); });
-    q('[data-pane="setup"]').hidden = state.mode !== "setup";
-    q('[data-pane="stats"]').hidden = state.mode !== "stats";
-    if (state.mode === "setup") { renderGate2(v); renderGate1(v); } else renderStats(v);
+    renderStats(v); renderGate2(v); renderGate1(v);
     renderSide(v);
     icons();
   }
@@ -904,9 +891,8 @@
       case "step":
         if (val === "publish") openPublish(false);
         else if (val === "relist") openPublish(true);
-        else { state.mode = "setup"; render(); var el = document.getElementById(val); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+        else { render(); var el = document.getElementById(val); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }
         break;
-      case "mode": break;
       case "add-route": v.routes.push([]); render(); openPop(document.querySelectorAll('[data-act="add-cond"]')[v.routes.length - 1], v.routes.length - 1); icons(); break;
       case "rm-route": v.routes.splice(+t.getAttribute("data-r"), 1); render(); toast("已移除一種進庫方法"); break;
       case "add-cond": e.stopPropagation(); openPop(t, +t.getAttribute("data-r")); icons(); break;
@@ -976,10 +962,6 @@
       case "modal-close": closeModal(); break;
       case "modal-ok": if (modalOk) modalOk(); break;
     }
-  });
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-mode]");
-    if (b && b.closest("[data-mode-seg]")) { state.mode = b.getAttribute("data-mode"); render(); }
   });
   document.addEventListener("input", function (e) {
     if (e.target.matches("[data-fan-q]")) { q("[data-fan-list]").innerHTML = fanList(e.target.value); }

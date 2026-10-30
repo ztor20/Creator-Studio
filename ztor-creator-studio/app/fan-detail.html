@@ -120,6 +120,11 @@
   .fd-cell--num { text-align: right; justify-self: end; }
   .fd-cell--pts { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--sp-8); color: var(--foreground); justify-self: end; font-size: var(--fs-14); }
   .fd-cell--status { justify-self: start; }
+  /* 加／減分：跟右側步進欄同一個 .zstep__btns，鏡像放到輸入框左緣；選中那顆亮起（同步進鈕 hover 樣式，＋−都白字） */
+  .fd-signed .fd-sign { left: 1px; right: auto; border-left: 0; border-right: 1px solid var(--border); border-radius: var(--radius) 0 0 var(--radius); }
+  .fd-signed .amount-field__input.input { padding-left: 40px; }
+  .fd-sign .zstep__btn.is-on { background: var(--ztu-glass-strong); color: var(--foreground); }
+  .fd-pts.is-neg { color: var(--status-error); }   /* 扣點的負數調整列 */
   .product-list__head .fd-cell--num, .product-list__head .fd-cell--pts { text-align: right; justify-self: end; color: inherit; font-size: inherit; }
 </style>
 </head>
@@ -875,7 +880,12 @@
       <div class="field">
         <span class="field__label" data-i18n="fan-detail.adjust.amount">Points</span>
         <div class="flex-row" style="margin-top:var(--sp-8)">
-          <span class="amount-field amount-field--suffix amount-field--readonly zstep" style="width:150px">
+          <!-- 2026-10-30 使用者裁示：新增點數可選正負（加點／扣點）。扣點記成一筆負數的調整列。 -->
+          <span class="amount-field amount-field--suffix amount-field--readonly zstep fd-signed" style="width:180px">
+            <span class="zstep__btns fd-sign" role="group" aria-label="Add or deduct" data-i18n-aria-label="fan-detail.adjust.dir" data-fd-adjust-dir>
+              <button class="zstep__btn is-on" type="button" data-dir="add" aria-pressed="true" aria-label="Add" data-i18n-aria-label="fan-detail.adjust.add"><i data-lucide="plus" class="ztor-icon"></i></button>
+              <button class="zstep__btn" type="button" data-dir="deduct" aria-pressed="false" aria-label="Deduct" data-i18n-aria-label="fan-detail.adjust.deduct"><i data-lucide="minus" class="ztor-icon"></i></button>
+            </span>
             <span class="amount-field__unit" data-i18n="fans.unit.points">pts</span>
             <input class="input amount-field__input zstep__input" type="number" inputmode="numeric" min="1" step="1" id="fd-adjust-amount" aria-label="Points" data-i18n-aria-label="fan-detail.adjust.amount">
             <span class="zstep__btns">
@@ -1070,11 +1080,19 @@
   const reasonEl = document.getElementById('fd-adjust-reason');
   const errAmount = document.getElementById('fd-adjust-err-amount');
   const errReason = document.getElementById('fd-adjust-err-reason');
-  /* 2026-10-27（UIA-305）：「調整點數」只負責新增一筆、只能加點；要減點改走明細每列的 ⋮（修改這筆的點數或刪除）。
-     舊值：彈窗內有加點／扣點切換。 */
+  /* 2026-10-30 使用者裁示：「新增點數」可選加點／扣點（2026-10-27 UIA-305 曾拿掉切換、只能加點；現又加回）。
+     扣點＝一筆負數的調整列（顯示「−N」）；改點數與刪除仍走每列的 ⋮。 */
+  const dirBox = document.querySelector('[data-fd-adjust-dir]');
+  let dir = 'add';
+  function setDir(d) {
+    dir = d;
+    if (dirBox) dirBox.querySelectorAll('[data-dir]').forEach(b => { const on = b.dataset.dir === d; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  }
+  if (dirBox) dirBox.addEventListener('click', e => { const b = e.target.closest('[data-dir]'); if (b) setDir(b.dataset.dir); });
   const ledgerHead = () => document.querySelector('[data-panel="points"] [data-fd-ledger]');
   const KEBAB = (document.querySelector('[data-panel="points"] .fd-ledger-row details') || { outerHTML: '' }).outerHTML.replace(' hidden', '');
-  function fmtPts(v) { return v > 0 ? '+' + v.toLocaleString('en-US') : '0'; }
+  function fmtPts(v) { return v > 0 ? '+' + v.toLocaleString('en-US') : v < 0 ? '−' + Math.abs(v).toLocaleString('en-US') : '0'; }
+  const markNeg = (el, v) => el.classList.toggle('is-neg', v < 0);
   function addLedgerRow(n, reason) {
     const host = ledgerHead(); if (!host) return;
     const row = document.createElement('div');
@@ -1089,14 +1107,14 @@
     const cells = row.querySelectorAll('.fd-cell');
     cells[0].setAttribute('data-i18n', 'fan-detail.pts.filter.adjust'); cells[0].textContent = T('fan-detail.pts.filter.adjust', 'Adjustments');
     cells[1].textContent = stamp;
-    row.querySelector('.fd-pts').textContent = fmtPts(n);
+    row.querySelector('.fd-pts').textContent = fmtPts(n); markNeg(row.querySelector('.fd-pts'), n);
     host.insertBefore(row, host.firstChild);
     if (window.ztorIcons) window.ztorIcons.applyIcons(row);
     document.dispatchEvent(new CustomEvent('fd:ledger-changed'));
   }
   function openAdjust() {
     if (!modal || !isAdmin()) return;
-    amountEl.value = ''; reasonEl.value = '';
+    setDir('add'); amountEl.value = ''; reasonEl.value = '';
     errAmount.hidden = true; errReason.hidden = true;
     modal.hidden = false; amountEl.focus();
   }
@@ -1112,11 +1130,11 @@
       errAmount.hidden = isFinite(n) && n > 0;
       errReason.hidden = !!reason;
       if (!errAmount.hidden || !errReason.hidden) return;
-      const delta = n;
+      const delta = dir === 'deduct' ? -n : n;
       const d = new Date(), pad = x => (x < 10 ? '0' : '') + x;
       adjustments.unshift({ delta, reason, when: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) });
       points = Math.max(0, points + delta);
-      addLedgerRow(n, reason);
+      addLedgerRow(delta, reason);
       renderLog();
       closeAdjust();
       if (window.ztorToast) window.ztorToast.show(T('fan-detail.adjust.done', 'Points adjusted'), { tone: 'success' });
@@ -1145,7 +1163,7 @@
       nameEl.textContent = t + ' · ' + fmtPts(old) + ' ' + T('fans.unit.points', 'pts');
       ledeEl.textContent = T(m === 'edit' ? 'fan-detail.entry.edit-lede' : 'fan-detail.entry.delete-lede');
       ptsField.hidden = m !== 'edit';
-      amtEl.value = old; reasonEl2.value = '';
+      amtEl.value = Math.abs(old); reasonEl2.value = '';
       amtErr.hidden = true; reasonErr.hidden = true;
       submit.textContent = T(m === 'edit' ? 'fan-detail.entry.submit-edit' : 'fan-detail.entry.submit-delete');
       submit.classList.toggle('btn--destructive', m === 'delete');
@@ -1174,11 +1192,11 @@
         const n = Number(raw);
         let msg = '';
         if (raw === '' || !Number.isInteger(n) || n < 0) msg = T('fan-detail.entry.err.range', 'Enter a whole number, 0 or more.');
-        else if (n === old) msg = T('fan-detail.entry.err.same', 'That is the current number.');
+        else if ((old < 0 ? -n : n) === old) msg = T('fan-detail.entry.err.same', 'That is the current number.');
         amtErr.textContent = msg; amtErr.hidden = !msg;
         reasonErr.hidden = !!reason;
         if (msg || !reason) return;
-        next = n;
+        next = old < 0 ? -n : n;   /* 負數的調整列保留負號，欄位只填大小 */
       } else {
         reasonErr.hidden = !!reason;
         if (!reason) return;
@@ -1188,7 +1206,7 @@
         adjustments.unshift({ kind: 'edit', delta: next - old, when: stamp, title, from: old, to: next, reason });
         points = Math.max(0, points + (next - old));
         cur.dataset.pts = String(next);
-        cur.querySelector('.fd-pts').textContent = fmtPts(next);
+        cur.querySelector('.fd-pts').textContent = fmtPts(next); markNeg(cur.querySelector('.fd-pts'), next);
         const cap = cur.querySelector('.badge:not([data-fd-edited])'); if (cap && next > 0) cap.remove();
         /* 被人工改過的列標「已人工修改」，和系統入帳的分得出來（UIA-306） */
         if (!cur.querySelector('[data-fd-edited]')) {
@@ -1400,7 +1418,7 @@
         const sum = Array.from(groups[0].querySelectorAll('.data-list__row[data-cat]'))
           .filter(r => !r.hasAttribute('data-admin-only') || adminOk)
           .reduce((s, r) => s + (parseInt(r.dataset.pts, 10) || 0), 0);
-        weekEl.textContent = '+' + sum.toLocaleString('en-US');
+        weekEl.textContent = fmtPts(sum);
       }
       if (empty) empty.hidden = rows.some(r => !r.hidden);
     }
