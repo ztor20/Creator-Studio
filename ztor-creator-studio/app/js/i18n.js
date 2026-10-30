@@ -2001,7 +2001,7 @@
     /* 2026-07-28（L 裁示）：warning 由欄中段 info-banner 改為卡底 actionable toast，
        拆成 title / meta / cta 三鍵（文案與 fans-crm #fans-risk-alert 同源）。 */
     'dash.fans.risk.title':    { en: '5 Super Fans at risk of dropping', zh: '5 位超級粉絲有流失風險' },
-    'dash.fans.risk.meta':     { en: '14+ days without a touchpoint',   zh: '已 14+ 天未互動' },
+    'dash.fans.risk.meta':     { en: 'Quiet 21/90d',                     zh: '沉默 21/90 天' },   // 2026-10-30 D493：沉默 N/M 天（分級已寫在標題）
     'dash.fans.risk.cta':      { en: 'Send a private update',           zh: '發送私訊更新' },
 
     'dash.audience.title':       { en: 'Fan trend',          zh: '粉絲趨勢' },
@@ -4641,7 +4641,7 @@
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
     'fans.kpi.active-meta':  { en: 'of 1,840 total',                        zh: '共 1,840 位' },
     'fans.kpi.risk':         { en: 'At risk',                               zh: '流失風險' },
-    'fans.kpi.risk-meta':    { en: 'Super Fans · 14d+',                      zh: '超級粉絲 · 14 天+' },   // 2026-10-27 縮短（原「5 位超級粉絲 >14 天未互動」：數字已在卡上，不重複）
+    'fans.kpi.risk-meta':    { en: 'Super Fans · quiet 21/90d',              zh: '超級粉絲 · 沉默 21/90 天' },   // 2026-10-30 D493：分級 · 沉默 N/M 天（N＝該級最近有行為那位距今天數，M＝掉級天數）   // 2026-10-27 縮短（原「5 位超級粉絲 >14 天未互動」：數字已在卡上，不重複）
     'fans.kpi.risk-none':    { en: 'None',                                  zh: '無' },   // 2026-10-27 零風險狀態
     'fans.kpi.revenue':      { en: 'Revenue (active)',                      zh: '活躍粉絲收入' },
     'fans.kpi.revenue-meta': { en: 'Trailing 90 days',                      zh: '近 90 天' },
@@ -4663,7 +4663,7 @@
     'fans.tier.devoted-cnt': { en: '257 fans',                              zh: '257 位' },
     'fans.tier.fan-cnt':     { en: '898 fans',                              zh: '898 位' },
     'fans.alert.title':      { en: '5 fans at risk of dropping',            zh: '5 位粉絲有流失風險' },
-    'fans.alert.meta':       { en: 'Super Fans · 14+ days without a touchpoint', zh: '超級粉絲 · 已 14+ 天未互動' },
+    'fans.alert.meta':       { en: 'Super Fans · quiet 21/90d', zh: '超級粉絲 · 沉默 21/90 天' },   // 2026-10-30 D493：同 KPI 卡小字
     'fans.alert.cta':        { en: 'Message them',                          zh: '發訊息' },
     'fans.tab.leaderboard':  { en: 'Leaderboard',                           zh: '排行榜' },
     'fans.tab.hof':          { en: 'Hall of fame',                          zh: '名人堂' },
