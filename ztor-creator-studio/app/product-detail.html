@@ -732,10 +732,47 @@
            實體與數位都有這個軸（§7.2），所以不掛 data-pd-cat。 -->
       <section class="form-section form-section--outlined" data-pd-edition-section>
         <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="cp.edition">Edition</h3>
-          <p class="form-section__sub" data-i18n="product-detail.edition.sub2">Fixed after creation — the cap can still change, but never below what's sold, locked or reserved.</p>
+          <h3 class="form-section__title" data-i18n="cp.edition" data-pd-cat="digital">Edition</h3>
+          <p class="form-section__sub" data-i18n="product-detail.edition.sub2" data-pd-cat="digital">Fixed after creation — the cap can still change, but never below what's sold, locked or reserved.</p>
+          <h3 class="form-section__title" data-i18n="cp.stock.title.cfg" data-pd-cat="physical">Stock settings</h3>
         </div>
-        <div class="field" style="margin-bottom:0">
+        <!-- 實體（2026-10-30，D496）：三個開關，與建立商品同一套：開啟不限量（賣完轉預購）與開啟限量標籤互斥；鎖定庫存＝鎖定庫存量（開放販售件數）。
+             檢視態唯讀（shared.css 的 [data-mode="view"] .switch），編輯態可切；取消還原、儲存寫回 product.preorder／limitedTag／lockQty。
+             多選項的逐組合鎖定庫存量尚未在本頁開放（UIA-321）。數位維持下方庫存版本與上限。 -->
+        <div class="control-group" data-pd-cat="physical" data-pd-stock-sw>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
+              <div class="control-row__sub" data-i18n="cp.unl.sub">After stock runs out, switch to pre-order so fans can keep ordering.</div>
+            </div>
+            <div class="switch" id="pd-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="lctl__rule lctl__rule--flush"></div>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.tag.title">Limited-edition tag</div>
+              <div class="control-row__sub" data-i18n="cp.tag.sub">Mark this item as limited on the storefront.</div>
+            </div>
+            <div class="switch" id="pd-sw-tag" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="lctl__rule lctl__rule--flush"></div>
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.lock.title">Hold back stock</div>
+              <div class="control-row__sub" data-i18n="cp.lock.sub">Sell only part of your stock for now; adjust any time.</div>
+            </div>
+            <div class="switch" id="pd-sw-lock" role="switch" aria-checked="false" tabindex="0"></div>
+          </div>
+          <div class="control-group__body" data-pd-lockbody hidden>
+            <div class="field" data-when-var="single" data-pd-cat="physical">
+              <div class="field__label field__label--split"><span data-i18n="cp.lock.qty">Stock on sale</span><span class="field__label-aside" data-pd-lock-readout></span></div>
+              <input class="input" placeholder="0" type="number" min="0" data-pd-lock-qty>
+              <p class="field__error" data-pd-lock-err hidden data-i18n="cp.lock.over-err">Stock on sale can't exceed the stock quantity.</p>
+            </div>
+            <p class="field__hint" style="margin:0" data-when-var="multiple" data-pd-cat="physical" hidden data-i18n="product-detail.lock.multi-hint">Per-variation stock on sale isn’t editable here yet.</p>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0" data-pd-cat="digital">
           <div class="segmented radio-cards segmented--locked" id="pd-edition" aria-disabled="true">
             <button class="segmented__btn segmented__btn--active" type="button" disabled data-view-safe data-pd-edition="unlimited">
               <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.unlimited">Unlimited edition</span><span class="radio-card__sub" data-i18n="cp.edition.unlimited-hint">Restock anytime — never auto sells out.</span></span>
@@ -745,7 +782,7 @@
             </button>
           </div>
         </div>
-        <div class="form-grid" style="margin-top:var(--sp-16);margin-bottom:0" data-when-var="single" data-when-edition="limited" hidden>
+        <div class="form-grid" style="margin-top:var(--sp-16);margin-bottom:0" data-when-var="single" data-when-edition="limited" data-pd-cat="digital" hidden>
           <div class="field" style="margin-bottom:0">
             <div class="field__label" data-i18n="cp.total">Total quantity</div>
             <input class="input" placeholder="0" type="number" min="0" data-pd-edit-cap>
@@ -753,7 +790,7 @@
             <p class="field__error" data-pd-cap-err hidden></p>
           </div>
         </div>
-        <div class="field__hint" style="margin-top:var(--sp-8)" data-when-var="multiple" data-when-edition="limited" hidden data-i18n="product-detail.edition.multi-hint">Caps are set per variation in the pricing table below.</div>
+        <div class="field__hint" style="margin-top:var(--sp-8)" data-when-var="multiple" data-when-edition="limited" data-pd-cat="digital" hidden data-i18n="product-detail.edition.multi-hint">Caps are set per variation in the pricing table below.</div>
       </section>
 
       <section class="form-section form-section--outlined" data-when-var="multiple" hidden>
@@ -1790,6 +1827,63 @@
       const L = window.ListingState;
       return isMultiVar() ? L.variantsFree(product.variants) : L.freeQty(product);
     }
+    /* ── 實體庫存三開關（D496，2026-10-30；同建立商品）──
+       草稿在這裡、儲存才寫回 product：preorder（開啟不限量＝賣完轉預購）、limitedTag（限量標籤）、lockQty（鎖定庫存量，單一規格）。
+       不限量與限量標籤互斥；檢視態由 shared.css 鎖住開關，這裡只在編輯態接受點擊。 */
+    window.pdStockSw = (function () {
+      const panel = document.querySelector('[data-panel="settings"]');
+      const editing = () => !!(panel && panel.getAttribute('data-mode') === 'edit');
+      const ids = { unl: 'pd-sw-unl', tag: 'pd-sw-tag', lock: 'pd-sw-lock' };
+      const lockInp = document.querySelector('[data-pd-lock-qty]');
+      let d = { unl: false, tag: false, lock: false, qty: '' };
+      function stockQty() { try { const n = poolTotalQty(); return isFinite(n) ? n : null; } catch (e) { return null; } }
+      function paint() {
+        Object.keys(ids).forEach(k => { const el = document.getElementById(ids[k]); if (!el) return; el.classList.toggle('switch--on', !!d[k]); el.setAttribute('aria-checked', d[k] ? 'true' : 'false'); });
+        const u = document.getElementById(ids.unl), t = document.getElementById(ids.tag);
+        if (u) u.setAttribute('aria-disabled', d.tag ? 'true' : 'false');
+        if (t) t.setAttribute('aria-disabled', d.unl ? 'true' : 'false');
+        const body = document.querySelector('[data-pd-lockbody]'); if (body) body.hidden = !d.lock;
+        if (lockInp && lockInp.value !== String(d.qty)) lockInp.value = d.qty;
+        const st = stockQty(), q = Number(d.qty) || 0;
+        const over = d.lock && st != null && String(d.qty).trim() !== '' && q > st;
+        const err = document.querySelector('[data-pd-lock-err]'); if (err) err.hidden = !over;
+        const ro = document.querySelector('[data-pd-lock-readout]');
+        if (ro) ro.textContent = (d.lock && st != null) ? T('cp.lock.readout', 'On sale {a} · held back {b}').replace('{a}', Math.min(q, st)).replace('{b}', Math.max(0, st - Math.min(q, st))) : '';
+      }
+      function fromProduct(p) { d = { unl: !!p.preorder, tag: !!p.limitedTag, lock: p.lockQty != null, qty: p.lockQty != null ? String(p.lockQty) : '' }; paint(); }
+      function toggle(k) {
+        if (!editing()) return;
+        const el = document.getElementById(ids[k]);
+        if (!el || el.getAttribute('aria-disabled') === 'true') return;
+        d[k] = !d[k];
+        if (k === 'lock' && !d.lock) d.qty = '';
+        paint();
+      }
+      Object.keys(ids).forEach(k => {
+        const el = document.getElementById(ids[k]); if (!el) return;
+        el.addEventListener('click', () => toggle(k));
+        el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(k); } });
+      });
+      if (lockInp) lockInp.addEventListener('input', () => { d.qty = lockInp.value; paint(); });
+      return {
+        seed: p => { if (p && p.cat !== 'digital') fromProduct(p); },
+        reset: () => { if (product && product.cat !== 'digital') fromProduct(product); },
+        valid: () => {
+          if (!product || product.cat === 'digital' || !d.lock || product.variant === 'multiple') return true;
+          const st = stockQty(), q = Number(d.qty);
+          const ok = String(d.qty).trim() !== '' && isFinite(q) && q >= 0 && (st == null || q <= st);
+          const err = document.querySelector('[data-pd-lock-err]'); if (err) err.hidden = ok;
+          return ok;
+        },
+        commit: () => {
+          if (!product || product.cat === 'digital') return;
+          product.preorder = d.unl; product.limitedTag = d.tag;
+          product.lockQty = d.lock && product.variant !== 'multiple' && String(d.qty).trim() !== '' ? Number(d.qty) : (d.lock ? (product.lockQty != null ? product.lockQty : null) : null);
+        },
+        text: () => [d.unl ? T('cp.unl.title', 'Allow pre-orders after sell-out') : '', d.tag ? T('cp.tag.title', 'Limited-edition tag') : '',
+          d.lock ? T('cp.lock.title', 'Hold back stock') + (String(d.qty).trim() !== '' ? ' ' + d.qty : '') : ''].filter(Boolean).join(' · ') || T('product-detail.setov.off', 'Off')
+      };
+    })();
     function poolTotalQty() {
       const L = window.ListingState;
       if (isMultiVar()) return L.variantsTotal(product.variants);
@@ -1906,6 +2000,12 @@
       state.cat = p.cat;
       state.var = p.variant || 'single';
       state.edition = p.edition || 'unlimited';
+      /* D496：實體不再有限量上限——舊資料的 limited 視為不限量，限量的稀缺改由限量標籤表達（舊限量資料預設開標籤） */
+      if (p.cat !== 'digital') {
+        if (state.edition === 'limited' && p.limitedTag == null) p.limitedTag = true;
+        state.edition = 'unlimited';
+      }
+      if (window.pdStockSw) window.pdStockSw.seed(p);
       /* D470：取貨方式勾選集合與取貨場次由商品資料決定（舊的單值資料已由 products-store 原樣轉入）；沒有資料＝物流配送 */
       (function () {
         const d = window.ztorDelivery ? window.ztorDelivery.of(p) : { ship: true, qr: false, session: null };
@@ -2406,6 +2506,7 @@
        沒有 ?id 或 id 查不到時它自己 lookup 會拿到 null，整張表就空了。這裡把最終採用的記錄
        廣播出去，由那支腳本接手重畫。 */
     window.pdProduct = product;
+    if (window.pdStockSw) window.pdStockSw.seed(product);   /* D496：沒走 applyProduct（無 ?id 的預設樣本）也要對齊三開關 */
     /* 取貨與退貨說明（2026-09-18 D291；2026-09-23 D319 補改資料驅動）：讀 product.deliveryReturns，
        與 collectReturnsField() 同一個 store 欄位；放在 window.pdProduct 確定之後，無 ?id 的預設樣本
        （zine 回退）與有 ?id 的一般路徑因此讀到同一份資料。沒有值就留空，不寫死示範文案。 */
@@ -3926,6 +4027,7 @@
       fillPriceFields(MODEL);
       refreshDraft();
       SNAP = snapshot();
+      if (window.pdStockSw) window.pdStockSw.reset();
       if (window.pdSpecs) window.pdSpecs.begin();   /* D466：記下進編輯時有幾筆詳細規格（只擋刪到一筆都不剩） */
       setMode(true);
     }
@@ -3935,6 +4037,7 @@
       if (window.pdCodes) window.pdCodes.reset();   /* D458：丟掉未儲存的選碼與暫存新碼 */
       if (window.pdConds) window.pdConds.reset();   /* D463：購買條件回到進編輯前 */
       if (window.pdSpecs) window.pdSpecs.reset();   /* D466：收起「至少保留一筆」提示 */
+      if (window.pdStockSw) window.pdStockSw.reset();   /* D496：三開關回到進編輯前 */
       fillPriceFields(MODEL);
       renderOptEditor(MODEL); renderEditCombos(MODEL);
       setMode(false);
@@ -3946,6 +4049,7 @@
       if (window.pdDelivery && !window.pdDelivery.valid()) return;   /* D470：取貨方式至少勾一種，沒勾就停在編輯態、就地紅字 */
       if (window.pdConds && window.pdConds.on()) { if (!window.pdConds.valid()) return; }   /* D463（最終版）：購買條件有紅字就停在編輯態；限購併在裡面 */
       else if (window.pdLimits && !window.pdLimits.valid()) return;   /* 限購開著卻沒填：停在編輯態（D398，§2.12；D427 起只剩一欄） */
+      if (window.pdStockSw && !window.pdStockSw.valid()) return;   /* D496：鎖定庫存量沒填或超過庫存量，停在編輯態 */
       if (!DRAFT) DRAFT = copyModel(MODEL);
       /* 上限低於已售（§2.10）就不收：錯誤句已在欄位／表格底下，停在編輯態讓使用者改 */
       if (!checkCaps(DRAFT)) return;
@@ -3972,6 +4076,7 @@
         var cKey = (window.pdProduct && window.pdProduct.id) || 'zine';
         window.pdCodes.commit(cKey, (window.pdProduct && window.pdProduct.name) || cKey);
       }
+      if (window.pdStockSw) window.pdStockSw.commit();   /* D496：三開關寫回商品記錄 */
       if (window.pdLimits && !(window.pdConds && window.pdConds.on())) window.pdLimits.commit();   /* 限購寫回商品記錄（D398；D427 起只剩每人總限購） */
       if (window.pdConds) window.pdConds.commit();   /* D463（最終版）：購買條件寫回 product.conds，限購條件同步寫回 product.limit */
       if (window.pdApparel) window.pdApparel.commit();   /* 服飾配件欄位寫回商品記錄（group／category／subCategory／audience／attrs／customSpecs） */
@@ -4121,9 +4226,10 @@
           : T('cp.var.single', 'Single variant') });
       rows.push({ g: 'pricing', go: 'pricing', key: 'cp.price.title', fb: 'Price',
         v: multi ? priceRange() : join([money(MODEL.price), MODEL.cost ? T('cp.cost', 'Cost') + ' ' + money(MODEL.cost) : '']) });
-      /* 庫存版本（2026-09-21，§2.10／§7.2）：不限量／限量；限量時單一規格帶上限數、多選項寫「逐選項設定」（各組合的上限在定價表） */
+      /* 實體（D496）列「庫存設定」＝開著的三開關；數位照舊列庫存版本。庫存版本（2026-09-21，§2.10／§7.2）：不限量／限量；限量時單一規格帶上限數、多選項寫「逐選項設定」（各組合的上限在定價表） */
       var limited = product && product.edition === 'limited';
-      rows.push({ g: 'ops', go: 'pricing', key: 'cp.edition', fb: 'Edition',
+      if (!digital && window.pdStockSw) rows.push({ g: 'ops', go: 'pricing', key: 'cp.stock.title.cfg', fb: 'Stock settings', v: window.pdStockSw.text() });
+      else rows.push({ g: 'ops', go: 'pricing', key: 'cp.edition', fb: 'Edition',
         v: !limited ? T('cp.edition.unlimited', 'Unlimited edition')
           : multi ? T('product-detail.setov.edition.per-variant', 'Limited · per variation')
           : digital ? T('product-detail.setov.edition.digital-left', 'Limited · {n} total · {r} left').replace('{n}', MODEL.cap || '—')

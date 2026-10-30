@@ -6103,6 +6103,7 @@
     'cb.unl.sub':           { en: 'After the bundle sells out, switch to pre-order so fans can keep ordering.', zh: '組合包賣完後，可轉為預購，前台可持續以預購下單。' },   // 2026-10-30 組合包庫存設定三開關
     'cb.tag.sub':           { en: 'Mark this bundle as limited on the storefront.', zh: '在前台標記為限量組合包。' },
     'cb.lock.sub':          { en: 'Lock some member stock for this bundle only; adjust any time.', zh: '暫時把部分成員庫存留給這個組合包，可隨時調整。' },
+    'product-detail.lock.multi-hint': { en: 'Per-variation stock on sale isn’t editable here yet.', zh: '多選項逐組合的鎖定庫存量，這一頁還不能改。' },   // D496 商品細節頁
     'cp.stock.title.set':   { en: 'Set stock quantity',               zh: '設定庫存量' },   // 2026-10-30 實體庫存設定（lab-stock-settings 定案）
     'cp.stock.title.cfg':   { en: 'Stock settings',                   zh: '庫存設定' },
     'cp.unl.title':         { en: 'Allow pre-orders after sell-out',  zh: '開啟不限量' },
