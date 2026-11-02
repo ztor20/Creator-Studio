@@ -213,6 +213,34 @@
                動態算＝今天（2026-08-19 修正，此前釘死 2026-07-27，見該檔檔頭規則）；下方矩陣區塊
                還有 5 筆同為 status:'live' 的活動，並非唯一一筆，只是這一筆帶 roster、報到台面在
                event-detail 的即時面板。 -->
+          <!-- 重新上架測試活動（2026-10-29，events-store test-event-relist）：已下架的售票中活動＋三個已下架的活動組合包，專門走活動重新上架彈窗與組合包上架確認。日期欄由下方 script 依資料現算（相對今天）。 -->
+          <div class="product-list__row" role="row" data-feat="S95" data-go="event-detail.html?id=test-event-relist" data-stage="on-sale" data-category="concert" data-search="測試 重新上架 活動組合包 成員已下架 test relist unlisted bundle nickthereal 周湯豪 nick chou">
+            <div class="rowdis__lead" role="cell"></div>
+            <div class="product-list__image-cell" role="cell">
+              <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
+            </div>
+            <div class="product-list__product" role="cell">
+              <div class="product-list__body">
+                <div class="product-list__title"><a class="card__link" href="event-detail.html?id=test-event-relist" data-i18n="events.r.test-event-relist.title">Test: event bundle with an unlisted item</a></div>
+                <div class="product-list__meta" data-i18n="events.r.test-event-relist.meta">Concert · relist-flow test data</div>
+              </div>
+            </div>
+            <div class="product-list__cell product-list__datetime" role="cell" data-test-event-date>—</div>
+            <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.r.test-event-relist.venue">Taipei Music Center</div>
+            <div class="product-list__cell product-list__tickets" role="cell"><div class="event-tickets">120 / 900<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:13%"></div></div></div></div>
+            <div class="product-list__cell product-list__revenue" role="cell">$128,000</div>
+            <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On sale</span></span></div>
+            <div class="product-list__actions" role="cell">
+              <details class="dropdown">
+                <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                <div class="dropdown__menu" role="menu">
+                  <a class="dropdown__item" role="menuitem" data-sheet-ignore href="event-detail.html?id=test-event-relist"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="events.view">Open event page</span></a>
+                  <a class="dropdown__item" role="menuitem" href="event-detail.html?id=test-event-relist"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                  <button class="dropdown__item" type="button" role="menuitem" data-feat="S76"><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                </div>
+              </details>
+            </div>
+          </div>
           <div class="product-list__row" role="row" data-feat="S95" data-go="event-detail.html?id=inner-circle-taipei" data-stage="live" data-category="fans-meet" data-search="inner circle fan meet 內圈 見面會 粉絲見面會 neo studio 台北 臺北 taipei 進行中 live nickthereal 周湯豪 nick chou">
             <div class="rowdis__lead" role="cell"></div>
             <div class="product-list__image-cell" role="cell">
@@ -2237,6 +2265,10 @@
     if (!store || !store.totalQty) return;
     const all = store.list();
     const fmt = n => Number(n || 0).toLocaleString('en-US');
+    /* 重新上架測試活動（test-event-relist）的日期欄：活動日是「今天＋75 天」，不能寫死，這裡依資料現算（年/月/日 · 時間） */
+    const testDateCell = list.querySelector('[data-test-event-date]');
+    const testEv = testDateCell && all.filter(e => e.id === 'test-event-relist')[0];
+    if (testEv) testDateCell.textContent = testEv.date.replace(/-0?/g, '/') + ' · ' + testEv.start;
     Array.from(list.querySelectorAll('.product-list__row')).forEach(r => {
       const cell = r.querySelector('.product-list__tickets .event-tickets');
       if (!cell) return;
