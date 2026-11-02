@@ -64,16 +64,21 @@
         { id: "acetate", cap: 21,  w: [1.0, 0.45, 0.12, 0.03], label: { en: "Kowloon After Dark vinyl · numbered 1/50", zh: "九龍夜行 原聲黑膠 1/50" } },
         { id: "album",   rate: [0.86, 0.58, 0.24, 0.07],       label: { en: "Kowloon After Dark OST — digital download",   zh: "九龍夜行 原聲帶 數位下載" } },
         { id: "hoodie",  rate: [0.54, 0.29, 0.09, 0.02],       label: { en: "Kowloon After Dark hoodie",                  zh: "九龍夜行 連帽外套" } },
-        { id: "movie",   rate: [0.71, 0.38, 0.14, 0.04],       label: { en: "Pirate Queen — Behind the Scenes",                  zh: "巡迴紀錄片" } }
+        { id: "movie",   rate: [0.71, 0.38, 0.14, 0.04],       label: { en: "Pirate Queen — Behind the Scenes",                  zh: "巡迴紀錄片" } },
+        /* 2026-11-02（D497）：「購買過」＝藝人電商既有商品與票券。票券的 cap＝events-store 該場的售出張數。
+           ticket:true 的選項不進商城消費任務的「指定商品」（那裡只收商品）。 */
+        { id: "t-signing-taipei", ticket: true, cap: 118, w: [0.9, 0.55, 0.14, 0.03], label: { en: "Ticket · Album signing — Taipei", zh: "票券 · 專輯簽名會 · 台北" } },
+        { id: "t-lrh-watchback",  ticket: true, cap: 38,  w: [0.8, 0.5, 0.2, 0.05],  label: { en: "Ticket · LOVE·RAGE·HOPE Taichung watch-back party", zh: "票券 · LOVE·RAGE·HOPE 台中回顧 Watch Party" } }
       ]
     },
     backed: {
       icon: "rocket",
       label: { en: "Backed", zh: "支持過" },
+      /* 2026-11-02（D497）：「支持過」沒有預設選項，條件本身＝曾支持過此藝人（取代原本逐一列出的三個眾籌專案）。
+         solo:true ＝ 這一類只有這一條，標籤與晶片只寫這一句、不再前綴類別名。 */
+      solo: true,
       opts: [
-        { id: "shamshuipo-moonlight", rate: [0.63, 0.31, 0.11, 0.03], label: { en: "Moonlight Over Sham Shui Po", zh: "深水埗的月光" } },
-        { id: "dragon-tiger-gate",    rate: [0.48, 0.22, 0.07, 0.02], label: { en: "Dragon Tiger Gate: Kowloon After Dark", zh: "龍虎門外傳：九龍夜行" } },
-        { id: "pirate-queen",         rate: [0.41, 0.19, 0.06, 0.01], label: { en: "Ching Shih: Pirate Queen",    zh: "海上霸姬鄭一嫂" } }
+        { id: "artist", rate: [0.82, 0.47, 0.18, 0.05], label: { en: "Has backed this artist", zh: "曾支持過此藝人" } }
       ]
     },
     attended: {
@@ -82,14 +87,18 @@
       opts: [
         { id: "inner-circle-taipei",  cap: 200, w: [1.0, 0.35, 0.05, 0.01], label: { en: "Inner Circle Fan Meet — Taipei", zh: "核心圈見面會 · 台北" } },
         { id: "album-signing-taipei", cap: 118, w: [0.9, 0.55, 0.14, 0.03], label: { en: "Album signing — Taipei",         zh: "專輯簽名會 · 台北" } },
-        { id: "realive-chongqing",    cap: 84,  w: [0.6, 0.44, 0.20, 0.06], label: { en: "REALIVE World Tour — Chongqing", zh: "REALIVE 世界巡迴 · 重慶" } }
+        { id: "realive-chongqing",    cap: 84,  w: [0.6, 0.44, 0.20, 0.06], label: { en: "REALIVE World Tour — Chongqing", zh: "REALIVE 世界巡迴 · 重慶" } },
+        /* 2026-11-02（D497）：「出席過」的選項含 Watch Party；cap＝events-store 該場售出 38 張。 */
+        { id: "lrh-taichung-watchback", cap: 38, w: [0.8, 0.5, 0.2, 0.05], label: { en: "Watch Party · LOVE·RAGE·HOPE Taichung watch-back", zh: "Watch Party · LOVE·RAGE·HOPE 台中回顧" } }
       ]
     },
     earned: {
       icon: "award",
       label: { en: "Earned", zh: "達成過" },
       opts: [
-        { id: "hof",      cap: 24, w: [1.0, 0.30, 0.04, 0.00], label: { en: "Hall of Fame",                zh: "名人堂" } },
+        /* 2026-11-02（D497）：達成過固定三項——曾進核心圈、Ztor Score 800 以上、連續 12 個月支持；拿掉「名人堂」。
+           曾進核心圈：目前的核心圈一定算（rate 1.0），另有少數曾經進過、之後掉級的人。 */
+        { id: "innerEver", rate: [1.0, 0.12, 0.02, 0.00],    label: { en: "Was in Inner Circle",         zh: "曾進核心圈" } },
         { id: "score800", rate: [0.74, 0.26, 0.04, 0.00],      label: { en: "Ztor Score 800+",             zh: "Ztor Score 800 以上" } },
         { id: "streak12", rate: [0.58, 0.34, 0.13, 0.02],      label: { en: "12 months unbroken support",  zh: "連續 12 個月支持" } }
       ]
@@ -111,10 +120,7 @@
     acetate: { en: "LOVE RAGE HOPE vinyl · numbered 1/500", zh: "LOVE RAGE HOPE 限量黑膠 1/500" },
     album:   { en: "LOVE RAGE HOPE — digital album",        zh: "LOVE RAGE HOPE — 數位專輯" },
     hoodie:  { en: "Wish You A Good Life hoodie",           zh: "祝你好命 連帽外套" },
-    movie:   { en: "REALIVE (R2) concert film",             zh: "REALIVE (R2) 演唱會影像" },
-    "shamshuipo-moonlight": { en: "LOVE RAGE HOPE",               zh: "LOVE RAGE HOPE" },
-    "dragon-tiger-gate":    { en: "REALIVE",                      zh: "REALIVE" },
-    "pirate-queen":         { en: "Too Handsome to Stay (MV)",    zh: "帥到分手 MV" }
+    movie:   { en: "REALIVE (R2) concert film",             zh: "REALIVE (R2) 演唱會影像" }
   };
   if (VAULT_PERSONA === "nick") {
     Object.keys(CATALOGUE).forEach(function (k) {
@@ -180,9 +186,15 @@
     for (var j = 0; j < items.length; j++) if (!matches(items[j], fan)) return false;
     return true;
   }
-  /* 整座庫房：任何一種方法達成就算數。 */
+  /* 無條件（D497，2026-11-02）：一種進庫方法都沒設＝全員可解。注意分辨「一種方法都沒有」（無條件）與
+     「有方法、但每一種都還沒放條件」（沒有路進來，空的方法不算達成）。 */
+  function noCondition(vault) { return !((vault && vault.rules) || []).length; }
+  /* 數量上限（D497）：一種方法最多 10 個條件、一座庫房最多 5 種方法；到上限就不能再加。 */
+  var LIMITS = { items: 10, methods: 5 };
+  /* 整座庫房：任何一種方法達成就算數；沒有任何方法＝無條件，人人都算。 */
   function ruleMatches(vault, fan) {
     var gs = vault.rules || [];
+    if (!gs.length) return true;
     for (var i = 0; i < gs.length; i++) if (groupMatches(gs[i], fan)) return true;
     return false;
   }
@@ -327,7 +339,7 @@
     }
     var grp = CATALOGUE[rule.t];
     var opt = grp && grp.opts.filter(function (o) { return o.id === rule.v; })[0];
-    return { verb: grp.label, text: opt && opt.label, icon: grp.icon };
+    return { verb: grp.label, text: opt && opt.label, icon: grp.icon, solo: !!grp.solo };
   }
   function ruleText(rule) {
     var l = ruleLabel(rule);
@@ -336,7 +348,7 @@
       var name = el ? el.textContent.trim() : rule.v;
       return t(l.verb) + " ≥ " + name;
     }
-    return t(l.verb) + " · " + t(l.text);
+    return l.solo ? t(l.text) : t(l.verb) + " · " + t(l.text);
   }
 
   /* ── 第二層：每件內容的任務（D377，2026-10-08）──────────────────
@@ -413,6 +425,8 @@
       { id: "vd-doc",     label: { en: "Tour documentary — episode 1",          zh: "巡迴紀錄片 第一集" } }
     ]
   };
+  /* 商城消費任務的「指定商品」只收商品，不含票券（D497 把票券併進第一層「購買過」）。 */
+  function shopProducts() { return CATALOGUE.bought.opts.filter(function (o) { return !o.ticket; }); }
   function actionDef(kind) { return ACTION_TASKS.filter(function (a) { return a.id === kind; })[0]; }
   /* 任務選單可選的行動任務：release2.4（S122 不在版本內）只有追蹤創作者、加入社群、分享庫房頁面。 */
   function actionTaskList() {
@@ -421,7 +435,7 @@
   function targetLabel(task) {
     if (!task || !task.target) return null;
     if (task.kind === "shop") {
-      var o = CATALOGUE.bought.opts.filter(function (x) { return x.id === task.target; })[0];
+      var o = shopProducts().filter(function (x) { return x.id === task.target; })[0];
       return o ? o.label : null;
     }
     var list = task.kind === "sharePost" ? TASK_TARGETS.post : task.kind === "watch" ? TASK_TARGETS.video : [];
@@ -561,6 +575,14 @@
   /* 整座庫房的兩個數字（F3，D477 推導 5）：以人數計、一人只算一次。
        ever ＝ 曾解開本庫房任一件的人；now ＝ 此刻看得到至少一件的人（非上架中＝上架後試算）。
        pending ＝ 判定方式待確認、沒算進來的件數（畫面要講）。 */
+  function vaultEverSet(vault) {
+    var ever = {};
+    (vault.items || []).forEach(function (it) {
+      var e = itemEverSet(vault, it);
+      Object.keys(e || {}).forEach(function (k) { ever[k] = 1; });
+    });
+    return ever;
+  }
   function vaultUnlocks(vault) {
     var ever = {}, now = {}, pending = 0;
     (vault.items || []).forEach(function (it) {
@@ -571,6 +593,42 @@
     });
     return { ever: size(ever), now: size(now), pending: pending };
   }
+  /* ── 每件內容的查看／播放人數（F3、F5，D497）──────────────────────────
+     以人數計，同一人重複查看或播放不重複計算（影片與音檔＝播放、圖片＝查看）。
+     ⚠ 示範資料（ASSUMPTIONS UIA-323）：原型沒有播放紀錄，從「解開過這一件的人」裡依固定雜湊抽一部分，
+     所以人數永遠不超過解開過的人、每次載入都一樣。判定方式待確認的任務（不知道誰解開了）改從整座庫房
+     解開過任一件的人裡抽。從沒上架過的草稿、創作者這次才上傳的內容（沒有 seedViews）一律 0。 */
+  function strHash(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h >>> 0;
+  }
+  function itemPlaySet(vault, item) {
+    var out = {};
+    if (!vault || !item || !item.seedViews || vault.status === "draft") return out;
+    var base = itemEverSet(vault, item) || vaultEverSet(vault);
+    /* 整座庫房的每一件都判定待確認時（例：公開花絮的兩件都是行動任務），改從此刻進得了庫的人裡抽。 */
+    if (!size(base) && vault.status === "listed") {
+      var held = keyHolders(vault);
+      base = {};
+      for (var i = 0; i < FANS.length; i++) if (inVault(vault, i, held)) base[i] = 1;
+    }
+    var hid = strHash(String(item.id));
+    var frac = 0.35 + 0.55 * ((hid % 1000) / 1000);
+    Object.keys(base).forEach(function (k) {
+      var h = strHash(item.id + ":" + k);
+      if ((h % 10000) / 10000 < frac) out[k] = 1;
+    });
+    return out;
+  }
+  function itemPlays(vault, item) { return size(itemPlaySet(vault, item)); }
+  /* 整座庫房的累計查看／播放人數：看過或播過至少一件的人，一人只算一次。 */
+  function vaultPlays(vault) {
+    var all = {};
+    (vault.items || []).forEach(function (it) { Object.keys(itemPlaySet(vault, it)).forEach(function (k) { all[k] = 1; }); });
+    return size(all);
+  }
+
   /* 改任務之前呼叫（F8「修改任務」，D377＋D477 第二輪第 3 題）：已經解開該件、而且此刻
      還看得到的粉絲保留下來，改任務後照樣看得到（含原本不設任務、改成設任務）。
      從沒上架過的草稿沒有人解開過，所以什麼都不留。 */
@@ -687,7 +745,7 @@
         ? { en: "On set · Too Handsome to Stay (MV)", zh: "《帥到分手》MV 拍攝現場" }
         : { en: "On set · Moonlight Over Sham Shui Po", zh: "《深水埗的月光》片場" },
       note: { en: "Set photography and dailies for the backers of this film.", zh: "本片支持者專屬的片場照與毛片。" },
-      rules: [{ items: [{ t: "backed", v: "shamshuipo-moonlight" }] }, { items: [{ t: "tier", v: "inner" }] }],
+      rules: [{ items: [{ t: "backed", v: "artist" }] }, { items: [{ t: "tier", v: "inner" }] }],
       /* 草稿階段先發好的一批 NFC 鑰匙（F4，D477）：庫房還沒上架，粉絲領取只會得到「尚未開放」，
          所以一次都還沒被領走。 */
       keys: [
@@ -726,7 +784,7 @@
       id: "voicenotes", icon: "mic", status: "listed",
       name: { en: "Inner Circle voice notes", zh: "核心圈語音信" },
       note: { en: "One a month, recorded for this room only. No transcript.", zh: "每月一封，只錄給這個房間。沒有逐字稿。" },
-      rules: [{ items: [{ t: "tier", v: "inner" }] }, { items: [{ t: "earned", v: "hof" }] }],
+      rules: [{ items: [{ t: "tier", v: "inner" }] }, { items: [{ t: "earned", v: "innerEver" }] }],
       items: [
         { id: "v1", kind: "audio", name: { en: "July — on finishing the EP", zh: "七月 · 關於把 EP 做完" }, dur: "8:24", size: "16.2 MB", added: "2026/07/28",
           grand: true },
@@ -738,7 +796,8 @@
       id: "open", icon: "globe", status: "listed",
       name: { en: "Open reel", zh: "公開花絮" },
       note: { en: "No gate on this one — every fan can open it.", zh: "這一個沒有門檻——所有粉絲都打得開。" },
-      rules: [{ items: [{ t: "tier", v: "fan" }] }],
+      /* 2026-11-02（D497）：示範「無條件」——一種進庫方法都沒設＝全員可解（原本寫成「分級 ≥ 一般粉絲」繞一圈表達同一件事）。 */
+      rules: [],
       items: [
         { id: "o1", kind: "clip",  name: { en: "EP announcement, uncut", zh: "EP 公布 未剪版" }, img: "images/products/coastline-starter-pack.webp", dur: "1:12", size: "88 MB", added: "2026/07/27",
           task: { type: "action", kind: "join" } },
@@ -775,6 +834,8 @@
        · 掉級——差一級的粉絲裡抽一小部分，當作他們當時夠級、之後掉下來（等級任務的那一件，
          或第一層只靠分級進庫的庫房）。
      判定方式待確認的行動任務不生紀錄（不知道誰完成了）；從沒上架過的草稿沒有紀錄。 */
+  /* 種子內容才有示範的查看／播放紀錄（UIA-323）；之後上傳的新內容從 0 開始。 */
+  VAULTS.forEach(function (v) { v.items.forEach(function (it) { it.seedViews = true; }); });
   (function seedHistory() {
     var r = rng(20261023);
     VAULTS.forEach(function (v) {
@@ -804,10 +865,11 @@
   function isListed(v) { return !!v && v.status === "listed"; }
   /* 排程中＝不在上架中、但排了上架時間（從沒上架過的算草稿、下架後再排的算已下架）。 */
   function isScheduled(v) { return !!v && schedOn() && v.status !== "listed" && !!v.listAt; }
-  /* 「沒有路進來」（F2 其他狀態）＝沒有任何含條件的進庫方法，也沒有任何未撤銷鑰匙。 */
-  function hasWayIn(v) { return ruleCount(v) > 0 || keyStats(v).live > 0; }
-  /* 發布前檢查（F10）：沒有內容不能發布；沒有路進來只提醒、不擋。 */
-  function publishCheck(v) { return { empty: !(v.items || []).length, noWay: !hasWayIn(v) }; }
+  /* 「沒有路進來」（F2 其他狀態）＝設了進庫方法、但沒有任何含條件的方法，也沒有任何未撤銷鑰匙。
+     無條件（一種方法都沒設，D497）不算「沒有路」——人人都進得來。 */
+  function hasWayIn(v) { return noCondition(v) || ruleCount(v) > 0 || keyStats(v).live > 0; }
+  /* 發布前檢查（F10）：沒有內容不能發布；沒有路進來、無條件都只提醒、不擋（D497 推導：無條件提醒「發布後所有粉絲都能解鎖」）。 */
+  function publishCheck(v) { return { empty: !(v.items || []).length, noWay: !hasWayIn(v), open: noCondition(v) }; }
   /* 發布／重新上架。opt.listAt 有值＝排定上架時間（狀態不變，時間到才上架）；沒有＝立刻上架。 */
   function publish(v, opt) {
     opt = opt || {};
@@ -908,11 +970,11 @@
       return !VAULTS.some(function (v) { return (v.keys || []).some(function (k) { return (k.claimed || []).indexOf(i) >= 0; }); });
     }
     return [
-      { id: "row1", name: "Wei Yu-han",    handle: "yuhan@studio", idx: pick("inner",   function (f) { return f.earned.hof; }) },
-      { id: "row2", name: "Lin Yiwen",     handle: "yiwen@gmail",  idx: pick("inner",   function (f) { return f.backed["shamshuipo-moonlight"]; }) },
+      { id: "row1", name: "Wei Yu-han",    handle: "yuhan@studio", idx: pick("inner",   function (f) { return f.earned.innerEver; }) },
+      { id: "row2", name: "Lin Yiwen",     handle: "yiwen@gmail",  idx: pick("inner",   function (f) { return f.backed.artist; }) },
       { id: "row3", name: "Ahmed Said",    handle: "ahmed@hey",    idx: pick("super",   function (f) { return f.bought.hoodie; }) },
       { id: "row4", name: "Chen Mei-ling", handle: "meiling@mail", idx: pick("super",   function (f) { return !f.bought.hoodie && !f.bought.acetate; }) },
-      { id: "row5", name: "James Carter",  handle: "james@studio", idx: pick("devoted", function (f) { return f.backed["shamshuipo-moonlight"]; }) },
+      { id: "row5", name: "James Carter",  handle: "james@studio", idx: pick("devoted", function (f) { return f.backed.artist; }) },
       { id: "row6", name: "Park Ji-woo",   handle: "jiwoo@mail",   idx: pick("devoted", function (f) { return f.attended["album-signing-taipei"]; }) },
       { id: "row7", name: "Sofia Rossi",   handle: "sofia@mail",   idx: pick("fan",     holds("k-bs-1")) },
       { id: "row8", name: "Liam Nguyen",   handle: "liam@mail",    idx: pick("fan",     function (f, i) { return none(f) && noKey(f, i); }) },
@@ -926,7 +988,8 @@
     var methods = [];
     (vault.rules || []).forEach(function (g, gi) { if (groupMatches(g, f)) methods.push(gi); });
     var keys = (keysOn() ? (vault.keys || []) : []).filter(function (k) { return !k.revoked && (k.claimed || []).indexOf(idx) >= 0; });
-    return { methods: methods, keys: keys, inVault: methods.length > 0 || keys.length > 0 };
+    var open = noCondition(vault);
+    return { methods: methods, keys: keys, open: open, inVault: open || methods.length > 0 || keys.length > 0 };
   }
 
   /* 庫房封面＝第一張有圖的內容。沒有圖的庫房（純語音）走圖示，
@@ -950,6 +1013,11 @@
     reachInTier: reachInTier,
     ruleMatches: ruleMatches,
     ruleCount: ruleCount,
+    noCondition: noCondition,
+    limits: LIMITS,
+    shopProducts: shopProducts,
+    itemPlays: itemPlays,
+    vaultPlays: vaultPlays,
     reachAll: reachAll,
     reachSplit: reachSplit,
     reachInTierAll: reachInTierAll,

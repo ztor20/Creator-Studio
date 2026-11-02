@@ -68,12 +68,12 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
             <span class="msg-field__label-text"><span data-i18n="msg.to">To</span><span class="msg-field__req" aria-hidden="true">*</span></span>
           </div>
           <select class="select" data-npp-to>
-            <option value="all" data-i18n="msg.to.all">All fans (1,840)</option>
+            <option value="all" data-i18n="msg.to.all">All fans (1,283)</option>
             <option value="inner" data-i18n="msg.to.inner">Inner Circle (13)</option>
             <option value="super" data-i18n="msg.to.super">Super Fans (115)</option>
             <option value="devoted" data-i18n="msg.to.devoted">Ranked Fans (257)</option>
             <option value="fan" data-i18n="msg.to.fan">Fan (898)</option>
-            <option value="risk" data-i18n="msg.to.risk">At risk (5)</option>
+            <option value="risk" data-i18n="msg.to.risk">At risk (7)</option>
             <option value="recovered" data-i18n="msg.to.recovered">Recovered (18)</option>
           </select>
         </div>

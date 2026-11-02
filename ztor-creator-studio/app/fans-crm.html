@@ -158,6 +158,8 @@
   @media (max-width: 1080px) { .fans-tier-row { grid-template-columns: minmax(0, 1fr); } }
   /* release2.4：右欄 Who's who 掛 S118 收起時，分級設定改單欄，不留空的右欄。 */
   .fans-tier-row:has(> .ztd-ver-hidden) { grid-template-columns: minmax(0, 1fr); }
+  /* 2026-11-02 D497：分級判定順序的三步驟（只此一處，留頁內）。 */
+  .fans-tier-order { margin: var(--sp-4) 0 0; padding-left: var(--sp-20); display: flex; flex-direction: column; gap: var(--sp-2); }
 
   /* 右欄只有 ~330px：圓餅置中在上、圖例在下。並排的話圖例的金額欄會先被壓爛。 */
   /* 2026-10-30 搬回主頁（D495）：整列寬，圓餅在左、圖例在右；窄視窗改上下排 */
@@ -205,7 +207,7 @@
     <div class="alert-inset when-data" id="fans-risk-alert" data-has-risk="true" data-feat="S118" hidden>
       <div class="alert alert--bar alert--inset-card" role="status">
         <div class="alert__body">
-          <span class="alert__title" data-i18n="fans.alert.title">5 fans at risk of dropping</span>
+          <span class="alert__title" data-i18n="fans.alert.title">7 fans at risk of dropping</span>
           <span class="alert__meta" data-i18n="fans.alert.meta">Super Fans · quiet 21/90d</span>
         </div>
         <a class="alert__cta" href="#" data-msg-open data-msg-to="risk" data-i18n="fans.alert.cta">Message them</a>
@@ -227,6 +229,7 @@
             <p class="page-intro__sub" data-i18n="fans.sub-p0" data-feat-off="S118">Ranked by loyalty points. Sort by points or tier.</p>
           </div>
         </div>
+        <!-- D507（2026-11-02 使用者裁決，更正 D505）：「認識粉絲系統」入口只留在粉絲名冊這一頁的頁首右側；媒體庫、分級設定、粉絲詳情等其他頁不設。 -->
         <a class="btn btn--outline page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">認識粉絲系統</a>
       </div>
 
@@ -242,19 +245,23 @@
         <!-- 2026-10-27 使用者裁示：活躍粉絲、流失風險、活躍粉絲收入三張 KPI 加回 release2.4（S126，自 S118 拆出）；警示橫幅與狀態欄仍只在最終版。 -->
         <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label">
           <span data-i18n="fans.kpi.active">Active fans</span>
-          <span class="tip fans-tip" tabindex="0" aria-label="Fans active in the trailing 90 days."><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.active.tip">Fans active in the trailing 90 days.</span></span>
-        </div><div class="kpi__value">1,283</div><div class="kpi__meta" data-i18n="fans.kpi.active-meta">of 1,840 total</div></div>
+          <!-- 2026-11-02 D497 第 10 項：四張 KPI 都附 (i)，內容就是 5.1.7 F2 的定義（有效動作＝任何可賺忠誠點數的行為） -->
+          <span class="tip fans-tip" tabindex="0" aria-label="Fans with at least one valid action in the last 90 days." data-i18n-aria-label="fans.kpi.active.tip"><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.active.tip">Fans with at least one valid action in the last 90 days.</span></span>
+        </div><div class="kpi__value" data-kpi-active>1,283</div><div class="kpi__meta" data-i18n="fans.kpi.active-meta">of 1,340 total</div></div>
         <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label">
           <span data-i18n="fans.kpi.risk">At risk</span>
-          <span class="tip fans-tip" tabindex="0" aria-label="Valuable fans whose recent engagement dropped sharply."><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.risk.tip">Valuable fans whose recent engagement dropped sharply (a flag, not a score).</span></span>
+          <span class="tip fans-tip" tabindex="0" aria-label="Fans with no valid action in the last 30 days." data-i18n-aria-label="fans.kpi.risk.tip"><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.risk.tip">Fans with no valid action in the last 30 days.</span></span>
         </div><div class="kpi__value" data-risk-value>7</div>
         <!-- 2026-10-30 使用者要求：小字只寫分級最高的那一級；滑鼠移上去（或鍵盤聚焦）列出每一級的人數與沉默天數，高的在前（D493 補充） -->
-        <span class="tip tip--btn" tabindex="0" data-risk-tip data-feat="S131"><span class="kpi__delta kpi__delta--neg" data-risk-meta>Inner Circle · quiet 10/90d</span><span class="tip__bubble" role="tooltip" data-risk-list></span></span></div>
-        <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label" data-i18n="fans.kpi.revenue">Revenue (active)</div><div class="kpi__value">$20,700</div><div class="kpi__meta" data-i18n="fans.kpi.revenue-meta">Trailing 90 days</div></div>
+        <span class="tip tip--btn" tabindex="0" data-risk-tip data-feat="S131"><span class="kpi__delta kpi__delta--neg" data-risk-meta>Super Fans · quiet 34/90d</span><span class="tip__bubble" role="tooltip" data-risk-list></span></span></div>
+        <div class="kpi bento--span-3" data-feat="S126"><div class="kpi__label">
+          <span data-i18n="fans.kpi.revenue">Revenue (active)</span>
+          <span class="tip fans-tip" tabindex="0" aria-label="Total fan revenue in the last 90 days." data-i18n-aria-label="fans.kpi.revenue.tip"><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.revenue.tip">Total fan revenue in the last 90 days.</span></span>
+        </div><div class="kpi__value" data-kpi-rev>$27,851</div><div class="kpi__meta" data-i18n="fans.kpi.revenue-meta">Trailing 90 days</div></div>
         <div class="kpi bento--span-3"><div class="kpi__label">
           <span data-i18n="fans.kpi.rep">Avg loyalty points</span>
-          <span class="tip fans-tip" tabindex="0" aria-label="A fan's overall value score."><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.rep.tip">Loyalty points are a fan’s overall value score, credited the moment they earn them.</span></span>
-        </div><div class="kpi__value">642</div><div class="kpi__delta" data-i18n="fans.kpi.rep-meta">+12 vs last month</div></div>
+          <span class="tip fans-tip" tabindex="0" aria-label="All fans’ loyalty points added up, divided by the number of fans." data-i18n-aria-label="fans.kpi.rep.tip"><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.rep.tip">All fans’ loyalty points added up, divided by the number of fans.</span></span>
+        </div><div class="kpi__value" data-kpi-avg>351</div><div class="kpi__delta" data-i18n="fans.kpi.rep-meta">+12 vs last month</div></div>
       </div>
 
       <!-- 2026-10-30 D495 第 4 項：分級分布放回主頁（規格 5.1.7 F3 的位置），人數用活躍粉絲算（各級加總＝活躍粉絲數）；
@@ -392,198 +399,180 @@
           </div>
           <div class="data-list" id="fans-list" data-sort-rows>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="inner" data-tags="vip high-spender" data-search="wei yu-han yuhan@studio taipei 台北 台灣 taiwan 林詩涵 lin shih-han shihan">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=1" data-fan-id="1" data-tier="inner" data-tags="vip high-spender" data-search="wei yu-han yuhan@studio taipei 台北 台灣 taiwan 林詩涵 lin shih-han shihan">
               <span role="cell" class="fan-row__rank">1</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.row1.meta">yuhan@studio</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row1.country">Taiwan</span>
               <span role="cell" class="badge badge--orange fan-row__tier" data-sort-key="tier" data-sort-value="4"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">874</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$1,420</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row1.next">↗ next tier 92%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="1">
-                <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=1"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="inner" data-tags="high-spender" data-search="lin yiwen yiwen@gmail tainan 台南 台灣 taiwan 陳柏宇 chen po-yu boyu 台中 taichung">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=2" data-fan-id="2" data-tier="inner" data-tags="high-spender" data-search="lin yiwen yiwen@gmail tainan 台南 台灣 taiwan 陳柏宇 chen po-yu boyu 台中 taichung">
               <span role="cell" class="fan-row__rank">2</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row2.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.row2.meta">yiwen@gmail</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row2.country">Taiwan</span>
               <span role="cell" class="badge badge--orange fan-row__tier" data-sort-key="tier" data-sort-value="4"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">821</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$980</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row2.next">↗ next tier 84%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="1">
-                <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=2"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="super" data-tags="event intl" data-search="ahmed said ahmed@hey singapore 新加坡 王凱昕 wang kai-hsin vivian">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=3" data-fan-id="3" data-tier="super" data-tags="event intl" data-search="ahmed said ahmed@hey singapore 新加坡 王凱昕 wang kai-hsin vivian">
               <span role="cell" class="fan-row__rank">3</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row3.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.row3.meta">ahmed@hey</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row3.country">Singapore</span>
               <span role="cell" class="badge badge--info fan-row__tier" data-sort-key="tier" data-sort-value="3"><span data-i18n="fans.tier.super">Super Fans</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">692</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$740</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row3.next">↗ next tier 62%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="3">
-                <span class="badge badge--error"><span data-i18n="fans.status.risk">At risk</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=3"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="super" data-tags="event" data-search="chen mei-ling meiling@mail kaohsiung 高雄 台灣 taiwan 黃于潔 huang yu-chieh yuchieh">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=4" data-fan-id="4" data-tier="super" data-tags="event" data-search="chen mei-ling meiling@mail kaohsiung 高雄 台灣 taiwan 黃于潔 huang yu-chieh yuchieh">
               <span role="cell" class="fan-row__rank">4</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row4.name">Chen Mei-ling</div><div class="data-list__meta" data-i18n="fans.row4.meta">meiling@mail</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row4.country">Taiwan</span>
               <span role="cell" class="badge badge--info fan-row__tier" data-sort-key="tier" data-sort-value="3"><span data-i18n="fans.tier.super">Super Fans</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">655</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$610</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row4.next">↗ next tier 48%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="2">
-                <span class="badge badge--info"><span data-i18n="fans.status.recovered">Recovered</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=4"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="devoted" data-tags="intl" data-search="james carter james@studio london 倫敦 英國 united kingdom 張詠晴 chang yung-ching jamie">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=5" data-fan-id="5" data-tier="devoted" data-tags="intl" data-search="james carter james@studio london 倫敦 英國 united kingdom 張詠晴 chang yung-ching jamie">
               <span role="cell" class="fan-row__rank">5</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row5.name">James Carter</div><div class="data-list__meta" data-i18n="fans.row5.meta">james@studio</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row5.country">United Kingdom</span>
               <span role="cell" class="badge badge--success fan-row__tier" data-sort-key="tier" data-sort-value="2"><span data-i18n="fans.tier.devoted">Ranked Fans</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">540</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$420</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row5.next">↗ next tier 71%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="1">
-                <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=5"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="devoted" data-tags="" data-search="park ji-woo jiwoo@mail seoul 首爾 南韓 south korea 李佳恩 li chia-en jiaen">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=6" data-fan-id="6" data-tier="devoted" data-tags="" data-search="park ji-woo jiwoo@mail seoul 首爾 南韓 south korea 李佳恩 li chia-en jiaen">
               <span role="cell" class="fan-row__rank">6</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row6.name">Park Ji-woo</div><div class="data-list__meta" data-i18n="fans.row6.meta">jiwoo@mail</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row6.country">South Korea</span>
               <span role="cell" class="badge badge--success fan-row__tier" data-sort-key="tier" data-sort-value="2"><span data-i18n="fans.tier.devoted">Ranked Fans</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">498</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$360</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row6.next">↗ next tier 55%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="3">
-                <span class="badge badge--error"><span data-i18n="fans.status.risk">At risk</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=6"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="fan" data-tags="event" data-search="sofia rossi sofia@mail milan 米蘭 日本 japan 蘇曉薇 su hsiao-wei weiwei 東京 tokyo">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=7" data-fan-id="7" data-tier="fan" data-tags="event" data-search="sofia rossi sofia@mail milan 米蘭 日本 japan 蘇曉薇 su hsiao-wei weiwei 東京 tokyo">
               <span role="cell" class="fan-row__rank">7</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row7.name">Sofia Rossi</div><div class="data-list__meta" data-i18n="fans.row7.meta">sofia@mail</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row7.country">Japan</span>
               <span role="cell" class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">312</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$120</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row7.next">↗ next tier 34%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="1">
-                <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=7"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="fan" data-tags="intl" data-search="liam nguyen liam@mail sydney 雪梨 澳洲 australia 吳承翰 wu cheng-han chenghan">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=8" data-fan-id="8" data-tier="fan" data-tags="intl" data-search="liam nguyen liam@mail sydney 雪梨 澳洲 australia 吳承翰 wu cheng-han chenghan">
               <span role="cell" class="fan-row__rank">8</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row8.name">Liam Nguyen</div><div class="data-list__meta" data-i18n="fans.row8.meta">liam@mail</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row8.country">Australia</span>
               <span role="cell" class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">288</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$95</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row8.next">↗ next tier 28%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="1">
-                <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=8"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
               </span>
             </div>
 
-            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html" data-tier="fan" data-tags="" data-search="emma müller emma@mail berlin 柏林 加拿大 canada 高子晴 kao tzu-ching ziqing 溫哥華 vancouver">
+            <div class="product-list__row fan-row" role="row" data-go="fan-detail.html?fan=9" data-fan-id="9" data-tier="fan" data-tags="" data-search="emma müller emma@mail berlin 柏林 加拿大 canada 高子晴 kao tzu-ching ziqing 溫哥華 vancouver">
               <span role="cell" class="fan-row__rank">9</span>
               <div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row9.name">Emma Müller</div><div class="data-list__meta" data-i18n="fans.row9.meta">emma@mail</div></div></div>
               <span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-i18n="fans.row9.country">Canada</span>
               <span role="cell" class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
-              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep">241</span>
+              <span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>
               <span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$60</span>
-              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row9.next">↗ next tier 19%</span>
-              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-sort-value="1">
-                <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-              </span>
+              <span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>
+              <span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>
               <span role="cell" class="product-list__actions fan-row__actions">
                 <details class="dropdown">
                   <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
                   <div class="dropdown__menu" role="menu">
-                    <a class="dropdown__item" role="menuitem" href="fan-detail.html"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
+                    <a class="dropdown__item" role="menuitem" href="fan-detail.html?fan=9"><i data-lucide="user" class="ztor-icon"></i><span data-i18n="fans.row.detail">Details</span></a>
                     <a class="dropdown__item fan-row__msg" role="menuitem" href="#" data-msg-open data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.row.message">Message</span></a>
                   </div>
                 </details>
@@ -708,12 +697,12 @@
               <span class="msg-field__label-text"><span data-i18n="msg.to">To</span><span class="msg-field__req" aria-hidden="true">*</span></span>
             </div>
             <select class="select" id="msg-to">
-              <option value="all" data-i18n="msg.to.all">All fans (1,840)</option>
+              <option value="all" data-i18n="msg.to.all">All fans (1,283)</option>
               <option value="inner" data-i18n="msg.to.inner">Inner Circle (13)</option>
               <option value="super" data-i18n="msg.to.super">Super Fans (115)</option>
               <option value="devoted" data-i18n="msg.to.devoted">Ranked Fans (257)</option>
               <option value="fan" data-i18n="msg.to.fan">Fan (898)</option>
-              <option value="risk" data-i18n="msg.to.risk">At risk (5)</option>
+              <option value="risk" data-i18n="msg.to.risk">At risk (7)</option>
               <option value="recovered" data-i18n="msg.to.recovered">Recovered (18)</option>
             </select>
             <p class="msg-tokens__hint" id="msg-to-note" hidden data-i18n="msg.to.singlenote">Messaging one fan — pick a segment above to broadcast.</p>
@@ -816,7 +805,7 @@
               <span class="msg-row__time" data-sort-key="time" data-sort-value="-4320" data-i18n="msg.hist.t.3d">3d ago</span>
               <span class="msg-row__subject" data-sort-key="subject">Thank you — a note for my whole community</span>
               <span class="msg-row__audience" data-sort-key="audience"><span class="badge badge--neutral" data-i18n="msg.to.all.tag">All fans</span></span>
-              <span class="msg-row__num" data-sort-key="recipients">1,840</span>
+              <span class="msg-row__num" data-sort-key="recipients">1,283</span>
               <span class="msg-row__num" data-sort-key="openrate">71%</span>
               <span class="msg-row__status" data-sort-key="status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
             </div>
@@ -930,10 +919,9 @@
               <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.toppct">Top %</span><button class="explain-btn" type="button" data-explain="explain-toppct" aria-label="How Top % works" data-i18n-aria-label="tier-settings.gate.toppct-explain"><i data-lucide="info" class="ztor-icon"></i></button></span><small data-i18n="fans.tiers.toppct-hint">Ranked by loyalty points</small></span>
 <span class="tier-ov__cell"><span class="tier-ov__read">1%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="1"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">30%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="30"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
             </div>
-            <div class="tier-ov tier-ov__row">
-              <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.points">Min. loyalty points</span><button class="explain-btn" type="button" data-explain="explain-points" aria-label="Why there is also a points floor" data-i18n-aria-label="tier-settings.gate.points-explain"><i data-lucide="info" class="ztor-icon"></i></button></span></span>
-<span class="tier-ov__cell"><span class="tier-ov__read">800 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="800"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">650 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="650"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">500 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="500"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
-            </div>
+            <!-- 2026-11-02 D497 第 12 項：「最低忠誠點數」不再是每一級一格（舊值 800／650／500，可編輯）——
+                 全站只有一個最低忠誠點數門檻（S_floor，預設 500，Admin 在平台忠誠點數設定），創作者唯讀；
+                 移到表格下方一列唯讀值（[data-tier-floor]），並補判定順序。 -->
             <div class="tier-ov tier-ov__row" data-feat="S119"><span class="tier-ov__rowlabel" data-i18n="ben.item.early">Early access · merch &amp; tickets</span><span class="tier-ov__cell"><span class="tier-ov__read">7 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="7"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">3 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="3"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">1 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="1"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
             <div class="tier-ov tier-ov__row" data-feat="S119"><span class="tier-ov__rowlabel" data-i18n="ben.item.discount">Merch discount</span><span class="tier-ov__cell"><span class="tier-ov__read">20%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="20"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">5%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="5"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
             <div class="tier-ov tier-ov__row" data-feat="S119"><span class="tier-ov__rowlabel" data-i18n="ben.item.auction">VIP auction · creator’s personal items</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
@@ -944,6 +932,26 @@
             <div class="tier-ov tier-ov__row" data-feat="S119"><span class="tier-ov__rowlabel" data-i18n="ben.item.demos">Demo tracks</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
             <div class="tier-ov tier-ov__row" data-feat="S119"><span class="tier-ov__rowlabel" data-i18n="ben.item.bts">Behind the scenes</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
             <div class="tier-ov tier-ov__row" data-feat="S119"><span class="tier-ov__rowlabel" data-i18n="ben.item.livestream">Private livestreams</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+          </div>
+
+          <p class="field__error" style="margin-top:var(--sp-8)" data-tier-mono-err hidden data-i18n="tier-settings.err.mono">Top % must widen down the ladder: Inner Circle &lt; Super Fans &lt; Ranked Fans.</p>
+          <!-- 全站共用的最低忠誠點數門檻（唯讀）＋判定順序（5.1.7.6 F2，D497）。值由 js/fans-roster.js 的 S_FLOOR 寫入。 -->
+          <div class="settings-row" data-tier-floor>
+            <div>
+              <div class="settings-row__label"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.floor">Min. loyalty points</span><button class="explain-btn" type="button" data-explain="explain-points" aria-label="Why there is also a points floor" data-i18n-aria-label="tier-settings.gate.points-explain"><i data-lucide="info" class="ztor-icon"></i></button></span></div>
+              <div class="settings-row__hint" data-i18n="tier-settings.gate.floor-hint">One value for every tier, set by Ztor. View only.</div>
+            </div>
+            <div class="settings-row__value"><span data-tier-floor-val>500</span> <span data-i18n="fans.unit.points">pts</span></div>
+          </div>
+          <div class="settings-row" style="border-bottom:0">
+            <div>
+              <div class="settings-row__label" data-i18n="tier-settings.rules.order">How a fan’s tier is decided</div>
+              <ol class="settings-row__hint fans-tier-order">
+                <li data-i18n="tier-settings.rules.order-1">Below the minimum loyalty points: always Fan.</li>
+                <li data-i18n="tier-settings.rules.order-2">At or above it: the fan joins the ranking and is placed by rank — top 1% Inner Circle, top 10% Super Fans, top 30% Ranked Fans.</li>
+                <li data-i18n="tier-settings.rules.order-3">At or above it but outside the top 30%: still Fan.</li>
+              </ol>
+            </div>
           </div>
 
           <!-- 只在編輯態出現：新增一列權益，四個分級的格子直接就在那裡（全部關著）。 -->
@@ -991,12 +999,12 @@
           <div data-feat="S66">
           <div class="group-divider"></div>
           <h4 class="group-title" data-i18n="tier-settings.weight.title">Purchase type value</h4>
-          <p class="group-desc" data-i18n="tier-settings.weight.desc">Purchases earn 40 points per HK$1, multiplied by the value of what was bought. The amount is the list price in HKD — tier discounts and promo codes aren’t deducted.</p>
-          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.backing">Project backing</div><div class="settings-row__hint"><span data-i18n="tier-settings.weight.backing-hint">Co-create and pre-order</span> · <span data-weight-pts>60</span> <span data-i18n="tier-settings.weight.unit">pts / HK$1</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.5 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.5" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
-          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.auction">Auction wins</div><div class="settings-row__hint"><span data-weight-pts>50</span> <span data-i18n="tier-settings.weight.unit">pts / HK$1</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.25 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.25" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
-          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.ticket">Event tickets</div><div class="settings-row__hint"><span data-weight-pts>44</span> <span data-i18n="tier-settings.weight.unit">pts / HK$1</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.1 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.1" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
-          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.shop">E-Shop products</div><div class="settings-row__hint"><span data-i18n="tier-settings.weight.shop-hint">Physical and digital, sold singly</span> · <span data-weight-pts>40</span> <span data-i18n="tier-settings.weight.unit">pts / HK$1</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.0 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.0" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
-          <div class="settings-row" style="border-bottom:0" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.rental">Paid film rentals</div><div class="settings-row__hint"><span data-i18n="tier-settings.weight.rental-hint">Counts on payment, no viewing needed</span> · <span data-weight-pts>32</span> <span data-i18n="tier-settings.weight.unit">pts / HK$1</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">0.8 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="0.8" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
+          <p class="group-desc" data-i18n="tier-settings.weight.desc">Purchases earn 10 points per 1 unit of base currency, multiplied by the value of what was bought. The amount is the list price converted to the base currency — tier discounts and promo codes aren’t deducted.</p>
+          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.backing">Project backing</div><div class="settings-row__hint"><span data-i18n="tier-settings.weight.backing-hint">Co-create and pre-order</span> · <span data-weight-pts>15</span> <span data-i18n="tier-settings.weight.unit">pts / 1 unit of base currency</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.5 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.5" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.auction">Auction wins</div><div class="settings-row__hint"><span data-weight-pts>12.5</span> <span data-i18n="tier-settings.weight.unit">pts / 1 unit of base currency</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.25 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.25" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.ticket">Event tickets</div><div class="settings-row__hint"><span data-weight-pts>11</span> <span data-i18n="tier-settings.weight.unit">pts / 1 unit of base currency</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.1 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.1" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.shop">E-Shop products</div><div class="settings-row__hint"><span data-i18n="tier-settings.weight.shop-hint">Physical and digital, sold singly</span> · <span data-weight-pts>10</span> <span data-i18n="tier-settings.weight.unit">pts / 1 unit of base currency</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1.0 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1.0" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row" style="border-bottom:0" data-weight-row><div><div class="settings-row__label" data-i18n="tier-settings.weight.rental">Paid film rentals</div><div class="settings-row__hint"><span data-i18n="tier-settings.weight.rental-hint">Counts on payment, no viewing needed</span> · <span data-weight-pts>8</span> <span data-i18n="tier-settings.weight.unit">pts / 1 unit of base currency</span></div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">0.8 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="0.8" inputmode="decimal" data-weight-input><span class="amount-field__unit">×</span></span></span></div></div>
           <p class="settings-row__hint"><em data-i18n="tier-settings.weight.tbc">Which value applies to paid premieres, bundles and digital film products is pending.</em></p>
           <div class="group-divider"></div>
           <h4 class="group-title" data-i18n="tier-settings.cap.title">Max points per 90 days</h4>
@@ -1029,8 +1037,10 @@
           <div class="card__head">
             <p class="settings-row__hint" style="margin:0" data-i18n="tier-settings.rules.sub">How the tier system behaves. These are product rules — surfaced here, owned upstream.</p>
           </div>
-          <div class="settings-row" data-feat="S119"><div><div class="settings-row__label" data-i18n="tier-settings.rules.dual">Both gates must pass</div><div class="settings-row__hint" data-i18n="tier-settings.rules.dual-body">A fan moves up only after clearing both of that tier’s gates — the Top % <b>and</b> the minimum loyalty points.</div></div></div>
-          <div class="settings-row" data-feat="S119"><div><div class="settings-row__label" data-i18n="tier-settings.rules.mono">Gates must climb</div><div class="settings-row__hint" data-i18n="tier-settings.rules.mono-body">A higher tier must ask strictly more than the one below it, or the settings won’t save. <em>Exact validation logic pending upstream.</em></div></div></div>
+          <!-- 2026-11-02 D497 第 12 項：「兩道門檻、各級各一個最低點數」改成判定順序（全站一個最低忠誠點數門檻 → 依名次前 % 名分級）；
+               判定順序是 release2.4 範圍內的唯讀規則，不掛 S119。舊值：rules.dual「雙重門檻升級」（S119）。 -->
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.rules.order">How a fan’s tier is decided</div><div class="settings-row__hint" data-i18n="tier-settings.rules.order-body">First the minimum loyalty points, then rank.</div></div></div>
+          <div class="settings-row" data-feat="S119"><div><div class="settings-row__label" data-i18n="tier-settings.rules.mono">Top % must widen</div><div class="settings-row__hint" data-i18n="tier-settings.rules.mono-body">Each lower tier must cover a larger top % than the one above it, or the settings won’t save. <em>Exact validation logic pending upstream.</em></div></div></div>
           <div class="settings-row" data-feat="S119"><div><div class="settings-row__label" data-i18n="tier-settings.rules.ver">Versioned, never retroactive</div><div class="settings-row__hint" data-i18n="tier-settings.rules.ver-body">Every save creates an immutable version. Revenue and badges already earned under an older version are never rewritten.</div></div></div>
           <!-- D476 第 2、3 項：升降級的時機（即時入帳、即時升級、降級先倒數緩衝天數、到期後下一次每週重算仍未達標，D479）與名額取整（捨去、核心圈至少 1 人） -->
           <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.rules.timing">When fans move tiers</div><div class="settings-row__hint" data-i18n="tier-settings.rules.timing-body">Points land within 5 seconds and fans move up the moment they qualify.</div></div></div>
@@ -1101,9 +1111,9 @@
       <p class="explain__lead" data-i18n="tier-settings.explain.points.lead">An <strong>absolute</strong> gate. A percentile always produces a top 1% — even in a tiny audience. The floor is what stops a tier being handed out to someone who has not earned it.</p>
       <div class="explain__example">
         <span class="explain__example-label" data-i18n="tier-settings.explain.example">Example</span>
-        <p data-i18n="tier-settings.explain.points.eg">A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> and Inner Circle’s floor is <strong>800</strong>, they still do not enter. The tier stays empty until someone genuinely reaches it.</p>
+        <p data-i18n="tier-settings.explain.points.eg">A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> — below the minimum of <strong>500</strong> — they stay a Fan and are not ranked. Inner Circle stays empty until someone genuinely reaches it.</p>
       </div>
-      <p class="explain__rule" data-i18n="tier-settings.explain.points.rule">A fan must clear both gates. Being top 1% is not enough on its own, and neither is a high score outside the percentile.</p>
+      <p class="explain__rule" data-i18n="tier-settings.explain.points.rule">There is one minimum for every tier. Reaching it only lets a fan into the ranking; their rank then decides the tier. Outside the top 30%, a fan above the minimum is still a Fan.</p>
     </div>
   </div>
 </div>
@@ -1112,6 +1122,8 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/explainer.js?v=r2.2"></script>
 <script src="js/table-sort.js?v=r2.2"></script>
+<script src="js/loyalty-settings.js?v=r2.2"></script>
+<script src="js/fans-roster.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
@@ -1122,6 +1134,114 @@
    F4 流失橫幅條件顯示 · F6 搜尋／分級／chip 過濾 + Load more。
    ─────────────────────────────────────────────────────────── */
 (function () {
+
+  /* ── F5 · 名冊（2026-11-02 D497；2026-11-02 #460 改由完整示範母體生成）──
+     名冊、KPI、流失風險、分級分頁人數都讀 js/fans-roster.js 的同一個母體（1,340 位），粉絲詳情與媒體庫也讀同一份。
+     原本的 9 位示範粉絲保留在頁面 HTML（名字走 i18n），其餘由這裡生成列；全部依名次排好、排名章寫真實名次。
+     分級、升級進度、狀態跟著平台忠誠點數設定（js/loyalty-settings.js：S_floor、前 % 名、KPI 視窗）算。
+     升級進度＝目前點數 ÷ 下一級門檻 D（< S_floor 時 D＝S_floor；≥ S_floor 時 D＝下一級目前最低分），核心圈寫「已達最高級」；
+     下一級目前無人或還差 0 分＝100%，滑過寫「已達下一級門檻」（與粉絲詳情同一句）。
+     排序值寫進 data-sort-value：已達最高級排在 100% 之上，狀態依「活躍 1／已挽回 2／流失中 3」（同改版前）。 */
+  (function () {
+    const F = window.ztorFans;
+    if (!F) return;
+    const T = k => (window.i18nT && window.i18nT(k)) || k;
+    const list = document.getElementById('fans-list');
+    const STATUS = { active: ['badge--success', 'fans.status.active', 1], recovered: ['badge--info', 'fans.status.recovered', 2], risk: ['badge--error', 'fans.status.risk', 3] };
+    const BADGE = { inner: 'badge--orange', super: 'badge--info', devoted: 'badge--success', fan: 'badge--neutral' };
+    const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const KEBAB = (list && list.querySelector('.fan-row .fan-row__actions') || { innerHTML: '' }).innerHTML;
+    function spentOf(fan) {
+      return fan.ledgerRaw.filter(x => (x.code === 'A3' || x.code === 'A4') && x.amount).reduce((s, x) => s + x.amount, 0);
+    }
+    /* 生成的粉絲列：結構與頁面裡那 9 列相同（欄位、data-feat、⋮ 選單），名字與國家依介面語言填。 */
+    function rowHTML(f) {
+      const href = 'fan-detail.html?fan=' + f.id;
+      const search = [f.zhName, f.enName, f.email, f.zhCountry, f.enCountry].join(' ').toLowerCase();
+      return '<div class="product-list__row fan-row" role="row" data-go="' + href + '" data-fan-id="' + f.id + '" data-tier="' + f.tier + '" data-tags="' + esc(f.tags) + '" data-search="' + esc(search) + '">' +
+        '<span role="cell" class="fan-row__rank"></span>' +
+        '<div role="cell" class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-fan-name></div><div class="data-list__meta">' + esc(f.email) + '</div></div></div>' +
+        '<span role="cell" class="fan-row__country" data-feat="S129" data-sort-key="country" data-fan-country></span>' +
+        '<span role="cell" class="badge fan-row__tier" data-sort-key="tier"><span></span></span>' +
+        '<span role="cell" class="fan-row__num fan-row__rep" data-sort-key="rep" data-fan-points></span>' +
+        '<span role="cell" class="fan-row__num fan-row__spent" data-feat="S118" data-sort-key="spent">$' + spentOf(f).toLocaleString('en-US') + '</span>' +
+        '<span role="cell" class="text-sub fan-row__progress" data-feat="S129" style="font-size: var(--fs-12)" data-sort-key="next" data-fan-progress></span>' +
+        '<span role="cell" class="fan-row__status" data-feat="S129" data-sort-key="status" data-fan-status></span>' +
+        '<span role="cell" class="product-list__actions fan-row__actions">' + KEBAB.split('fan-detail.html?fan=1').join(href) + '</span></div>';
+    }
+    if (list) {
+      const byId = {};
+      list.querySelectorAll('.fan-row[data-fan-id]').forEach(r => { byId[r.dataset.fanId] = r; });
+      const html = F.list.filter(f => f.gen).map(rowHTML).join('');
+      list.insertAdjacentHTML('beforeend', html);
+      list.querySelectorAll('.fan-row[data-fan-id]').forEach(r => { byId[r.dataset.fanId] = r; });
+      const frag = document.createDocumentFragment();
+      F.list.forEach(f => { if (byId[f.id]) frag.appendChild(byId[f.id]); });   /* 依名次排好；排名章焊死在人身上，之後排序不重編 */
+      list.appendChild(frag);
+    }
+    function paintRoster() {
+      document.querySelectorAll('#fans-list .fan-row[data-fan-id]').forEach(row => {
+        const fan = F.get(row.dataset.fanId);
+        if (!fan) return;
+        const rank = row.querySelector('.fan-row__rank'); if (rank) rank.textContent = fan.rank.toLocaleString('en-US');
+        if (fan.gen) {
+          const n = row.querySelector('[data-fan-name]'); if (n) n.textContent = fan.name();
+          const c = row.querySelector('[data-fan-country]'); if (c) c.textContent = fan.countryName();
+        }
+        row.dataset.tier = fan.tier;
+        const pts = row.querySelector('[data-fan-points]');
+        if (pts) pts.textContent = fan.points.toLocaleString('en-US');
+        /* 分級徽章與排序：同一級裡再依點數排（排序值＝分級序 × 10000＋點數） */
+        const tierCell = row.querySelector('.fan-row__tier[data-sort-key="tier"]');
+        if (tierCell) {
+          Object.values(BADGE).forEach(c => tierCell.classList.remove(c));
+          tierCell.classList.add(BADGE[fan.tier]);
+          tierCell.setAttribute('data-sort-value', (4 - F.TIERS.indexOf(fan.tier)) * 10000 + fan.points);
+          const lab = tierCell.firstElementChild;
+          if (lab) { lab.setAttribute('data-i18n', 'fans.tier.' + fan.tier); lab.textContent = T('fans.tier.' + fan.tier); }
+        }
+        const pr = row.querySelector('[data-fan-progress]');
+        if (pr) {
+          const g = F.progress(fan);
+          pr.textContent = g.top ? T('fans.row.next-top') : T('fans.row.next').replace('{p}', g.pct);
+          pr.setAttribute('data-sort-value', g.top ? 101 : g.pct);
+          if (g.top) pr.removeAttribute('title');
+          else pr.title = g.need > 0 ? T('fans.row.next-need').replace('{n}', g.need.toLocaleString('en-US')) : T('fan-detail.kpi.progress-reached');
+        }
+        const st = row.querySelector('[data-fan-status]');
+        if (st) {
+          const s = STATUS[F.status(fan)];
+          st.setAttribute('data-sort-value', s[2]);
+          st.innerHTML = '<span class="badge ' + s[0] + '"><span data-i18n="' + s[1] + '"></span></span>';
+          st.querySelector('[data-i18n]').textContent = T(s[1]);
+        }
+      });
+    }
+    paintRoster();
+    document.addEventListener('i18n:applied', paintRoster);
+
+    /* ── F2 · 摘要指標：全部由母體算（5.1.7 F2）──
+       活躍粉絲＝近 N 天（活躍視窗）至少 1 筆有效動作；共 N 位＝母體總數；
+       活躍粉絲收入＝近 N 天的粉絲營收總額（規格現行口徑，未限定活躍粉絲〔產品待確認〕；示範資料裡近 N 天有購買的人必定活躍，兩種讀法數字相同）；
+       平均忠誠點數＝所有粉絲點數總和 ÷ 粉絲總數；「較上月 +12」是示範值（原型沒有上月快照）。 */
+    const S = F.summary();
+    window.ztorFansSummary = S;
+    function paintKpi() {
+      const set = (sel, v) => { const el = document.querySelector(sel); if (el) el.textContent = v; };
+      set('[data-kpi-active]', S.active.toLocaleString('en-US'));
+      set('[data-kpi-rev]', '$' + S.revenue.toLocaleString('en-US'));
+      set('[data-kpi-avg]', S.avg.toLocaleString('en-US'));
+      const meta = document.querySelector('[data-i18n="fans.kpi.active-meta"]');
+      if (meta) meta.textContent = T('fans.kpi.active-meta').replace('{n}', S.total.toLocaleString('en-US'));
+      /* 群發訊息的收件對象人數（同一個母體：全部＝總數、各級＝該級全部粉絲、流失風險、已挽回） */
+      const opt = (v, n) => { const o = document.querySelector('#msg-to option[value="' + v + '"]'); if (o) o.textContent = o.textContent.replace(/\([\d,]+\)/, '(' + n.toLocaleString('en-US') + ')'); };
+      opt('all', S.total);
+      F.TIERS.forEach(t => opt(t, S.tiers[t].all));
+      opt('recovered', F.list.filter(f => F.status(f) === 'recovered').length);
+    }
+    paintKpi();
+    document.addEventListener('i18n:applied', paintKpi);
+  })();
 
   /* ── F1 · Leaderboard ｜ Hall of fame tab 切換（比照 earnings.html）── */
   (function () {
@@ -1198,14 +1318,21 @@
     const alert = document.getElementById('fans-risk-alert');
     if (!alert) return;
     /* demo：?risk=0 看「零風險」狀態（網址參數蓋過 data-has-risk，只為了方便看畫面） */
+    /* 2026-11-02 #460：有沒有風險由母體算（流失風險視窗內沒有任何有效動作的人數 > 0）；?risk=0 仍可看零風險畫面。 */
+    const SUM = window.ztorFansSummary || (window.ztorFans && window.ztorFans.summary());
+    alert.dataset.hasRisk = SUM && SUM.risk > 0 ? 'true' : 'false';
     if (new URLSearchParams(location.search).get('risk') === '0') alert.dataset.hasRisk = 'false';
     const hasRisk = alert.dataset.hasRisk === 'true';
     alert.hidden = !hasRisk;
     /* 流失風險 KPI 卡兩個狀態（2026-10-27，UIA-312）：有風險＝紅色小標「最高風險級別 · 沉默天數」；零風險＝0＋綠色「無」。
        無資料（新創作者）整排 KPI 本來就退位，不在這裡處理。小標文字一律最短：數字已在上面，不重複寫「N 位」「未互動」。 */
     const val = document.querySelector('[data-risk-value]'), meta = document.querySelector('[data-risk-meta]');
-    /* 示意資料：流失風險粉絲依分級分組，高的在前；M＝幾天沒行為就掉一級（Admin 設定，預設 90）。D493 */
-    const RISK = [{ tier: 'inner', n: 2, days: 10 }, { tier: 'super', n: 5, days: 21 }], M = 90;
+    /* 示意資料：流失風險粉絲依分級分組，高的在前；M＝幾天沒行為就掉一級（Admin 設定，預設 90）。D493
+       2026-11-02 D497：流失風險改成「近 30 天無任何有效動作」，每一組的 N（該級最近一次有效動作那位的距今天數）至少 30；
+       示意數字對上名冊兩位流失中的粉絲（超級粉絲 34 天、上榜粉絲 41 天，js/fans-roster.js）。舊值：核心圈 2 位 10 天、超級粉絲 5 位 21 天。 */
+    /* 2026-11-02 #460：改由母體算——每一級的人數 n、該級最近一次有效動作那位的沉默天數 days（js/fans-roster.js summary().riskGroups），
+       M＝平台設定「多久沒有行為就往下掉一階」（預設 90）。舊值：寫死 2 位超級粉絲 34 天、5 位上榜粉絲 41 天。 */
+    const RISK = SUM ? SUM.riskGroups : [], M = SUM ? SUM.settings.dormancy : 90;
     const T = k => (window.i18nT && window.i18nT(k)) || k;
     const fill = (k, g) => T(k).replace('{n}', g.n).replace('{tier}', T('fans.tier.' + g.tier)).replace('{d}', g.days).replace('{m}', M);
     const total = RISK.reduce((s, g) => s + g.n, 0);
@@ -1222,7 +1349,9 @@
       }
       if (tip && !hasRisk) tip.removeAttribute('tabindex');
       const am = document.querySelector('.alert__meta'); if (am && hasRisk) am.textContent = fill('fans.risk.short', RISK[0]);
-      const at = document.querySelector('.alert__title'); if (at && hasRisk) at.textContent = T('fans.alert.title').replace(/\d+/, String(total));
+      const at = document.querySelector('.alert__title'); if (at && hasRisk) at.textContent = T('fans.alert.title').replace(/\{n\}|\d+/, String(total));
+      /* 群發訊息收件對象的「流失風險 (N)」跟 KPI 卡同一個數字（2026-11-02 #443） */
+      const ro = document.querySelector('#msg-to option[value="risk"]'); if (ro) ro.textContent = T('msg.to.risk').replace(/\d+/, String(hasRisk ? total : 0));
     }
     paintRisk();
     document.addEventListener('i18n:applied', paintRisk);
@@ -1242,9 +1371,9 @@
   }, true);
 
   /* ── F6 · 搜尋 × 分級 × chip 過濾 + Load more（每次 25 列）──
-     demo 列數少，PER_LOAD 設 4 才看得出分頁效果（spec 正式值為 25）。 */
+     2026-11-02 #460：名冊改成完整示範母體（1,340 位），PER_LOAD 回到規格正式值 25（原本 demo 只有 9 列時設 4）。 */
   (function () {
-    const PER_LOAD = 4;
+    const PER_LOAD = 25;
     const list   = document.getElementById('fans-list');
     if (!list) return;
     /* 每次都重讀 DOM 順序，不快取 —— 點欄名排序會實際搬動節點，
@@ -1670,6 +1799,21 @@
 
   const cardSnaps = new WeakMap();
 
+  /* 前 % 名三格（核心圈、超級粉絲、上榜粉絲）是否嚴格遞增。 */
+  function topPctMonotonic() {
+    if (!table) return true;
+    const row = Array.from(table.querySelectorAll('.tier-ov__row'))
+      .find(r => r.querySelector('[data-i18n="tier-settings.gate.toppct"]'));
+    if (!row) return true;
+    const v = Array.from(row.querySelectorAll('.tier-ov__edit input')).map(i => Number(i.value));
+    return v.length < 3 || (v.every(n => isFinite(n) && n > 0 && n <= 100) && v[0] < v[1] && v[1] < v[2]);
+  }
+
+  /* 全站最低忠誠點數門檻（唯讀）：值來自 js/fans-roster.js（對應 BO Global Setting 的 S_floor）。 */
+  document.querySelectorAll('[data-tier-floor-val]').forEach(el => {
+    if (window.ztorFans) el.textContent = window.ztorFans.S_FLOOR.toLocaleString('en-US');
+  });
+
   function setEditing(card, editing) {
     card.classList.toggle('is-editing', editing);
     const idle = card.querySelector('.card__head [data-icon-idle]');
@@ -1690,12 +1834,24 @@
       setEditing(card, true);
     });
     if (cancelBtn) cancelBtn.addEventListener('click', () => {
+      const monoErr = card.querySelector('[data-tier-mono-err]');
+      if (monoErr) monoErr.hidden = true;
       const snap = cardSnaps.get(card);
       if (snap) restore(card, snap);
       countPerks();
       setEditing(card, false);
     });
     if (saveBtn) saveBtn.addEventListener('click', () => {
+      /* 儲存前檢查（5.1.7.6 F2，D497）：只剩前 % 名要逐級放寬（核心圈 < 超級粉絲 < 上榜粉絲）；
+         最低忠誠點數門檻全站一個、創作者不能改，不再有「隨分級遞減」的檢查。
+         邊界值能不能相等等細則〔產品待確認〕，原型先照「嚴格遞增」擋。 */
+      if (card === mainCard && !topPctMonotonic()) {
+        const err = card.querySelector('[data-tier-mono-err]');
+        if (err) err.hidden = false;
+        return;
+      }
+      const monoErr = card.querySelector('[data-tier-mono-err]');
+      if (monoErr) monoErr.hidden = true;
       commit(card);
       countPerks();
       setEditing(card, false);
@@ -1747,46 +1903,57 @@
 
   /* 改「前 % 名」時，粉絲組成（圓餅＋圖例）要跟著即時變（2026-08-01 使用者裁示）。
      三個分級門檻是巢狀的：核心圈 ⊂ 超級粉絲 ⊂ 上榜粉絲 ⊂ 全部——下層的「前 %」
-     不能比上層窄，這裡用 Math.max 保底，避免打字打到一半（例如把超級粉絲改成
-     0.5%，比核心圈的 1% 還窄）算出負的人數。
-     母數用 1,283（活躍粉絲，也是 js/tier-population.js 那組示範數字的母數）。
-     2026-10-02（D348）預設改 1／10／30（累積）後重算：13／115／257／898，
-     13/1283≈1%、128/1283≈10%、385/1283≈30%，與初始畫面一字不差。不是全站 1,840，
-     兩個母數在這頁本來就分屬「受眾」與「站內活躍」兩件事，見粉絲總覽頁的
-     單位界線註解。 */
-  const TOTAL_FANS = 1283;
+     不能比上層窄，這裡用 Math.max 保底，避免打字打到一半算出負的人數。
+     2026-11-02 #460：人數不再用「母數 × 百分比」推算，改拿這組前 % 名對 js/fans-roster.js 的母體重新分級
+     （同時套 S_floor），圖例寫各級的活躍粉絲數與近 N 天營收（5.1.7 F3：各級加總＝活躍粉絲數）。
+     舊值：母數寫死 1,283、人數＝四捨五入的百分比。 */
   const PIE_VARS = ['--primary', '--status-info', '--status-success', '--foreground-muted'];
   function fansUnit(n) {
     const zh = document.documentElement.lang === 'zh-Hant';
-    return zh ? (n + ' 位') : (n + (n === 1 ? ' fan' : ' fans'));
+    return zh ? (n.toLocaleString('en-US') + ' 位') : (n.toLocaleString('en-US') + (n === 1 ? ' fan' : ' fans'));
   }
+  const gateRowOf = () => Array.from(table ? table.querySelectorAll('.tier-ov__row') : [])
+    .find(r => r.querySelector('[data-i18n="tier-settings.gate.toppct"]'));
+  /* 分級設定彈窗的前 % 名：載入時填平台設定的值（release2.4 由平台設定、創作者唯讀，D500） */
+  (function () {
+    const row = gateRowOf(), F = window.ztorFans;
+    if (!row || !F) return;
+    const top = F.settings().topPct;
+    row.querySelectorAll('.tier-ov__cell').forEach((c, i) => {
+      if (i > 2) return;
+      const rd = c.querySelector('.tier-ov__read'), inp = c.querySelector('input');
+      if (rd) rd.textContent = top[i] + '%';
+      if (inp) { inp.value = top[i]; inp.setAttribute('value', top[i]); }
+    });
+  })();
   function updateComposition() {
-    if (!pieEl || legendRows.length !== 4 || !table) return;
-    const gateRow = Array.from(table.querySelectorAll('.tier-ov__row'))
-      .find(r => r.querySelector('[data-i18n="tier-settings.gate.toppct"]'));
+    if (!pieEl || legendRows.length !== 4 || !table || !window.ztorFans) return;
+    const gateRow = gateRowOf();
     if (!gateRow) return;
     const gateInputs = Array.from(gateRow.querySelectorAll('.tier-ov__edit input'));
     if (gateInputs.length < 3) return;
     const raw = gateInputs.map(i => Math.max(0, Math.min(100, +i.value || 0)));
-    const cumPct = [raw[0], Math.max(raw[0], raw[1]), Math.max(raw[0], raw[1], raw[2]), 100];
-    const cumCount = cumPct.map(p => Math.round(TOTAL_FANS * p / 100));
-    cumCount[3] = TOTAL_FANS;   // 最後一階鎖定吃滿總數，不留四捨五入的零頭
-
-    let prevCount = 0, prevPct = 0;
+    const top = [raw[0], Math.max(raw[0], raw[1]), Math.max(raw[0], raw[1], raw[2])];
+    const S = window.ztorFans.summary({ topPct: top });
+    const act = S.active || 1;
+    let cum = 0;
     const stops = [];
     legendRows.forEach((row, i) => {
-      const n = Math.max(0, cumCount[i] - prevCount);
-      const cumPctRounded = Math.round(cumCount[i] / TOTAL_FANS * 100);
-      const pct = cumPctRounded - prevPct;
-      row.dataset.tierShare = pct;
+      const t = window.ztorFans.TIERS[i], n = S.tiers[t].active;
+      const before = Math.round(cum / act * 100);
+      cum += n;
+      const after = i === 3 ? 100 : Math.round(cum / act * 100);
+      row.dataset.tierShare = after - before;
+      row.dataset.rev = S.tiers[t].rev;
       const pctEl = row.querySelector('.source-row__sharepct');
-      if (pctEl) pctEl.textContent = pct + '%';
+      if (pctEl) pctEl.textContent = (after - before) + '%';
       const amtEl = row.querySelector('.source-row__amt');
       if (amtEl) amtEl.textContent = fansUnit(n);
-      stops.push('var(' + PIE_VARS[i] + ') 0 ' + cumPctRounded + '%');
-      prevCount = cumCount[i];
-      prevPct = cumPctRounded;
+      const revEl = row.querySelector('.source-row__pct');
+      if (revEl) revEl.textContent = '$' + S.tiers[t].rev.toLocaleString('en-US');
+      stops.push('var(' + PIE_VARS[i] + ') 0 ' + after + '%');
     });
+    window.ztorFans.summary();   /* 預覽完把母體分級切回目前生效的設定 */
     pieEl.style.setProperty('--pie-stops', stops.join(', '));
     if (window.ztorRefreshFanPareto) window.ztorRefreshFanPareto();
   }
@@ -1960,8 +2127,8 @@
   }
   document.querySelectorAll('[data-tier-open]').forEach(b =>
     b.addEventListener('click', () => openTier(b.getAttribute('data-tier-open'))));
-  /* ?tier=settings（2026-08-20）：分級設定在 D169 之後是本頁的彈窗、不再是獨立頁，
-     所以跨頁入口（粉絲詳情的「Tier settings」）只能用深連結表達。 */
+  /* ?tier=settings（2026-08-20）：分級設定在 D169 之後是本頁的彈窗、不再是獨立頁，跨頁入口只能用深連結表達。
+     2026-11-02（D506）粉絲詳情頁首的「分級設定」入口已移除，目前沒有頁面帶這個參數；深連結保留可用。 */
   try {
     const tq = new URLSearchParams(location.search).get('tier');
     if (tq) openTier(tq);
@@ -2012,11 +2179,11 @@
   document.addEventListener('ztor:sorted', paint);
 })();
 
-/* 品項份量的「每 HK$1 換幾點」讀數（D347，spec §7.5：換算成港幣的金額 × 基準費率 40 × 品項份量）。
+/* 品項份量的「每 1 元基準幣別換幾點」讀數（D347；D500：K_A 幣別待確認，先用中性單位、K_A 預設 10（D498）× 品項份量）。
    基準費率是平台常數（推定，§8.29 第 18 項），這裡只拿來把品項份量翻成創作者看得懂的點數；
    打字時即時算，取消會把輸入框還原成快照值、不觸發 input，所以取消後也補算一次。 */
 (function () {
-  const BASE_RATE = 40;
+  const BASE_RATE = 10;   /* D500：K_A 預設 10（D498），幣別待確認、單位先寫「每 1 元基準幣別」 */
   function syncWeightPts() {
     document.querySelectorAll('[data-weight-row]').forEach(row => {
       const inp = row.querySelector('[data-weight-input]');

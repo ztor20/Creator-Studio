@@ -238,13 +238,17 @@
 
   function optionHTML(state, o, i, groupDisabled) {
     var selected = o.selected;
-    var disabled = o.disabled || groupDisabled;
+    /* 2026-11-02（D499）：被頁面藏起來的選項（[hidden]）與被版本閘收起的選項（.ztd-ver-hidden）不進面板——
+       原生 <select> 的清單本來就不畫它們，換成自己的面板後也要照做（例：建立商品數位類別，忠誠點數只給 Admin 代管態）。
+       仍然輸出一列（隱藏＋停用），讓面板列的索引與 <select> 的 option 索引保持一一對應。 */
+    var gone = !!(o.hidden || (o.classList && o.classList.contains('ztd-ver-hidden')));
+    var disabled = o.disabled || groupDisabled || gone;
     /* 複選：列首一顆 house checkbox（Q126：複選的記號＝方框），不畫尾端的勾——一列只有一種「選了」的記號 */
     var mark = state.multi
       ? '<span class="zcheck zselect__mark" aria-hidden="true"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" tabindex="-1"' +
         (selected ? ' checked' : '') + (disabled ? ' disabled' : '') + '><span class="zcheck__box"></span></span></span>'
       : '';
-    return '<div class="zselect__option" role="option" data-i="' + i + '"' +
+    return '<div class="zselect__option" role="option" data-i="' + i + '"' + (gone ? ' hidden' : '') +
       ' aria-selected="' + (selected ? 'true' : 'false') + '"' +
       (disabled ? ' aria-disabled="true"' : '') +
       ' id="' + state.id + '-o' + i + '">' + mark +
@@ -396,7 +400,9 @@
         state.typed = (now - state.typedAt < 1000 ? state.typed : '') + e.key.toLowerCase();
         state.typedAt = now;
         for (var i = 0; i < state.opts.length; i++) {
-          if (state.opts[i].textContent.trim().toLowerCase().indexOf(state.typed) === 0) {
+          var oi = state.opts[i];
+          if (oi.hidden || (oi.classList && oi.classList.contains('ztd-ver-hidden'))) continue;
+          if (oi.textContent.trim().toLowerCase().indexOf(state.typed) === 0) {
             setActive(state, i, true);
             break;
           }

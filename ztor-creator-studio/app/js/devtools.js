@@ -147,6 +147,7 @@
     O38: 'release2.3',   // 2026-10-14 D414（訂單詳情：撤銷整張訂單）
     O39: 'release2.3',   // 2026-10-15 D416（匯出 CSV 與確認視窗：訂單管理＋活動交易明細）
     O40: 'release2.3', O41: 'release2.3', O42: 'release2.3',   // 2026-10-15 D424（已過期訂單／匯出中提示／匯出紀錄）
+    S140: 'release2.4', S141: 'tbd', S142: 'retired' /* 2026-11-02 D503 撤除，QR 改在掃碼領點場次產生（功能表 ⚫） */, S143: 'release2.4', O43: 'release2.4',   // 2026-11-02 D499（數位型別卡／文檔與會員卡／忠誠點數商品／A6 開關／掃碼領點場次）
     S97: 'release2.3',   // 2026-10-15 D422 決定二（建立活動第 6 步票務商品的電影關聯，自 S64 拆出）
     S98: 'tbd',          // 2026-10-15 D423 決定四（活動詳情成本與營收摘要，release2.3 不提供）
     S99: 'release2.3',   // 2026-10-15 D423 決定一（活動詳情票務商品卡片／列表與隱藏／顯示）
@@ -174,7 +175,8 @@
     S118: 'tbd', S119: 'tbd',   // 2026-10-23 粉絲管理 P0 以外（名冊與詳情延伸／分級設定編輯、權益與計分），只在最終版
     S58: 'release2.3',   // 2026-09-29 D335（活動：描述與說明區塊內文的圖片與影片）
     S59: 'release2.3', S60: 'retired', S61: 'release2.3',   // 2026-09-30 D340（活動：內文粗體與清單／粉絲頁說明區塊／顯示設定）
-    S65: 'tbd', S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
+    S65: 'release2.4' /* 2026-11-02 D498 改 🟣（需求站 dev 頁 Global Setting P0） */, S66: 'tbd',               // 2026-10-02 D347（平台忠誠點數設定頁／分級設定的各購買品項的份量與互動推薦每 90 天最多得分）
+    S132: 'tbd',   // 2026-11-02 D498：平台忠誠點數設定裡 dev 頁 P1／P2 或沒有的區塊（全站活動、賽季加倍、衰減、平台常數、誠信規則），只在最終版
     S68: 'tbd', S69: 'tbd', S70: 'tbd', S71: 'tbd', O33: 'tbd',   // 2026-10-05 D360（需求看板頁／商品層需求入口／服飾配件分類與屬性／尺寸顏色快捷預設／訂單收件國家城市）
     S62: 'release2.3',   // 2026-10-07 使用者裁示：時間層級與定時上架上限隨 release2.3
     S63: 'release2.3', S64: 'release2.3',   // 2026-10-16 使用者指示組合包納入 release2.3（原 2026-10-09 D390 補登為 tbd）
@@ -197,8 +199,9 @@
     /* ✝ 2026-09-24 D324：creators.html、settings.html 移出——Admin 平台層（除平台優惠設定）與帳戶設定列入 Phase 1。
        平台優惠設定仍 Phase 4（D279），補進本清單與 sidebar.js 同名清單對齊。 */
     'index.html': 1, 'dashboard-classic.html': 1, 'admin-platform-promotions.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
-    /* 2026-10-02 D347：平台忠誠點數設定（S65 ⚪ 未排定），與 sidebar.js 同名清單同步。 */
-    'admin-platform-loyalty.html': 1,
+    /* 2026-10-02 D347：平台忠誠點數設定（S65 ⚪ 未排定），與 sidebar.js 同名清單同步。
+       2026-11-02 D498：S65 改 🟣 release2.4，改依功能放行；sidebar.js 的 TIER_ROUTES 同步。 */
+    'admin-platform-loyalty.html': 'S65',
     /* 2026-10-07 release2.3 切割：events.html／event-detail.html／create-event.html 移出——活動模組列入 release2.3
        （S72 🔵），三頁改頁級 data-page-feat="S72"；sidebar.js 同名清單同步。 */
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'edit-event.html': 1,

@@ -1,0 +1,168 @@
+/* ============================================================
+   Ztor — Vault stage（媒體庫主欄：標頭、成效 bento、內容卡片）
+   2026-11-02 · 媒體庫改版（note/媒體庫UX重新規劃.md 3.11–3.17、3.19、3.22–3.24）
+
+   由上而下：
+     .vault-bar    庫房標頭——名稱（點一下改名，輸入框與名稱同字級、不讓版面位移）、狀態徽章、排程，
+                   右側動作：分享（彈窗）、依狀態的主要動作、⋯（只剩刪除）。
+     .vault-bento  成效三格：現在打得開、累計解開過、目前看得到（未上架寫「上架後」）。
+     .vault-pool   灰底容器，裡面固定三欄直式（2:3，Q39）內容卡片；最後一張是「添加」卡。
+                   不分組、沒有篩選、沒有批次。
+   卡片只回答兩件事：這是什麼、誰拿得到。整張卡就是按鈕（點開單件設定抽屜）。
+   ============================================================ */
+
+/* ── 標頭 ── */
+.vault-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-16); }
+.vault-bar__title { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: nowrap; min-width: 0; height: 34px; }   /* 固定一行高度，讀取態與改名態同高 */
+.vault-bar__title .badge { flex-shrink: 0; }
+.vault-bar__sched { display: inline-flex; align-items: center; gap: var(--sp-4); font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; }
+.vault-bar__name {
+  font-size: var(--fs-22);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  background: none;
+  border: 0;
+  color: var(--foreground);
+  padding: 0;
+  cursor: text;
+  font-family: var(--font-display);
+  text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vault-bar__name:hover { text-decoration: underline dotted; text-underline-offset: 4px; }
+/* 改名中的輸入框：字級、字重、行高與名稱相同、高度鎖成名稱那一行，文字不位移、旁邊的徽章不換行；寬度由 JS 依字量出來 */
+.vault-bar__nameinput {
+  height: 34px;
+  padding: 0 var(--sp-10);
+  margin-inline: calc(-1 * (var(--sp-10) + 1px));
+  font-size: var(--fs-22);
+  font-weight: var(--fw-semibold);
+  font-family: var(--font-display);
+  line-height: var(--lh-snug);
+  min-width: 6rem;
+  max-width: 100%;
+  box-sizing: content-box;
+}
+.vault-bar__actions { display: flex; align-items: center; gap: var(--sp-8); flex-shrink: 0; }
+@media (max-width: 640px) { .vault-bar { flex-direction: column; } }
+
+/* ── 成效 bento ── */
+.vault-bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8); }
+.vault-bento__tile {
+  padding: var(--sp-14) var(--sp-16);
+  border-radius: var(--radius-xl);
+  background: var(--layer-1-surface);
+  border: 1px solid var(--layer-line);
+}
+.vault-bento__tile[hidden] { display: none; }
+.vault-bento__v { font-size: var(--fs-24); font-weight: var(--fw-semibold); line-height: var(--lh-tight); font-variant-numeric: tabular-nums; }
+.vault-bento__of { font-size: var(--fs-13); color: var(--muted-foreground); font-weight: var(--fw-regular); }
+.vault-bento__l { font-size: var(--fs-13); margin-top: var(--sp-4); }
+.vault-bento__s { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+/* 第一格的四分級分佈「核心圈 3/13…」：D505（2026-11-02）起不常駐，改由 stock-tip.css 的 .stock-tip--anchored 在滑過／focus 第一格時浮出；
+   原 .vault-bento__tiers／__tier 規則已移除（零消費）。 */
+@media (max-width: 640px) { .vault-bento { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── 可點開的成效格（D506，2026-11-02）：第一格點開「查看／播放」彈窗 ──
+   hover 照 STYLE-DECISIONS Q136（整面可點的卡片：上浮 --clickable-card-lift＋底色換 --clickable-card-hover-bg，不換邊框與陰影；
+   減少動態時不位移）；標籤後面一個小 chevron 當「點得開」的記號（同 vault-card、alert--card 的可點提示）。
+   原本常駐在成效格下面的 .vault-plays 卡（D497）已移除（零消費），內容改在彈窗裡用 Meter list 畫。 */
+.vault-bento .vault-bento__tile--open {
+  cursor: pointer;
+  transition: transform var(--duration) var(--easing), background-color var(--duration) var(--easing);
+}
+.vault-bento__tile--open:hover {
+  transform: translateY(var(--clickable-card-lift));
+  background: var(--clickable-card-hover-bg);
+}
+.vault-bento__tile--open:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.vault-bento__go { margin-inline-start: var(--sp-4); vertical-align: middle; color: var(--muted-foreground); }
+@media (prefers-reduced-motion: reduce) {
+  .vault-bento__tile--open { transition: none; }
+  .vault-bento__tile--open:hover { transform: none; }
+}
+
+/* ── 內容：灰底容器＋固定三欄直式卡片 ── */
+.vault-pool {
+  display: grid;
+  gap: var(--sp-16);
+  padding: var(--sp-20);
+  border-radius: var(--radius-xl);
+  background: var(--layer-2-surface);
+  border: 1px solid var(--layer-line);
+}
+.vault-pool__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
+.vault-pool__grid.is-dropping { outline: 1px dashed var(--primary); outline-offset: var(--sp-8); border-radius: var(--radius-lg); }
+@media (max-width: 640px) { .vault-pool__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.vault-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--layer-line);
+  background: var(--layer-1-surface);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  transition: box-shadow var(--duration) var(--easing), border-color var(--duration) var(--easing);
+}
+.vault-card:hover { box-shadow: var(--shadow-float); }
+.vault-card:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }
+.vault-card.is-locked { opacity: .55; }
+.vault-card__thumb {
+  position: relative;
+  aspect-ratio: var(--img-portrait);
+  background: var(--ztu-film);
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  overflow: hidden;
+}
+.vault-card__thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.vault-card__thumb .ztor-icon--lg { position: relative; }
+.vault-card__dur {
+  position: absolute;
+  right: var(--sp-8);
+  bottom: var(--sp-8);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-6);
+  border-radius: var(--radius-sm);
+  background: var(--scrim-media);
+  color: var(--on-media);
+  font-size: var(--fs-11);
+}
+.vault-card__grand {
+  position: absolute;
+  top: var(--sp-8);
+  right: var(--sp-8);
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--scrim-media);
+  color: var(--ztu-orange-hi);
+}
+.vault-card__body { display: grid; gap: var(--sp-6); align-content: start; padding: var(--sp-10) var(--sp-12) var(--sp-12); min-width: 0; }
+.vault-card__name { font-size: var(--fs-14); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vault-card__line { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); font-size: var(--fs-12); color: var(--muted-foreground); min-width: 0; }
+.vault-card__task { display: inline-flex; align-items: center; gap: var(--sp-4); min-width: 0; }
+.vault-card__task--set { color: var(--foreground); }
+.vault-card__task--warn { color: var(--status-warning-ink); }
+.vault-card__task-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vault-card__n { display: inline-flex; align-items: center; gap: var(--sp-4); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+/* 「添加」卡：同尺寸、同圓角，虛線外框 */
+.vault-card--add { border-style: dashed; background: transparent; color: var(--muted-foreground); }
+.vault-card--add .vault-card__thumb { background: transparent; }
+.vault-card--add .vault-card__name { color: var(--muted-foreground); font-weight: var(--fw-regular); }
+.vault-card--add:hover { background: var(--accent); color: var(--foreground); box-shadow: none; }
+.vault-card--add.is-over { background: var(--accent); color: var(--foreground); }

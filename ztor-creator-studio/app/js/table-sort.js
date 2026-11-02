@@ -189,14 +189,7 @@
         head.removeAttribute(attr);
       });
 
-      btn.addEventListener("click", function () {
-        var state = btn.getAttribute("data-sort-state");
-        var first = btn.getAttribute("data-sort-first");
-        var next;
-        if (state === "none") next = first;                                  // 1st
-        else if (state === first) next = first === "desc" ? "asc" : "desc";  // 2nd
-        else next = "none";                                                  // 3rd — home
-
+      function setState(next) {
         buttons.forEach(function (other) {
           if (other === btn) return;
           other.setAttribute("data-sort-state", "none");
@@ -206,6 +199,16 @@
         head.setAttribute("aria-sort", next === "none" ? "none" : (next === "asc" ? "ascending" : "descending"));
 
         apply(adapter, head, index, type, next);
+      }
+
+      btn.addEventListener("click", function () {
+        var state = btn.getAttribute("data-sort-state");
+        var first = btn.getAttribute("data-sort-first");
+        var next;
+        if (state === "none") next = first;                                  // 1st
+        else if (state === first) next = first === "desc" ? "asc" : "desc";  // 2nd
+        else next = "none";                                                  // 3rd — home
+        setState(next);
       });
 
       buttons.push(btn);

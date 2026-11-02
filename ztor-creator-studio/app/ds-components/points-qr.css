@@ -1,0 +1,81 @@
+/* ============================================================
+   Points QR card — 點數 QR 卡（掃碼領點）
+
+   Composition pattern: 一張 QR 圖＋QR 名稱＋「每次 +N 點」＋可選的
+   已領／總名額用量條＋「下載 QR」按鈕，直排置中。讓創作者把 QR 印出來
+   或貼到現場，粉絲掃了領點數。
+
+   Anatomy:
+     .points-qr                   外層（直排置中，不自帶面：放進卡或灰底都行）
+       .points-qr__code           QR 外框（白底卡面，同 .qr-box 做法）
+         <svg>                    window.ztorFauxQr() 產生
+       .points-qr__name           QR 名稱
+       .points-qr__points         每次 +N 點
+       .points-qr__usage          用量區（可選）
+         .points-qr__usage-text   已領 a／b（或名額已滿）
+         .stock-bar               用量條（沿用 stock-bar.css）
+       .points-qr__download       下載 QR 按鈕（.btn.btn--outline）
+
+   Modifier:
+     .points-qr--full             名額已滿：用量條轉警示色、QR 降透明度
+     .points-qr--compact          緊湊（QR 較小，放側欄卡用）
+
+   Consumers: pickup-detail.html（掃碼領點場次詳情的 QR popup；D503 起單頁專用，商品側已撤除）
+   Depends on: stock-bar.css、button.css、js/faux-qr.js、js/points-qr.js
+   ============================================================ */
+
+.points-qr {
+  --points-qr-size: calc(var(--sp-96) + var(--sp-24) * 3);   /* 168 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-8);
+  text-align: center;
+  min-width: 0;
+}
+.points-qr--compact { --points-qr-size: var(--sp-96); }
+
+.points-qr__code {
+  display: grid;
+  place-items: center;
+  width: var(--points-qr-size);
+  height: var(--points-qr-size);
+  padding: var(--sp-8);
+  margin-bottom: var(--sp-4);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+}
+.points-qr__code svg { width: 100%; height: 100%; display: block; }
+
+.points-qr__name {
+  max-width: 100%;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.points-qr__points {
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.points-qr__usage { width: 100%; max-width: calc(var(--sp-96) * 2.5); }
+.points-qr__usage-text {
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.points-qr__usage .stock-bar { margin: var(--sp-6) 0 0; }
+
+.points-qr__download { margin-top: var(--sp-4); }
+
+/* 名額已滿：QR 降階（仍可下載存檔）、用量條與文字轉警示 */
+.points-qr--full .points-qr__code { opacity: .55; }
+.points-qr--full .points-qr__usage-text { color: var(--destructive); }
+.points-qr--full .stock-bar__fill { background: var(--destructive); }

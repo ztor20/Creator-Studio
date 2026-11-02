@@ -99,6 +99,7 @@ table.stage td:nth-child(4){width:12%}
 <ul class="plain">
   <li>一個取貨場次把好幾個取貨商品與好幾種活動票券放進同一個核銷範圍，現場共用同一個 Scanner；物流配送的商品照訂單逐筆出貨，不經過這裡</li>
   <li>場次的階段、能核銷的範圍、核銷與領取碼、跟訂單與活動的關係，見<a href="pickup-rules.html">取貨規則</a></li>
+  <li>Admin 代管創作者時，場次分現場核銷與掃碼領點兩種類型；上面的內容除非標明，都是現場核銷，兩種類型的差別見<a href="#types">兩種場次類型</a></li>
 </ul>
 
 <h2 id="pickup-flow"><span class="n"></span>操作流程</h2>
@@ -213,12 +214,65 @@ table.stage td:nth-child(4){width:12%}
 </table></div>
 <p class="note">依據：5.1.5.11 F1～F4（F4.1～F4.3）、頁面狀態；主規格 §6、§7.2「取貨場次」；D094、D117、D118、D119、D120、D240。</p>
 
+<h2 id="types"><span class="n"></span>兩種場次類型</h2>
+<p>Admin 代管創作者時，取貨場次分現場核銷與掃碼領點兩種，建立時選擇。兩種類型的差別見<a href="#types-compare">類型比較</a>；清單上怎麼分辨見<a href="#types-list">清單上的差異</a>；全平台關閉掃碼領點事件時見<a href="#types-off">事件關閉提醒</a>。</p>
+
+<h3 id="types-compare">類型比較</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:20%">項目</th><th>現場核銷（On-site redemption）</th><th>掃碼領點（Scan to earn points）</th></tr></thead>
+  <tbody>
+    <tr><td>怎麼運作</td><td>工作人員用手機 Scanner 掃粉絲的領取碼</td><td>粉絲用 App 掃商家印出的 QR 領忠誠點數</td></tr>
+    <tr><td>放什麼</td><td>取貨商品與活動票券</td><td>只放點數 QR（不是商品）</td></tr>
+    <tr><td>Scanner 與領取碼</td><td>用 Scanner，產生領取單位與領取碼</td><td>不用 Scanner，不產生領取單位</td></tr>
+    <tr><td>誰看得到、誰能建立</td><td>創作者與 Admin</td><td>只有 Admin 代管創作者時出現，只有 Admin 能建立與編輯；創作者本人看不到</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>兩種類型不混放：現場核銷放取貨商品與活動票券，掃碼領點場次裡放點數 QR</li>
+  <li>創作者本人的取貨管理維持原樣，沒有類型可選</li>
+  <li>掃碼領點場次怎麼設定見<a href="pickup-create.html#scan-fields">掃碼領點場次的欄位</a>，發點規則見<a href="pickup-detail.html#scan-rules">發點規則</a></li>
+</ul>
+
+<h3 id="types-list">清單上的差異</h3>
+<p>下表只列 Admin 代管創作者時，清單上與現場核銷不同的地方。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>類型篩選</td><td>只在 Admin 代管創作者時出現</td><td>選項：<br>全部<br>現場核銷<br>掃碼領點<br>與關鍵字搜尋、狀態篩選可以疊加</td></tr>
+    <tr><td>類型欄</td><td>只在 Admin 代管創作者時出現</td><td>顯示現場核銷或掃碼領點</td></tr>
+    <tr><td>場次狀態</td><td>掃碼領點場次</td><td>除了尚未開始、進行中、已結束、已封存，另加「啟用（Enabled）／停用（Disabled）」標示<br>啟用／停用是人工開關，進行中是依開始與結束時間算出的狀態，兩者是不同維度，見<a href="pickup-detail.html#scan-basic">基本資料與啟用停用</a></td></tr>
+    <tr><td>可核銷項目摘要</td><td>掃碼領點場次</td><td>改列「N 個 QR · 已領 M 次」：N 是場次裡的 QR 數，M 是這些 QR 累計已領的次數</td></tr>
+    <tr><td>名單摘要、Scanner 狀態</td><td>掃碼領點場次</td><td>顯示「—」</td></tr>
+    <tr><td>開啟詳情、編輯、封存</td><td>掃碼領點場次</td><td>同現場核銷；詳情是<a href="pickup-detail.html#scan">掃碼領點場次詳情</a></td></tr>
+    <tr><td>啟用／停用</td><td>掃碼領點場次</td><td>停用前先確認，見<a href="pickup-detail.html#scan-basic">基本資料與啟用停用</a></td></tr>
+    <tr><td>複製 Scanner 網址、顯示 Scanner QR code、開始掃描</td><td>—</td><td>掃碼領點場次沒有這三個操作，因為不使用 Scanner</td></tr>
+  </tbody>
+</table></div>
+<p>有人領過的掃碼領點場次不能刪除，只能停用或封存。</p>
+
+<h3 id="types-off">事件關閉提醒</h3>
+<p>全平台把線下掃碼領點事件關閉時，Admin 一眼知道掃碼領點場次此刻不發點，避免以為是場次設定有問題。開關在<a href="admin-loyalty.html#offline-scan">平台忠誠點數設定</a>，只有 Admin 能改，這頁不提供切換。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">對象</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">清單上方的提醒條</td></tr>
+    <tr><td>提醒條</td><td>事件開著</td><td>不顯示</td></tr>
+    <tr><td>提醒條</td><td>事件關閉</td><td>顯示「線下掃碼領點事件目前關閉，任何掃碼都不發點，粉絲 App 會顯示『線下積分暫停中』」，附前往平台忠誠點數設定的入口</td></tr>
+    <tr class="grp"><td colspan="3">掃碼領點場次的列</td></tr>
+    <tr><td>列標示</td><td>事件開著</td><td>不加標示</td></tr>
+    <tr><td>列標示</td><td>事件關閉</td><td>每個掃碼領點場次的列都標「事件關閉中」，含啟用且進行中的場次<br>場次自己的啟用／停用與時間狀態不變，重開事件即恢復發點，已發的點數不受影響</td></tr>
+    <tr class="grp"><td colspan="3">現場核銷場次</td></tr>
+    <tr><td>提醒條與列標示</td><td>事件開著或關閉</td><td>都不受影響，不顯示</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.5.11 取貨場次兩種類型、F3、F4.1、F4.2、F5、使用情境 9、10；D499、D503。</p>
+
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.8）；<code>5.1.5.12-建立取貨場次.md</code>（v1.11）§2；<code>0-設計規格書.md</code>（v4.90）§6、§7.2</li>
-    <li>決策：D094、D111、D117、D118、D119、D120、D240、D394、D401</li>
+    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.12）；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）§2；<code>0-設計規格書.md</code>（v5.36）§6、§7.2</li>
+    <li>決策：D094、D111、D117、D118、D119、D120、D240、D394、D401、D499、D503</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -226,9 +280,11 @@ table.stage td:nth-child(4){width:12%}
     <li>搜尋與狀態篩選是否同時生效取交集；搜尋或篩選沒有命中時顯示什麼</li>
     <li>每批載入幾筆（規格預設 25 筆）與載入方式（按鈕或捲到底自動載入），由畫面決定</li>
     <li>清單每一列的欄位排法與名單摘要的呈現</li>
+    <li>場次類型建立後能不能更改</li>
+    <li>創作者本人是否看得到類型篩選與類型欄，以及三項摘要指標是否計入掃碼領點場次</li>
     <li>場次規則相關的待確認列在<a href="pickup-rules.html">取貨規則</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（新建頁面，規則節拆到取貨規則；對照 5.1.5.11 v2.8、5.1.5.12 v1.11、5.1.5.14 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
+  <p class="k">最近同步：2026-11-02（D503：掃碼領點場次放的是點數 QR，不是商品；列摘要改成 QR 數與已領次數；對照 5.1.5.11 v2.12）；上一次 2026-11-02（D499：新增兩種場次類型、掃碼領點在清單上的差異、事件關閉提醒；對照 5.1.5.11）；上一次 2026-10-19（新建頁面，規則節拆到取貨規則；對照 5.1.5.11 v2.8、5.1.5.12 v1.11、5.1.5.14 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
 </details>
 
 <script>

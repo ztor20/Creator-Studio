@@ -11,6 +11,7 @@
        .kv__v            值（前景色、右對齊、medium）
 
    Modifier:
+     .kv__k--icon        鍵前面帶圖示：圖示與名稱同列置中，.kv__sub 對齊名稱左緣
      .kv--lead           視為群組首列：去掉上分隔線與上內距。
                          條件顯示（例如取貨方式二選一）時，被 [hidden]
                          隱藏的列仍算 :first-child，需手動標這個 class。
@@ -22,7 +23,8 @@
 
    Consumers: product-detail.html（右側 meta 欄三張卡）、auction-detail.html、
      order-detail.html（純數位訂單的「數位交付」彈窗，唯讀交付狀態）、
-     fans-guide.html（第一幕的計分摘要，D347，2026-10-02）
+     fans-guide.html（第一幕的計分摘要，D347，2026-10-02）、
+     pickup-detail.html（掃碼領點「領取項目」列用 .kv__k--icon，D501）
    ============================================================ */
 
 .kv {
@@ -53,6 +55,16 @@
    --over＝超出（鎖的比有的多）時轉破壞色。 */
 .kv__sub { display: block; margin-top: var(--sp-2); font-size: var(--fs-12); color: var(--faint-ink); }
 .kv__sub--over { color: var(--destructive); }
+/* 鍵前面帶一顆圖示（2026-11-02，D501 取貨場次詳情「領取項目」列）：兩欄 grid——圖示在第一欄、與名稱那一行垂直置中；
+   第二行 .kv__sub 落在第二欄，跟名稱左緣對齊（不是跟圖示對齊）。 */
+.kv__k--icon {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--sp-8);
+  align-items: center;
+}
+.kv__k--icon > .ztor-icon { grid-row: 1; grid-column: 1; }
+.kv__k--icon > .kv__sub { grid-column: 2; }
 
 .kv__v {
   text-align: right;

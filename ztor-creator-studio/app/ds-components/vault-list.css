@@ -1,0 +1,108 @@
+/* ============================================================
+   Ztor — Vault list（媒體庫的庫房列表，左側欄）
+   2026-11-02 · 媒體庫改版（note/媒體庫UX重新規劃.md 3.18、3.20）
+
+   取代原本右側的 .vault-rail／.vault-row（兩套並存：舊的仍給保存檔 media-vault-popup.html 用）。
+   版面：整頁是「左欄庫房列表｜右側主欄」兩欄，窄於 900px 變成上下，列表改橫向捲動。
+
+   一列的形狀：直式封面（2:3，Q39）＋名稱＋「狀態圓點・狀態字・人數」一行。
+   選項狀態全靠底色說話，不畫框：
+     預設透明｜滑過 --accent｜選中淡橘底 --selected-surface（名稱換 --selected-ink）｜
+     鍵盤聚焦外圈 --ring｜上鎖（檢視身分）整列變淡。
+   「新增庫房」是同一個形狀的列，差別只有細線外框、虛線封面、灰字——標示它是動作、不是庫房。
+
+   Markup：
+     <div class="vault-shell">
+       <aside class="vault-list">
+         <div class="vault-list__head"><span class="vault-list__label">…</span><span class="vault-list__count">…</span></div>
+         <button class="vault-list__row vault-list__row--new"><span class="vault-list__cover">＋</span><span class="vault-list__text"><span class="vault-list__name">新增庫房</span></span></button>
+         <div class="vault-list__items">
+           <button class="vault-list__row vault-list__row--active" aria-current="true"> … </button>
+         </div>
+       </aside>
+       <div class="vault-stage">…主欄…</div>
+     </div>
+   ============================================================ */
+
+.vault-shell {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: var(--sp-24);
+  align-items: start;
+  margin-top: var(--sp-16);
+}
+.vault-stage { min-width: 0; display: grid; gap: var(--sp-16); align-content: start; }
+.vault-stage[hidden] { display: none; }
+
+.vault-list {
+  position: sticky;
+  top: var(--sp-16);
+  display: grid;
+  gap: var(--sp-10);
+  max-height: calc(100dvh - var(--sp-32));
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+.vault-list__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-8); }
+.vault-list__label { font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+.vault-list__count { font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-list__items { display: grid; gap: var(--sp-6); align-content: start; overflow-y: auto; padding: var(--sp-2); }
+
+.vault-list__row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: var(--sp-12);
+  align-items: center;
+  text-align: left;
+  padding: var(--sp-8) var(--sp-10);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font: inherit;
+  transition: background-color var(--duration) var(--easing);
+}
+.vault-list__row:hover { background: var(--accent); }
+.vault-list__row:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }
+.vault-list__row--active,
+.vault-list__row--active:hover { background: var(--selected-surface); }
+.vault-list__row--active:hover { background: var(--selected-surface-hover); }
+.vault-list__row--dim { opacity: .55; }
+
+.vault-list__cover {
+  width: 2.75rem;
+  aspect-ratio: var(--img-portrait);
+  border-radius: var(--radius-sm);
+  background: var(--ztu-film);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+}
+.vault-list__cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.vault-list__text { display: grid; gap: var(--sp-4); min-width: 0; }
+.vault-list__name { font-size: var(--fs-14); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vault-list__row--active .vault-list__name { color: var(--selected-ink); }
+/* 內容組成「X 圖・X 片・X 音」（D497，2026-11-02）：名稱下一行小字，空庫房寫尚無內容 */
+.vault-list__mix { font-size: var(--fs-11); color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.vault-list__meta { display: flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); min-width: 0; white-space: nowrap; }
+.vault-list__st { display: inline-flex; align-items: center; gap: var(--sp-4); }
+.vault-list__dot { width: 6px; height: 6px; border-radius: var(--radius-pill); background: currentColor; }
+.vault-list__st--listed { color: var(--status-success-ink); }
+.vault-list__st--unlisted { color: var(--status-warning-ink); }
+.vault-list__st--draft .vault-list__dot { background: transparent; box-shadow: 0 0 0 1px currentColor inset; }
+.vault-list__sep { color: var(--faint-ink); }
+
+/* 新增庫房：同形狀、細線外框、虛線封面、灰字 */
+.vault-list__row--new { box-shadow: 0 0 0 1px var(--border) inset; color: var(--muted-foreground); }
+.vault-list__row--new .vault-list__name { color: var(--foreground-muted); font-weight: var(--fw-regular); }
+.vault-list__row--new .vault-list__cover { background: transparent; border: 1px dashed var(--border); }
+.vault-list__row--new:hover { color: var(--foreground); }
+.vault-list__row--new:hover .vault-list__name { color: var(--foreground); }
+
+@media (max-width: 900px) {
+  .vault-shell { grid-template-columns: minmax(0, 1fr); }
+  .vault-list { position: static; max-height: none; }
+  .vault-list__items { grid-auto-flow: column; grid-auto-columns: 13.5rem; overflow-x: auto; overflow-y: visible; }
+}

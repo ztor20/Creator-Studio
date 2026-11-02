@@ -1,0 +1,53 @@
+/* ============================================================
+   Ztor — Vault open（媒體庫「開啟方式」：條件開啟｜鑰匙開啟 分頁）
+   2026-11-02 · 媒體庫改版（note/媒體庫UX重新規劃.md 3.24–3.29）
+
+   開啟方式只有兩種，用站上的底線式分頁（tabs.css）切換，標題就是分頁本身，右邊 ⓘ 說明怎麼算：
+     條件開啟  一句說明＋「N 人符合任一種」；每種進庫方法一組（方法 N、符合人數、條件標籤、再加一個），
+              方法之間用「或是」線；「再加一種方法」。還沒有條件時只有一顆「加條件」。
+     鑰匙開啟  一句說明＋「已領 N 人」；已發鑰匙一把一列（代碼・用途、已領／總次數、複製連結、撤銷）；
+              清單下面同一排：送給一位粉絲、做成 NFC 商品，最右「管理鑰匙」。還沒發過時只有兩顆入口按鈕。
+   條件標籤、「或是」線、「再加一個」沿用 media-vault.css 的 .vault-door__*／.vault-rule（不重刻）。
+   ============================================================ */
+
+.vault-open {
+  display: grid;
+  gap: var(--sp-14);
+  padding: var(--sp-18) var(--sp-20);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--layer-line);
+  background: var(--layer-1-surface);
+}
+.vault-open__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-8); }
+.vault-open__tabs { margin-bottom: 0; flex: 1; }
+
+.vault-way { display: grid; gap: var(--sp-12); align-content: start; min-width: 0; }
+.vault-way__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); }
+.vault-way__desc { margin: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-way__n { font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-way__list { display: grid; gap: var(--sp-10); }
+.vault-way__item { display: grid; gap: var(--sp-8); }
+.vault-way__item-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-8); }
+.vault-way__item-name { font-size: var(--fs-13); font-weight: var(--fw-medium); }
+.vault-way__item-n { font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-way__item-n--zero { color: var(--status-warning-ink); }
+.vault-way__more { justify-self: start; }
+.vault-way__empty { display: flex; flex-wrap: wrap; gap: var(--sp-8); padding: var(--sp-4) 0; }
+.vault-way__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-8); }
+.vault-way__manage { margin-left: auto; }
+.vault-way__note { margin: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
+
+.vault-key {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: var(--sp-10);
+  align-items: center;
+  padding: var(--sp-8) 0;
+  border-top: 1px solid var(--border-soft);
+}
+.vault-key:first-child { border-top: 0; padding-top: 0; }
+.vault-key--revoked { opacity: .55; }
+.vault-key__main { display: grid; min-width: 0; }
+.vault-key__code { font-family: var(--font-mono); font-size: var(--fs-13); }
+.vault-key__label { font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vault-key__uses { font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; }

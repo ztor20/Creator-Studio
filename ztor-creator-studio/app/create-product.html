@@ -122,7 +122,7 @@
       <p class="wizard__step-sub" data-i18n="cp.gate.sub">This decides which settings you'll see.</p>
       <div class="segmented radio-cards radio-cards--gate" data-cp-gate-seg role="group" aria-label="Product type">
         <button type="button" class="segmented__btn" data-cp-gate-type="physical"><i data-lucide="package" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.physical">Physical item</span><span class="radio-card__sub" data-i18n="cp.type.physical-sub">Ships to the buyer</span></span></button>
-        <button type="button" class="segmented__btn" data-cp-gate-type="digital"><i data-lucide="download" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.digital">Digital file</span><span class="radio-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span></span></button>
+        <button type="button" class="segmented__btn" data-cp-gate-type="digital" data-feat="S140" data-cp-digi-card><i data-lucide="download" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.digital">Digital file</span><span class="radio-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span></span></button>
       </div>
       <div class="wizard__gate-foot">
         <button class="btn btn--icon-circle wizard__gate-close" type="button" data-cp-gate-back data-i18n-aria-label="cp.gate.back" aria-label="Back"><i data-lucide="x" class="ztor-icon"></i></button>
@@ -249,8 +249,8 @@
           <option data-cfile="video" data-i18n="cp.dsub.documentary" hidden>Documentary</option>
           <option data-cfile="music" data-i18n="cp.dsub.music" hidden>Song</option>
           <option data-cfile="album" data-i18n="cp.dsub.album" hidden>Album</option>
-          <option data-cfile="other" data-i18n="cp.dsub.document" selected>Document</option>
-          <option data-cfile="membership" data-i18n="cp.dsub.membership">Membership / VIP card</option>
+          <option data-cfile="other" data-feat="S141" data-i18n="cp.dsub.document" selected>Document</option>
+          <option data-cfile="membership" data-feat="S141" data-i18n="cp.dsub.membership">Membership / VIP card</option>
         </select></span>
       </div>
     </section>
@@ -544,6 +544,20 @@
             <div class="field__label field__label--split"><span data-i18n="cp.lock.qty">Stock on sale</span><span class="field__label-aside" id="cp-lock-readout"></span></div>
             <input class="input" placeholder="0" id="cp-lock-qty" inputmode="numeric">
             <p class="field__error" data-cp-lock-err hidden data-i18n="cp.lock.over-err">Stock on sale can't exceed the stock quantity.</p>
+          </div>
+        </div>
+        <!-- SKU 開關（D504，2026-11-02）：單一選項才有；打開才出現 SKU 欄（選填）。多選項的 SKU 在逐選項組合表各列 -->
+        <div class="lctl__rule lctl__rule--flush" data-when-var="single"></div>
+        <div class="control-row" data-when-var="single">
+          <div>
+            <div class="control-row__main" data-i18n="cp.sku.title">SKU</div>
+            <div class="control-row__sub" data-i18n="cp.sku.sub">Give this item a stock-keeping unit code.</div>
+          </div>
+          <div class="switch" id="cp-sw-sku" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="control-group__body" id="cp-skubody" data-when-var="single" hidden>
+          <div class="field">
+            <input class="input" placeholder="SKU" id="cp-sku" aria-label="SKU">
           </div>
         </div>
       </div>
@@ -1101,7 +1115,7 @@
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const assets = {};                              // 模擬已上傳的素材
-  const state = { type: 'physical', varMode: 'single', edition: 'unlimited', unl: false, tag: false, lock: false, ship: true, qr: false, limitOn: false };   /* D470：取貨方式改勾選（ship／qr 各自一格，新建預設勾物流配送〔推導〕） */
+  const state = { type: 'physical', varMode: 'single', edition: 'unlimited', unl: false, tag: false, lock: false, sku: false, ship: true, qr: false, limitOn: false };   /* D470：取貨方式改勾選（ship／qr 各自一格，新建預設勾物流配送〔推導〕） */
   /* 服飾配件的分類與系統屬性（D360 · S70）：與 products-store 的 category／subCategory／audience／attrs 同形，
      值一律是 window.ztorApparel 的 key（不存顯示字）。customSpecs 沿用 #spec-rows 的逐列 DOM。 */
   const apparel = { category: '', sub: '', audience: '', attrs: {} };
@@ -1651,6 +1665,7 @@
     const ap = apparelRecord();
     return {
       type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants,
+      ...(state.type === 'physical' && state.varMode === 'single' ? { sku: state.sku ? ((document.getElementById('cp-sku') || {}).value || '').trim() : '' } : {}),   /* D497：單一選項的 SKU（選填） */
       /* 2026-10-30 實體庫存設定（呈現假設，見 ASSUMPTIONS）：賣完轉預購／前台限量標籤／鎖定庫存量（null＝沒鎖） */
       ...(state.type === 'physical' ? { preorder: !!state.unl, limitedTag: !!state.tag, lockQty: state.lock && state.varMode === 'single' && fLock && fLock.value.trim() !== '' ? Number(fLock.value.trim()) : null } : {}),
       ...(ap || {}),
@@ -2492,7 +2507,7 @@
     });
   }
   /* 三個開關：不限量（賣完轉預購）與限量標籤互斥，一個開著另一個停用；鎖定庫存獨立 */
-  var SW = { unl: 'cp-sw-unl', tag: 'cp-sw-tag', lock: 'cp-sw-lock' };
+  var SW = { unl: 'cp-sw-unl', tag: 'cp-sw-tag', lock: 'cp-sw-lock', sku: 'cp-sw-sku' };
   function syncStockSwitches() {
     Object.keys(SW).forEach(k => {
       const el = document.getElementById(SW[k]); if (!el) return;
@@ -2502,6 +2517,8 @@
     const u = document.getElementById(SW.unl), t = document.getElementById(SW.tag);
     if (u) u.setAttribute('aria-disabled', state.tag ? 'true' : 'false');
     if (t) t.setAttribute('aria-disabled', state.unl ? 'true' : 'false');
+    const skuBody = document.getElementById('cp-skubody');
+    if (skuBody) skuBody.hidden = !(state.sku && state.varMode === 'single' && state.type === 'physical');
     const body = document.getElementById('cp-lockbody');
     if (body) body.hidden = !(state.lock && state.varMode === 'single' && state.type === 'physical');
     const title = document.getElementById('cp-stock-title');
@@ -2516,6 +2533,7 @@
     const el = document.getElementById(SW[k]);
     if (!el || el.getAttribute('aria-disabled') === 'true') return;
     state[k] = !state[k];
+    if (k === 'sku' && !state.sku) { const si = document.getElementById('cp-sku'); if (si) si.value = ''; }
     if (k === 'lock' && !state.lock) { if (fLock) fLock.value = ''; Object.keys(varData).forEach(key => { delete varData[key].lock; }); }
     syncStockSwitches(); refresh();
   }
@@ -2571,6 +2589,30 @@
   }
   if (catDigi) catDigi.addEventListener('change', updateCfile);
   updateCfile();
+
+  /* 數位型別卡的可見範圍（D503 起沒有忠誠點數）：數位類別下拉裡，這個版本還剩幾個類別可建；
+     剩 0 個＝整張卡藏起來（隱藏，不是停用）。release2.3＝卡上 data-feat="S140" 由版本閘收；
+     release2.4＝文檔／會員卡（S141 ⚪）不在版本內，沒有可建類別，數位卡自然收起；最終版＝文檔與會員卡。 */
+  const digiCard = document.querySelector('[data-cp-digi-card]');
+  function digiFeatOn(id) { const d = window.ztorDevState; return !d || typeof d.featOn !== 'function' || d.featOn(id); }
+  function digiOptVisible(o) {
+    if (!o || o.hidden) return false;
+    const f = o.getAttribute('data-feat');
+    return !f || f.split(',').some(digiFeatOn);
+  }
+  function syncDigiScope() {
+    if (!catDigi) return;
+    const vis = Array.from(catDigi.options).filter(digiOptVisible);
+    if (digiCard) digiCard.hidden = vis.length === 0;
+    /* 選中的類別在這個版本看不到了 → 改選第一個看得到的 */
+    const cur = catDigi.options[catDigi.selectedIndex];
+    if (vis.length && !digiOptVisible(cur)) {
+      catDigi.selectedIndex = Array.from(catDigi.options).indexOf(vis[0]);
+      catDigi.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+  document.addEventListener('ztor:devstate-changed', syncDigiScope);
+  syncDigiScope();
   /* 專輯曲目增減 → 更新內容檔就緒（§4.2 F11.1）*/
   if (albumMgr) albumMgr.addEventListener('albumtracks:change', e => { assets['d-file'] = (e.detail && e.detail.count > 0); refresh(); });
   /* 會員卡卡面（文字/ logo）變動 → 更新內容檔就緒（§4.2 F11.2）*/

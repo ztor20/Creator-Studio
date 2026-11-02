@@ -202,8 +202,7 @@
           </div>
         </div>
         <div class="fan-hero__actions">
-          <!-- 2026-10-27 使用者裁示：分級設定與傳訊息都放最右邊；次要的分級設定在左（outline），主要的傳訊息在右（primary）。 -->
-          <a class="btn btn--outline" href="fans-crm.html?tier=settings"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="fan-detail.btn.tier-settings">Tier settings</span></a>
+          <!-- 2026-10-27 使用者裁示：傳訊息放最右邊（primary）。2026-11-02（D506）移除「分級設定」入口：粉絲名冊已有，詳情頁不需要（不採用 dev 頁驗收 7）。 -->
           <a class="btn btn--primary" href="fans-crm.html?msg=inner&amp;fan=Wei%20Yu-han" data-fd-msg data-feat="S118"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fan-detail.btn.message">Message</span></a>
         </div>
       </section>
@@ -228,7 +227,8 @@
           <div class="kpi bento--span-3">
             <div class="kpi__label" data-i18n="fan-detail.kpi.points">Loyalty points</div>
             <div class="kpi__value" data-fd-points>874</div>
-            <div class="kpi__delta" data-i18n="fan-detail.kpi.points-delta">+38 since the last weekly recompute</div>
+            <!-- 2026-11-02 #460：近 N 天入帳＝點數明細裡近 N 天（平台設定的入帳視窗）各列淨值加總，由 JS 填 -->
+            <div class="kpi__delta" data-fd-recent></div>
           </div>
           <div class="kpi bento--span-3" data-feat="S118">
             <div class="kpi__label" data-i18n="fan-detail.kpi.spent">Spent</div>
@@ -236,14 +236,17 @@
             <div class="kpi__meta" data-i18n="fan-detail.kpi.spent-meta">Lifetime · 18 orders</div>
           </div>
           <div class="kpi bento--span-3" data-feat="S128">
+            <!-- 2026-11-02 D497 第 9 項：下一級進度由 js/fans-roster.js 算（同名冊）：未達最高級＝進度 %＋「還差 X 分」；
+                 核心圈＝「已達最高級」＋「以維繫為重」。舊值：寫死 92% 配「已達最高級──以維繫為重」，兩者互相矛盾。 -->
             <div class="kpi__label" data-i18n="fan-detail.kpi.progress">Next tier progress</div>
-            <div class="kpi__value">92%</div>
-            <div class="kpi__meta" data-i18n="fan-detail.kpi.progress-meta">Already top tier — retention focus</div>
+            <div class="kpi__value" data-fd-progress>—</div>
+            <div class="kpi__meta" data-fd-progress-meta></div>
           </div>
           <div class="kpi bento--span-3" data-feat="S128">
             <div class="kpi__label" data-i18n="fan-detail.kpi.last-active">Last active</div>
-            <div class="kpi__value" style="font-size: var(--fs-22)" data-i18n="fan-detail.kpi.last-active-val">2 days ago</div>
-            <div class="kpi__meta" data-i18n="fan-detail.kpi.last-active-meta">Opened the Kowloon After Dark OST drop</div>
+            <div class="kpi__value" style="font-size: var(--fs-22)" data-fd-last></div>
+            <!-- 2026-11-02 D497：副標＝最近一筆可賺忠誠點數的行為（點數明細最上面那筆系統入帳），舊值「開啟了上架通知」不賺點數 -->
+            <div class="kpi__meta" data-fd-last-meta></div>
           </div>
         </div>
 
@@ -264,7 +267,8 @@
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="event"><span data-i18n="fan-detail.repmix.events">Event check-ins</span><span class="tabs__item-count" data-cat-count></span></button>
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="interact"><span data-i18n="fan-detail.repmix.interact">Interactions</span><span class="tabs__item-count" data-cat-count></span></button>
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="referral"><span data-i18n="fan-detail.repmix.referral">Referrals</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="platform"><span data-i18n="fan-detail.repmix.platform">Platform activities</span><span class="tabs__item-count" data-cat-count></span></button>
+          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="platform" data-feat="S118"><span data-i18n="fan-detail.repmix.platform">Platform activities</span><span class="tabs__item-count" data-cat-count></span></button>
+          <!-- 2026-11-02 #460：全站活動（Type C）屬後續階段，release2.4 沒有這類明細，分頁掛 S118 只在最終版出現（不留一個永遠是 0 的分頁）。 -->
           <!-- 2026-10-30 使用者要求：拿掉「調整」分頁——調整列仍在「全部」裡（分類欄寫「調整」），完整紀錄改看卡片右上的「調整紀錄」 -->
         </nav>
           <div class="list-toolbar__actions">
@@ -294,400 +298,9 @@
                 <div role="columnheader" class="fd-cell--pts" data-i18n="fan-detail.col.points">Points</div>
                 <div role="columnheader" aria-label="Actions"></div>
               </div>
-              <div data-fd-ledger>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="120">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.eshop1">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
-                <div class="fd-cell" role="cell">2026/10/25 14:32</div>
-                <div class="fd-cell fd-cell--num" role="cell">$48</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+120</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="5">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.interact1">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
-                <div class="fd-cell" role="cell">2026/10/24 21:05</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+5</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="50">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.checkin">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
-                <div class="fd-cell" role="cell">2026/10/24 09:12</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="0">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.interact2">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
-                <div class="fd-cell" role="cell">2026/10/23 22:47</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"><span class="badge badge--neutral" data-i18n="fan-detail.pts.cap">Cap reached</span></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">0</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="5">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s07">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
-                <div class="fd-cell" role="cell">2026/10/22 21:48</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+5</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="10">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s08">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
-                <div class="fd-cell" role="cell">2026/10/20 18:03</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+10</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="88">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s01">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
-                <div class="fd-cell" role="cell">2026/10/18 11:02</div>
-                <div class="fd-cell fd-cell--num" role="cell">$35</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+88</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="50">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s13">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
-                <div class="fd-cell" role="cell">2026/10/17 08:50</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="200">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s14">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
-                <div class="fd-cell" role="cell">2026/10/09 08:44</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+200</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="platform" data-pts="50">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s15">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.platform">x</div>
-                <div class="fd-cell" role="cell">2026/10/02 09:05</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="105">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s02">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
-                <div class="fd-cell" role="cell">2026/09/30 20:41</div>
-                <div class="fd-cell fd-cell--num" role="cell">$42</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+105</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="8">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s09">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
-                <div class="fd-cell" role="cell">2026/09/28 12:30</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+8</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="160">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s03">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
-                <div class="fd-cell" role="cell">2026/09/12 15:27</div>
-                <div class="fd-cell fd-cell--num" role="cell">$64</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+160</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="event" data-pts="60">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s05">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
-                <div class="fd-cell" role="cell">2026/09/06 19:10</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+60</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="interact" data-pts="12">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s10">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.interact">x</div>
-                <div class="fd-cell" role="cell">2026/09/02 22:15</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+12</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="135">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s04">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
-                <div class="fd-cell" role="cell">2026/08/22 13:15</div>
-                <div class="fd-cell fd-cell--num" role="cell">$54</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+135</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="referral" data-pts="50">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="user-plus" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s11">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
-                <div class="fd-cell" role="cell">2026/08/05 09:40</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="event" data-pts="65">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s06">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
-                <div class="fd-cell" role="cell">2026/07/19 14:20</div>
-                <div class="fd-cell fd-cell--num" role="cell">$25</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+65</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="referral" data-pts="150">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="user-plus" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.s12">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
-                <div class="fd-cell" role="cell">2026/04/28 17:55</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+150</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="event" data-pts="210">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.event1">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.events">x</div>
-                <div class="fd-cell" role="cell">2026/04/12 19:30</div>
-                <div class="fd-cell fd-cell--num" role="cell">$60</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+210</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="purchase" data-pts="200">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="rocket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.project1">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.spend">x</div>
-                <div class="fd-cell" role="cell">2026/03/02 11:20</div>
-                <div class="fd-cell fd-cell--num" role="cell">$200</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+200</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="referral" data-pts="100">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="user-plus" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.tl.referral1">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.repmix.referral">x</div>
-                <div class="fd-cell" role="cell">2026/02/20 16:08</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+100</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              <!-- 2026-10-30 D495 第 3 項：調整列創作者也看得到（分類「調整」），標題只寫「點數調整」；原因與操作者只在 Admin 的調整紀錄 -->
-              <div class="product-list__row fd-ledger-row" role="row" data-cat="adjust" data-pts="50">
-                <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.pts.adjust-title">x</div></div></div>
-                <div class="fd-cell" role="cell" data-i18n="fan-detail.pts.filter.adjust">x</div>
-                <div class="fd-cell" role="cell">2026/02/10 10:00</div>
-                <div class="fd-cell fd-cell--num" role="cell">—</div>
-                <div class="fd-cell fd-cell--tag" role="cell"></div>
-                <div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts">+50</span></div>
-                <div class="product-list__actions" role="cell">
-                  <details class="dropdown" data-admin-only hidden>
-                    <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
-                    <div class="dropdown__menu" role="menu">
-                      <button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button>
-                      <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-fd-entry-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="fan-detail.entry.delete">Delete</span></button>
-                    </div>
-                  </details>
-                </div>
-              </div>
-              </div>
+              <!-- 2026-11-02 #460：明細改由 js/fans-roster.js 的這位粉絲資料畫出（下方 renderLedger），不再寫死 26 列；
+                   release2.4 只有 P0 事件（A3、A4、B1、B4、B5、B3、A6、System Adjust），其餘示範列掛 S118 只在最終版。 -->
+              <div data-fd-ledger></div>
             </section>
             </div>
 
@@ -970,8 +583,9 @@
   </section>
 </div>
 
-<!-- 2026-10-27 點數明細每列的 ⋮：修改這筆的點數（可上可下、不能小於 0）或刪除這筆。只有 Admin 代管態看得到；
-     每次修改或刪除都要填原因，並在「點數調整紀錄」記一筆（UIA-305）。殼同上方調整彈窗。 -->
+<!-- 2026-10-27 點數明細每列的 ⋮：修改這筆的點數（可上可下、不能小於 0）。只有 Admin 代管態看得到；
+     每次修改都要填原因，記成一筆校正分錄（連回原筆、不覆寫），並在「點數調整紀錄」記一筆（UIA-305）。
+     2026-11-02 D497 拿掉刪除。殼同上方調整彈窗。 -->
 <div class="payout-modal" id="fd-entry-modal" hidden>
   <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="fd-entry-title">
     <div class="payout-dialog__head">
@@ -1070,18 +684,87 @@
 <script src="partials/list-scroll.js?v=r2.2"></script>
 <script src="js/detail-topbar.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/loyalty-settings.js?v=r2.2"></script>
+<script src="js/fans-roster.js?v=r2.2"></script>
 <script>
 (function () {
-  // Persona-aware <title>: swap only the fan-name portion (default renders identically).
-  // <title> can't use data-i18n (not a body element), so we set it from the i18n key.
-  if (window.i18nT) {
-    var fdName = window.i18nT('fan-detail.name');
-    if (fdName) document.title = fdName + ' · Fan detail · Ztor Creator Studio';
+  /* ── 這一頁是哪一位粉絲（2026-11-02 D497）──────────────────────────
+     名冊每一列連到 fan-detail.html?fan=<名冊列序>；沒帶參數＝第 1 位（Wei Yu-han，本頁原本的示範對象）。
+     忠誠點數、分級、狀態、下一級進度讀 js/fans-roster.js（與名冊同一份）。
+     2026-11-02 #460：點數明細、近 N 天入帳、最近活躍也改讀這位粉絲自己的資料（名冊生成的粉絲 ?fan=g10… 同樣適用）；
+     忠誠點數＝明細淨額加總（release2.4 沒有衰減；最終版另含衰減與 S118 示範列，總數不等於加總，ASSUMPTIONS UIA-332）。
+     消費、參與等分頁（S118，最終版）仍是第 1 位的示範內容（ASSUMPTIONS UIA-324）。 */
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+  const FANS = window.ztorFans;
+  const fanId = (function () { try { return new URLSearchParams(location.search).get('fan') || '1'; } catch (e) { return '1'; } })();
+  const fan = FANS ? (FANS.get(fanId) || FANS.get('1')) : null;
+  const swapped = !!fan && fan.id !== '1';
+  const TIER_BADGE = { inner: ['badge--orange', 'fans.tier.inner'], super: ['badge--info', 'fans.tier.super'], devoted: ['badge--success', 'fans.tier.devoted'], fan: ['badge--neutral', 'fans.tier.fan'] };
+  const STATUS_BADGE = { active: ['badge--success', 'fans.status.active'], recovered: ['badge--info', 'fans.status.recovered'], risk: ['badge--error', 'fans.status.risk'] };
+  function setBadge(badge, pair) {
+    if (!badge || !pair) return;
+    Array.from(badge.classList).forEach(c => { if (c.indexOf('badge--') === 0) badge.classList.remove(c); });   /* 保留版本閘等其他 class */
+    badge.classList.add(pair[0]);
+    badge.innerHTML = '<span data-i18n="' + pair[1] + '"></span>';
+    badge.firstChild.textContent = T(pair[1]);
+  }
+  function paintIdentity() {
+    const name = !swapped ? T('fan-detail.name') : fan.gen ? fan.name() : T('fans.row' + fan.id + '.name');
+    if (swapped) {
+      document.querySelectorAll('[data-i18n="fan-detail.name"], [data-fd-name]').forEach(el => {
+        el.removeAttribute('data-i18n'); el.setAttribute('data-fd-name', ''); el.textContent = name;
+      });
+      const av = document.querySelector('.fan-hero__avatar');
+      if (av) { av.removeAttribute('data-i18n'); av.textContent = name.trim().charAt(0).toUpperCase(); }
+      const em = document.querySelector('[data-i18n="fan-detail.hero.email"], [data-fd-email]');
+      if (em) { em.removeAttribute('data-i18n'); em.setAttribute('data-fd-email', ''); em.textContent = fan.gen ? fan.email : T('fans.row' + fan.id + '.meta').split(' · ')[0]; }
+      const loc = document.querySelector('[data-i18n="fan-detail.hero.location"], [data-fd-loc]');
+      if (loc) { loc.removeAttribute('data-i18n'); loc.setAttribute('data-fd-loc', ''); loc.textContent = fan.gen ? fan.countryName() : T('fans.row' + fan.id + '.country'); }
+    }
+    /* 分級與狀態徽章：每一位（含第 1 位）都依平台設定算出的結果畫——S_floor 或前 % 名改了，第 1 位也可能換級 */
+    if (fan) {
+      const badges = document.querySelectorAll('.fan-hero__title > .badge');
+      if (badges[0]) { badges[0].setAttribute('data-fd-tier', ''); setBadge(badges[0], TIER_BADGE[fan.tier]); }
+      if (badges[1]) { badges[1].setAttribute('data-fd-status', ''); setBadge(badges[1], STATUS_BADGE[FANS.status(fan)]); }
+    }
+    document.title = name + ' · Fan detail · Ztor Creator Studio';
     /* Message 的深連結要帶「目前這位粉絲」的名字——persona 或語言換過之後名字會變，
        所以連結在這裡依當下的 i18n 值重寫，不用寫死在 href 裡。 */
-    var msgLink = document.querySelector('[data-fd-msg]');
-    if (msgLink && fdName) msgLink.href = 'fans-crm.html?msg=inner&fan=' + encodeURIComponent(fdName);
+    const msgLink = document.querySelector('[data-fd-msg]');
+    if (msgLink && name) msgLink.href = 'fans-crm.html?msg=inner&fan=' + encodeURIComponent(name);
   }
+  paintIdentity();
+  document.addEventListener('i18n:applied', paintIdentity);
+
+  /* ── 點數明細（2026-11-02 #460）：畫這位粉絲自己的明細（js/fans-roster.js ledger()），新到舊。
+     每列帶 data-t（時間）、data-code（事件代號）、data-feat（S118＝最終版才有、O43＝掃碼領點）；
+     「近 N 天入帳」「最近活躍」與分類計數都只算目前版本看得到的列（featOn）。 ── */
+  const KEBAB = '<details class="dropdown" data-admin-only hidden><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>' +
+    '<div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-fd-entry-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fan-detail.entry.edit">Edit points</span></button></div></details>';
+  const CAT_KEY = { purchase: 'fan-detail.repmix.spend', event: 'fan-detail.repmix.events', interact: 'fan-detail.repmix.interact', referral: 'fan-detail.repmix.referral', platform: 'fan-detail.repmix.platform', adjust: 'fan-detail.pts.filter.adjust' };
+  const ICON = { A3: 'ticket', A4: 'shopping-bag', A6: 'qr-code', B1: 'check', B4: 'heart', B5: 'star', B3: 'user-plus', ADJ: 'sliders-horizontal' };
+  const X_ICON = { interact: 'heart', platform: 'check-circle', event: 'ticket', referral: 'user-plus', purchase: 'rocket' };
+  const p2 = x => (x < 10 ? '0' : '') + x;
+  const stampOf = t => { const d = new Date(t); return d.getFullYear() + '/' + p2(d.getMonth() + 1) + '/' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes()); };
+  const featOn = id => !id || !window.ztorDevState || !window.ztorDevState.featOn || window.ztorDevState.featOn(id);
+  (function renderLedger() {
+    const host = document.querySelector('[data-panel="points"] [data-fd-ledger]');
+    if (!host || !FANS || !fan) return;
+    host.innerHTML = FANS.ledger(fan.id).map(x => {
+      const icon = x.code === 'X' ? (X_ICON[x.cat] || 'heart') : ICON[x.code];
+      const pts = x.pts > 0 ? '+' + x.pts.toLocaleString('en-US') : x.pts < 0 ? '−' + Math.abs(x.pts).toLocaleString('en-US') : '0';
+      return '<div class="product-list__row fd-ledger-row" role="row" data-cat="' + x.cat + '" data-pts="' + x.pts + '" data-t="' + x.t + '" data-code="' + x.code + '"' + (x.feat ? ' data-feat="' + x.feat + '"' : '') + '>' +
+        '<div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="' + icon + '" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="' + x.title + '"></div>' + (x.sub ? '<div class="product-list__meta" data-i18n="' + x.sub + '"></div>' : '') + '</div></div>' +
+        '<div class="fd-cell" role="cell" data-i18n="' + CAT_KEY[x.cat] + '"></div>' +
+        '<div class="fd-cell" role="cell">' + stampOf(x.t) + '</div>' +
+        '<div class="fd-cell fd-cell--num" role="cell">' + (x.amount ? '$' + x.amount.toLocaleString('en-US') : '—') + '</div>' +
+        '<div class="fd-cell fd-cell--tag" role="cell">' + (x.cap ? '<span class="badge badge--neutral" data-i18n="fan-detail.pts.cap"></span>' : '') + '</div>' +
+        '<div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts' + (x.pts < 0 ? ' is-neg' : '') + '">' + pts + '</span></div>' +
+        '<div class="product-list__actions" role="cell">' + KEBAB + '</div></div>';
+    }).join('');
+    host.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = T(el.getAttribute('data-i18n')); });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+  })();
 
   // Section-nav ↔ panels switching (2026-08-26：橫排 tabs 改左側 section-nav，選擇器隨之更新).
   const tabs = Array.from(document.querySelectorAll('.section-nav__item[data-tab]'));
@@ -1097,10 +780,11 @@
     if (window.ZtorDetailTopbar && window.ZtorDetailTopbar.resync) window.ZtorDetailTopbar.resync();
   }));
 
-  /* ── D476 第 8 項：手動調整點數（只有 Admin）──────────────────────────
+  /* ── D476 第 8 項／D497：手動調整點數（只有 Admin）──────────────────────────
      誰看得到入口：Admin 代管態＝window.ztorCreator.adminScope()（js/sidebar.js，與 order-detail 的作廢鈕同一個訊號）；
-     代管身分在頁內被切換（ztor:creator-changed）時重新判斷。紀錄存成資料再畫，切語言時整份重畫。 */
-  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+     代管身分在頁內被切換（ztor:creator-changed）時重新判斷。紀錄存成資料再畫，切語言時整份重畫。
+     2026-11-02 D497：帳本只加不改——「調整點數」新增一筆 System Adjust；「修改點數」記一筆校正分錄連回原筆，
+     原筆的入帳值不覆寫，畫面上的點數＝原值＋校正分錄加總；拿掉逐筆「刪除」。 */
   function isAdmin() {
     if (window.ztorCreator && typeof window.ztorCreator.adminScope === 'function') return !!window.ztorCreator.adminScope();
     try { return localStorage.getItem('ztor.role') === 'admin'; } catch (e) { return false; }
@@ -1109,18 +793,76 @@
     const on = isAdmin();
     document.querySelectorAll('[data-admin-only]').forEach(el => { el.hidden = !on; });
   }
-  let points = 874;
+  /* 操作者（editBy）：原型沒有 Admin 帳號資料，用一位示範 Admin 名字（ASSUMPTIONS UIA-324）。 */
+  const ADMIN_NAME = 'Kelly Wu';
+  let points = fan ? fan.points : 874;
+
+  /* 帳本資料層：每一列＝一筆原始分錄（orig，取自 data-pts、之後不再寫）＋掛在它底下的校正分錄清單。
+     淨值一律由兩者加總，不把修改後的數字寫回原筆。 */
+  const ledger = new WeakMap();
+  function entryOf(row) {
+    let e = ledger.get(row);
+    if (!e) { e = { orig: parseInt(row.dataset.pts, 10) || 0, corrections: [] }; ledger.set(row, e); }
+    return e;
+  }
+  function netOf(row) {
+    const e = entryOf(row);
+    return e.orig + e.corrections.reduce((s, c) => s + c.delta, 0);
+  }
+
   const adjustments = [
-    { delta: 500, when: '2026-10-20 14:05', reasonKey: 'fan-detail.adjust.demo-reason' }
+    /* 示範：點數明細最下面那一列 System Adjust（2026/02/10 +50）的紀錄 */
+    { kind: 'add', delta: 50, after: 50, when: '2026-02-10 10:00', by: ADMIN_NAME, reasonKey: 'fan-detail.adjust.demo-reason' }
   ];
   const logBox = document.querySelector('[data-fd-adjust-log]');
   const pointsEl = document.querySelector('[data-fd-points]');
+  function paintProgress() {
+    const v = document.querySelector('[data-fd-progress]'), m = document.querySelector('[data-fd-progress-meta]');
+    if (!v || !m || !FANS || !fan) return;
+    const g = FANS.progress(fan, points);
+    if (g.top) {
+      v.textContent = T('fan-detail.kpi.progress-top', 'Top tier reached');
+      v.style.fontSize = 'var(--fs-22)';
+      m.textContent = T('fan-detail.kpi.progress-meta', 'Focus on keeping them');
+    } else {
+      v.textContent = g.pct + '%';
+      v.style.fontSize = '';
+      m.textContent = g.need > 0
+        ? T('fan-detail.kpi.progress-need', '{n} pts to go').replace('{n}', g.need.toLocaleString('en-US'))
+        : T('fan-detail.kpi.progress-reached', 'At the next tier’s bar');
+    }
+  }
+  /* 近 N 天入帳＋最近活躍（2026-11-02 #460，5.1.7.7 §2.3）：
+     - 近 N 天入帳＝明細裡日期在近 N 天（平台設定的入帳視窗，預設 7）的各列淨值加總（含校正分錄後的淨值與 System Adjust）。
+     - 最近活躍＝最近一筆可賺忠誠點數的行為（不含 System Adjust；已達上限、0 點的那筆也算一筆行為）：時間＋行為名。
+     只算目前版本看得到的列。 */
+  function paintActivity() {
+    if (!FANS) return;
+    const N = FANS.RECENT_DAYS;
+    const rows = Array.from(document.querySelectorAll('[data-panel="points"] .fd-ledger-row')).filter(r => featOn(r.dataset.feat));
+    const recent = rows.filter(r => FANS.daysAgo(+r.dataset.t) < N).reduce((sum, r) => sum + netOf(r), 0);
+    const rEl = document.querySelector('[data-fd-recent]');
+    if (rEl) rEl.textContent = T('fan-detail.kpi.points-delta').replace('{x}', fmtPts(recent));
+    const acts = rows.filter(r => r.dataset.code !== 'ADJ' && r.dataset.cat !== 'adjust').sort((a, b) => +b.dataset.t - +a.dataset.t);
+    const lv = document.querySelector('[data-fd-last]'), lm = document.querySelector('[data-fd-last-meta]');
+    if (!lv || !lm) return;
+    if (!acts.length) { lv.textContent = T('fan-detail.kpi.last-active-none'); lm.textContent = ''; return; }
+    const d = FANS.daysAgo(+acts[0].dataset.t);
+    lv.textContent = d === 0 ? T('fan-detail.kpi.last-active-today') : d === 1 ? T('fan-detail.kpi.last-active-day') : T('fan-detail.kpi.last-active-days').replace('{n}', d);
+    const tt = acts[0].querySelector('.product-list__title');
+    lm.textContent = tt ? tt.textContent.trim() : '';
+  }
+  document.addEventListener('ztor:devstate-changed', paintActivity);
+  document.addEventListener('fd:ledger-changed', paintActivity);
   function renderLog() {
+    paintActivity();
     if (pointsEl) pointsEl.textContent = points.toLocaleString('en-US');
     document.querySelectorAll('[data-fd-points-sum]').forEach(el => { el.textContent = points.toLocaleString('en-US'); });
+    paintProgress();
     if (!logBox) return;
     logBox.innerHTML = '';
-    /* 每筆一列：調整內容（標題＋原因）／修改前／修改後／修改額／時間。新增一筆沒有「修改前」，刪除一筆沒有「修改後」 */
+    /* 每筆一列：調整內容（標題＋原因）／修改前／修改後／修改額（負值紅字）／日期與時間＋操作者。
+       新增（System Adjust）沒有「修改前」，顯示「—」；修改＝原行為名稱＋原因、修改前舊淨值、修改後新淨值。 */
     const sig = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('en-US');
     const num = v => v == null ? '—' : v.toLocaleString('en-US').replace('-', '−');
     adjustments.forEach(a => {
@@ -1132,9 +874,8 @@
         '<div class="fd-cell fd-cell--num" role="cell"></div><div class="fd-cell fd-cell--num" role="cell"></div>' +
         '<div class="fd-cell fd-cell--num fd-pts" role="cell"></div><div class="fd-cell" role="cell"></div>';
       let title, before = null, after = null;
-      if (a.kind === 'edit') { title = T('fan-detail.log.kind.edit').replace('{t}', a.title); before = a.from; after = a.to; }
-      else if (a.kind === 'delete') { title = T('fan-detail.log.kind.delete').replace('{t}', a.title); before = a.from; }
-      else { title = T('fan-detail.log.kind.add'); after = a.delta; }
+      if (a.kind === 'edit') { title = T('fan-detail.log.kind.edit').replace('{t}', a.titleKey ? T(a.titleKey) : a.title); before = a.from; after = a.to; }
+      else { title = T('fan-detail.log.kind.add', 'System Adjust'); after = a.after; }
       const c = row.querySelectorAll('[role="cell"]');
       row.querySelector('.product-list__title').textContent = title;
       row.querySelector('.product-list__meta').textContent = a.reasonKey ? T(a.reasonKey) : a.reason;
@@ -1142,7 +883,7 @@
       c[2].textContent = num(after);
       c[3].textContent = sig(a.delta); c[3].classList.toggle('is-neg', a.delta < 0);
       c[4].innerHTML = '';
-      c[4].append(a.when, document.createElement('br'), 'Admin');
+      c[4].append(a.when, document.createElement('br'), a.by);
       logBox.appendChild(row);
     });
     const logEmpty = document.querySelector('[data-fd-log-empty]');
@@ -1155,7 +896,7 @@
   const errAmount = document.getElementById('fd-adjust-err-amount');
   const errReason = document.getElementById('fd-adjust-err-reason');
   /* 2026-10-30 使用者裁示：「新增點數」可選加點／扣點（2026-10-27 UIA-305 曾拿掉切換、只能加點；現又加回）。
-     扣點＝一筆負數的調整列（顯示「−N」）；改點數與刪除仍走每列的 ⋮。 */
+     扣點＝一筆負數的調整列（顯示「−N」）；改點數走每列的 ⋮。 */
   const dirBox = document.querySelector('[data-fd-adjust-dir]');
   let dir = 'add';
   function setDir(d) {
@@ -1164,25 +905,29 @@
   }
   if (dirBox) dirBox.addEventListener('click', e => { const b = e.target.closest('[data-dir]'); if (b) setDir(b.dataset.dir); });
   const ledgerHead = () => document.querySelector('[data-panel="points"] [data-fd-ledger]');
-  const KEBAB = (document.querySelector('[data-panel="points"] .fd-ledger-row details') || { outerHTML: '' }).outerHTML.replace(' hidden', '');
   function fmtPts(v) { return v > 0 ? '+' + v.toLocaleString('en-US') : v < 0 ? '−' + Math.abs(v).toLocaleString('en-US') : '0'; }
   const markNeg = (el, v) => el.classList.toggle('is-neg', v < 0);
-  function addLedgerRow(n, reason) {
+  function addLedgerRow(n) {
     const host = ledgerHead(); if (!host) return;
     const row = document.createElement('div');
     row.className = 'product-list__row fd-ledger-row'; row.setAttribute('role', 'row');
-    row.dataset.cat = 'adjust'; row.dataset.pts = String(n);
+    row.dataset.cat = 'adjust';
+    row.dataset.code = 'ADJ';
+    row.dataset.t = String(Date.now());
+    row.setAttribute('data-pts', String(n));   /* 新分錄自己的入帳值（之後的修改走校正分錄，不改這裡） */
     const d = new Date(), p2 = x => (x < 10 ? '0' : '') + x;
     const stamp = d.getFullYear() + '/' + p2(d.getMonth() + 1) + '/' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
     row.innerHTML = '<div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title"></div></div></div>' +
       '<div class="fd-cell" role="cell"></div><div class="fd-cell" role="cell"></div><div class="fd-cell fd-cell--num" role="cell">—</div>' +
-      '<div class="fd-cell fd-cell--tag" role="cell"></div><div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts"></span></div><div class="product-list__actions" role="cell">' + KEBAB + '</div>';
-    const tt = row.querySelector('.product-list__title'); tt.setAttribute('data-i18n', 'fan-detail.pts.adjust-title'); tt.textContent = T('fan-detail.pts.adjust-title', 'Points adjustment');   /* D495：原因只進調整紀錄 */
+      '<div class="fd-cell fd-cell--tag" role="cell"></div><div class="fd-cell fd-cell--pts" role="cell"><span class="fd-pts"></span></div><div class="product-list__actions" role="cell">' + KEBAB.replace(' hidden', '') + '</div>';
+    /* D497：標題固定「System Adjust」；原因與操作者只進 Admin 的調整紀錄（D495） */
+    const tt = row.querySelector('.product-list__title'); tt.setAttribute('data-i18n', 'fan-detail.pts.adjust-title'); tt.textContent = T('fan-detail.pts.adjust-title', 'System Adjust');
     const cells = row.querySelectorAll('.fd-cell');
     cells[0].setAttribute('data-i18n', 'fan-detail.pts.filter.adjust'); cells[0].textContent = T('fan-detail.pts.filter.adjust', 'Adjustments');
     cells[1].textContent = stamp;
     row.querySelector('.fd-pts').textContent = fmtPts(n); markNeg(row.querySelector('.fd-pts'), n);
     host.insertBefore(row, host.firstChild);
+    entryOf(row);
     if (window.ztorIcons) window.ztorIcons.applyIcons(row);
     document.dispatchEvent(new CustomEvent('fd:ledger-changed'));
   }
@@ -1202,6 +947,7 @@
     logModal.addEventListener('click', e => { if (e.target === logModal) closeLog(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !logModal.hidden) closeLog(); });
   }
+  const nowStamp = () => { const d = new Date(), p = x => (x < 10 ? '0' : '') + x; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
   if (modal) {
     modal.querySelectorAll('[data-fd-adjust-close]').forEach(b => b.addEventListener('click', closeAdjust));
     modal.addEventListener('click', e => { if (e.target === modal) closeAdjust(); });
@@ -1213,10 +959,9 @@
       errReason.hidden = !!reason;
       if (!errAmount.hidden || !errReason.hidden) return;
       const delta = dir === 'deduct' ? -n : n;
-      const d = new Date(), pad = x => (x < 10 ? '0' : '') + x;
-      adjustments.unshift({ delta, reason, when: d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) });
+      adjustments.unshift({ kind: 'add', delta, after: delta, reason, when: nowStamp(), by: ADMIN_NAME });
       points = Math.max(0, points + delta);
-      addLedgerRow(delta, reason);
+      addLedgerRow(delta);
       renderLog();
       closeAdjust();
       if (window.ztorToast) window.ztorToast.show(T('fan-detail.adjust.done', 'Points adjusted'), { tone: 'success' });
@@ -1225,87 +970,81 @@
   syncAdmin();
   renderLog();
 
-  /* ── 2026-10-27（UIA-305）點數明細每列的 ⋮：修改這筆的點數（可上可下、不能小於 0）／刪除這筆。
-     只有 Admin 代管態；每次都要填原因，並在「點數調整紀錄」記一筆；總點數跟著增減。 */
+  /* ── 點數明細每列的 ⋮「修改點數」（2026-10-27 UIA-305；2026-11-02 D497 改 append-only、拿掉刪除）──
+     只有 Admin 代管態；必填原因。送出＝在這一筆底下記一筆校正分錄（差額），原筆的入帳值不動；
+     這一列的點數改顯示合計淨值、狀態欄標「已人工修改」（滑過看原值與校正量），調整紀錄加一筆，總點數跟著變。 */
+  const editedRows = [];
+  function paintEntry(row) {
+    const e = entryOf(row), net = netOf(row), corr = net - e.orig;
+    const pts = row.querySelector('.fd-pts');
+    pts.textContent = fmtPts(net); markNeg(pts, net);
+    if (!e.corrections.length) return;
+    const cap = row.querySelector('.badge:not([data-fd-edited])'); if (cap && net > 0) cap.remove();   /* 已達上限的一筆改成大於 0 → 不再標已達上限 */
+    let tag = row.querySelector('[data-fd-edited]');
+    if (!tag) {
+      tag = document.createElement('span');
+      tag.className = 'badge badge--neutral'; tag.setAttribute('data-fd-edited', '');
+      tag.setAttribute('data-i18n', 'fan-detail.entry.edited'); tag.textContent = T('fan-detail.entry.edited', 'Edited');
+      row.querySelector('.fd-cell--tag').appendChild(tag);   /* 2026-10-30 標記（已人工修改、已達上限）獨立成「狀態」欄 */
+    }
+    tag.title = T('fan-detail.entry.edited-tip', 'Originally {a} · correction {d}').replace('{a}', fmtPts(e.orig)).replace('{d}', fmtPts(corr));
+  }
+  document.addEventListener('i18n:applied', () => editedRows.forEach(paintEntry));
   (function () {
     const em = document.getElementById('fd-entry-modal');
     if (!em) return;
     const q = id => document.getElementById(id);
     const titleEl = q('fd-entry-title'), nameEl = q('fd-entry-name'), ledeEl = q('fd-entry-lede');
-    const ptsField = q('fd-entry-pts-field'), amtEl = q('fd-entry-amount'), amtErr = q('fd-entry-err-amount');
+    const amtEl = q('fd-entry-amount'), amtErr = q('fd-entry-err-amount');
     const reasonEl2 = q('fd-entry-reason'), reasonErr = q('fd-entry-err-reason'), submit = q('fd-entry-submit');
-    let cur = null, mode = 'edit';
-    const nowStamp = () => { const d = new Date(), p = x => (x < 10 ? '0' : '') + x; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
-    function openEntry(row, m) {
+    let cur = null;
+    function openEntry(row) {
       if (!isAdmin()) return;
-      cur = row; mode = m;
-      const old = parseInt(row.dataset.pts, 10) || 0;
+      cur = row;
+      const net = netOf(row);
       const t = row.querySelector('.product-list__title').textContent.trim();
-      titleEl.textContent = T(m === 'edit' ? 'fan-detail.entry.edit-title' : 'fan-detail.entry.delete-title');
-      nameEl.textContent = t + ' · ' + fmtPts(old) + ' ' + T('fans.unit.points', 'pts');
-      ledeEl.textContent = T(m === 'edit' ? 'fan-detail.entry.edit-lede' : 'fan-detail.entry.delete-lede');
-      ptsField.hidden = m !== 'edit';
-      amtEl.value = Math.abs(old); reasonEl2.value = '';
+      titleEl.textContent = T('fan-detail.entry.edit-title');
+      nameEl.textContent = t + ' · ' + fmtPts(net) + ' ' + T('fans.unit.points', 'pts');
+      ledeEl.textContent = T('fan-detail.entry.edit-lede');
+      amtEl.value = Math.abs(net); reasonEl2.value = '';
       amtErr.hidden = true; reasonErr.hidden = true;
-      submit.textContent = T(m === 'edit' ? 'fan-detail.entry.submit-edit' : 'fan-detail.entry.submit-delete');
-      submit.classList.toggle('btn--destructive', m === 'delete');
-      submit.classList.toggle('btn--primary', m !== 'delete');
-      em.hidden = false; (m === 'edit' ? amtEl : reasonEl2).focus();
+      submit.textContent = T('fan-detail.entry.submit-edit');
+      em.hidden = false; amtEl.focus();
     }
     const closeEntry = () => { em.hidden = true; cur = null; };
     document.addEventListener('click', e => {
-      const ed = e.target.closest('[data-fd-entry-edit]'), de = e.target.closest('[data-fd-entry-del]');
-      const b = ed || de; if (!b) return;
+      const b = e.target.closest('[data-fd-entry-edit]'); if (!b) return;
       const row = b.closest('.fd-ledger-row'); if (!row) return;
       const d = b.closest('details'); if (d) d.open = false;
-      openEntry(row, ed ? 'edit' : 'delete');
+      openEntry(row);
     });
     em.querySelectorAll('[data-fd-entry-close]').forEach(b => b.addEventListener('click', closeEntry));
     em.addEventListener('click', e => { if (e.target === em) closeEntry(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !em.hidden) closeEntry(); });
     submit.addEventListener('click', () => {
       if (!cur) return;
-      const old = parseInt(cur.dataset.pts, 10) || 0;
+      const net = netOf(cur);
       const title = cur.querySelector('.product-list__title').textContent.trim();
       const reason = String(reasonEl2.value || '').trim();
-      let next = old;
-      if (mode === 'edit') {
-        const raw = String(amtEl.value).trim();
-        const n = Number(raw);
-        let msg = '';
-        if (raw === '' || !Number.isInteger(n) || n < 0) msg = T('fan-detail.entry.err.range', 'Enter a whole number, 0 or more.');
-        else if ((old < 0 ? -n : n) === old) msg = T('fan-detail.entry.err.same', 'That is the current number.');
-        amtErr.textContent = msg; amtErr.hidden = !msg;
-        reasonErr.hidden = !!reason;
-        if (msg || !reason) return;
-        next = old < 0 ? -n : n;   /* 負數的調整列保留負號，欄位只填大小 */
-      } else {
-        reasonErr.hidden = !!reason;
-        if (!reason) return;
-      }
-      const stamp = nowStamp();
-      if (mode === 'edit') {
-        adjustments.unshift({ kind: 'edit', delta: next - old, when: stamp, title, from: old, to: next, reason });
-        points = Math.max(0, points + (next - old));
-        cur.dataset.pts = String(next);
-        cur.querySelector('.fd-pts').textContent = fmtPts(next); markNeg(cur.querySelector('.fd-pts'), next);
-        const cap = cur.querySelector('.badge:not([data-fd-edited])'); if (cap && next > 0) cap.remove();
-        /* 被人工改過的列標「已人工修改」，和系統入帳的分得出來（UIA-306） */
-        if (!cur.querySelector('[data-fd-edited]')) {
-          const tag = document.createElement('span');
-          tag.className = 'badge badge--neutral'; tag.setAttribute('data-fd-edited', '');
-          tag.setAttribute('data-i18n', 'fan-detail.entry.edited'); tag.textContent = T('fan-detail.entry.edited', 'Edited');
-          cur.querySelector('.fd-cell--tag').appendChild(tag);   /* 2026-10-30 標記（已人工修改、已達上限）獨立成「狀態」欄 */
-        }
-      } else {
-        adjustments.unshift({ kind: 'delete', delta: -old, when: stamp, title, from: old, reason });
-        points = Math.max(0, points - old);
-        cur.remove();
-      }
+      const raw = String(amtEl.value).trim();
+      const n = Number(raw);
+      let msg = '';
+      if (raw === '' || !Number.isInteger(n) || n < 0) msg = T('fan-detail.entry.err.range', 'Enter a whole number, 0 or more.');
+      else if ((net < 0 ? -n : n) === net) msg = T('fan-detail.entry.err.same', 'That is the current number.');
+      amtErr.textContent = msg; amtErr.hidden = !msg;
+      reasonErr.hidden = !!reason;
+      if (msg || !reason) return;
+      const next = net < 0 ? -n : n;   /* 負數的調整列保留負號，欄位只填大小 */
+      const delta = next - net, when = nowStamp();
+      entryOf(cur).corrections.push({ delta, reason, by: ADMIN_NAME, when });   /* 校正分錄：連回這一筆，不覆寫原值 */
+      adjustments.unshift({ kind: 'edit', delta, when, by: ADMIN_NAME, title, titleKey: cur.querySelector('.product-list__title').getAttribute('data-i18n'), from: net, to: next, reason });   /* 原行為名跟著語言換 */
+      points = Math.max(0, points + delta);
+      paintEntry(cur);
+      if (editedRows.indexOf(cur) === -1) editedRows.push(cur);
       renderLog();
       closeEntry();
       document.dispatchEvent(new CustomEvent('fd:ledger-changed'));
-      if (window.ztorToast) window.ztorToast.show(T(mode === 'edit' ? 'fan-detail.entry.done-edit' : 'fan-detail.entry.done-delete'), { tone: 'success' });
+      if (window.ztorToast) window.ztorToast.show(T('fan-detail.entry.done-edit'), { tone: 'success' });
     });
   })();
 
@@ -1482,7 +1221,8 @@
     let cat = 'all';
     function render() {
       const rows = getRows();
-      const visible = rows.filter(r => !r.hasAttribute('data-admin-only') || isAdmin());
+      /* 2026-11-02 #460：計數只算目前版本看得到的列（S118 示範列在 release2.4 收起），分頁上的筆數跟著版本變 */
+      const visible = rows.filter(r => (!r.hasAttribute('data-admin-only') || isAdmin()) && featOn(r.dataset.feat));
       nav.querySelectorAll('.tabs__item').forEach(b => {
         const c = b.dataset.cat;
         const n = c === 'all' ? visible.length : visible.filter(r => r.dataset.cat === c).length;
@@ -1499,7 +1239,7 @@
       if (weekEl && groups[0]) {
         const sum = Array.from(groups[0].querySelectorAll('.data-list__row[data-cat]'))
           .filter(r => !r.hasAttribute('data-admin-only') || adminOk)
-          .reduce((s, r) => s + (parseInt(r.dataset.pts, 10) || 0), 0);
+          .reduce((s, r) => s + netOf(r), 0);
         weekEl.textContent = fmtPts(sum);
       }
       if (empty) empty.hidden = rows.some(r => !r.hidden);
@@ -1516,6 +1256,7 @@
     });
     render();
     document.addEventListener('fd:ledger-changed', render);
+    document.addEventListener('ztor:devstate-changed', render);
     document.addEventListener('ztor:creator-changed', () => { syncAdmin(); render(); });
   })();
   document.addEventListener('ztor:creator-changed', syncAdmin);

@@ -144,6 +144,12 @@
    own money waterfall (reuses .waterfall). All token-driven.
    ------------------------------------------------------------------ */
 .ztor-table__row { cursor: pointer; }
+/* 整列可點（tabindex="0"，Enter／Space 觸發）時的鍵盤焦點：與 .product-list__row--link 同一種內描邊（2026-11-02，
+   首個消費者：掃碼領點詳情「領取項目」表，整列開 QR 圖）。 */
+.ztor-table__row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
 .ztor-table__chev {
   width: 13px;
   height: 13px;
@@ -310,6 +316,18 @@
 .ztor-table--fluid tbody td:not(:first-child) { padding-inline-start: var(--sp-6); }
 .ztor-table--fluid thead th:not(:last-child),
 .ztor-table--fluid tbody td:not(:last-child) { padding-inline-end: var(--sp-6); }
+
+/* ── .ztor-table--menu：列尾有 ⋮ 下拉選單的表（2026-11-02）──
+   表格本身是 overflow:hidden（為了圓角），會把列尾選單裁成半截；做法同 .admin-table-wrap--menu，
+   只放行表格這一層的 overflow。也因此這種表不要包 .ztor-table-scroll——橫捲容器的 overflow
+   同樣會裁掉選單；欄寬要靠 --fluid 收窄、欄位精簡到窄螢幕放得下。
+   首個消費者：掃碼領點詳情「領取項目」表（pickup-detail.html）。 */
+.ztor-table--menu { overflow: visible; }
+/* 窄螢幕讓位的次要欄：--menu 表不能靠橫捲，所以 ≤560px 把標了 .ztor-table__opt 的欄（表頭與儲存格都要標）收起；
+   被收起的數字必須在別處還看得到（例如點列開的明細彈窗），不能是唯一出處。 */
+@media (max-width: 560px) {
+  .ztor-table--menu .ztor-table__opt { display: none; }
+}
 
 /* 展開層的鍵值摘要（提款與作廢沖銷／扣款用；收入事件用的是 .tx-detail__ladder 瀑布）。
    複用 kv-list 元件，這裡只給它一個寬度上限，與瀑布同寬、不跨滿整張表。 */

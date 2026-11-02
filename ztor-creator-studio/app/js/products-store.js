@@ -323,6 +323,30 @@
       status: 'live', price: '8.00', cost: '2.00', stock: '120', threshold: '10',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     },
+    /* 實體 · 巡演限定襪組（2026-10-29 示範資料補齊）：限量 200、尚無銷售；上架日在過去、開賣日在未來 → 即將開賣。
+       四個時間條件（上架／下架／開賣／停售）全部有值，皆相對今天（見 LISTING_SEED）。 */
+    'tour-socks': {
+      name: '九龍夜行 巡演限定 襪組', img: 'socks.webp',
+      sub: 'Tour-edition crew socks, two pairs per set. Limited run of 200 — numbered tag in every pack.',
+      cat: 'physical', subKey: 'apparel', variant: 'single', edition: 'limited',
+      status: 'live', price: '14.00', cost: '4.50', stock: '200', cap: '200', sold: '0', threshold: '20',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      specs: [
+        { name: '材質', value: '棉 78%、聚酯纖維 18%、彈性纖維 4%' },
+        { name: '尺寸', value: '均碼（EU 38–44）' },
+        { name: '內容', value: '兩雙一組，附編號吊牌' }
+      ],
+      deliveryReturns: '開賣後 3–5 個工作日內出貨。貼身衣物拆封後恕不退換；到貨有瑕疵 7 天內可申請換貨。'
+    },
+    /* 實體 · 琺瑯徽章收藏盒（2026-10-29 示範資料補齊）：已下架（總閘門關閉）、不在任何其他組合包裡。
+       專門給「重新上架」測試組合包當已下架成員：test-relist-ok 把它連帶上架。 */
+    'pin-case': {
+      name: '霓虹招牌 琺瑯徽章 收藏盒', img: 'enamel-pin-wave.webp',
+      sub: 'Hard-shell display case for the neon pin collection. Holds 12 pins.',
+      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
+      status: 'live', price: '20.00', cost: '7.00', stock: '60', threshold: '8',
+      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+    },
     /* 實體 · 毛帽（三色）：多選項全部售罄；有一筆已完成補貨的歷史、被 1 個項目引用 */
     beanie: {
       name: '九龍夜行 毛帽', img: 'beanie.webp',
@@ -476,6 +500,14 @@
       status: 'live', price: '180', cost: '', cap: '500', sold: '210',
       catLabel: 'Digital Merchandise', subLabel: 'Document · 文件'
     },
+    /* 即將開賣的限量數位發行（2026-10-29 示範資料補齊）：上限 300、尚無銷售；時間見 LISTING_SEED。 */
+    'nick-fanbook': {
+      name: 'REALIVE 巡演攝影集（電子版）', img: 'nick-realive-cd.jpg', currency: 'TWD',
+      sub: '巡演幕後攝影集電子版，限量 300 份，附作者手寫序言。',
+      cat: 'digital', subKey: 'document', content: 'document', variant: 'single', edition: 'limited',
+      status: 'live', price: '420', cost: '', cap: '300', sold: '0',
+      catLabel: 'Digital Merchandise', subLabel: 'Document · 文件'
+    },
     'nick-ip': {
       name: '祝你好命 視覺素材包', img: 'nick-tee.jpg', currency: 'TWD',
       sub: '品牌主視覺、Logo 與字型授權包，限個人創作使用。',
@@ -551,10 +583,10 @@
     'wy-26ms-tshirt-red': wishProduct('26MS T-Shirt (紅)', '26ms-t-shirt-r-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['26ms-t-shirt-r-01.jpeg', '26ms-t-shirt-r-02.jpeg']),
     'wy-24ce-pillow': wishProduct('WYAGL Pillow', 'wyagl-pillow-01.jpg', 1580, '材質：聚酯纖維；尺寸：40cm ±5%；可機洗、不可漂白、不可熨燙。', [{ name: 'Size / 尺寸', values: ['F'] }], 0, ['wyagl-pillow-01.jpg', 'wyagl-pillow-02.jpg', 'wyagl-pillow-03.jpg']),
     'wy-24ce-jersey': wishProduct('24CE High Shine Football Jersey', '24ce-high-shine-football-jersey-01.jpg', 3680, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['24ce-high-shine-football-jersey-01.jpg', '24ce-high-shine-football-jersey-02.jpg', '24ce-high-shine-football-jersey-03.jpg', '24ce-high-shine-football-jersey-04.jpg']),
-    'wy-24ce-skateboard': wishProduct('24CE Skateboard', '24ce-skateboard-01.jpg', 2880, '尺寸：8.0 吋；材質：加拿大楓木七層壓合。', [], 0, ['24ce-skateboard-01.jpg', '24ce-skateboard-02.jpg']),
+    'wy-24ce-skateboard': wishProduct('24CE Skateboard', '24ce-skateboard-01.jpg', 2880, '尺寸：8.0 吋；材質：加拿大楓木七層壓合。', [], 15, ['24ce-skateboard-01.jpg', '24ce-skateboard-02.jpg']),
     'wy-24ce-mesh': wishProduct('WYAGL Mesh T-shirt', 'wyagl-mesh-t-shirt-01.jpg', 3580, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['wyagl-mesh-t-shirt-01.jpg', 'wyagl-mesh-t-shirt-02.jpg', 'wyagl-mesh-t-shirt-03.jpg']),
     'wy-24ce-rug': wishProduct('WYAGL RUG', 'wyagl-rug-01.jpg', 5680, '直徑90公分（±2公分）；100%聚酯纖維。建議使用地毯專用清潔劑清潔。', [{ name: 'Size / 尺寸', values: ['F'] }], 0),
-    'wy-24ce-sock': wishProduct('WYAGL Sock', 'wyagl-sock-01.jpg', 1280, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Colour / 顏色', values: ['一黑一白一紅組合'] }], 0, ['wyagl-sock-01.jpg', 'wyagl-sock-02.jpg']),
+    'wy-24ce-sock': wishProduct('WYAGL Sock', 'wyagl-sock-01.jpg', 1280, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Colour / 顏色', values: ['一黑一白一紅組合'] }], 120, ['wyagl-sock-01.jpg', 'wyagl-sock-02.jpg']),
     'wy-24ce-wyagl-tee': wishProduct('Wish You A Good Life T-SHIRT', 'wish-you-a-good-life-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['wish-you-a-good-life-t-shirt-01.jpg', 'wish-you-a-good-life-t-shirt-02.jpg', 'wish-you-a-good-life-t-shirt-03.jpg']),
     'wy-24ce-tee': wishProduct('WYAGL T-SHIRT', 'wyagl-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['L', 'M', 'XL'] }], 0, ['wyagl-t-shirt-01.jpg', 'wyagl-t-shirt-02.jpg', 'wyagl-t-shirt-03.jpg']),
     'wy-24ce-dupont-bag': wishProduct('Dupont Bag', 'wyagl-dupont-bag-01.jpg', 1080, '尺寸 M/L/XL；銀色；杜邦紙材質，防水可水洗。尺寸皆為水平手工測量。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, ['wyagl-dupont-bag-01.jpg', 'wyagl-dupont-bag-02.jpg', 'wyagl-dupont-bag-03.jpg']),
@@ -699,7 +731,7 @@
      由 e-shop 既有的草稿列連過去，見 patchEshopList），其餘沿用 WISHYOU_PRODUCTS 的定義順序。
      只影響 e-shop 列表的產列順序，不動商品內容。 */
   var WISH_TOP_IDS = ['wy-26ms-tshirt-white', 'wy-bundle-cap', 'wy-bundle-cargo-pants', 'wy-bundle-lowtop-sneakers'];
-  var WISH_NEW_IDS = ['nick-single', 'nick-r2', 'nick-album', 'nick-member', 'nick-vinyl', 'nick-doc', 'nick-ip', 'wy-draft-tote'];
+  var WISH_NEW_IDS = ['nick-single', 'nick-r2', 'nick-album', 'nick-member', 'nick-vinyl', 'nick-doc', 'nick-fanbook', 'nick-ip', 'wy-draft-tote'];
   var WISH_IDS = WISH_TOP_IDS.concat(WISH_NEW_IDS).concat(Object.keys(WISHYOU_PRODUCTS).filter(function (id) {
     return WISH_TOP_IDS.indexOf(id) === -1;
   }));
@@ -962,6 +994,19 @@
         panel.insertBefore(row, template);
         rows.push(row);
       });
+      /* 重新上架測試組合包（2026-10-29）固定排在整張清單最前面（含草稿列之前）：OK 在前、被擋下的在後 */
+      ['test-relist-ok', 'test-relist-blocked', 'nick-test-relist-ok', 'nick-test-relist-blocked'].forEach(function (tid) {
+        var tr = panel.querySelector('.product-list__row[data-bundle-id="' + tid + '"]');
+        var first = panel.querySelector('.product-list__row');
+        if (tr && first && tr !== first) {
+          var before = first;
+          /* 前一個測試列要排在這一個之前：插在已排好的測試列後面 */
+          var pinned = Array.prototype.slice.call(panel.querySelectorAll('.product-list__row[data-pinned-test]'));
+          if (pinned.length) before = pinned[pinned.length - 1].nextElementSibling || null;
+          panel.insertBefore(tr, before);
+        }
+        if (tr) tr.setAttribute('data-pinned-test', '');
+      });
     }
     rows.forEach(function (row) {
       var id = bundleIdOfRow(row);
@@ -1074,7 +1119,12 @@
     /* 售罄：池 0 */
     pin:     {},
     /* 即將開賣：上架且顯示，開賣日期與時間在未來 */
-    movie:   { saleStart: '2026-10-01T12:00:00' },
+    /* 2026-10-29：四個時間全填、相對今天（原本寫死 2026-10-01 已過期，movie 變成販售中）：上架 12 天前、開賣 3 天後、停售 45 天後、定時下架 75 天後 */
+    movie:   { listAt: daysFromNow(-12, 10), saleStart: daysFromNow(3, 12), saleEnd: daysFromNow(45, 23), unlistAt: daysFromNow(75, 23) },
+    /* 即將開賣（2026-10-29 示範資料補齊）：限量實體；上架 8 天前、開賣 6 天後、停售 60 天後、定時下架 90 天後 */
+    'tour-socks': { listAt: daysFromNow(-8, 10), saleStart: daysFromNow(6, 20), saleEnd: daysFromNow(60, 23), unlistAt: daysFromNow(90, 23) },
+    /* 已下架（2026-10-29）：重新上架測試組合包的已下架成員 */
+    'pin-case': { listed: false },
     /* 販售結束：停售日期與時間已過 */
     song:    { saleEnd: '2026-08-20T23:59:00' },
     /* 已下架：總閘門關掉，粉絲端頁面顯示「已下架」、不能購買（D415）。尚無銷售、不在任何組合包裡 → D307（2026-09-22）零成交可刪除的正例：清單列與細節頁都有「刪除」 */
@@ -1100,7 +1150,10 @@
        ⚠ wy-24ce-wyagl-tee 其實是 nick-vinyl-set 的成員（原註解寫「非組合成員」不準）。D332（2026-09-29）起
        成員單售販售結束不影響組合包，這筆正好當示範：組合照樣可售（鎖定 12 套），候選清單的「販售結束」只表示單售。 */
     'wy-24ce-wyagl-tee': { saleEnd: '2026-08-20T23:59:00' },
-    'wy-24ce-sock': { saleStart: '2026-11-01T12:00:00' },
+    /* 2026-10-29：四個時間全填、相對今天（原本寫死 2026-11-01）：上架 9 天前、開賣 4 天後、停售 50 天後、定時下架 80 天後 */
+    'wy-24ce-sock': { listAt: daysFromNow(-9, 10), saleStart: daysFromNow(4, 12), saleEnd: daysFromNow(50, 23), unlistAt: daysFromNow(80, 23) },
+    /* 即將開賣（2026-10-29 示範資料補齊）：限量數位發行；上架 7 天前、開賣 5 天後、停售 55 天後、定時下架 85 天後 */
+    'nick-fanbook': { listAt: daysFromNow(-7, 10), saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(55, 23), unlistAt: daysFromNow(85, 23) },
     /* ── 2026-09-11 nick persona 對照預設 persona 的九種狀態（商品改值在 WISHYOU_PRODUCTS 之後的覆寫段）── */
     /* 隱藏＋非公開連結＋三個管道都鎖定（單售 40、簽名會組 10、典藏組 12）→「所有管道都設了鎖定」提醒 */
     'nick-vinyl': { shown: false, privateLink: 'https://ztor.example/s/nick-vinyl?k=v4c9xw27', locks: { single: 40 } },
@@ -1197,6 +1250,16 @@
         { id: 'h1', type: 'lock', date: '2026/09/08', state: 'done', items: [{ combo: 'Black / M', vi: 1, delta: '— → 2', toKey: 'stock.history.note.single' }, { combo: 'Olive / L', vi: 5, delta: '— → 1', toKey: 'stock.history.note.single' }] }
       ]
     },
+    /* 即將開賣的示範（2026-10-29）：沒有銷售（空狀態）；限時折扣的起訖落在開賣之後（日期相對今天） */
+    movie: { sales: null, tags: ['Behind the scenes', 'Documentary'], films: ['film-zheng-yi-sao'], limit: { person: '1' },
+             discount: { price: '7.50', limited: { start: daysFromNow(3).slice(0, 10), end: daysFromNow(17).slice(0, 10) }, stack: true } },
+    'tour-socks': { sales: null, tags: ['Tour 2026', 'Limited'], limit: { person: '2' },
+             discount: { price: '11.00', limited: { start: daysFromNow(6).slice(0, 10), end: daysFromNow(20).slice(0, 10) }, stack: true } },
+    'pin-case': { sales: null },
+    'nick-fanbook': { sales: null, tags: ['Photobook', 'Limited'], limit: { person: '1' },
+             discount: { price: '360', limited: { start: daysFromNow(5).slice(0, 10), end: daysFromNow(19).slice(0, 10) }, stack: true } },
+    'wy-24ce-sock': { sales: null, tags: ['Socks'], limit: { person: '3' },
+             discount: { price: '980', limited: { start: daysFromNow(4).slice(0, 10), end: daysFromNow(18).slice(0, 10) }, stack: true } },
     tote: { sales: null },
     keychain: { sales: null },
     beanie: {
@@ -1331,17 +1394,57 @@
     /* 即將開賣（saleStart 在未來）、限量 100；常態折扣 15%；尚無銷售 */
     'winter-preorder-set': {
       id: 'winter-preorder-set', persona: 'default', name: '冬季預購組', img: 'coastline-hoodie.webp',
-      description: '連帽外套＋六片帽，加送主題單曲數位下載，11 月開放預購。',
+      description: '連帽外套＋六片帽，加送主題單曲數位下載，開放預購。',
       /* D398 示範：每組含 2 頂帽（qty 2）。帽子每人總限購 3 件 ÷ 2 ＝ 每人 1 組；外套不限購（D427 前的「每次 4 件、限 2 次」已退場）→ 改版前跟隨成員＝每人 1 組。D456 起組合包不繼承成員，這筆示範把當時的推導值寫成自己的上限（每人 1 組）〔推導：既有組合包轉換〕 */
       /* D480 示範（2026-10-23）：限量 40、還沒賣 → 自動鎖定 40 套（外套 40 件、帽 80 頂；外套 48 件是成員上限）；
          加一個數位成員（主題單曲）示範「數位商品沒有在庫、不鎖」——原限量 100 超過成員能鎖的量，改 40 */
       members: [{ productId: 'hoodie' }, { productId: 'cap', qty: 2 }, { productId: 'song' }],
       lockSets: 40, alloc: {},
-      cap: 40, listed: true, listAt: null, unlistAt: null,
-      shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
+      /* 2026-10-29：四個時間全填、相對今天（原本只有寫死的 saleStart 2026-11-01）：上架 10 天前、開賣 5 天後、停售 50 天後、定時下架 75 天後 */
+      cap: 40, listed: true, listAt: daysFromNow(-10, 10), unlistAt: daysFromNow(75, 23),
+      shown: true, privateLink: null, saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(50, 23), lowThreshold: 0,
       discountPct: 15, discount: null,
       limits: { person: '1' },
       sales: null
+    },
+
+    /* ── 2026-10-29 示範資料補齊（使用者：即將開賣的詳情要完整、上下架開賣四個時間全填；加「重新上架」流程的測試資料）──
+       下面三筆接在 winter-preorder-set 後面：一筆即將開賣、兩筆重新上架測試（清單最前面會看到名稱開頭「測試：」的兩列）。
+       時間一律 daysFromNow（相對今天），原型不會過期。 */
+    /* 即將開賣（成員 tour-socks 限量實體＋tee）：組合包自己的開賣與停售獨立於成員（D332）；落在成員 tour-socks 的區間裡（開賣 6~60 天後、下架 90 天後） */
+    'tour-socks-early-set': {
+      id: 'tour-socks-early-set', persona: 'default', name: '巡演襪子早鳥組', img: 'socks.webp',
+      description: '巡演限定襪組搭配紀念 T 恤，早鳥價開放預購。',
+      members: [{ productId: 'tour-socks' }, { productId: 'tee' }],
+      lockSets: null, alloc: {},
+      cap: null, listed: true, listAt: daysFromNow(-6, 10), unlistAt: daysFromNow(75, 23),
+      shown: true, privateLink: null, saleStart: daysFromNow(7, 12), saleEnd: daysFromNow(45, 23), lowThreshold: 0,
+      discountPct: 10, discount: null,
+      limits: { person: '2' },
+      sales: null
+    },
+    /* 重新上架測試 A（走得通）：已下架；成員 pin-case 也已下架、cap 上架中。保存的時間（paused）全部還沒到 → 按「上架」會列出
+       「會一起上架：霓虹招牌 琺瑯徽章 收藏盒」，選「連帶上架」＝成員與組合包一起回到上架、組合包恢復定時開賣；選「取消」（不連帶）＝這次不上架、資料不動（D289／D488）。 */
+    'test-relist-ok': {
+      id: 'test-relist-ok', persona: 'default', name: '測試：成員已下架的組合包（Test: bundle with an unlisted member）', img: 'coastline-starter-pack.webp',
+      description: '重新上架流程的測試資料：成員「霓虹招牌 琺瑯徽章 收藏盒」已下架、「六片帽」上架中。保存的上架、下架、開賣、停售時間都還沒到，按「上架」會成功。',
+      members: [{ productId: 'cap' }, { productId: 'pin-case' }],
+      lockSets: null, alloc: {},
+      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 10, discount: null, sales: null,
+      paused: { listAt: daysFromNow(-14, 10), unlistAt: daysFromNow(80, 23), saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(45, 23), onSale: true }
+    },
+    /* 重新上架測試 B（被 D488 擋下）：已下架；保存的開賣、停售時間都已過 → 按「上架」會擋下並一次列出這兩個，成員也不會被帶上來（keychain 維持排定上架未到）。 */
+    'test-relist-blocked': {
+      id: 'test-relist-blocked', persona: 'default', name: '測試：保存的時間已過，上架會被擋下（Test: saved times already passed）', img: 'tee-black.webp',
+      description: '重新上架流程的測試資料：下架前排的開賣與停售時間都已過，按「上架」會被擋下並列出已過的時間，什麼都不會改。',
+      members: [{ productId: 'tee' }, { productId: 'keychain' }],
+      lockSets: null, alloc: {},
+      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 5, discount: null, sales: null,
+      paused: { listAt: daysFromNow(-30, 10), unlistAt: daysFromNow(60, 23), saleStart: daysFromNow(-3, 12), saleEnd: daysFromNow(-1, 23), onSale: true }
     },
     /* 販售結束（saleEnd 已過）；被 1 個項目引用 */
     'tour-recap-set': {
@@ -1500,14 +1603,48 @@
     /* 對照 winter-preorder-set：即將開賣、限量 3（D480，2026-10-23：原限量 100，連帽外套只夠鎖 3 套；限量＝已售 0＋可鎖 3，自動鎖定 3 套）、常態折扣 15%；尚無銷售 */
     'nick-preorder-set': {
       id: 'nick-preorder-set', persona: 'nick', name: '冬季預購組', img: '26ms-hoodie-01.jpeg',
-      description: '26MS Hoodie＋刺繡 Logo 老帽，11 月開放預購。',
+      description: '26MS Hoodie＋刺繡 Logo 老帽，開放預購。',
       members: [{ productId: 'wy-26ms-hoodie' }, { productId: 'wy-bundle-cap' }],
-      /* listAt（2026-10-16 示範資料補齊，稽核 S3）：組合包定時上架（未來 10/25），上架後 11/01 才開賣——到 10/25 前顯示「已下架」＋上架時間 */
+      /* 2026-10-29：四個時間全填、相對今天（原本 listAt 10/25、saleStart 11/01 寫死，listAt 一過就變成沒有示範）：上架 10 天前、開賣 5 天後、停售 50 天後、定時下架 75 天後 */
       lockSets: 3, alloc: {},
-      cap: 3, listed: true, listAt: '2026-10-25T12:00:00', unlistAt: null,
-      shown: true, privateLink: null, saleStart: '2026-11-01T12:00:00', saleEnd: null, lowThreshold: 0,
+      cap: 3, listed: true, listAt: daysFromNow(-10, 12), unlistAt: daysFromNow(75, 23),
+      shown: true, privateLink: null, saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(50, 23), lowThreshold: 0,
       discountPct: 15, discount: null,
       sales: null
+    },
+    /* ── 2026-10-29 示範資料補齊（對照預設 persona）：一筆即將開賣（數位限量＋襪子，兩個成員都是即將開賣的單售）、兩筆重新上架測試 ── */
+    'nick-fanbook-set': {
+      id: 'nick-fanbook-set', persona: 'nick', name: 'REALIVE 攝影集＋襪子早鳥組', img: 'wyagl-sock-01.jpg',
+      description: '巡演攝影集電子版搭配 WYAGL 襪子，早鳥價開放預購。',
+      members: [{ productId: 'nick-fanbook' }, { productId: 'wy-24ce-sock' }],
+      lockSets: null, alloc: {},
+      cap: null, listed: true, listAt: daysFromNow(-5, 10), unlistAt: daysFromNow(70, 23),
+      shown: true, privateLink: null, saleStart: daysFromNow(7, 12), saleEnd: daysFromNow(40, 23), lowThreshold: 0,
+      discountPct: 10, discount: null,
+      limits: { person: '2' },
+      sales: null
+    },
+    /* 重新上架測試 A（走得通）：成員 wy-24ce-skateboard 已下架；保存的時間全部還沒到。說明同預設 persona 的 test-relist-ok。 */
+    'nick-test-relist-ok': {
+      id: 'nick-test-relist-ok', persona: 'nick', name: '測試：成員已下架的組合包（Test: bundle with an unlisted member）', img: '24ce-skateboard-01.jpg',
+      description: '重新上架流程的測試資料：成員「24CE Skateboard」已下架、「刺繡 Logo 老帽」上架中。保存的上架、下架、開賣、停售時間都還沒到，按「上架」會成功。',
+      members: [{ productId: 'wy-24ce-skateboard' }, { productId: 'wy-bundle-cap' }],
+      lockSets: null, alloc: {},
+      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 10, discount: null, sales: null,
+      paused: { listAt: daysFromNow(-14, 10), unlistAt: daysFromNow(80, 23), saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(45, 23), onSale: true }
+    },
+    /* 重新上架測試 B（被 D488 擋下）：保存的開賣、停售時間都已過。 */
+    'nick-test-relist-blocked': {
+      id: 'nick-test-relist-blocked', persona: 'nick', name: '測試：保存的時間已過，上架會被擋下（Test: saved times already passed）', img: 'wyagl-rug-01.jpg',
+      description: '重新上架流程的測試資料：下架前排的開賣與停售時間都已過，按「上架」會被擋下並列出已過的時間，什麼都不會改。',
+      members: [{ productId: 'wy-24ce-rug' }, { productId: 'wy-26ms-socks' }],
+      lockSets: null, alloc: {},
+      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
+      discountPct: 5, discount: null, sales: null,
+      paused: { listAt: daysFromNow(-30, 10), unlistAt: daysFromNow(60, 23), saleStart: daysFromNow(-3, 12), saleEnd: daysFromNow(-1, 23), onSale: true }
     },
     /* 對照 tour-recap-set：販售結束；被 1 個項目引用 */
     'nick-recap-set': {
@@ -2046,4 +2183,7 @@
     document.addEventListener('DOMContentLoaded', patchAll);
   } else { patchAll(); }
   document.addEventListener('i18n:applied', patchAll);
+
+  /* ✝ 2026-11-02 墓碑（D503）：忠誠點數商品（window.ztorLoyaltyProducts、LP_SEED、sessionStorage 'ztor.loyalty.session'）撤除——
+     點數 QR 只在取貨管理的掃碼領點場次裡產生，正本改在 partials/pickup-session-modal.js 的 window.ztorScanEarn（場次.qrs[]）。 */
 })();

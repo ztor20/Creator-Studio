@@ -92,15 +92,15 @@
 
   /* ── 任務（F8）：九種行動任務；只有「商城消費・指定商品」有逐人資料 ── */
   var ACTIONS = [
-    { k: "follow", n: "追蹤創作者" },
-    { k: "join", n: "加入社群" },
-    { k: "shareVault", n: "分享庫房頁面給 N 位朋友", param: "n" },
-    { k: "sharePost", n: "分享指定貼文給 N 人", param: "n" },
-    { k: "invite", n: "邀請 N 位朋友加入社群", param: "n" },
-    { k: "watch", n: "看完指定影片" },
-    { k: "watchParty", n: "參加過一場 Watch Party" },
-    { k: "shop", n: "商城消費・指定商品", ready: true },
-    { k: "tip", n: "爆米花打賞累積 N", param: "n" }
+    { k: "follow", n: "追蹤創作者", miss: ["缺逐人追蹤狀態與開始時間的定義"] },
+    { k: "join", n: "加入社群", miss: ["社群在站內或站外尚未決定"] },
+    { k: "shareVault", n: "分享庫房頁面給 N 位朋友", param: "n", miss: ["沒有分享事件與被分享對象的紀錄"] },
+    { k: "sharePost", n: "分享指定貼文給 N 人", param: "n", miss: ["只有貼文層級的彙總，沒有逐人資料"] },
+    { k: "invite", n: "邀請 N 位朋友加入社群", param: "n", miss: ["社群與合格的定義都還沒有"] },
+    { k: "watch", n: "看完指定影片", miss: ["沒有逐人看完紀錄", "「看完」的門檻未定"] },
+    { k: "watchParty", n: "參加過一場 Watch Party", miss: ["出席判定未定義"] },
+    { k: "shop", n: "商城消費", ready: true, miss: ["「任一商品」的口徑待確認", "完成時點（下單、付款完成或過了退款期）待確認"] },
+    { k: "tip", n: "爆米花打賞累積 N", param: "n", miss: ["打賞功能本身還沒有規格"] }
   ];
   function actionOf(k) { for (var i = 0; i < ACTIONS.length; i++) if (ACTIONS[i].k === k) return ACTIONS[i]; return ACTIONS[0]; }
 
@@ -174,14 +174,11 @@
   var state = {
     vid: "v1",
     mode: "setup",
-    filter: "all",        // 庫房列狀態篩選
-    taskFilter: "all",    // 內容任務篩選
-    sel: {},              // 多選的內容 id
     lens: null,           // null｜{type:"tier",ti}｜{type:"fan",d}
     lensKind: "me",
     menu: false,
-    drafting: false,
     renaming: false,
+    openTab: "cond",      // 開啟方式分頁：cond｜key
     wizard: null          // null｜{step:1–3, name, vid}
   };
   function vault() { for (var i = 0; i < VAULTS.length; i++) if (VAULTS[i].id === state.vid) return VAULTS[i]; return VAULTS[0]; }
@@ -298,30 +295,22 @@
 
   /* ── 1. 庫房列 ────────────────────────────────────── */
   function renderStrip() {
-    var counts = { all: VAULTS.length, listed: 0, draft: 0, unlisted: 0 };
-    VAULTS.forEach(function (v) { counts[v.status] += 1; });
-    q("[data-strip-filter]").innerHTML = [["all", "全部"], ["listed", "上架中"], ["draft", "草稿"], ["unlisted", "已下架"]].map(function (f) {
-      return '<button class="filter-tabs__item' + (state.filter === f[0] ? " filter-tabs__item--active" : "") + '" type="button" role="tab" data-act="strip-filter" data-v="' + f[0] + '">' + f[1] + ' <span class="filter-tabs__count">' + counts[f[0]] + "</span></button>";
-    }).join("");
-    q("[data-strip-count]").textContent = state.lens ? "人數＝" + lensName() + "打得開" : "人數＝打得開";
-
-    var html = state.drafting
-      ? '<div class="lab-vcard lab-vcard--new"><span class="lab-vcard__cover">' + ico("plus") + '</span><input class="input lab-vcard__input" data-draft placeholder="庫房名稱" aria-label="庫房名稱"></div>'
-      : '<button class="lab-vcard lab-vcard--new" type="button" data-act="new-vault"><span class="lab-vcard__cover">' + ico("plus") + '</span><span class="lab-vcard__name">新增庫房</span></button>';
-    VAULTS.filter(function (v) { return state.filter === "all" || v.status === state.filter; }).forEach(function (v) {
+    /* 新增庫房：跟下面的庫房列同一個形狀（同寬、同高、同圓角、同封面位置），用虛線外框表示「這是動作、不是庫房」。
+       滑過、聚焦的狀態與庫房列相同；按下進入三步建立流程。 */
+    var html = '<button class="lab-vcard lab-vcard--new" type="button" data-act="new-vault"><span class="lab-vcard__cover">' + ico("plus", "ztor-icon--lg") + '</span><span class="lab-vcard__text"><span class="lab-vcard__name">新增庫房</span></span></button>';
+    VAULTS.forEach(function (v) {
       var R = reach(v), lr = lensReach(v, R.all), cover = coverOf(v);
       var n = lr ? (lr.n != null ? lr.n : (lr.can ? "進得來" : "進不來")) : R.all.size;
-      var st = STATUS[v.status];
-      var sched = v.listAt ? ' <span class="lab-note">' + ico("clock", "ztor-icon--xs") + "</span>" : "";
-      html += '<button class="lab-vcard' + (v.id === state.vid ? " lab-vcard--active" : "") + (lr && !lr.can ? " lab-vcard--dim" : "") + '" type="button" data-act="pick" data-v="' + v.id + '">' +
-        '<span class="lab-vcard__cover" style="' + (cover ? "background-image:url(" + cover + ")" : "") + '">' + (cover ? "" : ico(lr && !lr.can ? "lock" : "archive")) + "</span>" +
-        '<span style="min-width:0"><span class="lab-vcard__name" style="display:block">' + esc(v.name) + "</span>" +
-        '<span class="lab-vcard__meta"><span><span class="badge ' + st.b + '">' + st.n + "</span>" + sched + "</span>" +
-        '<span class="lab-num" title="' + (isLive(v) ? "現在打得開" : "上架後打得開") + '">' + (lr && !lr.can ? ico("lock", "ztor-icon--xs") : ico("users", "ztor-icon--xs")) + " " + (typeof n === "number" ? fmt(n) : n) + (isLive(v) || typeof n !== "number" ? "" : "*") + "</span></span></span></button>";
+      var st = STATUS[v.status], on = v.id === state.vid, locked = lr && !lr.can;
+      /* 第二行一條龍：狀態圓點＋狀態字・人數。選中＝整列淡橘底（站上選中態語彙 --selected-surface），不再畫橘框。 */
+      var count = typeof n === "number" ? (isLive(v) ? fmt(n) + " 人" : "上架後 " + fmt(n) + " 人") : n;
+      html += '<button class="lab-vcard' + (on ? " lab-vcard--active" : "") + (locked ? " lab-vcard--dim" : "") + '" type="button" data-act="pick" data-v="' + v.id + '"' + (on ? ' aria-current="true"' : "") + '>' +
+        '<span class="lab-vcard__cover" style="' + (cover ? "background-image:url(" + cover + ")" : "") + '">' + (cover ? "" : ico(locked ? "lock" : "archive")) + "</span>" +
+        '<span class="lab-vcard__text"><span class="lab-vcard__name">' + esc(v.name) + "</span>" +
+        '<span class="lab-vcard__meta"><span class="lab-vcard__st lab-vcard__st--' + v.status + '"><i class="lab-vcard__dot"></i>' + st.n + (v.listAt ? " " + ico("clock", "ztor-icon--xs") : "") + "</span>" +
+        '<span class="lab-vcard__sep">·</span><span class="lab-num" title="' + (isLive(v) ? "現在打得開" : "上架後打得開") + '">' + (locked ? ico("lock", "ztor-icon--xs") + " " : "") + count + "</span></span></span></button>";
     });
     q("[data-strip]").innerHTML = html;
-    var d = q("[data-draft]");
-    if (d) d.focus();
   }
   function lensName() { return state.lens ? (state.lens.type === "tier" ? TIERS[state.lens.ti].n : state.lens.d.name) : "我"; }
 
@@ -342,91 +331,106 @@
     var name = state.renaming
       ? '<input class="input lab-head__nameinput" data-rename value="' + esc(v.name) + '" aria-label="庫房名稱">'
       : '<button class="lab-head__name" type="button" data-act="rename" title="點一下改名">' + esc(v.name) + "</button>";
-    var sub = isLive(v) ? "粉絲現在看得到這座庫房；進不了庫的粉絲看到上鎖與進庫方法。" : v.status === "draft" ? "粉絲還看不到。下面的人數都是上架後的試算。" : "粉絲看不到，已解開過的也看不到；重新上架後解開紀錄會恢復。";
 
     q("[data-head]").innerHTML =
       '<div style="min-width:0"><div class="lab-head__title">' + name + '<span class="badge ' + st.b + '">' + st.n + "</span>" +
       (sched ? '<span class="lab-note">' + ico("clock", "ztor-icon--xs") + " " + sched + "</span>" : "") + "</div>" +
-      '<p class="lab-head__sub">' + sub + "</p></div>" +
-      '<div class="lab-head__actions">' + primary +
+      "</div>" +
+      '<div class="lab-head__actions"><button class="btn btn--outline" type="button" data-act="share">' + ico("share") + "分享</button>" + primary +
       '<button class="btn btn--icon btn--outline" type="button" data-act="menu" aria-label="更多動作">' + ico("more-horizontal") + "</button>" +
       (state.menu ? menuHtml(v) : "") + "</div>";
     var ri = q("[data-rename]");
-    if (ri) { ri.focus(); ri.select(); }
+    if (ri) { fitRename(ri); ri.focus(); ri.select(); }
+  }
+  /* 改名輸入框的寬度＝名稱文字量出來的寬度（用同樣字體量），輸入時跟著長，才不會比名稱寬一大截把徽章擠到下一行 */
+  function fitRename(inp) {
+    var m = document.createElement("span"), cs = getComputedStyle(inp);
+    m.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font:" + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+    m.textContent = inp.value || " ";
+    document.body.appendChild(m);
+    inp.style.width = Math.ceil(m.getBoundingClientRect().width) + 2 + "px";
+    document.body.removeChild(m);
   }
   function menuHtml(v) {
     var live = isLive(v);
     return '<div class="lab-menu" role="menu">' +
-      '<button class="lab-menu__item" type="button" data-act="copy-link"' + (live ? "" : " disabled") + ">" + ico("link") + "複製分享連結</button>" +
-      (live ? "" : '<p class="lab-menu__hint">上架中才能分享。</p>') +
       '<button class="lab-menu__item lab-menu__item--danger" type="button" data-act="delete"' + (live ? " disabled" : "") + ">" + ico("trash-2") + "刪除庫房</button>" +
       (live ? '<p class="lab-menu__hint">上架中不能直接刪，要先下架。</p>' : "") + "</div>";
   }
-  function renderCheck(v) {
-    var el = q("[data-check]");
-    if (v.status === "listed" || v.listAt) { el.hidden = true; return; }
-    el.hidden = false;
-    var path = hasPath(v), items = v.items.length > 0;
-    var steps = [
-      { c: items ? "done" : "block", t: "放內容", s: items ? v.items.length + " 件" : "至少一件才能發布", go: "sec-content" },
-      { c: path ? "done" : "warn", t: "誰開得了", s: path ? "已設 " + v.routes.filter(function (r) { return r.length; }).length + " 種進庫方法" + (v.keys.length ? "、" + v.keys.length + " 把鑰匙" : "") : "還沒設；可以先發布，但沒有人打得開", go: "sec-access" }
-    ];
-    if (v.status === "unlisted" && v.paused && v.paused.unlistAt) {
-      steps.push(past(v.paused.unlistAt)
-        ? { c: "block", t: "重新上架", s: "保存的下架時間 " + when(v.paused.unlistAt) + " 已過，重新上架時要先改掉或清除", go: "relist" }
-        : { c: "done", t: "重新上架", s: "保存的下架時間 " + when(v.paused.unlistAt) + " 會照舊", go: "relist" });
-    } else {
-      steps.push({ c: items ? (path ? "done" : "warn") : "todo", t: v.status === "unlisted" ? "重新上架" : "發布", s: items ? "可以" + (v.status === "unlisted" ? "重新上架" : "發布") + "了" : "放了內容就能" + (v.status === "unlisted" ? "重新上架" : "發布"), go: v.status === "unlisted" ? "relist" : "publish" });
-    }
-    el.innerHTML = steps.map(function (s, i) {
-      var mark = s.c === "done" ? ico("check", "ztor-icon--xs") : s.c === "warn" ? "!" : s.c === "block" ? ico("x", "ztor-icon--xs") : (i + 1);
-      return '<button class="lab-step lab-step--' + s.c + '" type="button" data-act="step" data-v="' + s.go + '"><span class="lab-step__mark">' + mark + '</span><span><span class="lab-step__t">' + (i + 1) + ". " + s.t + '</span><span class="lab-step__s" style="display:block">' + s.s + "</span></span></button>";
-    }).join("");
-  }
-
   /* ── 3a. 第一道門：誰進得來 ──────────────────────── */
+  /* 權限區：照原型原本的「存取權限」分頁（2026-11-02 使用者：「現在的原型做的還比這個好」）。
+     即時人數句 → 條件開放（每種進庫方法一張「方法 N」小卡、「或是」分隔、白話總結）→ 直接開放（鑰匙）→ 分享連結。
+     文案取自原型的 i18n（vault.ac.*）。 */
+  var ZH = {
+    method: "方法 {n}", count: "這種方法有 <b>{n}</b> 人符合", all: "這些要一起達成", or: "或是", add: "再加一個", addAria: "在這一種方法裡再加一個條件",
+    addway: "再加一種方法", rules: "條件開放", rulesHelp: "條件開放怎麼算", sumAny: "達成任一種方法就進得來。", sumZero: "已設定條件，但目前 0 人符合任一種方法。",
+    noRules: "目前沒有人進得來——還沒設定條件。", noRulesKeys: "還沒設定條件——目前只有持鑰匙的人進得來。", direct: "直接開放", gift: "送給一位粉絲", nfc: "做成 NFC 商品",
+    keysOff: "上架前粉絲不能領取鑰匙：領取只會看到「尚未開放」，不扣次數。現在仍可先發鑰匙。", keysEmpty: "還沒發出任何鑰匙。", colKey: "代碼・用途", colUses: "已領取／總次數", colStatus: "狀態",
+    active: "有效", revoked: "已撤銷", revoke: "撤銷", link: "分享連結", copy: "複製連結",
+    linkHint: "連結只帶粉絲到這座庫房，不會讓他進得來——進庫仍要符合條件或持有鑰匙。",
+    linkOffDraft: "草稿不能分享：粉絲還看不到這座庫房，發布後才能分享。", linkOffUnlisted: "已下架不能分享：粉絲看不到這座庫房，重新上架後才能分享。"
+  };
+  function Z(k, vars) { var t = ZH[k]; if (vars) Object.keys(vars).forEach(function (x) { t = t.replace("{" + x + "}", vars[x]); }); return t; }
+  var RULE_ICON = { tier: "layers", bought: "package", backed: "heart", attended: "calendar", earned: "award" };
+  var RULE_VERB = { tier: "分級 ≥", bought: "買過", backed: "支持過", attended: "出席過", earned: "達成過" };
+  function ruleChip(c, ri, ci) {
+    var o = optById(c.v); if (!o) return "";
+    var text = o.kind === "tier" ? '<span class="vault-rule__verb">分級 ≥ </span>' + esc(TIERS[o.o.tier].n) : '<span class="vault-rule__verb">' + RULE_VERB[o.kind] + " · </span>" + esc(o.o.n);
+    return '<span class="chip chip--static chip--removable vault-rule">' + ico(RULE_ICON[o.kind]) + text +
+      '<button type="button" class="chip__remove" data-act="rm-cond" data-r="' + ri + '" data-c="' + ci + '" aria-label="移除條件">' + ico("x") + "</button></span>";
+  }
   function renderGate1(v, el, bare) {
     el = el || q("[data-gate1]");
-    var R = reach(v), live = isLive(v);
-    var covRows = TIERS.map(function (t, ti) {
-      var n = 0; R.all.forEach(function (i) { if (FANS[i].ti === ti) n += 1; });
-      var on = state.lens && state.lens.type === "tier" && state.lens.ti === ti;
-      return '<div class="lab-cov__row"' + (on ? ' style="color:var(--foreground)"' : "") + "><span>" + t.n + '</span><span class="lab-cov__track"><span class="lab-cov__fill" style="width:' + (n / t.c * 100) + '%"></span></span><span class="lab-cov__v lab-num">' + fmt(n) + " / " + fmt(t.c) + "</span></div>";
-    }).join("");
-    var warn = "";
-    if (!hasPath(v)) warn = '<div class="alert alert--row alert--warning"><span class="alert__icon">' + ico("alert-triangle") + '</span><div class="alert__body">還沒有路，沒有人進得來。加一種進庫方法，或發一把鑰匙。</div></div>';
-    else if (R.all.size === 0) warn = '<div class="alert alert--row alert--info"><span class="alert__icon">' + ico("info") + '</span><div class="alert__body">有路，但目前沒有人符合。條件放寬一點，或另加一種方法。</div></div>';
+    var R = reach(v), live = isLive(v), activeKeys = v.keys.filter(function (k) { return !k.revoked; });
+    var nRules = v.routes.reduce(function (n, r) { return n + r.length; }, 0);
+    /* 「開啟方式」只有兩種，並排當兄弟（2026-11-02 使用者：這裡是開啟方式，有條件開啟與鑰匙直接開啟兩種）：
+       左＝條件開啟（符合任一種方法就能開），右＝鑰匙開啟（拿到鑰匙就能開，不看條件）。兩邊都沒設時才出一句警示。 */
 
-    var routes = v.routes.map(function (r, ri) {
-      var n = routeSet(r).size;
-      var chips = r.map(function (c, ci) {
-        return (ci ? '<span class="lab-and">且</span>' : "") + '<span class="chip chip--removable">' + esc(condName(c)) + '<button class="chip__remove" type="button" data-act="rm-cond" data-r="' + ri + '" data-c="' + ci + '" aria-label="移除條件">' + ico("x") + "</button></span>";
-      }).join("");
-      return '<div class="lab-route' + (v.routes.length > 1 ? " lab-route--x" : "") + '">' +
-        '<div class="lab-route__head"><span class="lab-route__t">' + (ri ? '<span class="lab-or">或</span>' : "") + '進庫方法 ' + (ri + 1) + '</span><span class="lab-route__n lab-num">' + (r.length ? "單獨 " + fmt(n) + " 人" : "還沒有條件") + "</span></div>" +
-        '<div class="lab-route__conds">' + (chips || '<span class="lab-route__empty">空的方法不算任何人達成</span>') + "</div>" +
-        (r.length > 1 ? '<span class="lab-note">這些條件要一起達成</span>' : "") +
-        '<button class="btn btn--ghost btn--sm" type="button" data-act="add-cond" data-r="' + ri + '" style="justify-self:start">' + ico("plus") + (r.length ? "再加一個條件" : "加條件") + "</button>" +
-        (v.routes.length > 1 ? '<button class="btn btn--icon btn--ghost btn--sm lab-route__x" type="button" data-act="rm-route" data-r="' + ri + '" aria-label="移除這種方法">' + ico("x") + "</button>" : "") +
-        "</div>";
-    }).join("");
-    var activeKeys = v.keys.filter(function (k) { return !k.revoked; });
-    var keyCard = '<div class="lab-route lab-route--key">' +
-      '<div class="lab-route__head"><span class="lab-route__t"><span class="lab-or">或</span>' + ico("key", "ztor-icon--xs") + ' 鑰匙</span><span class="lab-route__n lab-num">已領 ' + fmt(keyHolders(v).size) + " 人</span></div>" +
-      '<span class="lab-note">不符合條件、但你想讓他進來的人。進庫後每件的任務照常。' + (live ? "" : "庫房還沒上架：粉絲現在領只會看到「尚未開放」、不扣次數，但你可以先發。") + "</span>" +
-      v.keys.map(function (k) {
-        return '<div class="lab-keyrow"><span><span class="lab-keyrow__code">' + k.code + "</span> · " + esc(k.label) + '<br><span class="lab-keyrow__m">' + (k.revoked ? "已撤銷" : "已領 " + k.claimed.length + " / " + k.uses) + "</span></span>" +
-          (k.revoked ? "" : '<button class="btn btn--ghost btn--sm" type="button" data-act="revoke" data-v="' + k.id + '">撤銷</button>') + "</div>";
-      }).join("") +
-      '<div style="display:flex;gap:var(--sp-6);flex-wrap:wrap"><button class="btn btn--outline btn--sm" type="button" data-act="key" data-v="gift">' + ico("gift") + '送給一位粉絲</button><button class="btn btn--outline btn--sm" type="button" data-act="key" data-v="nfc">' + ico("scan") + "做成 NFC 商品</button></div></div>";
-    var split = (R.key ? "靠進庫方法 " + fmt(R.route) + " · 靠鑰匙 " + fmt(R.key) + " · 重疊 " + fmt(R.overlap) + "（只算一次）" : "全部靠進庫方法") + (activeKeys.length && !R.key ? " · 鑰匙還沒有人領" : "");
+    /* 條件開啟 */
+    var onlyEmpty = v.routes.length === 1 && !v.routes[0].length;
+    var condBody;
+    if (onlyEmpty) {
+      condBody = '<div class="lab-way__empty"><button type="button" class="btn btn--outline" data-act="add-cond" data-r="0">' + ico("plus") + "加條件</button></div>";
+    } else {
+      condBody = '<div class="lab-way__list">' + v.routes.map(function (r, ri) {
+        var n = routeSet(r).size;
+        return (ri ? '<div class="vault-door__sep"><span>' + Z("or") + "</span></div>" : "") +
+          '<div class="lab-way__item"><div class="lab-way__item-head"><span class="lab-way__item-name">' + Z("method", { n: ri + 1 }) + "</span>" +
+          (r.length ? '<span class="lab-way__item-n' + (n ? "" : " lab-way__item-n--zero") + '">' + fmt(n) + " 人符合</span>" : "") + "</div>" +
+          (r.length >= 2 ? '<div class="vault-door__all">' + Z("all") + "</div>" : "") +
+          '<div class="vault-door__chips">' + r.map(function (c, ci) { return ruleChip(c, ri, ci); }).join("") +
+          '<button type="button" class="vault-door__add" data-act="add-cond" data-r="' + ri + '" aria-label="' + Z("addAria") + '">' + ico("plus") + Z("add") + "</button></div></div>";
+      }).join("") + '</div><button type="button" class="btn btn--ghost btn--sm lab-way__more" data-act="add-route">' + ico("plus") + Z("addway") + "</button>";
+    }
+    /* 空畫面只留一顆按鈕（2026-11-02 使用者）：沒有條件時不放說明、警示、「還沒有條件」 */
+    var cond = onlyEmpty ? '<div class="lab-way">' + condBody + "</div>"
+      : '<div class="lab-way"><div class="lab-way__head"><p class="lab-way__desc">符合任一種方法就能開</p>' +
+        (nRules ? '<span class="lab-way__n">' + fmt(R.route) + " 人符合任一種</span>" : "") + "</div>" + condBody + "</div>";
 
-    el.innerHTML =
-      (bare ? "" : '<div class="lab-gate__head"><div><div class="lab-gate__eyebrow">權限</div><h2 class="lab-gate__title">誰開得了</h2><p class="lab-gate__sub">符合任一種進庫方法、或拿到鑰匙，就能打開這座庫房。打開之後，每件內容的任務照常。</p></div></div>') +
-      '<div class="lab-reach"><div><div class="lab-reach__n lab-num">' + fmt(R.all.size) + '</div><div class="lab-reach__l">' + (live ? "現在打得開" : "上架後打得開") + " · 共 " + fmt(TOTAL) + ' 位粉絲</div></div><div class="lab-cov">' + covRows + '</div><div class="lab-split">' + split + "</div></div>" +
-      warn +
-      '<div class="lab-routes">' + routes + '<button class="lab-route lab-route--add" type="button" data-act="add-route">' + ico("plus") + "<span>新增一種進庫方法</span></button>" + keyCard + "</div>" +
-      '<div class="linkf"><label class="field__label">分享連結</label><div class="linkf__row"><input class="input linkf__input" type="text" readonly value="https://ztor.com/v/' + v.id + '" aria-label="分享連結"' + (live ? "" : " disabled") + '><button class="btn btn--outline btn--sm linkf__act" type="button" data-act="copy-link"' + (live ? "" : " disabled") + ">" + ico("copy") + '複製</button></div><p class="field__hint">只帶粉絲到這座庫房的頁面，不給進庫權限，跟鑰匙不同。' + (live ? "" : "上架中才能分享。") + "</p></div>";
+    /* 鑰匙開啟 */
+    var keyList = v.keys.length
+      ? '<div class="lab-way__list">' + v.keys.slice().reverse().map(function (k) {
+          return '<div class="lab-key' + (k.revoked ? " lab-key--revoked" : "") + '"><div class="lab-key__main"><span class="lab-key__code">' + esc(k.code) + '</span><span class="lab-key__label">' + esc(k.label) + "</span></div>" +
+            '<span class="lab-key__uses">已領 ' + k.claimed.length + " / " + k.uses + "</span>" +
+            (k.revoked ? '<span class="badge badge--neutral">' + Z("revoked") + "</span><span></span>" : '<button type="button" class="btn btn--icon btn--ghost btn--sm" data-act="vkey-copy" data-v="' + esc(keyUrl(k.code)) + '" aria-label="複製連結" title="複製連結">' + ico("copy") + '</button><button type="button" class="btn btn--ghost btn--sm" data-act="revoke" data-v="' + k.id + '">' + Z("revoke") + "</button>") + "</div>";
+        }).join("") + "</div>"
+      : '<div class="lab-way__empty"><p>還沒發鑰匙</p></div>';
+    /* 鑰匙開啟：空的時候只有兩顆入口按鈕；有鑰匙之後，所有動作收在清單下面同一排：
+       送給一位粉絲、做成 NFC 商品，最右邊「管理鑰匙」（開抽屜，看全部鑰匙與連結）。每把鑰匙自己帶複製連結與撤銷。 */
+    var giftBtn = '<button class="btn btn--outline' + (v.keys.length ? " btn--sm" : "") + '" type="button" data-act="key" data-v="gift">' + ico("gift") + "<span>" + Z("gift") + "</span></button>";
+    var nfcBtn = '<button class="btn btn--outline' + (v.keys.length ? " btn--sm" : "") + '" type="button" data-act="key" data-v="nfc">' + ico("scan") + "<span>" + Z("nfc") + "</span></button>";
+    var keyWay = !v.keys.length
+      ? '<div class="lab-way"><div class="lab-way__actions">' + giftBtn + nfcBtn + "</div></div>"
+      : '<div class="lab-way"><div class="lab-way__head"><p class="lab-way__desc">拿到鑰匙就能開，不看條件</p>' + (activeKeys.length ? '<span class="lab-way__n">已領 ' + fmt(R.key) + " 人</span>" : "") + "</div>" + keyList +
+        '<div class="lab-way__actions">' + giftBtn + nfcBtn + '<button class="btn btn--ghost btn--sm lab-way__manage" type="button" data-act="keys-manage">' + ico("key") + "<span>管理鑰匙</span></button></div></div>";
+
+    /* 開啟方式只有兩種，用分頁切換（2026-11-02 使用者：「這邊改成 tab：條件開啟、鑰匙開啟」）：標題拿掉，分頁就是標題 */
+    var tab = state.openTab === "key" ? "key" : "cond";
+    el.innerHTML = '<section class="lab-open"><div class="lab-open__head"><div class="tabs lab-open__tabs" role="tablist" aria-label="開啟方式">' +
+      '<button class="tabs__item' + (tab === "cond" ? " tabs__item--active" : "") + '" type="button" role="tab" aria-selected="' + (tab === "cond") + '" data-act="open-tab" data-v="cond">' + "條件開啟" + (nRules ? ' <span class="tabs__item-count">' + v.routes.filter(function (r) { return r.length; }).length + "</span>" : "") + "</button>" +
+      '<button class="tabs__item' + (tab === "key" ? " tabs__item--active" : "") + '" type="button" role="tab" aria-selected="' + (tab === "key") + '" data-act="open-tab" data-v="key">' + "鑰匙開啟" + (activeKeys.length ? ' <span class="tabs__item-count">' + activeKeys.length + "</span>" : "") + "</button></div>" +
+      '<button class="explain-btn" type="button" data-explain="explain-vault-rules" aria-label="' + Z("rulesHelp") + '">' + ico("info") + "</button></div>" +
+      '<div class="tab-panel tab-panel--active" role="tabpanel">' + (tab === "cond" ? cond : keyWay) + "</div></section>";
   }
 
   /* ── 3b. 第二道門：進來後看得到哪幾件 ─────────────── */
@@ -434,63 +438,43 @@
   function renderGate2(v, el, bare) {
     el = el || q("[data-gate2]");
     var R = reach(v).all, floor = tierFloor(v);
-    var nSel = Object.keys(state.sel).length;
-    var tf = [["all", "全部"], ["none", "不設任務"], ["action", "行動任務"], ["tier", "等級任務"]];
-    var filt = function (it) { return state.taskFilter === "all" || (state.taskFilter === "none" ? !it.task : it.task && it.task.type === state.taskFilter); };
-    var head = '<div class="lab-gate__head">' + (bare ? "<span></span>" : '<div><div class="lab-gate__eyebrow">內容</div><h2 class="lab-gate__title">放了哪些內容</h2><p class="lab-gate__sub">每件可以再設一個任務，打開庫房後還要完成才看得到；不設任務的，打得開就看得到。任務之後再設也可以。</p></div>') +
-      '<button class="btn btn--primary" type="button" data-act="upload">' + ico("upload") + "上傳內容</button></div>";
+    /* 內容區只有內容卡片與上傳卡（2026-11-02 使用者：不用篩選）（2026-11-02 使用者）。上傳卡與內容卡同一套卡片外觀。 */
+    var uploadCard = '<div class="lab-mcard lab-mcard--add" data-act="upload" data-drop role="button" tabindex="0" aria-label="添加內容（照片、影片、音檔）"><div class="lab-mcard__thumb">' + ico("plus", "ztor-icon--lg") + '</div><div class="lab-mcard__body"><div class="lab-mcard__name">添加</div><div class="lab-mcard__line">&nbsp;</div></div></div>';
     if (!v.items.length) {
-      el.innerHTML = head + '<div class="lab-drop" data-act="upload" data-drop>' + ico("upload", "ztor-icon--lg") + "<b>把照片、影片、音檔拖進來</b><span>一次可以放很多件，會自動分到圖片、影片、音檔。粉絲只能線上看，不能下載。</span></div>" +
-        '<button class="btn btn--ghost btn--sm" type="button" data-act="demo-files" style="justify-self:start">' + ico("sparkles") + "demo 用：放入 3 件示範內容</button>";
+      el.innerHTML = '<div class="lab-mgrid">' + uploadCard + '</div><button class="btn btn--ghost btn--sm" type="button" data-act="demo-files" style="justify-self:start">' + ico("sparkles") + "demo 用：放入 3 件示範內容</button>";
       return;
     }
-    var bar = nSel
-      ? '<div class="lab-batch"><span class="lab-batch__n">已選 ' + nSel + ' 件</span><button class="btn btn--outline btn--sm" type="button" data-act="batch-task">' + ico("sliders-horizontal") + '設定任務</button><button class="btn btn--outline btn--sm" type="button" data-act="batch-grand">' + ico("star") + '標成大彩蛋</button><button class="btn btn--destructive btn--sm" type="button" data-act="batch-del">' + ico("trash-2") + '刪除</button><button class="btn btn--ghost btn--sm" type="button" data-act="sel-clear">取消選取</button></div>'
-      : "";
-    var tools = '<div class="lab-toolbar"><nav class="filter-tabs" role="tablist" aria-label="任務">' + tf.map(function (f) {
-      var c = v.items.filter(function (it) { return f[0] === "all" || (f[0] === "none" ? !it.task : it.task && it.task.type === f[0]); }).length;
-      return '<button class="filter-tabs__item' + (state.taskFilter === f[0] ? " filter-tabs__item--active" : "") + '" type="button" data-act="task-filter" data-v="' + f[0] + '">' + f[1] + ' <span class="filter-tabs__count">' + c + "</span></button>";
-    }).join("") + "</nav>" + (state.lens ? '<span class="lab-note">' + ico("eye", "ztor-icon--xs") + " 卡片顯示「" + esc(lensName()) + "」的狀態</span>" : '<span class="lab-note">人數：目前看得到 · 累計解開過</span>') + "</div>";
-
-    var groups = GROUPS.map(function (g) {
-      var all = v.items.filter(function (it) { return it.kind === g.k; });
-      var list = all.filter(filt);
-      var head2 = '<div class="lab-group__head">' + ico(kindIcon(g.k), "ztor-icon--sm") + g.n + ' <span class="lab-note">' + all.length + "</span></div>";
-      if (!all.length) return "";   /* 2026-10-30 使用者：只上傳一種，就只列那一種 */
-      if (!list.length) return "";
-      return '<div class="lab-group">' + head2 + '<div class="lab-mgrid' + (nSel ? " lab-mgrid--selecting" : "") + '">' + list.map(function (it) {
-        var sel = !!state.sel[it.id];
+    /* 版型照使用者的線框（2026-11-02「像這樣」）：上面三個 bento，下面一個灰底容器，容器裡是固定三欄的內容卡片，
+       「添加」卡接在最後一張後面。不分組、沒有區塊標題；影片與音檔靠縮圖上的時長標記分辨。 */
+    var items = [];
+    GROUPS.forEach(function (g) { v.items.forEach(function (it) { if (it.kind === g.k) items.push(it); }); });
+    var cards = items.map(function (it) {
         var now = itemVisible(v, it, R), ever = itemEver(v, it, R);
         var low = it.task && it.task.type === "tier" && it.task.tier > floor;
         var pending = it.task && it.task.type === "action" && now == null && it.task.k !== "shop";
-        var right;
+        /* 第一層（卡片）只回答兩件事：這是什麼、誰拿得到。主要動作＝點開設任務。
+           檔案大小、日期、累計解開過都移進設定視窗；任務不再畫成按鈕（整張卡就是按鈕）。 */
+        var status;
         if (state.lens) {
           var lr = lensReach(v, R);
-          var blocked = state.lens.type === "fan" ? !lr.can : !lr.can;
-          var s = blocked ? { s: "lock" } : itemState(it, state.lens);
-          right = s.s === "lock" ? '<span class="badge badge--neutral">' + ico("lock", "ztor-icon--xs") + " 庫房上鎖</span>"
-            : s.s === "open" ? '<span class="badge badge--success">已解開</span>'
-            : s.s === "need" ? '<span class="badge badge--warning">' + esc(s.t) + "</span>"
-            : '<span class="badge badge--neutral">未解開 · ' + esc(s.t) + "</span>";
-          right = '<div class="lab-mcard__nums">' + right + "</div>";
+          var s2 = !lr.can ? { s: "lock" } : itemState(it, state.lens);
+          status = s2.s === "lock" ? '<span class="badge badge--neutral">' + ico("lock", "ztor-icon--xs") + " 庫房上鎖</span>"
+            : s2.s === "open" ? '<span class="badge badge--success">已解開</span>'
+            : s2.s === "need" ? '<span class="badge badge--warning">' + esc(s2.t) + "</span>"
+            : '<span class="badge badge--neutral">未解開</span>';
         } else {
           var noTarget = it.task && it.task.k === "shop" && !it.task.target;
-          right = '<div class="lab-mcard__nums">' + (noTarget ? '<span>還沒選指定商品</span>' : pending ? '<span title="這種任務目前沒有逐人資料，判定方式待確認">人數無法計算</span>' : "<b class='lab-num'>" + fmt(now) + "</b>") + ' · <span class="lab-num">' + fmt(ever) + "</span>" + (isLive(v) ? "" : " <span>（上架後）</span>") + "</div>";
+          status = '<span class="lab-mcard__n lab-num" title="' + (pending || noTarget ? "這種任務目前算不出人數" : "目前看得到的人數") + '">' + ico("users", "ztor-icon--xs") + " " + (pending || noTarget ? "—" : fmt(now)) + "</span>";
         }
-        /* 卡片橫排（2026-10-30 使用者：「每件內容用卡片橫的列出」）：上＝縮圖（勾選框、大彩蛋疊在角落），下＝名稱、檔案資訊、任務、人數 */
-        return '<div class="lab-mcard' + (sel ? " lab-mcard--sel" : "") + '" data-act="open-item" data-v="' + it.id + '">' +
+        var taskLine = '<span class="lab-mcard__task' + (it.task ? " lab-mcard__task--set" : "") + (low ? " lab-mcard__task--warn" : "") + '">' + ico(it.task ? (it.task.type === "tier" ? "award" : "check-circle") : "circle", "ztor-icon--xs") + '<span class="lab-mcard__task-t">' + esc(taskLabel(it.task)) + "</span></span>";
+        return '<div class="lab-mcard" data-act="open-item" data-v="' + it.id + '">' +
           '<div class="lab-mcard__thumb" style="' + (it.img ? "background-image:url(" + it.img + ")" : "") + '">' + (it.img ? "" : ico(it.kind === "audio" ? "music" : kindIcon(it.kind), "ztor-icon--lg")) +
           (it.dur ? '<span class="lab-mcard__dur">' + (it.kind === "audio" ? "" : ico("play", "ztor-icon--xs") + " ") + it.dur + "</span>" : "") +
-          '<label class="zcheck__control lab-mcard__check" data-stop><input class="zcheck__input" type="checkbox" data-act="sel" data-v="' + it.id + '"' + (sel ? " checked" : "") + ' aria-label="選取 ' + esc(it.name) + '"><span class="zcheck__box"></span></label>' +
-          (it.grand ? '<span class="badge badge--orange lab-mcard__grand">' + ico("star", "ztor-icon--xs") + " 大彩蛋</span>" : "") + "</div>" +
+          (it.grand ? '<span class="lab-mcard__grand" title="大彩蛋">' + ico("star", "ztor-icon--xs") + "</span>" : "") + "</div>" +
           '<div class="lab-mcard__body"><div class="lab-mcard__name">' + esc(it.name) + "</div>" +
-          '<div class="lab-mcard__meta">' + it.size + " · " + it.added + "</div>" +
-          '<button class="lab-taskpill' + (low ? " lab-taskpill--warn" : "") + '" type="button" data-act="open-item" data-v="' + it.id + '" title="' + (low ? "低於目前進庫方法的分級下限（處理方式待產品確認）" : "改任務") + '">' + ico(it.task ? (it.task.type === "tier" ? "award" : "check-circle") : "circle", "ztor-icon--xs") + '<span class="lab-taskpill__t">' + esc(taskLabel(it.task)) + (pending ? " · 判定方式待確認" : "") + (low ? " · 低於下限" : "") + "</span></button>" +
-          right + "</div></div>";
-      }).join("") + "</div></div>";
+          '<div class="lab-mcard__line">' + taskLine + status + "</div></div></div>";
     }).join("");
-    el.innerHTML = head + tools + bar + '<div style="display:grid;gap:var(--sp-4)">' + groups + "</div>" +
-      '<div class="lab-drop" data-act="upload" data-drop style="padding:var(--sp-12)">' + ico("upload") + "<span>拖檔案到這裡繼續加</span></div>";
+    el.innerHTML = '<div class="lab-mgrid">' + cards + uploadCard + "</div>";
   }
 
   /* ── 4. 右欄：粉絲看到的樣子 ───────────────────── */
@@ -551,7 +535,7 @@
   }
 
   /* ── 成效 ─────────────────────────────────────── */
-  /* 成效放在最上面（2026-10-30 使用者：「成效可以放在上面」）：整座庫房的三個數字只住這裡。
+  /* 成效放在最上面（2026-10-30 使用者：「成效可以放在上面」；11-02「不需要一個 section 包起來，只列三個 bento」）：整座庫房的三個數字只住這裡。
      內容摘要不放；鑰匙使用情況留在「誰開得了」的鑰匙卡（同日使用者指示）。
      每件內容的兩個數字在各自的卡片上，不再另開一個分頁重列一次。 */
   function renderStats(v) {
@@ -560,13 +544,9 @@
     var n1 = lensOn ? (state.lens.type === "tier" ? fmt(lr.n) + '<span class="lab-stat__of"> / ' + fmt(lr.of) + "</span>" : (lr.can ? "進得來" : "進不來")) : fmt(R.all.size);
     var tile = function (val, label, sub) { return '<div class="lab-stat"><div class="lab-stat__v lab-num">' + val + '</div><div class="lab-stat__l">' + label + "</div>" + (sub ? '<div class="lab-stat__s">' + sub + "</div>" : "") + "</div>"; };
     q("[data-stats]").innerHTML =
-      '<div class="lab-stats__head"><h3 class="card__title">成效</h3>' + (live ? "" : '<span class="badge badge--neutral">尚未上架・以下是上架後的試算</span>') + "</div>" +
-      '<div class="lab-stats">' +
       tile(n1, lensOn ? (state.lens.type === "tier" ? TIERS[state.lens.ti].n + "打得開" : esc(state.lens.d.name)) : (live ? "現在打得開" : "上架後打得開"), "共 " + fmt(TOTAL) + " 位粉絲") +
       tile(fmt(v.ever), "累計解開過", "只增不減") +
-      tile(fmt(now), live ? "目前看得到" : "上架後看得到", "至少一件") +
-      "</div>" +
-      '<p class="lab-note">觀看次數與熱門內容還沒有規格（§8.31 第 18 項），解開人數不等於觀看次數。</p>';
+      tile(fmt(now), live ? "目前看得到" : "上架後看得到", "至少一件");
   }
 
   /* 版型照站上的建立流程（建立專案、建立活動）：全畫面 .wizard，頂列＝返回＋標題＋分段進度條＋已存草稿，
@@ -622,7 +602,7 @@
       if (w.vid) vault().name = name;
       else {
         var nv = { id: nid("v"), name: name, note: "", status: "draft", unlistAt: "", paused: null, ever: 0, routes: [[]], keys: [], items: [] };
-        VAULTS.unshift(nv); state.vid = nv.id; w.vid = nv.id; state.filter = "all";
+        VAULTS.unshift(nv); state.vid = nv.id; w.vid = nv.id;
       }
     }
     w.step = Math.min(3, w.step + 1);
@@ -644,12 +624,11 @@
     if (!VAULTS.length) { icons(); return; }
     var v = vault();
     renderHead(v);
-    renderCheck(v);
     renderStats(v); renderGate2(v); renderGate1(v);
-    renderSide(v);
+    /* 右欄「粉絲看到的樣子」2026-11-02 使用者要求移除，renderSide 與檢視身分的程式先留著不掛載（規格 F6 的入口待決定放哪） */
     icons();
   }
-  function icons() { if (window.ztorIcons) window.ztorIcons.applyIcons(document.getElementById("lab")); if (window.ztorIcons) window.ztorIcons.applyIcons(q("[data-modal]")); if (window.ztorIcons) window.ztorIcons.applyIcons(q("[data-pop]")); }
+  function icons() { if (window.ztorIcons) window.ztorIcons.applyIcons(q("[data-item-sheet]")); if (window.ztorIcons) window.ztorIcons.applyIcons(document.getElementById("lab")); if (window.ztorIcons) window.ztorIcons.applyIcons(q("[data-modal]")); if (window.ztorIcons) window.ztorIcons.applyIcons(q("[data-pop]")); }
 
   /* ── 彈窗 ─────────────────────────────────────── */
   var modalOk = null;
@@ -670,85 +649,152 @@
   }
 
   /* 任務編輯（單件與批次共用）。批次只開放不設任務與等級任務：行動任務帶各自的參數，逐件設 */
-  function taskEditor(task, v, batch) {
-    var type = task ? task.type : "none", floor = tierFloor(v);
-    var opts = [["none", "不設任務", "進得來就看得到"], ["action", "行動任務", batch ? "帶參數，請逐件設定" : "粉絲做完一件事就解開"], ["tier", "等級任務", "分級達到就解開"]];
-    var seg = '<div class="segmented radio-cards" role="radiogroup" aria-label="任務">' + opts.map(function (o) {
-      var dis = batch && o[0] === "action";
-      return '<button class="segmented__btn' + (type === o[0] ? " segmented__btn--active" : "") + '" type="button" role="radio" aria-checked="' + (type === o[0]) + '" data-act="task-type" data-v="' + o[0] + '"' + (dis ? " disabled" : "") + '><span class="radio-card__text"><span class="radio-card__title">' + o[1] + '</span><span class="radio-card__sub">' + o[2] + "</span></span></button>";
-    }).join("") + "</div>";
-    var detail = "";
-    if (type === "tier") {
-      var cur = task && task.tier != null ? task.tier : Math.min(1, floor);
-      detail = '<div class="field"><span class="field__label">分級達到</span><div class="lab-tiers">' + TIERS.map(function (t, ti) {
-        var dis = ti > floor;
-        return '<button class="chip' + (cur === ti ? " chip--active" : "") + '" type="button" data-act="task-tier" data-v="' + ti + '"' + (dis ? " disabled" : "") + ">" + t.n + (ti ? "以上" : "") + "</button>";
-      }).join("") + '</div><p class="field__hint">' + (floor < 3 ? "進庫方法都要求分級，所以最低只能選到" + TIERS[floor].n + "。" : "四級都能選。") + "</p></div>";
-    } else if (type === "action") {
-      var k = task && task.k || "follow";
-      detail = '<div class="field"><span class="field__label">要做的事</span><div class="radio-list">' + ACTIONS.map(function (a) {
-        return '<button class="radio-list__item' + (a.k === k ? " radio-list__item--active" : "") + '" type="button" role="radio" aria-checked="' + (a.k === k) + '" data-act="task-kind" data-v="' + a.k + '"><span class="radio-list__dot"></span><span class="radio-list__text"><span class="radio-list__title">' + a.n + '</span><span class="radio-list__sub">' + (a.ready ? "看得出誰完成" : "判定方式待確認，人數無法計算") + "</span></span></button>";
-      }).join("") + "</div></div>";
-      var a2 = actionOf(k);
-      if (a2.param === "n") detail += '<div class="field"><label class="field__label" for="lab-n">N</label><input class="input" id="lab-n" type="number" min="1" value="' + (task && task.n || 3) + '" data-task-n style="max-width:8rem"><p class="field__hint">可填範圍待確認。</p></div>';
-      if (k === "shop") detail += '<div class="field"><span class="field__label">指定商品</span><div class="lab-tiers">' + OPTS.bought.map(function (o) {
-        return '<button class="chip' + (task && task.target === o.id ? " chip--active" : "") + '" type="button" data-act="task-target" data-v="' + o.id + '">' + o.n + "</button>";
-      }).join("") + "</div></div>";
+  var editId = null;
+
+  /* ── 單件設定：照原型原本的右側抽屜（2026-11-02 使用者：「這個要改回原本原型的」）──
+     預覽 → 粉絲只能線上看 → 名稱 → 唯讀事實 → 任務（單選列＋參數＋判定狀態＋兩個數字）→ 大彩蛋 → 刪除。
+     沒有「儲存」鈕：任務與大彩蛋即時生效，名稱在關閉時寫回。 */
+  var itemSheet = function () { return q("[data-item-sheet]"); };
+  var KIND_LABEL = { image: "圖片", clip: "影片", audio: "音檔" };
+  function Li(key, fb, vars) {
+    var t = window.i18nT && window.i18nT(key);
+    t = t || fb;
+    if (vars) Object.keys(vars).forEach(function (k) { t = t.replace("{" + k + "}", vars[k]); });
+    return t;
+  }
+  function itemById(id) { return vault().items.filter(function (i) { return i.id === id; })[0]; }
+
+  var preview = { timer: null, at: 0, len: 0 };
+  function durSec(d) { var p = String(d || "").split(":").map(Number); if (p.some(isNaN) || !p.length) return 0; return p.reduce(function (acc, n) { return acc * 60 + n; }, 0); }
+  function clock(sec) { sec = Math.max(0, Math.floor(sec)); var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), r = sec % 60; return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (r < 10 ? "0" : "") + r; }
+  function previewHtml(it) {
+    var cover = it.img ? '<img src="' + esc(it.img) + '" alt="">' : '<span class="mpreview__glyph">' + ico(kindIcon(it.kind)) + "</span>";
+    if (it.kind === "image") return '<div class="mpreview mpreview--image lab-portrait vault-item__preview"><div class="mpreview__stage">' + cover + "</div></div>";
+    var play = esc(Li("vault.item.preview.play", "播放")), len = durSec(it.dur);
+    return '<div class="mpreview mpreview--' + it.kind + ' lab-portrait vault-item__preview" data-preview data-len="' + len + '">' +
+      (it.kind === "clip" ? '<div class="mpreview__stage">' + cover + '<button type="button" class="mpreview__bigplay" data-act="preview-toggle" aria-label="' + play + '">' + ico("play") + "</button></div>" : "") +
+      '<div class="mpreview__bar"><button type="button" class="mpreview__toggle" data-act="preview-toggle" aria-label="' + play + '">' + ico("play") + '</button><span class="mpreview__track"><span class="mpreview__fill"></span></span><span class="mpreview__time" data-preview-time>' + clock(0) + " / " + (len ? clock(len) : "—") + "</span></div></div>";
+  }
+  function paintPreview(root) {
+    root.style.setProperty("--mp-progress", (preview.len ? Math.min(100, preview.at / preview.len * 100) : 0) + "%");
+    var t = root.querySelector("[data-preview-time]"); if (t) t.textContent = clock(preview.at) + " / " + (preview.len ? clock(preview.len) : "—");
+  }
+  function setPlaying(root, on) {
+    root.classList.toggle("is-playing", on);
+    var btn = root.querySelector(".mpreview__toggle");
+    if (btn) { btn.innerHTML = ico(on ? "pause" : "play"); if (window.ztorIcons) window.ztorIcons.applyIcons(btn); }
+  }
+  function stopPreview() {
+    if (preview.timer) clearInterval(preview.timer); preview.timer = null;
+    var root = q("[data-item-body] [data-preview]"); if (root) setPlaying(root, false);
+  }
+  function togglePreview(root) {
+    if (preview.timer) { stopPreview(); return; }
+    preview.len = Number(root.getAttribute("data-len")) || 0; if (!preview.len) return;
+    if (preview.at >= preview.len) preview.at = 0;
+    setPlaying(root, true);
+    preview.timer = setInterval(function () { preview.at += 1; paintPreview(root); if (preview.at >= preview.len) stopPreview(); }, 1000);
+  }
+
+  function newActionTask(k) {
+    var d = actionOf(k), t = { type: "action", k: d.k };
+    if (d.param === "n") t.n = 3;
+    if (d.k === "shop") { t.scope = "item"; t.target = OPTS.bought[0].id; }
+    return t;
+  }
+  function taskReady(t) { return !!(t && t.type === "action" && t.k === "shop" && t.scope !== "any" && t.target); }
+  function tierAtLeast(i) { return TIERS[i].n + (i ? "以上" : ""); }
+
+  function actionParamsHtml(task) {
+    var d = actionOf(task.k), out = '<div class="vault-task__params"><div class="field"><label class="field__label" for="vt-kind">種類</label><select class="select" id="vt-kind" data-item-kind>' +
+      ACTIONS.map(function (a) { return '<option value="' + a.k + '"' + (a.k === task.k ? " selected" : "") + ">" + esc(a.n) + "</option>"; }).join("") + "</select></div>";
+    if (d.k === "shop") {
+      var item = task.scope !== "any";
+      out += '<div class="field"><span class="field__label">商品範圍</span><div class="segmented" role="radiogroup" aria-label="商品範圍">' +
+        '<button type="button" class="segmented__btn' + (!item ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' + !item + '" data-act="item-scope" data-v="any">任一商品</button>' +
+        '<button type="button" class="segmented__btn' + (item ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' + item + '" data-act="item-scope" data-v="item">指定商品</button></div></div>';
+      if (item) out += '<div class="field"><label class="field__label" for="vt-product">商品</label><select class="select" id="vt-product" data-item-target>' +
+        OPTS.bought.map(function (o) { return '<option value="' + o.id + '"' + (o.id === task.target ? " selected" : "") + ">" + esc(o.n) + "</option>"; }).join("") + "</select></div>";
     }
-    return seg + detail;
+    if (d.param === "n") out += '<div class="field"><label class="field__label" for="vt-n">數量</label><input class="input" id="vt-n" type="number" min="1" step="1" inputmode="numeric" value="' + esc(task.n || "") + '" data-item-n><p class="field__hint">1 以上的整數；可填範圍與上限尚待確認。</p><p class="field__error" data-item-n-error hidden>請填 1 以上的整數。</p></div>';
+    out += "</div>";
+    var ready = taskReady(task);
+    out += '<div class="vault-task__status vault-task__status--' + (ready ? "ready" : "pending") + '">' +
+      (ready ? '<span class="badge badge--success">可判定</span><p class="vault-task__status-text">有逐人購買資料，與進庫條件「買過」同一份。</p>'
+             : '<span class="badge badge--warning">判定方式待確認</span><p class="vault-task__status-text">現在可以先設定；正式啟用前，規格還缺：</p>') +
+      (d.miss && (!ready || task.scope === "any") ? '<ul class="vault-task__missing">' + (ready ? "" : d.miss.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("")) + "</ul>" : "") + "</div>";
+    return out;
   }
-
-  var draftTask = null, editId = null;
+  function tierParamsHtml(v, task) {
+    var floor = tierFloor(v), under = task.tier > floor;
+    var hint = floor === 3 ? "第一層有不看分級的進庫方法（或只靠鑰匙進庫），四級都能選。" : "第一層每一種進庫方法都要求" + tierAtLeast(floor) + "，所以只能選這一級或更高。";
+    return '<div class="vault-task__params"><div class="field"><label class="field__label" for="vt-tier">等級</label><select class="select" id="vt-tier" data-item-tier>' +
+      TIERS.map(function (t, i) { return '<option value="' + i + '"' + (i === task.tier ? " selected" : "") + (i > floor && i !== task.tier ? " disabled" : "") + ">" + esc(tierAtLeast(i)) + "</option>"; }).join("") +
+      '</select><p class="field__hint">' + esc(hint) + "</p>" +
+      (under ? '<p class="field__hint field__hint--warn">這一級已低於第一層目前的下限；第一層改動後既有的等級任務怎麼處理，尚待確認。</p>' : "") +
+      '<p class="field__hint">靠不看分級的方式進來、但分級不夠的粉絲，會看到「需要」這一級。</p></div></div>';
+  }
+  function reachHtml(v, it) {
+    var R = reach(v).all, n = itemVisible(v, it, R), e = itemEver(v, it, R), listed = isLive(v);
+    var sub = !it.task ? "等於進得了庫的全部人數。" : n == null ? "這種任務還沒有逐人資料，人數尚待確認。" : "進得了庫的 " + fmt(R.size) + " 位之中。";
+    function cell(label, val, pending, note) {
+      return '<div class="vault-task__reach-cell"><span class="vault-task__reach-label">' + esc(label) + '</span><span class="vault-task__reach-num' + (pending ? " vault-task__reach-num--pending" : "") + '">' + val + "</span>" + (note ? '<span class="vault-task__reach-sub">' + esc(note) + "</span>" : "") + "</div>";
+    }
+    return '<div class="vault-task__reach vault-task__reach--pair">' +
+      cell(listed ? "目前看得到" : "上架後看得到", n == null ? "待確認" : fmt(n), n == null, sub) +
+      cell("累計解開過", fmt(e), false, v.status === "draft" ? "還沒上架過。" : "之後收回也不減。") + "</div>" +
+      (listed ? "" : '<p class="vault-task__trial">這是上架後的數字，粉絲現在還看不到。</p>');
+  }
+  function taskSectionHtml(it) {
+    var v = vault(), task = it.task, type = task ? task.type : "none";
+    var types = [["none", "不設任務", "進得了庫就看得到。"], ["action", "行動任務", "粉絲去做一件事就解開，完成一次就永久解開。"], ["tier", "等級任務", "分級達到指定等級自動解開，掉級就收回。"]];
+    var out = '<section class="vault-task" data-item-task><div class="vault-task__head"><h4 class="vault-task__title" id="vault-task-title">任務</h4><p class="vault-task__lead">粉絲進庫之後，還要做到什麼才看得到這一件；一件只設一個。鑰匙只管進庫，持鑰匙的人一樣要完成任務。</p></div>' +
+      '<div class="radio-list" role="radiogroup" aria-labelledby="vault-task-title">' + types.map(function (o) {
+        var on = o[0] === type;
+        return '<button type="button" class="radio-list__item' + (on ? " radio-list__item--active" : "") + '" role="radio" aria-checked="' + on + '" data-act="item-type" data-v="' + o[0] + '"><span class="radio-list__dot"></span><span class="radio-list__text"><span class="radio-list__title">' + o[1] + '</span><span class="radio-list__sub">' + o[2] + "</span></span></button>";
+      }).join("") + "</div>";
+    if (type === "action") out += actionParamsHtml(task);
+    if (type === "tier") out += tierParamsHtml(v, task);
+    return out + reachHtml(v, it) + "</section>";
+  }
+  function grandRowHtml(it) {
+    return '<div class="control-row vault-task__flag"><div><div class="control-row__main" id="vault-grand-label">大彩蛋</div><div class="control-row__sub">只是標記，不影響這一件怎麼解開。</div></div><button type="button" class="switch' + (it.grand ? " switch--on" : "") + '" role="switch" aria-checked="' + !!it.grand + '" aria-labelledby="vault-grand-label" data-act="item-grand"></button></div>';
+  }
+  function renderItemSheet(it) {
+    var rows = [["類型", KIND_LABEL[it.kind]], ["大小", it.size || "—"], ["加入日期", it.added || "—"]];
+    if (it.dur) rows.splice(1, 0, ["長度", it.dur]);
+    stopPreview();
+    q("[data-item-body]").innerHTML = previewHtml(it) +
+      '<p class="vault-item__online">' + ico("eye") + "<span>" + esc(Li("vault.item.online", "粉絲只能線上看與播放，不提供下載。")) + "</span></p>" +
+      '<label class="field"><span class="field__label">名稱</span><input class="input" type="text" data-item-name value="' + esc(it.name) + '"></label>' +
+      '<dl class="vault-item__facts">' + rows.map(function (r) { return "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>"; }).join("") + "</dl>" +
+      taskSectionHtml(it) + grandRowHtml(it) +
+      '<div class="vault-item__actions"><button type="button" class="btn btn--outline btn--sm" data-act="item-del">' + ico("trash-2") + "刪除</button></div>";
+    icons();
+    var pr = q("[data-item-body] [data-preview]"); if (pr) { preview.len = Number(pr.getAttribute("data-len")) || 0; paintPreview(pr); }
+  }
+  function refreshTask(it) {
+    var sec = q("[data-item-task]"); if (!sec) return;
+    var wrap = document.createElement("div"); wrap.innerHTML = taskSectionHtml(it);
+    sec.replaceWith(wrap.firstChild); icons();
+    var flag = q("[data-item-body] .vault-task__flag"); if (flag) { var f2 = document.createElement("div"); f2.innerHTML = grandRowHtml(it); flag.replaceWith(f2.firstChild); icons(); }
+    render();
+  }
   function openItem(id) {
-    var v = vault(), it = v.items.filter(function (x) { return x.id === id; })[0];
-    if (!it) return;
-    editId = id;
-    draftTask = it.task ? JSON.parse(JSON.stringify(it.task)) : null;
-    drawItem();
+    var it = itemById(id); if (!it) return;
+    editId = id; preview.at = 0;
+    renderItemSheet(it);
+    var sh = itemSheet(); sh.classList.add("is-open"); sh.setAttribute("aria-hidden", "false");
+    var input = q("[data-item-name]"); if (input) input.focus();
   }
-  function drawItem() {
-    var v = vault(), it = v.items.filter(function (x) { return x.id === editId; })[0];
-    var R = reach(v).all;
-    var tmp = { task: draftTask, ever: it.ever };
-    var now = itemVisible(v, tmp, R);
-    var pv = it.img ? '<div class="lab-dlg__pv" style="background-image:url(' + it.img + ')"></div>' : '<div class="lab-dlg__pv">' + ico(it.kind === "audio" ? "music" : "film", "ztor-icon--lg") + '<span class="lab-note">' + (it.dur || "") + " · 預覽播放</span></div>";
-    openModal("內容設定",
-      '<div class="lab-dlg">' + pv +
-      '<div class="field"><label class="field__label" for="lab-iname">名稱</label><input class="input" id="lab-iname" value="' + esc(it.name) + '" data-iname></div>' +
-      '<div class="lab-dlg__facts"><span>' + it.size + "</span>" + (it.dur ? "<span>" + it.dur + "</span>" : "") + "<span>加入 " + it.added + "</span><span>粉絲只能線上看，不能下載</span></div>" +
-      '<div class="field"><span class="field__label">任務</span>' + taskEditor(draftTask, v, false) + "</div>" +
-      '<div class="lab-dlg__facts"><span>目前看得到 <b class="lab-num">' + (now == null ? "無法計算" : fmt(now)) + '</b></span><span>累計解開過 <b class="lab-num">' + fmt(itemEver(v, it, R)) + "</b></span>" + (it.ever ? "<span>改任務後，已解開的人照樣看得到</span>" : "") + "</div>" +
-      '<div class="control-row" style="display:flex;justify-content:space-between;align-items:center"><span>大彩蛋<br><span class="lab-note">只是標記，不影響誰看得到</span></span><button class="switch' + (it.grand ? " switch--on" : "") + '" type="button" role="switch" aria-checked="' + !!it.grand + '" data-act="grand" aria-label="大彩蛋"></button></div>' +
-      '<div class="lab-dlg__foot"><button class="btn btn--ghost" type="button" data-act="item-del" style="color:var(--destructive-ink)">' + ico("trash-2") + '刪除這件</button><div class="lab-dlg__btns"><button class="btn btn--ghost" type="button" data-act="modal-close">取消</button><button class="btn btn--primary" type="button" data-act="modal-ok">儲存</button></div></div></div>',
-      function () {
-        var nm = q("[data-iname]");
-        if (nm && nm.value.trim()) it.name = nm.value.trim();
-        readN();
-        it.task = draftTask;
-        closeModal();
-        render();
-        toast("已儲存「" + it.name + "」");
-      });
+  function closeItem() {
+    stopPreview();
+    var it = itemById(editId), input = q("[data-item-name]");
+    if (it && input && input.value.trim()) it.name = input.value.trim();
+    editId = null;
+    var sh = itemSheet(); sh.classList.remove("is-open"); sh.setAttribute("aria-hidden", "true");
+    render();
   }
-  function readN() { var n = q("[data-task-n]"); if (n && draftTask && draftTask.type === "action") draftTask.n = Math.max(1, parseInt(n.value, 10) || 1); }
-  function redrawTask(batch) { readN(); if (batch) drawBatch(); else { var nm = q("[data-iname]"); var keep = nm ? nm.value : null; drawItem(); if (keep != null) q("[data-iname]").value = keep; } }
-
-  var batchMode = false;
-  function drawBatch() {
-    var v = vault(), ids = Object.keys(state.sel);
-    var touched = v.items.filter(function (it) { return state.sel[it.id] && (it.ever || 0) > 0; });
-    openModal("幫 " + ids.length + " 件設定任務",
-      '<div class="lab-dlg"><p class="lab-note">每件仍只會有一個任務，會取代原本的設定。</p>' + taskEditor(draftTask, v, true) +
-      (touched.length ? '<div class="alert alert--row alert--info"><span class="alert__icon">' + ico("info") + '</span><div class="alert__body">' + touched.map(function (it) { return "「" + esc(it.name) + "」"; }).join("") + " 已有人解開過，他們會照樣看得到。</div></div>" : "") +
-      foot("套用到 " + ids.length + " 件") + "</div>",
-      function () {
-        v.items.forEach(function (it) { if (state.sel[it.id]) it.task = draftTask ? JSON.parse(JSON.stringify(draftTask)) : null; });
-        state.sel = {};
-        closeModal(); render();
-        toast("已設定 " + ids.length + " 件的任務");
-      });
-  }
-
   /* 發布／重新上架（F10、D488） */
   var pub = { mode: "now", listAt: "", unlistOn: false, unlistAt: "" };
   function openPublish(relist) {
@@ -790,22 +836,56 @@
   function readPub() { var a = q("[data-pub-lt]"), b = q("[data-pub-ut]"); if (a) pub.listAt = a.value; if (b) pub.unlistAt = b.value; }
 
   /* 鑰匙（F4） */
-  function openKey(type) {
-    var v = vault();
-    openModal(type === "gift" ? "送給一位粉絲" : "做成 NFC 商品",
-      '<div class="lab-dlg"><div class="field"><label class="field__label" for="lab-kl">名稱</label><input class="input" id="lab-kl" data-kl placeholder="' + (type === "gift" ? "例如：送給攝影師阿哲" : "例如：巡迴鑰匙圈") + '"><p class="field__hint">只有你看得到，用來分辨每一把。</p></div>' +
-      (type === "nfc" ? '<div class="field"><label class="field__label" for="lab-ku">可用次數</label><input class="input" id="lab-ku" data-ku type="number" min="1" value="300" style="max-width:8rem"><p class="field__hint">一批 NFC 商品的數量；領走才算人數。</p></div>' : '<p class="lab-note">只能用一次，第一個用掉的人進得來。</p>') +
-      (isLive(v) ? "" : '<div class="alert alert--row alert--info"><span class="alert__icon">' + ico("info") + '</span><div class="alert__body">庫房還沒上架，粉絲現在領只會看到「尚未開放」，不扣次數。</div></div>') +
-      foot("產生鑰匙") + "</div>",
-      function () {
-        var lab = (q("[data-kl]").value || "").trim() || (type === "gift" ? "送給一位粉絲" : "NFC 商品");
-        var uses = type === "nfc" ? Math.max(1, parseInt(q("[data-ku]").value, 10) || 1) : 1;
-        var code = Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
-        v.keys.push({ id: nid("k"), code: code, type: type, label: lab, uses: uses, claimed: [], revoked: false, born: "2026/10/29" });
-        closeModal(); render();
-        toast(type === "gift" ? "鑰匙 " + code + " 已產生，連結已複製" : "鑰匙 " + code + " 已產生，下一步到電子商店建立這件商品");
-      });
+  /* ── 管理鑰匙：照原型原本的分享抽屜（2026-11-02 使用者：「鑰匙開啟好像有缺少原型的管理鑰匙」）──
+     上面「發一把新鑰匙」（意圖兩選一、用途、批量、產生）→ 剛產生的連結＋複製＋到 E-Shop 建立商品 →
+     下面「已發出的鑰匙」（每把可複製連結、撤銷）→ 規則說明。 */
+  var share = { intent: "gift", created: null };
+  function keyUrl(code) { return "https://ztor.com/k/" + code.replace("-", "").toLowerCase(); }
+  function shareHtml(v) {
+    var isGift = share.intent === "gift", keys = v.keys.slice().reverse();
+    var out = '<div class="vshare"><div class="vshare__section"><div class="vshare__label">' + ico("plus") + "發一把新鑰匙</div>" +
+      '<div class="vshare__intent">' +
+        '<button type="button" class="vshare__opt' + (isGift ? " vshare__opt--active" : "") + '" data-act="share-intent" data-v="gift"><span class="vshare__opt-icon">' + ico("gift") + '</span><span class="vshare__opt-title">送給一位粉絲</span><span class="vshare__opt-sub">一次性。第一個打開的人就拿到權限。</span></button>' +
+        '<button type="button" class="vshare__opt' + (!isGift ? " vshare__opt--active" : "") + '" data-act="share-intent" data-v="nfc"><span class="vshare__opt-icon">' + ico("scan") + '</span><span class="vshare__opt-title">做成 NFC 商品</span><span class="vshare__opt-sub">一批可用次數，寫進鑰匙圈或家具裡。</span></button>' +
+      "</div>" +
+      '<div class="field"><label class="field__label" for="vshare-name">這把鑰匙是做什麼用的？</label><input class="input" id="vshare-name" type="text" placeholder="' + esc(isGift ? "例：給那位寄卡帶來的粉絲" : "例：NFC 鑰匙圈 · 東岸巡迴") + '"></div>' +
+      (isGift ? "" : '<div class="field"><label class="field__label" for="vshare-uses">這一批要做幾件商品？</label><input class="input" id="vshare-uses" type="number" min="1" max="100000" value="500"><span class="field__hint">一件商品＝一次。未領取的次數是庫存、不是人，永遠不會被算進「誰進得來」。</span></div>') +
+      '<button class="btn btn--primary" type="button" data-act="share-create">' + ico("key") + (isGift ? "產生鑰匙" : "產生這一批") + "</button>";
+    if (share.created) {
+      var k = share.created;
+      out += '<div class="vshare__link"><input class="input" type="text" readonly value="' + esc(keyUrl(k.code)) + '" aria-label="鑰匙連結"><button class="btn btn--primary vshare__copy" type="button" data-act="vkey-copy" data-v="' + esc(keyUrl(k.code)) + '">' + ico("copy") + "<span>複製</span></button></div>" +
+        (k.type === "nfc" ? '<a class="btn btn--outline" href="create-product.html?vaultkey=' + encodeURIComponent(k.code) + "&vault=" + encodeURIComponent(v.id) + '">' + ico("shopping-bag") + "到 E-Shop 建立這件商品</a>" : "") +
+        '<p class="vshare__hint">' + esc(k.code) + " · 拿到這條連結的人都能用掉 " + fmt(k.uses) + " 次裡的一次。外流的話，在下面撤銷它。</p>";
+    }
+    out += '</div><div class="vshare__section"><div class="vshare__label">' + ico("key") + "已發出的鑰匙</div>";
+    if (!keys.length) out += '<p class="vshare__hint">還沒有鑰匙。目前進得來的人都是靠條件進來的。</p>';
+    else out += '<div class="vshare__keys">' + keys.map(function (k) {
+      var claimed = k.claimed.length, pct = k.uses ? claimed / k.uses : 0;
+      return '<div class="vkey' + (k.revoked ? " vkey--revoked" : "") + '"><div class="vkey__head"><span class="vkey__name">' + esc(k.label) + '</span><span class="vkey__code">' + esc(k.code) + " · " + esc(k.born) + (k.revoked ? " · 已撤銷" : "") + "</span></div>" +
+        '<div class="vkey__actions">' + (k.revoked ? "" : '<button type="button" class="vkey__act" data-act="vkey-copy" data-v="' + esc(keyUrl(k.code)) + '" aria-label="複製連結">' + ico("copy") + '</button><button type="button" class="vkey__act vkey__act--danger" data-act="revoke" data-v="' + esc(k.id) + '" aria-label="撤銷">' + ico("x-circle") + "</button>") + "</div>" +
+        '<div class="vkey__meter"><span class="vkey__track"><span class="vkey__fill" data-fill="' + pct + '"></span></span><span class="vkey__count">' + fmt(claimed) + " / " + fmt(k.uses) + " 已領取</span></div></div>";
+    }).join("") + "</div>";
+    out += "</div>";
+    if (!isLive(v)) out += '<div class="info-banner">' + ico("clock", "info-banner__icon") + "<span>" + Z("keysOff") + "</span></div>";
+    out += '<div class="info-banner">' + ico("info", "info-banner__icon") + "<span>鑰匙是持有者憑證：拿到連結的人就能用掉其中一次，用掉之後權限綁定在那位粉絲的帳號上。鑰匙只管進庫，進庫之後每件內容的任務照常要完成。撤銷一把鑰匙，所有靠它進來的人會立刻失去權限——粉絲人數會當場往下掉。</span></div></div>";
+    return out;
   }
+  function renderShare() {
+    var v = vault(), body = q("[data-share-body]");
+    body.innerHTML = shareHtml(v);
+    q("[data-share-title]").textContent = "管理鑰匙 · " + v.name;
+    icons();
+    requestAnimationFrame(function () { body.querySelectorAll(".vkey__fill").forEach(function (e) { e.style.transform = "scaleX(" + parseFloat(e.getAttribute("data-fill")) + ")"; }); });
+  }
+  function shareOpen() { var d = q("[data-share-drawer]"); return d.classList.contains("is-open"); }
+  function openShare(intent, manage) {
+    share.created = null;
+    if (intent === "gift" || intent === "nfc") share.intent = intent;
+    renderShare();
+    var d = q("[data-share-drawer]"); d.classList.add("is-open"); d.setAttribute("aria-hidden", "false");
+    if (manage) { var sec = q("[data-share-body] .vshare__section:nth-of-type(2)"); if (sec) sec.scrollIntoView({ block: "start" }); }
+  }
+  function closeShare() { var d = q("[data-share-drawer]"); d.classList.remove("is-open"); d.setAttribute("aria-hidden", "true"); }
 
   /* 加條件選單（F2）：每項帶「這條單獨幾人」 */
   var popRoute = -1;
@@ -852,19 +932,24 @@
     var v = VAULTS.length ? vault() : null;
 
     switch (act) {
-      case "strip-filter": state.filter = val; renderStrip(); icons(); break;
-      case "pick": state.wizard = null; state.vid = val; state.sel = {}; state.renaming = false; state.menu = false; render(); break;
-      case "new-vault": state.wizard = { step: 1, name: "", vid: null }; state.sel = {}; state.lens = null; state.lensKind = "me"; state.taskFilter = "all"; render(); break;
+      case "pick": state.wizard = null; state.vid = val; state.renaming = false; state.menu = false; render(); break;
+      case "new-vault": state.wizard = { step: 1, name: "", vid: null }; state.lens = null; state.lensKind = "me"; render(); break;
       case "wiz-next": wizNext(); break;
       case "wiz-go": { var nm0 = q("[data-wiz-name]"); if (nm0 && nm0.value.trim() && state.wizard.vid) vault().name = nm0.value.trim(); state.wizard.step = +val; render(); break; }
       case "wiz-exit": var had = state.wizard && state.wizard.vid; state.wizard = null; render(); if (had) toast("已存成草稿，之後可以從庫房列表打開繼續"); break;
       case "wiz-draft": state.wizard = null; render(); toast("已存成草稿，之後可以從庫房列打開繼續"); break;
       case "rename": state.renaming = true; renderHead(v); icons(); break;
       case "menu": state.menu = !state.menu; renderHead(v); icons(); break;
+      case "share": {
+        var liveS = isLive(v);
+        openModal("分享連結", '<div class="lab-dlg"><div class="linkf' + (liveS ? "" : " linkf--disabled") + '"><div class="linkf__row"><input class="input linkf__input" type="text" readonly value="https://ztor.com/v/' + v.id + '" aria-label="分享連結"' + (liveS ? "" : " disabled") + '><button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-act="copy-link"' + (liveS ? "" : " disabled") + ">" + ico("copy") + "<span>複製連結</span></button></div>" +
+          '<p class="linkf__hint">' + (liveS ? "連結只帶粉絲到這座庫房，不會讓他進得來——進庫仍要符合條件或持有鑰匙。" : (v.status === "draft" ? "草稿不能分享：粉絲還看不到這座庫房，發布後才能分享。" : "已下架不能分享：粉絲看不到這座庫房，重新上架後才能分享。")) + "</p></div></div>");
+        break;
+      }
       case "copy-link":
         if (!isLive(v)) return;
         if (navigator.clipboard) navigator.clipboard.writeText("https://ztor.com/v/" + v.id).catch(function () {});
-        state.menu = false; render(); toast("已複製分享連結"); break;
+        toast("已複製分享連結"); break;
       case "delete": {
         if (isLive(v)) return;
         var R = reach(v).all, lose = new Set();
@@ -888,22 +973,30 @@
         });
         break;
       case "cancel-sched": v.listAt = ""; render(); toast("已取消排程"); break;
-      case "step":
-        if (val === "publish") openPublish(false);
-        else if (val === "relist") openPublish(true);
-        else { render(); var el = document.getElementById(val); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }
-        break;
       case "add-route": v.routes.push([]); render(); openPop(document.querySelectorAll('[data-act="add-cond"]')[v.routes.length - 1], v.routes.length - 1); icons(); break;
-      case "rm-route": v.routes.splice(+t.getAttribute("data-r"), 1); render(); toast("已移除一種進庫方法"); break;
       case "add-cond": e.stopPropagation(); openPop(t, +t.getAttribute("data-r")); icons(); break;
       case "pick-cond": v.routes[popRoute].push({ v: val }); closePop(); render(); break;
-      case "rm-cond": v.routes[+t.getAttribute("data-r")].splice(+t.getAttribute("data-c"), 1); render(); break;
-      case "key": openKey(val); break;
+      case "rm-cond": { var rr = +t.getAttribute("data-r"); v.routes[rr].splice(+t.getAttribute("data-c"), 1); if (!v.routes[rr].length && v.routes.length > 1) v.routes.splice(rr, 1); render(); break; }
+      case "key": openShare(val, false); break;
+      case "open-tab": state.openTab = val; render(); if (state.wizard) renderWizard(); break;
+      case "keys-manage": openShare(null, true); break;
+      case "share-close": closeShare(); break;
+      case "share-intent": share.intent = val; share.created = null; renderShare(); break;
+      case "share-create": {
+        var nmI = q("#vshare-name"), usI = q("#vshare-uses"), isG = share.intent === "gift";
+        var labK = (nmI && nmI.value.trim()) || (isG ? "送給一位粉絲" : "NFC 商品");
+        var usesK = isG ? 1 : Math.max(1, parseInt(usI && usI.value, 10) || 1);
+        var codeK = Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+        var kk = { id: nid("k"), code: codeK, type: share.intent, label: labK, uses: usesK, claimed: [], revoked: false, born: "2026/11/02" };
+        v.keys.push(kk); share.created = kk; renderShare(); render();
+        break;
+      }
+      case "vkey-copy": if (navigator.clipboard) navigator.clipboard.writeText(val).catch(function () {}); toast("已複製連結"); break;
       case "revoke": {
         var k = v.keys.filter(function (x) { return x.id === val; })[0];
         var others = new Set(); v.routes.forEach(function (r) { routeSet(r).forEach(function (i) { others.add(i); }); });
         var lose2 = k.claimed.filter(function (i) { return !others.has(i); }).length;
-        confirmDanger("撤銷鑰匙 " + k.code, ["靠這把鑰匙進來的 <b>" + fmt(lose2) + "</b> 位粉絲會立刻失去存取", "發放與領取紀錄會保留"], "撤銷", function () { k.revoked = true; closeModal(); render(); toast("已撤銷鑰匙"); });
+        confirmDanger("撤銷鑰匙 " + k.code, ["靠這把鑰匙進來的 <b>" + fmt(lose2) + "</b> 位粉絲會立刻失去存取", "發放與領取紀錄會保留"], "撤銷", function () { k.revoked = true; closeModal(); render(); if (shareOpen()) renderShare(); toast("已撤銷鑰匙"); });
         break;
       }
       case "upload": q("[data-file]").click(); break;
@@ -912,40 +1005,23 @@
           { id: nid("i"), kind: "clip", name: "彩排片段", img: IMG + "products/nick-realive-cd.jpg", size: "72 MB", added: "2026/10/30", dur: "1:58", task: null, ever: 0 },
           { id: nid("i"), kind: "audio", name: "新歌 Demo（語音備忘）", size: "2.2 MB", added: "2026/10/30", dur: "2:05", task: null, ever: 0 });
         render(); toast("已加入 3 件"); break;
-      case "task-filter": state.taskFilter = val; render(); break;
-      case "sel": {
-        if (t.checked) state.sel[val] = true; else delete state.sel[val];
-        render(); break;
+      case "open-item": if (!e.target.closest("[data-stop]")) { openItem(val); } break;
+      case "item-close": closeItem(); break;
+      case "preview-toggle": togglePreview(q("[data-item-body] [data-preview]")); break;
+      case "item-type": {
+        var cit = itemById(editId);
+        cit.task = val === "none" ? null : val === "tier" ? { type: "tier", tier: Math.min(1, tierFloor(v)) } : newActionTask("follow");
+        refreshTask(cit); break;
       }
-      case "sel-clear": state.sel = {}; render(); break;
-      case "open-item": if (!e.target.closest("[data-stop]")) { batchMode = false; openItem(val); } break;
-      case "batch-task": batchMode = true; draftTask = null; drawBatch(); break;
-      case "batch-grand": v.items.forEach(function (it) { if (state.sel[it.id]) it.grand = true; }); var nn = Object.keys(state.sel).length; state.sel = {}; render(); toast("已把 " + nn + " 件標成大彩蛋"); break;
-      case "batch-del": {
-        var ids = Object.keys(state.sel), had = v.items.filter(function (it) { return state.sel[it.id] && (it.ever || 0) > 0; });
-        confirmDanger("刪除 " + ids.length + " 件內容", ["粉絲會立刻失去這 " + ids.length + " 件內容", had.length ? had.length + " 件已有人解開過：" + had.map(function (it) { return "「" + esc(it.name) + "」"; }).join("") : "這些內容還沒有人解開過", "刪除後不能復原"], "刪除 " + ids.length + " 件", function () {
-          v.items = v.items.filter(function (it) { return !state.sel[it.id]; }); state.sel = {}; closeModal(); render(); toast("已刪除 " + ids.length + " 件");
-        });
-        break;
-      }
+      case "item-scope": { var sit = itemById(editId); sit.task.scope = val; if (val === "any") delete sit.task.target; else sit.task.target = sit.task.target || OPTS.bought[0].id; refreshTask(sit); break; }
+      case "item-grand": { var git = itemById(editId); git.grand = !git.grand; t.classList.toggle("switch--on", git.grand); t.setAttribute("aria-checked", git.grand); render(); break; }
       case "item-del": {
-        var it2 = v.items.filter(function (x) { return x.id === editId; })[0];
+        var it2 = itemById(editId), delId = editId;
+        stopPreview(); itemSheet().classList.remove("is-open"); itemSheet().setAttribute("aria-hidden", "true"); editId = null;
         confirmDanger("刪除「" + it2.name + "」", ["粉絲會立刻失去這件內容", it2.ever ? "已有 " + fmt(it2.ever) + " 人解開過" : "還沒有人解開過", "刪除後不能復原"], "刪除", function () {
-          v.items = v.items.filter(function (x) { return x.id !== editId; }); closeModal(); render(); toast("已刪除");
+          v.items = v.items.filter(function (x) { return x.id !== delId; }); closeModal(); render(); toast("已刪除");
         });
         break;
-      }
-      case "task-type":
-        if (val === "none") draftTask = null;
-        else if (val === "tier") draftTask = { type: "tier", tier: Math.min(1, tierFloor(v)) };
-        else draftTask = { type: "action", k: "follow" };
-        redrawTask(batchMode); break;
-      case "task-tier": draftTask.tier = +val; redrawTask(batchMode); break;
-      case "task-kind": draftTask = { type: "action", k: val, n: actionOf(val).param ? 3 : undefined }; redrawTask(batchMode); break;
-      case "task-target": draftTask.target = val; redrawTask(batchMode); break;
-      case "grand": {
-        var it3 = v.items.filter(function (x) { return x.id === editId; })[0];
-        it3.grand = !it3.grand; t.classList.toggle("switch--on", it3.grand); t.setAttribute("aria-checked", it3.grand); render(); break;
       }
       case "pub-mode": readPub(); pub.mode = val; drawPublish(q("[data-modal-title]").textContent === "重新上架"); break;
       case "pub-unlist": readPub(); pub.unlistOn = !pub.unlistOn; drawPublish(q("[data-modal-title]").textContent === "重新上架"); break;
@@ -964,30 +1040,35 @@
     }
   });
   document.addEventListener("input", function (e) {
+    if (e.target.matches("[data-rename]")) fitRename(e.target);
+    if (e.target.matches("[data-item-n]")) {
+      var nit = itemById(editId), nv = parseInt(e.target.value, 10), bad = !(nv >= 1);
+      var er = q("[data-item-n-error]"); if (er) er.hidden = !bad;
+      if (!bad) nit.task.n = nv;
+      return;
+    }
     if (e.target.matches("[data-fan-q]")) { q("[data-fan-list]").innerHTML = fanList(e.target.value); }
     if (e.target.matches("[data-pub-ut]")) { pub.unlistAt = e.target.value; }
   });
   document.addEventListener("change", function (e) {
+    if (e.target.matches("[data-item-kind]")) { var kit = itemById(editId); kit.task = newActionTask(e.target.value); refreshTask(kit); return; }
+    if (e.target.matches("[data-item-target]")) { var tit = itemById(editId); tit.task.target = e.target.value; refreshTask(tit); return; }
+    if (e.target.matches("[data-item-tier]")) { var rit = itemById(editId); rit.task.tier = +e.target.value; refreshTask(rit); return; }
     if (e.target.matches("[data-file]")) { addFiles(e.target.files); e.target.value = ""; }
     if (e.target.matches("[data-pub-ut]")) { readPub(); drawPublish(q("[data-modal-title]").textContent === "重新上架"); }
   });
   document.addEventListener("keydown", function (e) {
-    if (e.target.matches("[data-draft]")) {
-      if (e.key === "Enter" && e.target.value.trim()) {
-        var nv = { id: nid("v"), name: e.target.value.trim(), note: "", status: "draft", unlistAt: "", paused: null, ever: 0, routes: [[]], keys: [], items: [] };
-        VAULTS.unshift(nv); state.vid = nv.id; state.drafting = false; state.filter = "all"; state.sel = {}; render();
-        toast("庫房已建立，接著決定誰進得來");
-      } else if (e.key === "Escape") { state.drafting = false; renderStrip(); icons(); }
-    }
     if (e.target.matches("[data-rename]")) {
       if (e.key === "Enter") { var nmv = e.target.value.trim(); if (nmv) vault().name = nmv; state.renaming = false; render(); }
       else if (e.key === "Escape") { state.renaming = false; render(); }
     }
     if (e.target.matches("[data-wiz-name]") && e.key === "Enter") wizNext();
+    if (e.target.matches('.lab-mcard--add') && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); q("[data-file]").click(); }
     if (e.key === "Escape" && !q("[data-modal]").hidden) closeModal();
+    else if (e.key === "Escape" && editId) closeItem();
+    else if (e.key === "Escape" && shareOpen()) closeShare();
   });
   document.addEventListener("focusout", function (e) {
-    if (e.target.matches("[data-draft]")) { setTimeout(function () { if (state.drafting) { state.drafting = false; renderStrip(); icons(); } }, 120); }
     if (e.target.matches("[data-rename]")) { var nmv = e.target.value.trim(); if (nmv) vault().name = nmv; state.renaming = false; setTimeout(render, 0); }
   });
   /* 拖放 */
