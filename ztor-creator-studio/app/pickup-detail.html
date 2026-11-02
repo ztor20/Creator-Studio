@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
@@ -37,24 +38,97 @@
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<!-- D499 掃碼領點（O43）：QR 卡（points-qr，用量條吃 stock-bar）、啟用開關（switch）、A6 提醒（alert）、領取紀錄表（table）、
+     建立／編輯彈窗的類型卡（segmented＋radio-card） -->
+<link rel="stylesheet" href="ds-components/points-qr.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- D503：掃碼領點建立彈窗的 QR 列（partials/pickup-session-modal.js .stack） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 5.1.5.15 取貨場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
      .pickup-board（左＝領取的活動與物品、右＝工作人員掃碼與核銷數字），F4 名單改
      .ztor-table，F5 核銷紀錄改 popup。頁內只留兩條純佈局 glue。 */
   /* 名單工作列＝電子商店的 .list-toolbar（左 tabs、右動作群）。 */
-  /* 這一頁的側欄放的是核銷數字與掃碼交付，比一般 meta 欄重，300px 太窄、主欄太寬；
-     兩欄拉近到接近對半（使用者裁示「左右平衡一點」）。 */
-  .detail-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr);
-    align-items: stretch;              /* 左右兩張卡等高（使用者裁示）*/
-    margin-bottom: var(--sp-24);       /* 與下方名單工作列的間距，別黏在一起 */
+  /* 2026-11-02 改版：原兩欄卡（.detail-grid／.detail-rail）撤掉，數字改 .bento＋.kpi、領取項目與掃碼入口改 .payout-modal 彈窗（同掃碼領點）。
+     頁內只留彈窗裡表格的欄對齊與 QR 區 glue。 */
+  .pk-ons-num { text-align: right; white-space: nowrap; }
+  .pk-ons-itemsnote { margin: var(--sp-12) 0 0; font-size: var(--fs-13); }
+  /* 新增項目頁：搜尋選單是浮層，彈窗本體要留高度才不會被裁掉（同建立場次彈窗 [data-pks-form] 的 min-height 做法） */
+  .payout-dialog__body > [data-pk-items-v="add"] { min-height: 340px; }
+  .pk-ons-qr { display: flex; justify-content: center; padding: var(--sp-16); margin-top: var(--sp-12); background: var(--card); border-radius: var(--radius-lg); }
+  .pk-ons-qr svg { width: 200px; height: 200px; }
+  /* D499 F6.3 領取紀錄：沿用現場核銷名單的 .product-list（表頭字級、列高、hover 與分隔線都吃元件），
+     這裡只給四欄的欄寬（時間／粉絲／商品／點數）；窄螢幕照元件收成「主欄＋右側值」兩欄、時間與商品往下排。
+     頁內版面 glue，不是新元件——只有這一頁有這張表。 */
+  .product-list--claims .product-list__head,
+  .product-list--claims .product-list__row { grid-template-columns: 136px minmax(140px, 1fr) minmax(160px, 1.2fr) 88px; }
+  /* 只壓列高、不碰表頭：表頭的 44px 最小高（product-list.css）就是工作列到欄名的間距來源，
+     與現場核銷名單同一個值。2026-11-02 使用者「間距要有」——原本這裡把表頭也 min-height:0，欄名貼上工作列。 */
+  .product-list--claims .product-list__row { min-height: 56px; }
+  @media (max-width: 760px) {
+    .product-list--claims .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+    .product-list--claims .product-list__product { grid-column: 1; grid-row: 1; }
+    .product-list--claims [data-col="pts"] { grid-column: 2; grid-row: 1; justify-self: end; }
+    .product-list--claims [data-col="time"] { grid-column: 1; grid-row: 3; }
+    .product-list--claims [data-col="item"] { grid-column: 1; grid-row: 2; }
   }
-  /* 這一頁的側欄只有一張卡、且要跟左欄等高，所以取消 detail-rail 的 sticky——
-     sticky 會脫離 stretch 的高度計算，卡片會長過格子、壓到下面的工作列。 */
-  .detail-rail { position: static; }
-  .detail-main > .form-section,
-  .detail-rail > .form-section { height: 100%; }
+  /* D503 領取項目表（2026-11-02 使用者「這裡要有表格」：移出左卡、獨立一張全寬區塊＋有外框的表）。
+     依表格實際可用寬度收欄（不是視窗寬）：≤640px 收起「每次點數」「已發點數」，每次點數改在名稱下方小字；
+     ≤380px（手機）再收起「狀態」，改在名稱下方標小徽章（只標已停用、名額已滿）。收起的數字點列開的 QR 明細都看得到。頁內版面 glue，只有這張表。 */
+  .pk-lp-items { container-type: inline-size; }
+  /* 單層（2026-11-02 使用者「不要有兩層 layers」）：表格直接坐在領取項目區塊裡、不再自帶外框，只留列分隔線；
+     第一欄與最後一欄的左右內距歸零，文字才與區塊標題、右上操作切齊（區塊本身已有內距）。 */
+  .pk-lp-items .ztor-table thead th:first-child,
+  .pk-lp-items .ztor-table tbody td:first-child { padding-inline-start: 0; }
+  .pk-lp-items .ztor-table thead th:last-child,
+  .pk-lp-items .ztor-table tbody td:last-child { padding-inline-end: 0; }
+  .pk-lp-items .pk-lp-per-sub,
+  .pk-lp-items .pk-lp-st-inline { display: none; }
+  @container (max-width: 640px) {
+    .pk-lp-items .pk-lp-per,
+    .pk-lp-items .pk-lp-given { display: none; }
+    .pk-lp-items .pk-lp-per-sub { display: block; }
+  }
+  @container (max-width: 380px) {
+    .pk-lp-items .pk-lp-st { display: none; }
+    .pk-lp-items .pk-lp-st-inline { display: inline-flex; width: fit-content; margin-top: var(--sp-4); }
+  }
+  /* 標題區照 event-detail：徽章列在標題上方；掃碼領點副標最後一行是低頻的建立資訊小字 */
+  .pickup-detail__header { flex-direction: column; align-items: flex-start; gap: 0; margin-bottom: var(--sp-8); }
+  .pk-hd-badges { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-bottom: var(--sp-8); }
+  /* 統計三塊 bento 與領取項目區塊（2026-11-02）：量條貼在已領數字下；區塊標題右側放發點開關與新增 QR */
+  .pk-lp-kpis { margin-bottom: var(--sp-16); }
+  .pk-lp-kpis__bar { margin-top: var(--sp-10); }
+  /* 領取項目彈窗：操作列（發點開關＋說明｜新增 QR）、列尾三顆圖示鈕 */
+  /* 表格最後一列＝新增 QR 的輸入列（與資料列同欄位）；彈窗內換頁的標題列（←＋標題）、QR 檢視兩欄、編輯表單 */
+  /* 表格最後一列「＋ 新增 QR」：整列寬的虛線按鈕，點了換到新增頁 */
+  .pk-lp-addcell { padding-top: var(--sp-12) !important; border-bottom: 0; }
+  .pk-lp-addline { display: flex; align-items: center; justify-content: center; gap: var(--sp-8); width: 100%; padding: var(--sp-12); font: inherit; font-size: var(--fs-14); color: var(--muted-foreground); background: transparent; border: 1px dashed var(--border); border-radius: var(--radius-lg); cursor: pointer; }
+  .pk-lp-addline:hover { color: var(--foreground); border-color: var(--foreground-muted); }
+  .pk-lp-addline:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .pk-lp-qract { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-8); margin-top: var(--sp-20); }
+  .pk-lp-qract__del:hover { color: var(--destructive); }
+  .pk-lp-qract__note { flex-basis: 100%; margin: 0; }
+  .pk-lp-headsw { display: inline-flex; align-items: center; gap: var(--sp-10); font-size: var(--fs-14); margin-right: var(--sp-8); }
+  @media (max-width: 560px) { .pk-lp-stats-table th, .pk-lp-stats-table td { padding-inline: var(--sp-4) !important; } .pk-lp-stats-table th { font-size: var(--fs-11); } }
+  .pk-lp-stats-table tbody tr.pk-lp-stats-total td { border-top: 1px solid var(--border); font-weight: var(--fw-medium); }
+  .pk-lp-offscreen { position: fixed; left: -10000px; top: 0; }
+  /* 新增／編輯頁的預覽只是示意，還沒存的 QR 不能下載 */
+  [data-pk-lp-qrf-preview] .points-qr__download { display: none; }
+  .pk-lp-dlg__title { display: flex; align-items: center; gap: var(--sp-8); min-width: 0; }
+  .pk-lp-qrview { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--sp-32); align-items: start; }
+  @media (max-width: 640px) { .pk-lp-qrview { grid-template-columns: 1fr; } }
+  .pk-lp-formwrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .pk-lp-formwrap[hidden] { display: none; }
+  .pk-lp-formview .form-grid { max-width: 560px; }
+  .pk-lp-acts { display: inline-flex; gap: var(--sp-4); justify-content: flex-end; }
+  .pk-lp-acts-th, .pk-lp-acts-td { width: 1%; text-align: right; white-space: nowrap; }
+  .pk-lp-acts__del:not(:disabled):hover { color: var(--destructive); }
 </style>
 </head>
 <body>
@@ -64,98 +138,82 @@
   <main class="main">
     <div class="page">
 
-      <div class="page-crumb page-crumb--back">
-        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="pickup.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
-        <a href="e-shop.html" class="card__link" data-i18n="pk.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
-        <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Pickup management</a>
-      </div>
-
-      <!-- F1 · 場次身分：名稱＋狀態＋編輯入口。
-           地點／時間已下放到行動卡左欄；頁面說明段落與「Start scanning」入口已撤除
-           （掃碼是工作人員在自己裝置上做的事，這頁只負責把網址交出去）。 -->
-      <div class="page-intro">
-        <div>
-          <div class="pickup-detail__header">
-            <h1 class="page-intro__title" data-i18n="pk.row1.name">Taipei signing — pickup</h1>
-            <span class="badge badge--success" data-pk-status-badge><span data-i18n="pk.status.active">Active</span></span>
-          </div>
+      <!-- 2026-11-02 使用者：「要像活動詳情放到右上角」——麵包屑與頁面動作同一列（.detail-topbar，同 event-detail；本頁不接黏附腳本，靜止在流內） -->
+      <div class="detail-topbar">
+        <div class="page-crumb page-crumb--back">
+          <a class="btn btn--icon-circle btn--sm page-crumb__back" href="pickup.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+          <a href="e-shop.html" class="card__link" data-i18n="pk.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+          <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Pickup management</a>
         </div>
         <div class="page-intro__actions">
+          <!-- 整場啟用／停用開關（2026-11-02 移出領取項目彈窗；使用者：「這不該叫發點」「是停用／啟用的 toggle」）：管整個場次的所有 QR，放頁首動作列；標籤跟著狀態顯示「啟用」或「停用」，滑過看說明，停用仍先跳確認。 -->
+          <label class="pk-lp-headsw" data-pk-lp-headsw data-feat="O43" hidden title="When disabled, no QR code in this session gives points, whatever the time." data-i18n-title="pk.lp.f.enabled.sub"><span data-pk-lp-switch-label>Enabled</span><div class="switch" role="switch" aria-checked="true" tabindex="0" data-pk-lp-switch aria-label="Enabled" data-i18n-aria-label="pk.lp.f.enabled"></div></label>
+          <button class="btn btn--outline" type="button" data-pk-scanner-open><i data-lucide="qr-code" class="ztor-icon"></i> <span data-i18n="pk.ons.scan.open">Scanner access</span></button>
           <button class="btn btn--outline" type="button" data-pk-edit><i data-lucide="pencil" class="ztor-icon"></i> <span data-i18n="pk.act.editsession">Edit session</span></button>
         </div>
       </div>
 
-      <!-- F1＋F2 · 第一屏：兩個獨立區塊，照 product-detail 的 `.detail-grid` 主欄＋側欄骨架。
-           主欄＝領取的活動與物品（這場在哪、什麼時候、能領什麼）；
-           側欄＝工作人員操作取貨要知道的（核銷數字＋掃碼網址密碼），跨狀態常駐。 -->
-      <div class="detail-grid mt-16">
-        <div class="detail-main">
-          <section class="form-section form-section--outlined">
-            <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.board.session">Session</h3></div>
-            <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.board.loc">Pickup location</span><span class="kv__v" data-pk-loc data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></div>
-            <div class="kv"><span class="kv__k" data-i18n="pk.board.when">Date and time</span><span class="kv__v" data-pk-time data-i18n="pk.detail.time">Today 14:00 – 18:00</span></div>
-
-            <div class="form-section__head mt-24"><h3 class="form-section__title" data-i18n="pk.board.items">Pickup items</h3></div>
-            <!-- 值＝每人可領幾個（不是這場的總量；總量看側欄的核銷進度） -->
-            <div class="pk-items" data-pk-items>
-              <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.r1.item">Pirate Queen zine vol. 02</span><span class="kv__v">×1</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="pk.item.tee">Kowloon After Dark tee · M / L</span><span class="kv__v">×2</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="od.item6.name">Kowloon After Dark six-panel cap</span><span class="kv__v">×3</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</span><span class="kv__v">×1</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="pk.tk.signing">Signing session · GA entry</span><span class="kv__v">×1</span></div>
+      <!-- F1 · 場次基本資訊（5.1.5.15 F1）：場次狀態徽章＋名稱，下面一行行副標＝時間、地點、〔選填〕取貨說明。
+           2026-11-02 使用者「照掃碼領點的邏輯重新設計」：原本左側「場次」卡（地點／時間／領取項目）與右側「核銷數字＋Scanner 存取」卡拆開——
+           身分資訊回標題區（同掃碼領點與活動詳情）、數字變四個 bento、領取項目與掃碼入口各收進彈窗。 -->
+      <div class="page-intro">
+        <div>
+          <div class="pickup-detail__header">
+            <div class="pk-hd-badges">
+              <span class="badge badge--success" data-pk-status-badge><span data-i18n="pk.status.active">Active</span></span>
+              <!-- D499：掃碼領點場次的啟用／停用（人工旗標，與時間狀態「進行中」並列、不混稱） -->
+              <span class="badge badge--info" data-pk-lp-state data-feat="O43" hidden><span data-i18n="pk.lp.en">Enabled</span></span>
             </div>
-          </section>
+            <h1 class="page-intro__title" data-i18n="pk.row1.name">Taipei signing — pickup</h1>
+          </div>
+          <p class="page-intro__sub page-intro__sub--stack" data-pk-ons-meta>
+            <span><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i><span data-pk-time data-i18n="pk.detail.time">Today 14:00 – 18:00</span></span>
+            <span><i data-lucide="map-pin" class="ztor-icon" aria-hidden="true"></i><span data-pk-loc data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></span>
+            <!-- 取貨說明（F1，建立場次時〔選填〕）：有填才顯示；示範資料填了一句 -->
+            <span data-pk-note><i data-lucide="info" class="ztor-icon" aria-hidden="true"></i><span data-i18n="pk.detail.note">Show the QR code from your order email at the desk.</span></span>
+          </p>
+          <p class="page-intro__sub page-intro__sub--stack pk-lp-headmeta" data-pk-lp-headmeta data-feat="O43" hidden>
+            <span><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i><span data-pk-lp-time></span></span>
+            <span data-pk-lp-locrow><i data-lucide="map-pin" class="ztor-icon" aria-hidden="true"></i><span data-pk-lp-loc></span></span>
+          </p>
         </div>
+      </div>
 
-        <aside class="detail-rail">
-          <!-- 一張卡、裡面分兩段：上段＝掃出來的核銷數字（隨場次狀態換，尚未開始沒有這段），
-               下段＝交給現場工作人員的網址與密碼。 -->
-          <section class="form-section form-section--outlined pickup-rail">
-            <div class="pickup-board__stage" data-pk-stage="active">
-              <!-- D240：計數單位是「件」（領取單位），與掃描次數對得上；買家人數另列一行，
-                   因為一位買家可能有好幾件，兩個數字不會相等。
-                   D242（2026-09-03；2026-09-09 隨 D253 收斂觸發源）：這張卡是整場次的示意
-                   總數，與下方名單列出的個別買家無逐一對應；口徑約定與 js/orders-store.js
-                   的 unitSummary 一致——已因作廢失效（void）的件不算進「待收」，也不算進
-                   已核銷。 -->
-              <div class="pickup-board__hero"><b>36</b> <span data-i18n="pk.board.left">units still to collect</span></div>
-              <div class="pickup-board__bar">
-                <div class="stock-bar"><span class="stock-bar__fill" style="width:55%"></span></div>
-                <span class="pickup-board__pct">55%</span>
-              </div>
-              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v" data-i18n="pk.board.redeemed.active">44 / 80 units</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="pk.board.buyers">Buyers</span><span class="kv__v" data-i18n="pk.board.buyers.val">52</span></div>
-            </div>
-            <div class="pickup-board__stage" data-pk-stage="ended" hidden>
-              <div class="pickup-board__hero"><b>12</b> <span data-i18n="pk.board.noshow">units not collected</span></div>
-              <div class="pickup-board__bar">
-                <div class="stock-bar"><span class="stock-bar__fill" style="width:85%"></span></div>
-                <span class="pickup-board__pct">85%</span>
-              </div>
-              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v" data-i18n="pk.board.redeemed.ended">68 / 80 units</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="pk.board.buyers">Buyers</span><span class="kv__v" data-i18n="pk.board.buyers.val">52</span></div>
-              <!-- 墓碑 2026-10-20（D455 A6；D122 已取消 no-show 概念）：「Export no-shows」按鈕移除；對帳匯出走核銷紀錄的「匯出」（F5.3） -->
-            </div>
-
-            <div id="scanner" data-pk-scanner>
-              <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.f6.title">Scanner access</h3></div>
-              <label class="field">
-                <span class="field__label" data-i18n="pk.f6.url">Scanner URL</span>
-                <div class="input-action">
-                  <input class="input" data-pk-url value="ztor.app/scan/tpe-signing-7f3a2" readonly>
-                  <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL" title="Copy scanner URL" data-i18n-aria-label="pk.a.copyurl" data-i18n-title="pk.a.copyurl" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i></button>
-                </div>
-              </label>
-              <label class="field" style="margin-bottom:0">
-                <span class="field__label" data-i18n="pk.f6.pw">Scanner password</span>
-                <div class="input-action">
-                  <input class="input" data-pk-pw value="signing2026" readonly>
-                  <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner password" title="Copy scanner password" data-i18n-aria-label="pk.a.copypw" data-i18n-title="pk.a.copypw" data-pk-copypw><i data-lucide="copy" class="ztor-icon"></i></button>
-                </div>
-              </label>
-            </div>
-          </section>
-        </aside>
+      <!-- F1／F2／F4 數字：四個 bento（同掃碼領點）——管理領取項目（點開彈窗）、已核銷（量條）、尚未領取、買家。
+           計數單位是「件」（領取單位，D240）；買家人數另列，因為一位買家可能有好幾件。D242：數字是整場次的示意總數，與名單個別買家無逐一對應。
+           進行中／已結束／尚未開始各有一組（data-pk-stage，由 ?s= 決定）；掃碼入口不佔 bento，放頁首動作列。 -->
+      <div class="bento mt-16 pk-lp-kpis" data-pk-ons-kpis>
+        <button class="kpi kpi--tappable bento--span-3" type="button" data-pk-items-open>
+          <i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>
+          <div class="kpi__label" data-i18n="pk.ons.items.title">Manage pickup items</div>
+          <div class="kpi__value"><span data-pk-items-count>5</span><span class="kpi__unit" data-i18n="pk.ons.k.items.unit">items</span></div>
+        </button>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="pk.board.redeemed">Redeemed</div>
+          <div data-pk-stage="active">
+            <div class="kpi__value">44<span class="kpi__unit" data-i18n="pk.ons.k.of">/ 80 units</span></div>
+            <div class="stock-bar pk-lp-kpis__bar"><span class="stock-bar__fill" style="width:55%"></span></div>
+          </div>
+          <div data-pk-stage="ended" hidden>
+            <div class="kpi__value">68<span class="kpi__unit" data-i18n="pk.ons.k.of">/ 80 units</span></div>
+            <div class="stock-bar pk-lp-kpis__bar"><span class="stock-bar__fill" style="width:85%"></span></div>
+          </div>
+          <div data-pk-stage="scheduled" hidden>
+            <div class="kpi__value">0<span class="kpi__unit" data-i18n="pk.ons.k.of">/ 80 units</span></div>
+            <div class="stock-bar pk-lp-kpis__bar"><span class="stock-bar__fill" style="width:0%"></span></div>
+          </div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="pk.ons.k.left">Still to collect</div>
+          <div data-pk-stage="active"><div class="kpi__value">36<span class="kpi__unit" data-i18n="pk.ons.k.units">units</span></div></div>
+          <div data-pk-stage="ended" hidden><div class="kpi__value">12<span class="kpi__unit" data-i18n="pk.ons.k.units">units</span></div></div>
+          <div data-pk-stage="scheduled" hidden><div class="kpi__value">80<span class="kpi__unit" data-i18n="pk.ons.k.units">units</span></div></div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="pk.board.buyers">Buyers</div>
+          <div class="kpi__value">52<span class="kpi__unit" data-i18n="pk.ons.k.buyers.unit">buyers</span></div>
+          <div class="kpi__meta" data-i18n="pk.ons.k.buyers.sub">A buyer can have several units</div>
+        </div>
       </div>
 
       <!-- F4 · 取貨與入場名單（D240 一物一碼，2026-09-03 改版）：
@@ -542,6 +600,181 @@
         </div>
       </section>
 
+      <!-- D499 · 5.1.5.15 F6 掃碼領點場次詳情（?s=lps-…；O43，只在 Admin 代管態）。進到這個分支時，上面現場核銷的
+           第一屏、名單工作列與名單整段收起（見下方 applyLp）；現場核銷場次完全不經過這一段。F6.5 前台交接不做畫面。 -->
+      <div data-pk-lp-view data-feat="O43" hidden>
+        <!-- F6.1 事件關閉標示：與取貨管理 F5 同一句提醒（原型以 ?a6=off 示範） -->
+        <div class="alert alert--row alert--warning mt-16" role="status" data-pk-lp-a6 hidden>
+          <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="pk.lp.a6.title">Offline scan to earn is turned off</div>
+            <div class="alert__meta" data-i18n="pk.lp.a6.text">No scan gives points right now, and the fan app shows “Offline points paused”. Points already given aren’t affected.</div>
+          </div>
+          <a class="alert__cta" href="admin-platform-loyalty.html" data-i18n="pk.lp.a6.cta">Open platform loyalty settings</a>
+        </div>
+
+        <!-- F6.2 統計（2026-11-02 使用者「改成三個 bento、重新設計這個區塊」）：三塊 KPI bento——已領（已領／總名額＋量條）、已發出點數、領取粉絲數（不重複）；
+             數字全是場次內各 QR 的加總，領取粉絲數是示範推估（呈現假設，見 lpRenderStats）。 -->
+        <div class="bento mt-16 pk-lp-kpis">
+          <!-- 第一塊：管理領取碼（使用者：「放第一個」「管理領取碼」「小字刪除」）。值＝啟用中的 QR 數，整塊可點，開 popup 管理（不再把表格攤在頁面上） -->
+          <button class="kpi kpi--tappable bento--span-3" type="button" data-pk-lp-list-open>
+            <i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>
+            <div class="kpi__label" data-i18n="pk.lp.d.qron">Manage claim codes</div>
+            <div class="kpi__value"><span data-pk-lp-qron></span><span class="kpi__unit" data-pk-lp-qrtotal></span></div>
+          </button>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label" data-i18n="pk.lp.d.claimed">Claimed</div>
+            <div class="kpi__value"><span data-pk-lp-hero></span><span class="kpi__unit" data-pk-lp-herototal></span></div>
+            <div class="stock-bar pk-lp-kpis__bar"><span class="stock-bar__fill" data-pk-lp-bar></span></div>
+            <span hidden data-pk-lp-pct></span>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label" data-i18n="pk.lp.d.points">Points given</div>
+            <div class="kpi__value" data-pk-lp-points></div>
+          </div>
+          <!-- 第三塊可點：開領取統計彈窗（總覽＋每個 QR 的領取人數）；領取紀錄列表留在頁面下方原位 -->
+          <button class="kpi kpi--tappable bento--span-3" type="button" data-pk-lp-stats-open>
+            <i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>
+            <div class="kpi__label" data-i18n="pk.lp.d.fans">Fans who claimed</div>
+            <div class="kpi__value" data-pk-lp-fans></div>
+            <div class="kpi__meta" data-i18n="pk.lp.d.fans.sub">Each fan counted once</div>
+          </button>
+        </div>
+
+        <!-- F6.3 領取紀錄：一列＝一次成功領取（時間／粉絲／商品／點數），可依商品篩選、依粉絲名稱搜尋；只增不改，不提供編輯刪除。
+             2026-11-02 使用者：「要用現場核銷的設計」——照抄上方現場核銷名單的版型：不包 outlined 卡，
+             工作列（.list-toolbar：左分頁、右收合搜尋）＋ .product-list-scroll 裡的 .product-list。
+             現場核銷名單沒有區塊標題（工作列本身即標示），這裡同樣不放；「領取紀錄」語意留在表格與分頁列的 aria-label。 -->
+        <div class="list-toolbar">
+          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Filter claims by QR code" data-i18n-aria-label="pk.lp.log.aria" data-pk-lp-logtabs></nav>
+          <div class="list-toolbar__actions">
+            <div class="search-collapse" data-pk-lp-search-wrap>
+              <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-pk-lp-search-toggle aria-expanded="false" aria-label="Search claims" title="Search claims" data-i18n-aria-label="pk.lp.log.search" data-i18n-title="pk.lp.log.search"><i data-lucide="search" class="ztor-icon"></i></button>
+              <label class="field-pill search-collapse__field" aria-label="Search claims" data-i18n-aria-label="pk.lp.log.search">
+                <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+                <input class="field-pill__input" placeholder="Fan name" data-i18n-placeholder="pk.lp.log.search.ph" data-pk-lp-search>
+                <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-pk-lp-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="pk.search.close" data-i18n-title="pk.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="product-list-scroll" data-pk-lp-logwrap>
+          <section class="product-list product-list--claims product-list--inset" role="table" aria-label="Claim log" data-i18n-aria-label="pk.lp.log.title">
+            <div class="product-list__head" role="row">
+              <div role="columnheader" data-i18n="pk.lp.log.col.time">Time</div>
+              <div role="columnheader" data-i18n="pk.lp.log.col.fan">Fan</div>
+              <div role="columnheader" data-i18n="pk.lp.log.col.qr">QR code</div>
+              <div role="columnheader" data-i18n="pk.lp.log.col.points">Points</div>
+            </div>
+            <div data-pk-lp-log></div>
+          </section>
+        </div>
+        <section class="card" data-pk-lp-log-empty hidden>
+          <div class="empty-card">
+            <span class="empty-card__icon"><i data-lucide="history" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-pk-lp-log-emptytitle data-i18n="pk.lp.log.empty">No claims yet</h3>
+          </div>
+        </section>
+        <div class="list-footer list-footer--center"><span class="list-footer__count" data-pk-lp-logcount></span></div>
+        <p class="field__hint" data-i18n="pk.lp.log.note">Each claim is a ledger entry and can’t be edited. To correct points, adjust them on the fan’s page.</p>
+      </div>
+
+      <!-- D499：創作者本人（或版本不含 O43）用網址直接開掃碼領點場次 → 視同不存在（D499 決定 6：對創作者本人隱藏） -->
+      <section class="card mt-16" data-pk-lp-na hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="pk.lp.na.title">Session not found</h3>
+          <a class="btn btn--outline empty-card__cta" href="pickup.html" data-i18n="pk.lp.na.back">Back to pickup management</a>
+        </div>
+      </section>
+
+      <!-- 管理領取項目 popup（5.1.5.15 F1；可核銷項目的加入／移除規則在 5.1.5.12 F2，本頁不另做表單）：
+           列＝取貨商品或活動票券（5.1.5.14 F2 名單範圍）；進度＝已核銷／總件數（領取單位，D240；示意數字，總和對得上 bento）。
+           新增、移除都開「編輯場次」同一個 popup（F1 編輯入口）——已綁定其他場次的商品不可加入、移除會讓未核銷的件回到「取貨場次待設定」都在那裡處理。 -->
+      <div class="payout-modal" data-pk-items-modal hidden>
+       <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="pk-items-title">
+        <div class="payout-dialog__head">
+          <div>
+            <h2 class="payout-dialog__title pk-lp-dlg__title" id="pk-items-title">
+              <button class="btn btn--icon btn--sm" type="button" aria-label="Back" data-i18n-aria-label="pks.back" data-pk-items-back hidden><i data-lucide="arrow-left" class="ztor-icon"></i></button>
+              <span data-pk-items-t="list" data-i18n="pk.ons.items.title">Manage pickup items</span>
+              <span data-pk-items-t="add" data-i18n="pk.ons.items.addtitle" hidden>Add pickup items</span>
+            </h2>
+            <p class="text-sub" style="margin:6px 0 0;font-size:var(--fs-13)" data-pk-items-t="list" data-i18n="pk.ons.items.sub">Pickup products and event tickets this session can redeem.</p>
+            <p class="text-sub" style="margin:6px 0 0;font-size:var(--fs-13)" data-pk-items-t="add" data-i18n="pk.ons.items.addsub" hidden>Search pickup products or event tickets by name. A product already in another session can’t be added.</p>
+          </div>
+          <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pk-items-close><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <div class="payout-dialog__body">
+         <div data-pk-items-v="list">
+          <table class="ztor-table ztor-table--fluid">
+            <thead><tr>
+              <th data-i18n="pk.col.item">Pickup item</th>
+              <th data-i18n="pk.ons.items.col.type">Type</th>
+              <th class="pk-ons-num" data-i18n="pk.ons.items.col.prog">Redeemed / units</th>
+            </tr></thead>
+            <tbody data-pk-items-body>
+              <tr data-pk-item-id="zine"><td data-i18n="pk.r1.item">Pirate Queen zine vol. 02</td><td data-i18n="pk.ons.type.product">Pickup product</td><td class="pk-ons-num" data-pk-prog="14,20,20">14 / 20</td></tr>
+              <tr data-pk-item-id="tee"><td data-i18n="pk.item.tee">Kowloon After Dark tee · M / L</td><td data-i18n="pk.ons.type.product">Pickup product</td><td class="pk-ons-num" data-pk-prog="11,17,20">11 / 20</td></tr>
+              <tr><td data-i18n="od.item6.name">Kowloon After Dark six-panel cap</td><td data-i18n="pk.ons.type.product">Pickup product</td><td class="pk-ons-num" data-pk-prog="9,14,16">9 / 16</td></tr>
+              <tr><td data-i18n="od.item4.name">Kowloon After Dark vinyl · numbered 1/50</td><td data-i18n="pk.ons.type.product">Pickup product</td><td class="pk-ons-num" data-pk-prog="6,9,12">6 / 12</td></tr>
+              <tr data-pk-item-id="sign"><td data-i18n="pk.tk.signing">Signing session · GA entry</td><td data-i18n="pk.ons.type.ticket">Event ticket</td><td class="pk-ons-num" data-pk-prog="4,8,12">4 / 12</td></tr>
+            </tbody>
+            <tfoot><tr><td colspan="3" class="pk-lp-addcell"><button class="pk-lp-addline" type="button" data-pk-items-add><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pk.ons.items.add">Add item</span></button></td></tr></tfoot>
+          </table>
+          <p class="text-sub pk-ons-itemsnote" data-i18n="pk.ons.items.note">To remove an item, use “Edit session”.</p>
+         </div>
+         <!-- 新增項目頁（2026-11-02 使用者：「不該開啟編輯取貨場次，只需要第二步可以添加項目的功能」）：
+              與建立／編輯場次第二步同一個搜尋加入（.tag-input＋.combobox），來源取自 partials 的 pickupItemPool()；
+              已綁定其他場次的商品停用並標「已綁定」（D339），組合包不在來源裡（D393）。 -->
+         <div data-pk-items-v="add" hidden>
+          <div class="combobox" data-pk-add-combo>
+            <div class="tag-input__field" data-pk-add-field>
+              <input class="tag-input__entry" type="search" data-pk-add-search role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products or tickets by name…" data-i18n-placeholder="pks.search.ph">
+              <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
+            </div>
+            <div class="combobox__menu" data-pk-add-menu hidden></div>
+          </div>
+         </div>
+        </div>
+        <div class="payout-dialog__foot" data-pk-items-v="add" hidden>
+          <span style="margin-left:auto"></span>
+          <button class="btn btn--ghost" type="button" data-pk-items-back data-i18n="pk.ons.items.cancel">Cancel</button>
+          <button class="btn btn--primary" type="button" data-pk-add-go disabled data-i18n="pk.ons.items.addgo">Add</button>
+        </div>
+       </section>
+      </div>
+
+      <!-- 掃碼入口 popup（5.1.5.15 F2.1）：Scanner URL＋複製＋顯示 QR code，密碼不明文（F2.2）。
+           重設網址、停用／啟用網址、改密碼都在「編輯場次」（2026-11 前已搬過去，見 partials/pickup-session-modal.js）。 -->
+      <div class="payout-modal" data-pk-scan-modal hidden>
+       <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pk-scan-title">
+        <div class="payout-dialog__head">
+          <div>
+            <h2 class="payout-dialog__title" id="pk-scan-title" data-i18n="pk.ons.scan.open">Scanner access</h2>
+            <p class="text-sub" style="margin:6px 0 0;font-size:var(--fs-13)" data-i18n="pk.ons.scan.sub">Give staff the link and password. They open it on their own phone to scan and redeem.</p>
+          </div>
+          <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pk-scan-close><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <div class="payout-dialog__body" data-pk-scanner>
+          <label class="field">
+            <span class="field__label" data-i18n="pk.f6.url">Scanner URL</span>
+            <div class="input-action">
+              <input class="input" data-pk-url value="ztor.app/scan/tpe-signing-7f3a2" readonly>
+              <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL" title="Copy scanner URL" data-i18n-aria-label="pk.a.copyurl" data-i18n-title="pk.a.copyurl" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i></button>
+            </div>
+          </label>
+          <button class="btn btn--outline btn--sm" type="button" data-pk-qr-toggle aria-expanded="false"><i data-lucide="qr-code" class="ztor-icon"></i> <span data-i18n="pk.ons.scan.showqr">Show QR code</span></button>
+          <div class="pk-ons-qr" data-pk-qr hidden></div>
+          <label class="field mt-16" style="margin-bottom:0">
+            <span class="field__label" data-i18n="pk.f6.pw">Scanner password</span>
+            <input class="input" type="password" value="signing2026" readonly aria-label="Scanner password" data-i18n-aria-label="pk.f6.pw">
+            <span class="field__hint" data-i18n="pk.ons.scan.pwnote">The password isn’t shown. To change it, or to reset or disable the link, use “Edit session”.</span>
+          </label>
+        </div>
+       </section>
+      </div>
+
       <!-- F5 · 核銷紀錄：popup（稽核用、低頻，不佔主畫面）-->
       <div class="payout-modal" data-pk-log-modal hidden>
        <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pk-log-title">
@@ -638,6 +871,125 @@
        </section>
       </div>
 
+      <!-- 領取項目 popup（2026-11-02 重新設計）：標題列只放標題與關閉；內容先一條操作列——左＝發點開關與說明、右＝新增 QR，下面是 QR 表格。
+           每列尾端直接放編輯／停用（啟用）／刪除三顆圖示鈕（彈窗內放得下，不再用 ⋮ 選單，也就不會被內容區裁掉）。QR 圖與新增編輯小表單疊在它上面。 -->
+      <div class="payout-modal" data-pk-lp-list-modal data-feat="O43" hidden>
+       <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="pk-lp-list-title">
+        <div class="payout-dialog__head">
+          <div class="pk-lp-dlg__title">
+            <button class="btn btn--icon btn--sm" type="button" data-pk-lp-back hidden aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+            <h2 class="payout-dialog__title" id="pk-lp-list-title">
+              <span data-pk-lp-t="list" data-i18n="pk.lp.qrs.title">Manage claim codes</span>
+              <span data-pk-lp-t="qr" data-pk-lp-qr-titlename hidden></span>
+              <span data-pk-lp-t="form" data-pk-lp-qrf-title hidden data-i18n="pk.lp.qr.edit">Edit QR code</span>
+            </h2>
+          </div>
+          <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pk-lp-list-close><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <div class="payout-dialog__body" data-pk-lp-v="list">
+              <div class="pk-lp-items">
+                  <table class="ztor-table ztor-table--fluid ztor-table--menu" data-pk-lp-qrtable>
+                    <thead><tr>
+                      <th data-i18n="pk.lp.log.col.qr">QR code</th>
+                      <th class="pk-lp-per" data-i18n="pk.lp.items.col.per">Points per claim</th>
+                      <th data-i18n="pk.lp.d.usage">Claimed / total</th>
+                      <th class="pk-lp-given" data-i18n="pk.lp.items.col.given">Points given</th>
+                      <th class="pk-lp-st" data-i18n="pk.lp.items.col.status">Status</th>
+                      <th class="pk-lp-acts-th"><span class="u-visually-hidden" data-i18n="pqr.download">Download QR</span></th>
+                    </tr></thead>
+                    <tbody data-pk-lp-items></tbody>
+                    <!-- 新增 QR（2026-11-02 重新設計）：表格最後一列是一條「＋ 新增 QR」，點了在同一個彈窗換到新增頁（左預覽、右欄位），建好直接進那個 QR 的頁面下載 -->
+                    <tfoot><tr><td colspan="6" class="pk-lp-addcell"><button class="pk-lp-addline" type="button" data-pk-lp-qr-new><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pk.lp.qr.add">Add QR code</span></button></td></tr></tfoot>
+                  </table>
+              </div>
+          <p class="field__hint" data-pk-lp-qrs-empty hidden data-i18n="pk.lp.d.empty">No claimable items</p>
+        </div>
+        <!-- 下一層：QR 檢視（從表格某一列點進來）。同一個彈窗換頁，標題列左側「←」回領取項目；左＝QR 圖與下載，右＝這個 QR 的明細 -->
+        <div class="payout-dialog__body" data-pk-lp-v="qr" data-pk-lp-qr-modal hidden>
+          <div class="pk-lp-qrview">
+            <div data-pk-lp-qr-modalhost></div>
+            <div>
+          <!-- 2026-11-02：這個 QR 的明細（已領／總名額／已發點數）＋建立資訊與 ID；用量不再畫在 QR 卡上，避免同一個數字出現兩次 -->
+          <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.lp.items.col.status">Status</span><span class="kv__v" data-pk-lp-qr-st></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="pk.lp.d.claimed">Claimed</span><span class="kv__v" data-pk-lp-qr-claimed></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="pk.lp.qr.f.total">Total claims</span><span class="kv__v" data-pk-lp-qr-total></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="pk.lp.items.col.given">Points given</span><span class="kv__v" data-pk-lp-qr-given></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="pk.lp.d.by">Created by</span><span class="kv__v" data-pk-lp-qr-by></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="pk.lp.d.at">Created</span><span class="kv__v" data-pk-lp-qr-at></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="pk.lp.qr.id">ID</span><span class="kv__v" data-pk-lp-qr-idv></span></div>
+              <!-- 這個 QR 的動作放在它自己的頁面（表格列只留下載）：編輯、停用／啟用、刪除（有人領過不能刪，顯示原因） -->
+              <div class="pk-lp-qract" data-pk-lp-qract></div>
+            </div>
+          </div>
+        </div>
+        <!-- 下一層：編輯 QR／刪除確認（從列尾圖示鈕進來）。同一個彈窗換頁，「←」或「取消」回領取項目 -->
+        <div class="pk-lp-formwrap" data-pk-lp-v="form" data-pk-lp-qrf hidden>
+        <div class="payout-dialog__body pk-lp-formview" data-pk-lp-qrf-form>
+          <div class="pk-lp-qrview">
+          <div data-pk-lp-qrf-preview></div>
+          <div>
+          <p class="field__hint field__hint--fact mb-16" data-pk-lp-qrf-edithint hidden data-i18n="pk.lp.f.edithint">Changes apply to claims from now on. Points already given aren’t recalculated.</p>
+          <div class="form-grid">
+            <label class="field form-grid__full">
+              <span class="field__label"><span data-i18n="pk.lp.qr.f.name">QR name</span> <span class="field__req">*</span></span>
+              <input class="input" data-pk-lp-qrf-f="name" placeholder="e.g., Buy 1 bagel" data-i18n-placeholder="pk.lp.qr.f.name.ph">
+              <span class="field__error" data-pk-lp-qrf-err="name" hidden></span>
+            </label>
+            <label class="field">
+              <span class="field__label"><span data-i18n="pk.lp.qr.f.points">Points per scan</span> <span class="field__req">*</span></span>
+              <input class="input" type="number" inputmode="numeric" min="1" step="1" data-pk-lp-qrf-f="points" placeholder="e.g., 2" data-i18n-placeholder="pk.lp.qr.f.points.ph">
+              <span class="field__error" data-pk-lp-qrf-err="points" hidden></span>
+            </label>
+            <label class="field">
+              <span class="field__label"><span data-i18n="pk.lp.qr.f.total">Total claims</span> <span class="field__req">*</span></span>
+              <input class="input" type="number" inputmode="numeric" min="1" max="999999" step="1" data-pk-lp-qrf-f="total" placeholder="e.g., 500" data-i18n-placeholder="pk.lp.qr.f.total.ph">
+              <span class="field__error" data-pk-lp-qrf-err="total" hidden></span>
+            </label>
+          </div>
+          </div>
+          </div>
+        </div>
+        <div class="payout-dialog__body pk-lp-formview" data-pk-lp-qrf-del hidden>
+          <p data-pk-lp-qrf-delbody></p>
+        </div>
+        <div class="payout-dialog__foot">
+          <div class="payout-dialog__foot-actions">
+            <button class="btn btn--ghost" type="button" data-pk-lp-qrf-cancel data-i18n="pk.lp.off.cancel">Cancel</button>
+            <button class="btn btn--primary" type="button" data-pk-lp-qrf-ok data-i18n="pk.lp.qr.save">Save</button>
+          </div>
+        </div>
+        </div>
+       </section>
+      </div>
+
+      <!-- 領取統計 popup（2026-11-02 使用者：「領取粉絲數的 bento 應該是開啟統計，不是列表；列表要在原本的位置」）：
+           上半＝總覽（領取粉絲數不重複、領取次數、平均每位粉絲領幾次、已發出點數）；下半＝每個 QR 的領取人數、占粉絲比例、已發點數。
+           全是場次內各 QR 的加總或由它們推得（同一帳號同一個 QR 只能領一次，所以每個 QR 的領取人數＝已領次數）；領取粉絲數是示範推估（呈現假設）。 -->
+      <div class="payout-modal" data-pk-lp-stats-modal data-feat="O43" hidden>
+       <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="pk-lp-stats-title">
+        <div class="payout-dialog__head">
+          <h2 class="payout-dialog__title" id="pk-lp-stats-title" data-i18n="pk.lp.stats.title">Claim statistics</h2>
+          <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pk-lp-stats-close><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <div class="payout-dialog__body">
+          <table class="ztor-table ztor-table--fluid pk-lp-stats-table">
+            <thead><tr>
+              <th data-i18n="pk.lp.log.col.qr">QR code</th>
+              <th data-i18n="pk.lp.stats.col.claims">Claims</th>
+              <th data-i18n="pk.lp.stats.col.fans">Fans</th>
+              <th data-i18n="pk.lp.stats.col.share">Share of fans</th>
+              <th data-i18n="pk.lp.stats.col.rate">Quota used</th>
+              <th data-i18n="pk.lp.items.col.given">Points given</th>
+            </tr></thead>
+            <tbody data-pk-lp-st-rows></tbody>
+          </table>
+          <p class="field__hint mt-16" data-i18n="pk.lp.stats.note">Each fan can claim a given QR code once, so fans per QR code equals its claims. Fan totals are estimated in this prototype.</p>
+        </div>
+       </section>
+      </div>
+
+
+
     </div>
   </main>
 </div>
@@ -710,10 +1062,15 @@
       var badge = document.querySelector('[data-pk-status-badge]');
       if (badge) { badge.className = cfg.badge; badge.firstElementChild.setAttribute('data-i18n', cfg.st); }
       document.querySelectorAll('[data-pk-stage]').forEach(function (el) {
-        el.hidden = el.getAttribute('data-pk-stage') !== cfg.stage;
+        el.hidden = el.getAttribute('data-pk-stage') !== (cfg.stage || 'scheduled');
       });
       /* 名單：尚未開始＝只留待核銷的領取單位、已結束＝只留已核銷的。
          實際的顯隱交給下方 rApply 一起算——群組列要看自己底下還剩幾件才知道該不該留。 */
+      /* 管理領取項目 popup 的進度：data-pk-prog＝進行中,已結束,總件數；尚未開始都是 0 */
+      document.querySelectorAll('[data-pk-prog]').forEach(function (td) {
+        var v = td.getAttribute('data-pk-prog').split(','), st = cfg.stage || 'scheduled';
+        td.textContent = (st === 'active' ? v[0] : st === 'ended' ? v[1] : 0) + ' / ' + v[2];
+      });
       if (cfg.roster) rosterMode = cfg.roster;
       if (cfg.readonly) {   /* 已封存：不能編輯、不能反轉，只看 */
         var ed = document.querySelector('[data-pk-edit]'); if (ed) ed.hidden = true;
@@ -722,6 +1079,493 @@
       if (window.applyI18n) window.applyI18n(document.body);
     })();
 
+    /* ── D499 · 5.1.5.15 F6 掃碼領點場次（?s=lps-<id>）────────────────────────────
+       資料與「看得到嗎」都讀 partials/pickup-session-modal.js 的 window.ztorScanEarn（頁尾才載入，所以在 load 後畫）。
+       看得到＝Admin 代管態＋版本含 O43；看不到（創作者本人、release2.3）就當作找不到這個場次。
+       進到這個分支就先把現場核銷的第一屏、名單工作列與名單收起，避免載入瞬間閃出別的場次。 */
+    var lpId = (location.search.match(/[?&]s=(lps-[\w-]+)/) || [])[1] || null;
+    var lpLogFilter = 'all';
+    function lpT(k, fb) { var v = window.i18nT && window.i18nT(k); return (v && v !== k) ? v : (fb || ''); }
+    function lpOnsiteBlocks() { return document.querySelectorAll('.page > [data-pk-ons-kpis], [data-pk-ons-meta], [data-pk-scanner-open], .page > .list-toolbar, .page > .product-list-scroll, [data-pk-roster-noresult]'); }
+    if (lpId) lpOnsiteBlocks().forEach(function (el) { el.hidden = true; });
+    function lpSes() { var SE = window.ztorScanEarn; return SE ? SE.session(lpId) : null; }
+    /* 示範列走 i18n 鍵；新建的場次（或改過的欄位）是使用者輸入的字面值，不掛 data-i18n（否則切語言會被抹掉） */
+    function lpSet(el, key, text) {
+      if (!el) return;
+      if (key) { el.setAttribute('data-i18n', key); el.textContent = lpT(key, el.textContent); }
+      else { el.removeAttribute('data-i18n'); el.textContent = text || '—'; }
+    }
+    function lpFmtTime(a, b) {
+      var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      var d1 = a ? new Date(a) : null, d2 = b ? new Date(b) : null;
+      var f = function (d) { return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+      if (!d1 || isNaN(d1)) return '';
+      return f(d1) + (d2 && !isNaN(d2) ? ' – ' + f(d2) : '');
+    }
+    /* F6.3 領取紀錄：分頁＝全部＋場次內每個 QR（依 QR 篩選）；一列＝時間／粉絲／QR／點數 */
+    function lpRenderLog(SE, ses) {
+      var tabs = document.querySelector('[data-pk-lp-logtabs]');
+      var all = SE.claims(ses.id);
+      if (lpLogFilter !== 'all' && ses.items.indexOf(lpLogFilter) < 0) lpLogFilter = 'all';
+      var opts = [['all', lpT('pk.lp.log.allqr', 'All QR codes')]].concat(ses.qrs.map(function (q) { return [q.id, SE.nameOf(q)]; }));
+      tabs.innerHTML = opts.map(function (o) {
+        var n = o[0] === 'all' ? all.length : all.filter(function (c) { return c.qr === o[0]; }).length;
+        var on = o[0] === lpLogFilter;
+        return '<div class="tabs__item' + (on ? ' tabs__item--active' : '') + '" role="tab" aria-selected="' + on + '" data-lp-log-val="' + lpEsc(o[0]) + '"><span>' + lpEsc(o[1]) + '</span><span class="tabs__item-count">' + n + '</span></div>';
+      }).join('');
+      var lq = ((document.querySelector('[data-pk-lp-search]') || {}).value || '').trim().toLowerCase();
+      var fanName = function (c) { return lpT('fans.row' + c.fan + '.name', 'Fan ' + c.fan); };
+      var rows = all.filter(function (c) {
+        return (lpLogFilter === 'all' || c.qr === lpLogFilter) && (!lq || fanName(c).toLowerCase().indexOf(lq) >= 0);
+      });
+      document.querySelector('[data-pk-lp-log]').innerHTML = rows.map(function (c) {
+        var q = SE.qr(c.qr);
+        return '<div class="product-list__row" role="row">' +
+          '<div class="product-list__cell" role="cell" data-col="time">' + lpEsc(c.at) + '</div>' +
+          '<div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title"><a class="card__link" href="fan-detail.html?fan=' + c.fan + '">' + lpEsc(fanName(c)) + '</a></div></div></div>' +
+          '<div class="product-list__cell" role="cell" data-col="item">' + lpEsc(q ? SE.nameOf(q) : c.qr) + '</div>' +
+          '<div class="product-list__cell" role="cell" data-col="pts">+' + (q ? q.points : 0) + '</div></div>';
+      }).join('');
+      var wrap = document.querySelector('[data-pk-lp-logwrap]'); if (wrap) wrap.hidden = rows.length === 0;
+      var et = document.querySelector('[data-pk-lp-log-emptytitle]');
+      if (et) { var ek = (lq && all.length) ? 'pk.lp.log.noresult' : 'pk.lp.log.empty'; et.setAttribute('data-i18n', ek); et.textContent = lpT(ek, et.textContent); }
+      var emp = document.querySelector('[data-pk-lp-log-empty]'); if (emp) emp.hidden = rows.length > 0;
+      var total = ses.qrs.reduce(function (n, q) { return n + (lpLogFilter === 'all' || lpLogFilter === q.id ? +q.claimed : 0); }, 0);
+      var cnt = document.querySelector('[data-pk-lp-logcount]');
+      if (cnt) cnt.textContent = rows.length ? lpT('pk.lp.log.count', 'Showing the latest {n} of {m} claims').replace('{n}', rows.length).replace('{m}', total) : '';
+    }
+    /* F6.2 領取項目表（2026-11-02 改表格）：一列＝一個 QR。欄＝QR 圖示＋名稱／每次點數／已領／總名額（數字＋stock-bar 量條）／
+       狀態徽章（已停用 > 名額已滿 > 啟用中）／⋮。整列可點開 QR 圖 popup（點擊委派見下方 [data-pk-lp-qr-open]，
+       ⋮ 與選單項目先被排除）。文字直接用目前語言組好，語言切換時整段重畫，不留 data-i18n。
+       ⋮ 選單（D503）：編輯、停用／啟用、刪除——有人領過的 QR 刪除項停用，下面一行寫原因（只能停用）。 */
+    function lpEsc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+    function lpRenderItems(SE, ses) {
+      var box = document.querySelector('[data-pk-lp-items]'); if (!box || !SE || !ses) return;
+      var aria = lpT('pk.lp.d.qrview', 'View QR code');
+      box.innerHTML = ses.qrs.map(function (q, i) {
+        var nm = SE.nameOf(q);
+        var full = q.total > 0 && q.claimed >= q.total;
+        var off = q.enabled === false;
+        var st = off ? ['badge--neutral', lpT('pk.lp.qr.off', 'Disabled')]
+          : full ? ['badge--neutral', lpT('pqr.full', 'Fully claimed')]
+          : ['badge--info', lpT('pk.lp.items.on', 'Active')];
+        var pct = q.total > 0 ? Math.min(100, Math.round(q.claimed / q.total * 100)) : 0;
+        var claimed = +q.claimed > 0;
+        /* 最後一列的選單往上開：卡片底下緊接領取紀錄工作列，往下開會被它蓋住 */
+        var dl = lpEsc(lpT('pqr.download', 'Download QR'));
+        var menu = '<button class="btn btn--icon btn--xs" type="button" data-pk-lp-qr-dl="' + q.id + '" aria-label="' + dl + '" title="' + dl + '"><i data-lucide="download" class="ztor-icon"></i></button>';
+        return '<tr class="ztor-table__row" tabindex="0" data-pk-lp-qr-row="' + q.id + '" data-pk-lp-qr-open="' + q.id + '" aria-label="' + lpEsc(aria + '：' + nm) + '">' +
+          '<td class="ztor-table__feature"><span class="ztor-table__media"><span>' + lpEsc(nm) +
+            '<span class="ztor-table__sub pk-lp-per-sub">' + lpEsc(lpT('pqr.perScan', '+{n} pts per scan').replace('{n}', q.points)) + '</span>' +
+            (st[0] !== 'badge--info' ? '<span class="badge ' + st[0] + ' pk-lp-st-inline"><span>' + lpEsc(st[1]) + '</span></span>' : '') +
+            '</span></span></td>' +
+          '<td class="ztor-table__nowrap pk-lp-per">+' + lpEsc(q.points) + '</td>' +
+          '<td class="ztor-table__nowrap">' + lpEsc(q.claimed) + '／' + lpEsc(q.total) +
+            '<div class="stock-bar" aria-hidden="true"><span class="stock-bar__fill" style="width:' + pct + '%"></span></div></td>' +
+          '<td class="ztor-table__nowrap pk-lp-given">' + lpEsc(Number(q.claimed * q.points).toLocaleString()) + '</td>' +
+          '<td class="ztor-table__nowrap pk-lp-st"><span class="badge ' + st[0] + '"><span>' + lpEsc(st[1]) + '</span></span></td>' +
+          '<td class="pk-lp-acts-td">' + menu + '</td></tr>';
+      }).join('');
+      var qe = document.querySelector('[data-pk-lp-qrs-empty]'); if (qe) qe.hidden = ses.qrs.length > 0;
+      var tb = document.querySelector('[data-pk-lp-qrtable]'); if (tb) tb.hidden = !ses.qrs.length;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+    }
+    /* F6.2 QR 圖 popup（同頁核銷紀錄 popup 的 .payout-modal 殼）：共用 points-qr 卡＋建立者與建立時間 */
+    var lpQrModal = document.querySelector('[data-pk-lp-qr-modal]');
+    function lpQrMount() {
+      var h = document.querySelector('[data-pk-lp-qr-modalhost]'), SE = window.ztorScanEarn;
+      var q = h && SE && SE.qr(h.getAttribute('data-pk-lp-qr-id'));
+      if (!q) return;
+      if (window.ztorPointsQr) window.ztorPointsQr.mount(h, { name: SE.nameOf(q), points: q.points, seed: q.seed });
+      var tn = document.querySelector('[data-pk-lp-qr-titlename]'); if (tn) tn.textContent = SE.nameOf(q);
+      var fmt = function (n) { return Number(n).toLocaleString(); };
+      document.querySelector('[data-pk-lp-qr-claimed]').textContent = fmt(q.claimed);
+      document.querySelector('[data-pk-lp-qr-total]').textContent = fmt(q.total);
+      document.querySelector('[data-pk-lp-qr-given]').textContent = lpT('pk.lp.d.points.val', '{n} points').replace('{n}', fmt(q.claimed * q.points));
+      document.querySelector('[data-pk-lp-qr-idv]').textContent = q.id;
+      document.querySelector('[data-pk-lp-qr-by]').textContent = SE.byOf(q) || '—';
+      document.querySelector('[data-pk-lp-qr-at]').textContent = q.createdAt || '—';
+      var off = q.enabled === false, full = q.total > 0 && q.claimed >= q.total;
+      var st = off ? ['badge--neutral', lpT('pk.lp.qr.off', 'Disabled')] : full ? ['badge--neutral', lpT('pqr.full', 'Fully claimed')] : ['badge--info', lpT('pk.lp.items.on', 'Active')];
+      document.querySelector('[data-pk-lp-qr-st]').innerHTML = '<span class="badge ' + st[0] + '"><span>' + lpEsc(st[1]) + '</span></span>';
+      var acts = document.querySelector('[data-pk-lp-qract]');
+      if (acts) {
+        var claimed = +q.claimed > 0;
+        acts.innerHTML = '<button class="btn btn--outline btn--sm" type="button" data-pk-lp-qr-edit="' + q.id + '"><i data-lucide="pencil" class="ztor-icon"></i> <span>' + lpEsc(lpT('pk.lp.act.edit', 'Edit')) + '</span></button>' +
+          '<button class="btn btn--outline btn--sm" type="button" data-pk-lp-qr-toggle="' + q.id + '"><i data-lucide="' + (off ? 'play' : 'pause') + '" class="ztor-icon"></i> <span>' + lpEsc(lpT(off ? 'pk.lp.act.enable' : 'pk.lp.act.disable', off ? 'Enable' : 'Disable')) + '</span></button>' +
+          (claimed
+            ? '<button class="btn btn--ghost btn--sm" type="button" disabled aria-disabled="true" title="' + lpEsc(lpT('pk.lp.qr.del.locked', 'Already claimed, so it can only be disabled.')) + '"><i data-lucide="trash-2" class="ztor-icon"></i> <span>' + lpEsc(lpT('pk.lp.qr.del', 'Delete')) + '</span></button><p class="field__hint pk-lp-qract__note">' + lpEsc(lpT('pk.lp.qr.del.locked', 'Already claimed, so it can only be disabled.')) + '</p>'
+            : '<button class="btn btn--ghost btn--sm pk-lp-qract__del" type="button" data-pk-lp-qr-del="' + q.id + '"><i data-lucide="trash-2" class="ztor-icon"></i> <span>' + lpEsc(lpT('pk.lp.qr.del', 'Delete')) + '</span></button>');
+        if (window.ztorIcons) window.ztorIcons.applyIcons(acts);
+      }
+    }
+    function lpQrOpen(id) {
+      if (!lpQrModal) return;
+      if (id) { document.querySelector('[data-pk-lp-qr-modalhost]').setAttribute('data-pk-lp-qr-id', id); lpQrMount(); }
+      lpView(id ? 'qr' : 'list');
+    }
+    var lpListModal = document.querySelector('[data-pk-lp-list-modal]'), lpStatsModal = document.querySelector('[data-pk-lp-stats-modal]');
+    function lpSyncLock() { document.body.classList.toggle('is-modal-open', [lpQrModal, lpQrf, lpListModal, lpStatsModal].some(function (m) { return m && !m.hidden; })); }
+    /* 領取項目彈窗內換頁（2026-11-02 使用者：「QR 頁面打開後沒有層級關係，應該可以回到上一頁」）：
+       list＝表格、qr＝某個 QR 的檢視、form＝編輯或刪除確認。同一個彈窗只換內容與標題，非 list 時標題左側出現「←」回 list；Esc 也是先回上一層、在 list 才關閉。 */
+    function lpView(v, quiet) {
+      if (!lpListModal) return;
+      lpListModal.querySelectorAll('[data-pk-lp-v]').forEach(function (el) { el.hidden = el.getAttribute('data-pk-lp-v') !== v; });
+      lpListModal.querySelectorAll('[data-pk-lp-t]').forEach(function (el) { el.hidden = el.getAttribute('data-pk-lp-t') !== v; });
+      var b = lpListModal.querySelector('[data-pk-lp-back]'); if (b) b.hidden = v === 'list';
+      if (!quiet) lpListModal.hidden = false;
+      lpSyncLock();
+    }
+    function lpListOpen(on) { if (!lpListModal) return; if (!on) { lpListModal.hidden = true; lpQrfMode = null; lpView('list', true); return; } lpView('list'); }
+    function lpStatsOpen(on) { if (!lpStatsModal) return; lpStatsModal.hidden = !on; lpSyncLock(); }
+    function lpRender() {
+      if (!lpId) return;
+      var SE = window.ztorScanEarn;
+      var ses = SE && SE.session(lpId);
+      var ok = !!(ses && SE.visible());
+      lpOnsiteBlocks().forEach(function (el) { el.hidden = true; });
+      var view = document.querySelector('[data-pk-lp-view]'), na = document.querySelector('[data-pk-lp-na]');
+      view.hidden = !ok; na.hidden = ok;
+      var hm = document.querySelector('[data-pk-lp-headmeta]'); if (hm) hm.hidden = !ok;
+      var hs = document.querySelector('[data-pk-lp-headsw]'); if (hs) hs.hidden = !ok;
+      var intro = document.querySelector('.page-intro'); if (intro) intro.hidden = !ok;
+      if (!ok) return;
+      lpSet(document.querySelector('.pickup-detail__header h1'), ses.name ? null : ses.nameKey, ses.name);
+      document.title = SE.sessionName(ses) + ' · Ztor Creator Studio';
+      var badge = document.querySelector('[data-pk-status-badge]');
+      if (badge) { badge.className = 'badge badge--success'; badge.firstElementChild.setAttribute('data-i18n', 'pk.status.active'); }
+      var on = SE.isEnabled(ses.id);
+      var st = document.querySelector('[data-pk-lp-state]');
+      if (st) { st.hidden = false; st.className = 'badge ' + (on ? 'badge--info' : 'badge--neutral'); st.firstElementChild.setAttribute('data-i18n', on ? 'pk.lp.en' : 'pk.lp.dis'); }
+      var sw = document.querySelector('[data-pk-lp-switch]');
+      if (sw) { sw.classList.toggle('switch--on', on); sw.setAttribute('aria-checked', on ? 'true' : 'false'); }
+      var swl = document.querySelector('[data-pk-lp-switch-label]'); if (swl) swl.textContent = lpT(on ? 'pk.lp.en' : 'pk.lp.dis', on ? 'Enabled' : 'Disabled');
+      var a6 = document.querySelector('[data-pk-lp-a6]'); if (a6) a6.hidden = !SE.a6Off();
+      var locRow = document.querySelector('[data-pk-lp-locrow]'); if (locRow) locRow.hidden = !(ses.locKey || ses.loc);
+      lpSet(document.querySelector('[data-pk-lp-loc]'), ses.locKey, ses.loc);
+      lpSet(document.querySelector('[data-pk-lp-time]'), ses.timeKey, lpFmtTime(ses.start, ses.end));
+      lpRenderMeta(ses);
+      lpRenderStats(SE, ses);
+      lpRenderItems(SE, ses);
+      lpRenderLog(SE, ses);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(view);
+      if (window.applyI18n) window.applyI18n(document.querySelector('.page'));
+      if (lpQrModal && !lpQrModal.hidden) lpQrMount();   /* 停用／啟用後 QR 頁跟著更新 */
+    }
+    /* 統計（側欄上段）：全是場次內各 QR 的加總——已領次數、已領／總名額、已發出點數（已領×每次點數）、領取粉絲數、QR 數。
+       停用的 QR 照算（數字是已發生的事）。領取粉絲數：原型只有最近 12 筆領取紀錄，沒有全量名單；
+       以「紀錄裡不重複粉絲／紀錄筆數」的比例乘上已領次數推估（呈現假設）。 */
+    /* 標題下小字的建立者／建立時間／場次 ID（語言切換時隨 lpRenderItems 一起重畫） */
+    function lpRenderMeta(ses) {
+      if (!ses) return;
+      var set = function (k, v) { var el = document.querySelector('[data-pk-lp-' + k + ']'); if (el) el.textContent = v; };
+      set('by', ses.by || lpT(ses.byKey, ''));
+      set('at', ses.createdAt);
+      set('id', ses.id);
+    }
+    function lpRenderStats(SE, ses) {
+      var claimed = 0, total = 0, pts = 0;
+      ses.qrs.forEach(function (q) { claimed += +q.claimed; total += +q.total; pts += q.claimed * q.points; });
+      var log = SE.claims(ses.id), uniq = {};
+      log.forEach(function (c) { uniq[c.fan] = 1; });
+      var fans = log.length ? Math.round(claimed * Object.keys(uniq).length / log.length) : 0;
+      var pct = total ? Math.round(claimed / total * 100) : 0;
+      var fmt = function (n) { return Number(n).toLocaleString(); };
+      document.querySelector('[data-pk-lp-hero]').textContent = fmt(claimed);
+      document.querySelector('[data-pk-lp-herototal]').textContent = lpT('pk.lp.d.hero.total', '/ {n} claimed').replace('{n}', fmt(total));
+      document.querySelector('[data-pk-lp-bar]').style.width = pct + '%';
+      document.querySelector('[data-pk-lp-pct]').textContent = pct + '%';
+      document.querySelector('[data-pk-lp-points]').textContent = lpT('pk.lp.d.points.val', '{n} points').replace('{n}', fmt(pts));
+      document.querySelector('[data-pk-lp-fans]').textContent = fmt(fans);
+      var on = ses.qrs.filter(function (q) { return q.enabled !== false; }).length;
+      document.querySelector('[data-pk-lp-qron]').textContent = on;
+      /* 領取統計彈窗：總覽＋每個 QR 一列（同一帳號同一個 QR 只領一次，所以每個 QR 的領取人數＝已領次數） */
+      var rows = document.querySelector('[data-pk-lp-st-rows]');
+      var td = function (v) { return '<td class="ztor-table__nowrap">' + v + '</td>'; };
+      if (rows) rows.innerHTML = ses.qrs.map(function (q) {
+        var share = fans ? Math.round(q.claimed / fans * 100) : 0, used = q.total ? Math.round(q.claimed / q.total * 100) : 0;
+        return '<tr><td>' + lpEsc(SE.nameOf(q)) + '</td>' + td(fmt(q.claimed)) + td(fmt(q.claimed)) + td(share + '%') + td(used + '%') + td(fmt(q.claimed * q.points)) + '</tr>';
+      }).join('');
+      /* 合計列：領取次數＝各 QR 加總；領取粉絲數＝不重複人數（同一粉絲可領多個 QR，所以小於各 QR 加總）；名額使用率＝總已領／總名額 */
+      if (rows) rows.innerHTML += '<tr class="pk-lp-stats-total"><td>' + lpEsc(lpT('pk.lp.stats.total', 'Total')) + '</td>' + td(fmt(claimed)) + td(fmt(fans)) + td('—') + td(pct + '%') + td(fmt(pts)) + '</tr>';
+      document.querySelector('[data-pk-lp-qrtotal]').textContent = lpT('pk.lp.d.qron.total', '/ {n} total').replace('{n}', ses.qrs.length);
+    }
+
+    /* ── D503 · 新增／編輯 QR 小表單＋刪除確認（同一個窄版彈窗）── */
+    var lpQrfFrom = 'list';
+    var lpQrf = document.querySelector('[data-pk-lp-qrf]'), lpQrfMode = null, lpQrfId = null, lpQrfTouched = {};
+    function lpQrfVals() {
+      var v = {}; ['name', 'points', 'total'].forEach(function (k) { v[k] = (lpQrf.querySelector('[data-pk-lp-qrf-f="' + k + '"]').value || '').trim(); }); return v;
+    }
+    function lpQrfCheck(force) {
+      var SE = window.ztorScanEarn; if (!SE || lpQrfMode === 'del') return true;
+      var cur = lpQrfId ? SE.qr(lpQrfId) : null, claimed = cur ? +cur.claimed : 0;
+      var errs = SE.validQr(lpQrfVals(), claimed);
+      ['name', 'points', 'total'].forEach(function (k) {
+        var code = k === 'total' ? (errs.indexOf('total') >= 0 ? 'total' : errs.indexOf('belowClaimed') >= 0 ? 'belowClaimed' : '') : (errs.indexOf(k) >= 0 ? k : '');
+        var show = !!code && (force || lpQrfTouched[k] || code === 'belowClaimed');
+        var el = lpQrf.querySelector('[data-pk-lp-qrf-err="' + k + '"]'), inp = lpQrf.querySelector('[data-pk-lp-qrf-f="' + k + '"]');
+        var txt = code === 'name' ? lpT('pk.lp.qr.err.name', 'Enter a name.')
+          : code === 'points' ? lpT('pk.lp.qr.err.points', 'Enter a whole number of 1 or more.')
+          : code === 'total' ? lpT('pk.lp.qr.err.total', 'Enter a whole number from 1 to 999,999.')
+          : code === 'belowClaimed' ? lpT('pk.lp.qr.err.below', 'Can’t be lower than the {n} claims so far.').replace('{n}', claimed) : '';
+        el.hidden = !show; el.textContent = show ? txt : '';
+        if (show) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+      });
+      lpQrf.querySelector('[data-pk-lp-qrf-ok]').disabled = errs.length > 0;
+      return errs.length === 0;
+    }
+    function lpQrfOpen(mode, id) {
+      var SE = window.ztorScanEarn; if (!lpQrf || !SE) return;
+      lpQrfFrom = (lpQrModal && !lpQrModal.hidden) ? 'qr' : 'list';
+      lpQrfMode = mode; lpQrfId = id || null; lpQrfTouched = {};
+      var q = id ? SE.qr(id) : null;
+      var del = mode === 'del';
+      lpQrf.querySelector('[data-pk-lp-qrf-form]').hidden = del;
+      lpQrf.querySelector('[data-pk-lp-qrf-del]').hidden = !del;
+      lpQrf.querySelector('[data-pk-lp-qrf-edithint]').hidden = mode !== 'edit';
+      document.querySelector('[data-pk-lp-qrf-title]').setAttribute('data-i18n', del ? 'pk.lp.qr.del.title' : mode === 'edit' ? 'pk.lp.qr.edit' : 'pk.lp.qr.add');
+      var ok = lpQrf.querySelector('[data-pk-lp-qrf-ok]');
+      ok.setAttribute('data-i18n', del ? 'pk.lp.qr.del' : mode === 'edit' ? 'pk.lp.qr.save' : 'pk.lp.qr.addok');
+      ok.className = 'btn ' + (del ? 'btn--destructive' : 'btn--primary');
+      ok.disabled = false;
+      if (del) {
+        lpQrf.querySelector('[data-pk-lp-qrf-delbody]').textContent = lpT('pk.lp.qr.del.body', '“{n}” and its QR code will be removed. This can’t be undone.').replace('{n}', SE.nameOf(q));
+      } else {
+        lpQrf.querySelector('[data-pk-lp-qrf-f="name"]').value = q ? SE.nameOf(q) : '';
+        lpQrf.querySelector('[data-pk-lp-qrf-f="points"]').value = q ? q.points : '';
+        var t = lpQrf.querySelector('[data-pk-lp-qrf-f="total"]');
+        t.value = q ? q.total : ''; t.min = q && +q.claimed > 0 ? q.claimed : 1;
+        lpQrfCheck(false);
+      }
+      var pv = lpQrf.querySelector('[data-pk-lp-qrf-preview]'); if (pv) pv.hidden = del;
+      lpQrfPreview();
+      if (window.applyI18n) window.applyI18n(lpListModal);
+      lpView('form');
+      var f = del ? ok : lpQrf.querySelector('[data-pk-lp-qrf-f="name"]'); if (f) f.focus();
+    }
+    /* 新增／編輯頁左側的即時預覽：名稱與每次點數一邊打一邊更新 QR 卡（新增時還沒有固定圖，以 0 當種子示意） */
+    function lpQrfPreview() {
+      var pv = lpQrf && lpQrf.querySelector('[data-pk-lp-qrf-preview]'), SE = window.ztorScanEarn;
+      if (!pv || pv.hidden || !window.ztorPointsQr) return;
+      var cur = lpQrfId && SE ? SE.qr(lpQrfId) : null, v = lpQrfVals();
+      window.ztorPointsQr.mount(pv, { name: v.name || lpT('pk.lp.add.name.ph', 'New QR name'), points: v.points || '—', seed: cur ? cur.seed : 0 });
+    }
+    /* 返回上一層：從某個 QR 頁進來的編輯回那個 QR 頁，從清單進來的新增回清單 */
+    function lpQrfClose() { if (!lpQrf) return; var back = lpQrfFrom; lpQrfMode = null; lpQrfFrom = 'list'; lpView(back); if (back === 'qr') lpQrMount(); }
+    function lpQrfSubmit() {
+      var SE = window.ztorScanEarn; if (!SE) return;
+      if (lpQrfMode === 'del') { SE.removeQr(lpQrfId); lpQrfFrom = 'list'; lpQrfClose(); return; }
+      if (!lpQrfCheck(true)) return;
+      var v = lpQrfVals();
+      if (lpQrfMode === 'edit') { if (SE.updateQr(lpQrfId, v).length) { lpQrfCheck(true); return; } lpQrfClose(); return; }
+      var nq = SE.addQr(lpId, v);
+      lpQrfMode = null; lpQrfFrom = 'list';
+      if (nq) lpQrOpen(nq.id); else lpView('list');   /* 建好直接進那個 QR 的頁面，下一步多半是下載印出 */
+    }
+
+    if (lpId) {
+      window.addEventListener('load', function () {
+        lpRender();
+        if (window.ztorDevState && window.ztorDevState.on) window.ztorDevState.on(lpRender);
+      });
+      document.addEventListener('ztor:creator-changed', lpRender);
+      document.addEventListener('ztor:lp-changed', lpRender);
+      document.addEventListener('ztor:lang-changed', lpRender);
+      /* 語言切換：QR 卡上的名稱是字面值，換成新語言再畫；「已領 N 次」同理 */
+      document.addEventListener('i18n:applied', function () {
+        var SE = window.ztorScanEarn, ses = lpSes();
+        if (ses) { lpRenderItems(SE, ses); lpRenderMeta(ses); lpRenderStats(SE, ses); lpRenderLog(SE, ses); document.title = SE.sessionName(ses) + ' · Ztor Creator Studio'; }
+        if (lpQrModal && !lpQrModal.hidden) lpQrMount();
+      });
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest && e.target.closest('[data-lp-log-val]');
+        if (t) { lpLogFilter = t.getAttribute('data-lp-log-val'); var SE = window.ztorScanEarn; lpRenderLog(SE, lpSes()); if (window.applyI18n) window.applyI18n(document.querySelector('[data-pk-lp-view]')); }
+      });
+      function lpCloseMenu(el) { var d = el.closest('details'); if (d) d.open = false; }
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        /* 整列開 QR 圖：⋮（summary／details）與選單項目讓給下面的選單處理；選字時不開 */
+        var o = e.target.closest('[data-pk-lp-qr-open]');
+        if (o && !e.target.closest('details, button, a') && !String(window.getSelection())) { lpQrOpen(o.getAttribute('data-pk-lp-qr-open')); return; }
+        var dlb = e.target.closest('[data-pk-lp-qr-dl]');
+        if (dlb) {   /* 表格列的快速下載：在畫面外掛一張 QR 卡、存成 PNG 後移除 */
+          var SEd = window.ztorScanEarn, qd = SEd && SEd.qr(dlb.getAttribute('data-pk-lp-qr-dl'));
+          if (qd && window.ztorPointsQr) {
+            var tmp = document.createElement('div'); tmp.className = 'pk-lp-offscreen'; document.body.appendChild(tmp);
+            window.ztorPointsQr.mount(tmp, { name: SEd.nameOf(qd), points: qd.points, seed: qd.seed });
+            window.ztorPointsQr.download(tmp.querySelector('.points-qr'));
+            setTimeout(function () { tmp.remove(); }, 3000);
+          }
+          return;
+        }
+        if (e.target.closest('[data-pk-lp-back]')) { if (lpQrf && !lpQrf.hidden) lpQrfClose(); else lpQrOpen(null); return; }
+        if (e.target.closest('[data-pk-lp-qr-new]')) { lpQrfOpen('add'); return; }
+        var ed = e.target.closest('[data-pk-lp-qr-edit]');
+        if (ed) { lpCloseMenu(ed); lpQrfOpen('edit', ed.getAttribute('data-pk-lp-qr-edit')); return; }
+        var dl = e.target.closest('[data-pk-lp-qr-del]');
+        if (dl) { lpCloseMenu(dl); lpQrfOpen('del', dl.getAttribute('data-pk-lp-qr-del')); return; }
+        var tg = e.target.closest('[data-pk-lp-qr-toggle]');
+        if (tg) {
+          lpCloseMenu(tg);
+          var SE = window.ztorScanEarn, q = SE && SE.qr(tg.getAttribute('data-pk-lp-qr-toggle'));
+          if (!q) return;
+          if (q.enabled === false) { SE.setQrEnabled(q.id, true); return; }   /* 啟用不確認，照場次開關慣例 */
+          if (window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.lpConfirmDisable) window.ZTOR_PARTIALS.lpConfirmDisable(SE.nameOf ? SE.nameOf(q) : q.name, function () { SE.setQrEnabled(q.id, false); }, 'qr');
+          else SE.setQrEnabled(q.id, false);
+          return;
+        }
+        if (lpQrf && !lpQrf.hidden) {
+          if (e.target === lpQrf || e.target.closest('[data-pk-lp-qrf-cancel]')) { lpQrfClose(); return; }
+          if (e.target.closest('[data-pk-lp-qrf-ok]')) { lpQrfSubmit(); return; }
+        }
+        if (lpQrModal && !lpQrModal.hidden && (e.target === lpQrModal || e.target.closest('[data-pk-lp-qr-close]'))) { lpQrOpen(null); return; }
+        if (e.target.closest('[data-pk-lp-list-open]')) { lpListOpen(true); return; }
+        if (e.target.closest('[data-pk-lp-stats-open]')) { lpStatsOpen(true); return; }
+        if (lpListModal && !lpListModal.hidden && (e.target === lpListModal || e.target.closest('[data-pk-lp-list-close]'))) { lpListOpen(false); return; }
+        if (lpStatsModal && !lpStatsModal.hidden && (e.target === lpStatsModal || e.target.closest('[data-pk-lp-stats-close]'))) lpStatsOpen(false);
+      });
+      if (lpQrf) lpQrf.addEventListener('input', function (e) {
+        var k = e.target.getAttribute && e.target.getAttribute('data-pk-lp-qrf-f'); if (!k) return;
+        lpQrfTouched[k] = true; lpQrfCheck(false); lpQrfPreview();
+      });
+      document.addEventListener('keydown', function (e) {
+        /* 整列可點的鍵盤入口：焦點在列本身時 Enter／Space 開 QR 圖（焦點在 ⋮ 時不攔） */
+        var row = e.target.closest && e.target.closest('[data-pk-lp-qr-open]');
+        if (row && e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); lpQrOpen(row.getAttribute('data-pk-lp-qr-open')); return; }
+        if (e.key !== 'Escape') return;
+        if (lpQrf && !lpQrf.hidden) { lpQrfClose(); return; }
+        if (lpQrModal && !lpQrModal.hidden) { lpQrOpen(null); return; }
+        if (lpListModal && !lpListModal.hidden) { lpListOpen(false); return; }
+        if (lpStatsModal && !lpStatsModal.hidden) lpStatsOpen(false);
+      });
+      /* 領取紀錄的收合搜尋（照現場核銷名單：點放大鏡展開、× 或 Esc 收起並清空），依粉絲名稱過濾 */
+      (function () {
+        var w = document.querySelector('[data-pk-lp-search-wrap]'), tg = document.querySelector('[data-pk-lp-search-toggle]');
+        var cl = document.querySelector('[data-pk-lp-search-close]'), inp = document.querySelector('[data-pk-lp-search]');
+        if (!w || !tg || !inp) return;
+        function redraw() { var ses = lpSes(); if (ses) lpRenderLog(window.ztorScanEarn, ses); }
+        function shut() { w.classList.remove('is-open'); tg.setAttribute('aria-expanded', 'false'); inp.value = ''; redraw(); }
+        tg.addEventListener('click', function () { w.classList.add('is-open'); tg.setAttribute('aria-expanded', 'true'); inp.focus(); });
+        if (cl) cl.addEventListener('click', shut);
+        inp.addEventListener('input', redraw);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && w.classList.contains('is-open')) shut(); });
+      })();
+      /* F6.1 啟用／停用：切成停用前確認（共用 partials 的確認視窗），切回啟用直接生效 */
+      function lpFlip() {
+        var SE = window.ztorScanEarn; if (!SE) return;
+        if (!SE.isEnabled(lpId)) { SE.setEnabled(lpId, true); return; }
+        window.ZTOR_PARTIALS.lpConfirmDisable(SE.sessionName(lpSes()), function () { SE.setEnabled(lpId, false); });
+      }
+      document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-pk-lp-switch]')) lpFlip(); });
+      document.addEventListener('keydown', function (e) {
+        if ((e.key === ' ' || e.key === 'Enter') && e.target.matches && e.target.matches('[data-pk-lp-switch]')) { e.preventDefault(); lpFlip(); }
+      });
+    }
+
+
+    /* 管理領取項目／掃碼入口 popup（現場核銷場次，5.1.5.15 F1／F2.1）。
+       新增項目＝收起本彈窗、開「編輯場次」同一個 popup（可核銷項目規則在 5.1.5.12 F2）。 */
+    (function () {
+      var itemsM = document.querySelector('[data-pk-items-modal]'), scanM = document.querySelector('[data-pk-scan-modal]');
+      if (!itemsM || !scanM) return;
+      function lock() { document.body.classList.toggle('is-modal-open', !!document.querySelector('.payout-modal:not([hidden])')); }
+      function show(m, on) { m.hidden = !on; lock(); if (on && window.ztorIcons) window.ztorIcons.applyIcons(m); }
+      var oi = document.querySelector('[data-pk-items-open]'), os = document.querySelector('[data-pk-scanner-open]');
+      if (oi) oi.addEventListener('click', function () { iView('list'); show(itemsM, true); });
+      /* 新增項目頁：搜尋加入（同建立場次第二步）。這一場是 tpe（示範的台北簽書會），已在表上的不再列出 */
+      var iCur = 'list', addSel = [], SESSION = 'tpe';
+      var UNITS = { lp: 6, meet: 10, poster: 0 };   /* 示意：加入後帶進來的已售件數（原本在「取貨場次待設定」） */
+      var addSearch = itemsM.querySelector('[data-pk-add-search]'), addField = itemsM.querySelector('[data-pk-add-field]'), addMenuEl = itemsM.querySelector('[data-pk-add-menu]');
+      function T(k, fb) { var v = window.i18nT && window.i18nT(k); return (v && v !== k) ? v : fb; }
+      function esc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+      function pool() { return (window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.pickupItemPool) ? window.ZTOR_PARTIALS.pickupItemPool() : []; }
+      function inTable(id) { return !!itemsM.querySelector('[data-pk-item-id="' + id + '"]'); }
+      function byId(id) { return pool().filter(function (it) { return it.id === id; })[0]; }
+      function iView(v) {
+        iCur = v;
+        itemsM.querySelectorAll('[data-pk-items-v]').forEach(function (el) { el.hidden = el.getAttribute('data-pk-items-v') !== v; });
+        itemsM.querySelectorAll('[data-pk-items-t]').forEach(function (el) { el.hidden = el.getAttribute('data-pk-items-t') !== v; });
+        itemsM.querySelector('button[data-pk-items-back][aria-label]').hidden = v !== 'add';
+        if (v === 'add') { addSel = []; addSearch.value = ''; addPaint(); addMenu(false); setTimeout(function () { addSearch.focus(); }, 0); }
+      }
+      function addMenu(on) { addMenuEl.hidden = !on; addSearch.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) addPaintMenu(); }
+      function addPaint() {
+        addField.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+        addSel.forEach(function (id) {
+          var it = byId(id); if (!it) return;
+          var chip = document.createElement('span'); chip.className = 'chip chip--removable';
+          chip.innerHTML = '<span>' + esc(it.name) + '</span><button class="chip__remove" type="button" data-pk-add-rm="' + esc(id) + '" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
+          addField.insertBefore(chip, addSearch);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(addField);
+        itemsM.querySelector('[data-pk-add-go]').disabled = !addSel.length;
+        if (!addMenuEl.hidden) addPaintMenu();
+      }
+      function addPaintMenu() {
+        var q = addSearch.value.trim().toLowerCase(), html = '', total = 0;
+        [['product', 'pks.items', 'Pickup items'], ['ticket', 'pks.tickets', 'Event tickets']].forEach(function (g) {
+          var avail = pool().filter(function (it) {
+            return it.kind === g[0] && !inTable(it.id) && addSel.indexOf(it.id) < 0 && (!q || (it.name + ' ' + it.meta).toLowerCase().indexOf(q) >= 0);
+          });
+          var bound = function (it) { return !!(it.session && it.session !== SESSION); };
+          avail.sort(function (a, b) { return bound(a) - bound(b); });
+          if (!avail.length) return;
+          total += avail.length;
+          html += '<div class="combobox__group">' + esc(T(g[1], g[2])) + '</div>';
+          avail.forEach(function (it) {
+            var b = bound(it);
+            html += '<button type="button" class="combobox__opt"' + (b ? ' disabled aria-disabled="true"' : ' data-pk-add-opt="' + esc(it.id) + '"') + '>' +
+              '<span class="combobox__opt-icon"><i data-lucide="' + (it.kind === 'ticket' ? 'ticket' : 'package') + '" class="ztor-icon" style="width:16px;height:16px"></i></span>' +
+              '<span class="combobox__opt-text"><span class="combobox__opt-name">' + esc(it.name) + '</span><span class="combobox__opt-meta">' + esc(it.meta) + '</span></span>' +
+              (b ? '<span class="badge badge--neutral combobox__opt-tag"><span>' + esc(T('pks.bound', 'Assigned')) + '</span></span>' : '') + '</button>';
+          });
+        });
+        addMenuEl.innerHTML = total ? html : '<div class="combobox__empty">' + esc(T('pks.search.empty', 'No items match your search.')) + '</div>';
+        if (window.ztorIcons) window.ztorIcons.applyIcons(addMenuEl);
+      }
+      addSearch.addEventListener('focus', function () { addMenu(true); });
+      addSearch.addEventListener('input', function () { addMenu(true); });
+      addSearch.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !addSearch.value && addSel.length) { addSel.pop(); addPaint(); }
+      });
+      function addCommit() {
+        var body = itemsM.querySelector('[data-pk-items-body]');
+        addSel.forEach(function (id) {
+          var it = byId(id); if (!it) return;
+          var tr = document.createElement('tr'); tr.setAttribute('data-pk-item-id', id);
+          var tk = it.kind === 'ticket' ? 'pk.ons.type.ticket' : 'pk.ons.type.product';
+          tr.innerHTML = '<td>' + esc(it.name) + '</td><td data-i18n="' + tk + '">' + esc(T(tk, '')) + '</td><td class="pk-ons-num">0 / ' + (UNITS[id] || 0) + '</td>';
+          body.appendChild(tr);
+        });
+        var c = document.querySelector('[data-pk-items-count]'); if (c) c.textContent = body.querySelectorAll('tr').length;
+        iView('list');
+      }
+      if (os) os.addEventListener('click', function () { show(scanM, true); });
+      document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-pk-items-close]') || e.target === itemsM) show(itemsM, false);
+        if (e.target.closest('[data-pk-scan-close]') || e.target === scanM) show(scanM, false);
+        var inCombo = !!e.target.closest('[data-pk-add-combo]');   /* 先記下：選項按下去後選單會重畫、原節點脫離 */
+        if (e.target.closest('[data-pk-items-add]')) iView('add');
+        else if (e.target.closest('[data-pk-items-back]')) iView('list');
+        var opt = e.target.closest('[data-pk-add-opt]'); if (opt) { addSel.push(opt.getAttribute('data-pk-add-opt')); addSearch.value = ''; addPaint(); addSearch.focus(); }
+        var rm = e.target.closest('[data-pk-add-rm]'); if (rm) { addSel.splice(addSel.indexOf(rm.getAttribute('data-pk-add-rm')), 1); addPaint(); }
+        if (e.target.closest('[data-pk-add-go]')) addCommit();
+        if (!inCombo) addMenu(false);
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (!itemsM.hidden) { if (iCur === 'add') iView('list'); else show(itemsM, false); } else if (!scanM.hidden) show(scanM, false);
+      });
+      var qt = scanM.querySelector('[data-pk-qr-toggle]'), qb = scanM.querySelector('[data-pk-qr]');
+      if (qt && qb) qt.addEventListener('click', function () {
+        var open = qb.hidden;
+        if (open && !qb.firstChild) qb.innerHTML = window.ztorFauxQr ? window.ztorFauxQr(11) : '';
+        qb.hidden = !open; qt.setAttribute('aria-expanded', open ? 'true' : 'false');
+        var sp = qt.querySelector('span'); sp.setAttribute('data-i18n', open ? 'pk.ons.scan.hideqr' : 'pk.ons.scan.showqr');
+        if (window.applyI18n) window.applyI18n(qt);
+      });
+    })();
     /* F5 核銷紀錄 popup（2026-08-01 取代原本與名單並列的第二分頁）*/
     var logModal = document.querySelector('[data-pk-log-modal]');
     function openLog(on) {
@@ -746,7 +1590,8 @@
       return pickup;
     }
     var edit = document.querySelector('[data-pk-edit]');
-    if (edit) edit.addEventListener('click', function () { var p = getPickup(); if (p) p.openExisting(); });
+    /* D499：掃碼領點場次的編輯走同一個彈窗，帶場次 id（類型唯讀、只向後生效） */
+    if (edit) edit.addEventListener('click', function () { var p = getPickup(); if (p) p.openExisting(lpId ? { lp: lpId } : undefined); });
     /* 墓碑（2026-09-30，D338）：「這場結果」區的「延長場次時間」按鈕移除——延長結束時間
        一律用頁首「編輯場次」改，不另設入口（D337 曾讓它開同一個彈窗）。 */
 
@@ -768,7 +1613,6 @@
       });
     }
     copyFrom('[data-pk-copy]', '[data-pk-url]');
-    copyFrom('[data-pk-copypw]', '[data-pk-pw]');
 
     /* redemption log filter */
     var nav = document.querySelector('[data-pk-log-status]');
@@ -899,6 +1743,8 @@
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
+<script src="js/faux-qr.js?v=r2.2"></script>
+<script src="js/points-qr.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="partials/list-scroll.js?v=r2.2"></script>
 </body>

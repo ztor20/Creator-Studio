@@ -32,6 +32,11 @@
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<!-- D499 掃碼領點（O43）：建立彈窗的類型卡（segmented＋radio-card）、啟用開關（switch）、A6 事件關閉提醒（alert） -->
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* F3 清單工作列版型（對齊電子商店 F3 兩排式）：上排收合搜尋靠右、下排狀態 filter-tabs 獨佔整列。
@@ -42,6 +47,7 @@
   .pk-noresult[hidden]{ display:none; }
 </style>
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- D503：掃碼領點建立彈窗的 QR 列（partials/pickup-session-modal.js .stack） -->
 </head>
 <body data-sheet-nav>
 <div class="app">
@@ -101,6 +107,23 @@
         </div>
         <!-- D401 決定四〔推導〕：從活動詳情「前往領取場次」進來、這場活動的組合包商品綁了多個取貨場次時（?ev=<活動 id>），
              清單預先只留與這場相關的列（列上的 data-pk-events，原型示意），這一行說明＋「顯示全部」解除。 -->
+        <!-- D499（5.1.5.11 F3）類型篩選：僅 Admin 代管態＋release2.4 起（O43）；創作者本人的清單只有現場核銷，不顯示〔推導〕。
+             控制型式比照電子商店的第二排 filter-tabs--brand（每項附數量）。顯隱由下方 lpOk() 決定。 -->
+        <nav class="filter-tabs filter-tabs--brand mb-16 when-data" role="tablist" aria-label="Filter by session type" data-i18n-aria-label="pk.lp.filter.aria" data-pk-type-filter data-feat="O43" hidden>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-type-val="all"><span data-i18n="pk.lp.filter.all">All types</span><span class="filter-tabs__count" data-type-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type-val="onsite"><span data-i18n="pk.lp.type.onsite">On-site redemption</span><span class="filter-tabs__count" data-type-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type-val="lp"><span data-i18n="pk.lp.type.lp">Scan to earn points</span><span class="filter-tabs__count" data-type-count>0</span></button>
+        </nav>
+        <!-- D499（5.1.5.11 F5）A6 事件關閉提醒：僅 Admin 代管態；本頁不提供切換，只連到平台忠誠點數設定 F9。
+             原型以網址參數 ?a6=off 示範關閉狀態（呈現假設）。 -->
+        <div class="alert alert--row alert--warning mb-16 when-data" role="status" data-pk-a6 data-feat="O43" hidden>
+          <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="pk.lp.a6.title">Offline scan to earn is turned off</div>
+            <div class="alert__meta" data-i18n="pk.lp.a6.text">No scan gives points right now, and the fan app shows “Offline points paused”. Points already given aren’t affected.</div>
+          </div>
+          <a class="alert__cta" href="admin-platform-loyalty.html" data-i18n="pk.lp.a6.cta">Open platform loyalty settings</a>
+        </div>
         <p class="field__hint field__hint--fact mb-16" data-pk-evfilter hidden><span data-i18n="pk.evfilter">Showing pickup sessions for this event's bundles.</span> <a class="card__link" href="pickup.html" data-i18n="pk.evfilter.clear">Show all</a></p>
 
         <!-- F4 · 取貨清單 · product-list（對齊電子商店 F4）· 列操作收進 kebab（⋯）-->
@@ -117,12 +140,13 @@
             </div>
 
             <!-- Active session -->
-            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=active" data-pk-row data-pk-session-status="active" data-pk-text="taipei signing 台北簽書會取貨 zine tee" data-pk-url="ztor.app/scan/tpe-signing-7f3a2">
+            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=active" data-pk-row data-pk-type="onsite" data-pk-session-status="active" data-pk-text="taipei signing 台北簽書會取貨 zine tee" data-pk-url="ztor.app/scan/tpe-signing-7f3a2">
               <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="qr-code" class="ztor-icon"></i></div></div>
               <div class="product-list__product" role="cell"><div class="product-list__body">
                 <div class="product-list__title"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row1.name">Taipei signing — pickup</a></div>
                 <div class="product-list__meta" data-i18n="pk.row1.loc">Legacy Books, Xinyi</div>
                 <div class="product-list__meta" data-i18n="pk.row1.time">today 14:00–18:00</div>
+                <div class="product-list__meta" data-pk-typetag data-feat="O43" hidden data-i18n="pk.lp.type.onsite">On-site redemption</div>
               </div></div>
               <div class="product-list__cell" role="cell"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row1.meta">2 items · 1 event ticket</a></div>
               <div class="product-list__cell" role="cell"><b>36</b></div>
@@ -131,13 +155,31 @@
               <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="scanner.html" target="_blank" rel="noopener" ><i data-lucide="scan" class="ztor-icon"></i><span data-i18n="pk.act.startscan">Start scanning</span></a><button class="dropdown__item" type="button" role="menuitem" data-pk-copy data-keep-open><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="pk.act.copyurl">Copy URL</span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="pk.act.archive">Archive</span></button></div></details></div>
             </div>
 
+            <!-- D499（5.1.5.11 F4）掃碼領點場次（排在同為進行中的現場核銷列之後）：只在 Admin 代管態＋O43 出現（顯隱與計數都由下方 lpOk() 決定，創作者本人的列數不變）。
+                 沒有 scanner，所以待核銷／已核銷顯示「—」、列操作沒有複製網址與開始掃描；狀態欄多一顆啟用／停用（與時間狀態「進行中」分開）。 -->
+            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=lps-bagel-xinyi" data-pk-row data-pk-type="lp" data-pk-lp="lps-bagel-xinyi" data-feat="O43" hidden data-pk-session-status="active" data-pk-text="bagel fest xinyi 貝果節 信義店 scan to earn points 掃碼領點">
+              <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="award" class="ztor-icon"></i></div></div>
+              <div class="product-list__product" role="cell"><div class="product-list__body">
+                <div class="product-list__title"><a class="card__link" href="pickup-detail.html?s=lps-bagel-xinyi" data-i18n="pk.lp.s.bagel.name">Bagel Fest · Xinyi</a></div>
+                <div class="product-list__meta" data-i18n="pk.lp.s.bagel.loc">Xinyi store</div>
+                <div class="product-list__meta" data-i18n="pk.lp.s.bagel.time">Nov 1, 10:00 – Nov 30, 22:00</div>
+                <div class="product-list__meta" data-i18n="pk.lp.type.lp">Scan to earn points</div>
+              </div></div>
+              <div class="product-list__cell" role="cell"><a class="card__link" href="pickup-detail.html?s=lps-bagel-xinyi" data-pk-lp-sum>2 QR codes · 328 claimed</a></div>
+              <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+              <div class="product-list__cell" role="cell"><span class="pickup-roster__none">—</span></div>
+              <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="pk.status.active">Active</span></span> <span class="badge badge--info" data-pk-lp-state><span data-i18n="pk.lp.en">Enabled</span></span> <span class="badge badge--warning" data-pk-lp-a6 hidden><span data-i18n="pk.lp.a6.badge">Event off</span></span></div>
+              <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="pickup-detail.html?s=lps-bagel-xinyi"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="pk.lp.act.open">Open details</span></a><button class="dropdown__item" type="button" role="menuitem" data-pk-lp-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="pk.lp.act.edit">Edit</span></button><button class="dropdown__item" type="button" role="menuitem" data-pk-lp-toggle><i data-lucide="switch-horizontal" class="ztor-icon"></i><span data-i18n="pk.lp.act.disable">Disable</span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="pk.act.archive">Archive</span></button></div></details></div>
+            </div>
+
             <!-- Scheduled session -->
-            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=scheduled" data-pk-events="taipei-nye" data-pk-row data-pk-session-status="scheduled" data-pk-text="fan meet kaohsiung 高雄 vip card" data-pk-url="ztor.app/scan/khh-fanmeet-9d1c4">
+            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=scheduled" data-pk-events="taipei-nye" data-pk-row data-pk-type="onsite" data-pk-session-status="scheduled" data-pk-text="fan meet kaohsiung 高雄 vip card" data-pk-url="ztor.app/scan/khh-fanmeet-9d1c4">
               <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="qr-code" class="ztor-icon"></i></div></div>
               <div class="product-list__product" role="cell"><div class="product-list__body">
                 <div class="product-list__title"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row2.name">Kaohsiung fan-meet — pickup</a></div>
                 <div class="product-list__meta" data-i18n="pk.row2.loc">Pier-2 Hall B</div>
                 <div class="product-list__meta" data-i18n="pk.row2.time">Jul 12, 13:00–17:00</div>
+                <div class="product-list__meta" data-pk-typetag data-feat="O43" hidden data-i18n="pk.lp.type.onsite">On-site redemption</div>
               </div></div>
               <div class="product-list__cell" role="cell"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row2.meta">1 item · 2 event tickets</a></div>
               <div class="product-list__cell" role="cell"><b>60</b></div>
@@ -147,12 +189,13 @@
             </div>
 
             <!-- Ended session -->
-            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=ended" data-pk-row data-pk-session-status="ended" data-pk-text="taichung listening 台中 acetate">
+            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=ended" data-pk-row data-pk-type="onsite" data-pk-session-status="ended" data-pk-text="taichung listening 台中 acetate">
               <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="qr-code" class="ztor-icon"></i></div></div>
               <div class="product-list__product" role="cell"><div class="product-list__body">
                 <div class="product-list__title"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row4.name">Taichung listening — pickup</a></div>
                 <div class="product-list__meta" data-i18n="pk.row4.loc">TADA Center</div>
                 <div class="product-list__meta" data-i18n="pk.row4.time">Jun 21, closed</div>
+                <div class="product-list__meta" data-pk-typetag data-feat="O43" hidden data-i18n="pk.lp.type.onsite">On-site redemption</div>
               </div></div>
               <div class="product-list__cell" role="cell"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row4.meta">1 item</a></div>
               <div class="product-list__cell" role="cell"><b>12</b></div>
@@ -161,12 +204,13 @@
               <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-export><i data-lucide="download" class="ztor-icon"></i><span data-i18n="pk.log.export">Export</span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="archive" class="ztor-icon"></i><span data-i18n="pk.act.archive">Archive</span></button></div></details></div>
             </div>
             <!-- 2026-10-20 D455（A9）：已封存場次（主規格 §7.2 第 4 種），開詳情＝?s=archived；已封存不再出現「封存」動作 -->
-            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=archived" data-pk-row data-pk-session-status="archived" data-pk-text="hsinchu pop-up 新竹快閃店取貨">
+            <div class="product-list__row product-list__row--link" role="row" tabindex="0" data-pk-open="pickup-detail.html?s=archived" data-pk-row data-pk-type="onsite" data-pk-session-status="archived" data-pk-text="hsinchu pop-up 新竹快閃店取貨">
               <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="qr-code" class="ztor-icon"></i></div></div>
               <div class="product-list__product" role="cell"><div class="product-list__body">
                 <div class="product-list__title"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row5.name">Hsinchu pop-up — pickup</a></div>
                 <div class="product-list__meta" data-i18n="pk.row5.loc">Big City, Hsinchu</div>
                 <div class="product-list__meta" data-i18n="pk.row5.time">May 3, closed</div>
+                <div class="product-list__meta" data-pk-typetag data-feat="O43" hidden data-i18n="pk.lp.type.onsite">On-site redemption</div>
               </div></div>
               <div class="product-list__cell" role="cell"><a class="card__link" href="pickup-detail.html" data-i18n="pk.row5.meta">2 items</a></div>
               <div class="product-list__cell" role="cell"><b>4</b></div>
@@ -220,11 +264,13 @@
       if (!pickup && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createPickupSession)
         /* 2026-08-01：建立成功直接落地到場次詳情頁（彈窗的 result step 已撤除）*/
         pickup = window.ZTOR_PARTIALS.createPickupSession(host, {
-          onCreate: function () { location.href = 'pickup-detail.html'; }
+          /* D503：掃碼領點建立後落地到新場次的詳情（場次與 QR 已寫進 window.ztorScanEarn；清單列本身仍是靜態示範，呈現假設） */
+          onCreate: function (r) { location.href = r && r.kind === 'lp' && r.id ? 'pickup-detail.html?s=' + encodeURIComponent(r.id) : 'pickup-detail.html'; }
         });
       return pickup;
     }
-    function openCreate() { var p = getPickup(); if (p) p.openBlank(); }
+    /* D499：清單篩在「掃碼領點」時，建立入口預選這個類型（5.1.5.11 F4.3〔推導〕）；仍停在選類型那一步，可改 */
+    function openCreate() { var p = getPickup(); if (p) p.openBlank({ type: typeVal === 'lp' ? 'lp' : 'onsite' }); }
     function openEdit()   { var p = getPickup(); if (p) p.openExisting(); }
     document.querySelectorAll('[data-pk-create]').forEach(function (b) { b.addEventListener('click', openCreate); });
     document.querySelectorAll('[data-pk-edit]').forEach(function (b) { b.addEventListener('click', openEdit); });
@@ -246,6 +292,20 @@
       });
     });
 
+    /* ── D499 掃碼領點列操作：編輯（同一個彈窗）、啟用／停用（停用前確認，5.1.5.15 F6.1；切回啟用不確認〔推導〕）── */
+    document.querySelectorAll('[data-pk-lp-edit]').forEach(function (b) {
+      b.addEventListener('click', function () { var r = b.closest('[data-pk-lp]'); var p = getPickup(); if (p && r) p.openExisting({ lp: r.getAttribute('data-pk-lp') }); });
+    });
+    document.querySelectorAll('[data-pk-lp-toggle]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var r = b.closest('[data-pk-lp]'); var SE = window.ztorScanEarn; if (!r || !SE) return;
+        var id = r.getAttribute('data-pk-lp'), s = SE.session(id);
+        if (!SE.isEnabled(id)) { SE.setEnabled(id, true); return; }
+        var name = SE.sessionName(s) || id;
+        window.ZTOR_PARTIALS.lpConfirmDisable(name, function () { SE.setEnabled(id, false); });
+      });
+    });
+
     /* ── export（demo，Ended 列 kebab）── */
     document.querySelectorAll('[data-pk-export]').forEach(function (exp) {
       exp.addEventListener('click', function () { flash(exp, 'pk.log.exported', 'Exported'); });
@@ -253,6 +313,13 @@
 
     /* ── 取貨場次清單篩選（狀態 tab + 搜尋 + 分批載入計數）── */
     function T(k, f) { return (window.i18nT && window.i18nT(k)) || f; }
+    /* ── D499 掃碼領點（O43）：看得到的條件＝Admin 代管態＋版本含 O43（window.ztorScanEarn.visible()，
+       資料與判斷都在 partials/pickup-session-modal.js）。看不到時，掃碼領點列不算進任何計數與「共 N 個」，
+       類型標示與類型篩選也收起——創作者本人看到的清單與改動前一致。 ── */
+    var typeVal = 'all';
+    function lpOk() { return !!(window.ztorScanEarn && window.ztorScanEarn.visible()); }
+    function rowOk(r) { return !r.hasAttribute('data-pk-lp') || lpOk(); }
+    function typeOk(r, t) { return t === 'all' || (r.getAttribute('data-pk-type') || 'onsite') === t; }
     function wireFilter(navSel, rowSel, statusAttr, textAttr, searchSel, noResSel, footerSel, countSel, countKey) {
       var nav = document.querySelector(navSel);
       var rows = [].slice.call(document.querySelectorAll(rowSel));
@@ -262,15 +329,45 @@
       var countEl = countSel ? document.querySelector(countSel) : null;
       if (!nav || !rows.length) return;
       var status = 'all';
-      function matches(r, val, q) {
+      function matches(r, val, q, t) {
         var okS = val === 'all' || (r.getAttribute(statusAttr) || '') === val;
         var okT = !q || (r.getAttribute(textAttr) || '').indexOf(q) >= 0;
-        return okS && okT;
+        return rowOk(r) && typeOk(r, t === undefined ? typeVal : t) && okS && okT;
       }
       function apply() {
         var q = (search && search.value.trim().toLowerCase()) || '';
         var shown = 0;
+        if (!lpOk()) typeVal = 'all';
         rows.forEach(function (r) { var vis = matches(r, status, q); r.hidden = !vis; if (vis) shown++; });
+        /* D499 類型篩選：每項計數＝目前狀態＋搜尋條件下該類型的列數 */
+        var tnav = document.querySelector('[data-pk-type-filter]');
+        if (tnav) {
+          tnav.hidden = !lpOk();
+          tnav.querySelectorAll('[data-type-val]').forEach(function (b) {
+            var tv = b.getAttribute('data-type-val');
+            var on = tv === typeVal;
+            b.classList.toggle('filter-tabs__item--active', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
+            var c = b.querySelector('[data-type-count]');
+            if (c) c.textContent = rows.filter(function (r) { return matches(r, status, q, tv); }).length;
+          });
+        }
+        document.querySelectorAll('[data-pk-typetag]').forEach(function (el) { el.hidden = !lpOk(); });
+        var a6 = lpOk() && window.ztorScanEarn.a6Off();
+        var a6note = document.querySelector('[data-pk-a6]'); if (a6note) a6note.hidden = !a6;
+        document.querySelectorAll('[data-pk-lp]').forEach(function (r) {
+          var on = window.ztorScanEarn ? window.ztorScanEarn.isEnabled(r.getAttribute('data-pk-lp')) : true;
+          var st = r.querySelector('[data-pk-lp-state]');
+          if (st) { st.className = 'badge ' + (on ? 'badge--info' : 'badge--neutral'); st.firstElementChild.setAttribute('data-i18n', on ? 'pk.lp.en' : 'pk.lp.dis'); }
+          var tg = r.querySelector('[data-pk-lp-toggle]');
+          if (tg) tg.querySelector('span').setAttribute('data-i18n', on ? 'pk.lp.act.disable' : 'pk.lp.act.enable');
+          var b6 = r.querySelector('[data-pk-lp-a6]'); if (b6) b6.hidden = !a6;
+          /* D503：內容摘要＝場次自己的 QR 數與已領次數加總 */
+          var sum = r.querySelector('[data-pk-lp-sum]'), ses = window.ztorScanEarn && window.ztorScanEarn.session(r.getAttribute('data-pk-lp'));
+          if (sum && ses) sum.textContent = T('pk.lp.sum', '{n} QR codes · {m} claimed').replace('{n}', ses.qrs.length).replace('{m}', window.ztorScanEarn.claimedTotal(ses.id).toLocaleString());
+          if (window.applyI18n) window.applyI18n(r);
+        });
+        var eligible = rows.filter(rowOk).length;
         if (noRes) noRes.hidden = shown !== 0;
         nav.querySelectorAll('.tabs__item').forEach(function (btn) {
           var cspan = btn.querySelector('[data-status-count]');
@@ -279,8 +376,17 @@
           cspan.textContent = rows.filter(function (r) { return matches(r, val, q); }).length;
         });
         if (footer) footer.hidden = shown === 0;
-        if (countEl) countEl.textContent = T(countKey || 'pk.footer.count', 'Showing {n} of {m}').replace('{n}', shown).replace('{m}', rows.length);
+        if (countEl) countEl.textContent = T(countKey || 'pk.footer.count', 'Showing {n} of {m}').replace('{n}', shown).replace('{m}', eligible);
       }
+      /* D499 類型篩選切換；身分（ztor:creator-changed）、版本面板、啟用狀態（ztor:lp-changed）、語言變了都重算 */
+      var tnav0 = document.querySelector('[data-pk-type-filter]');
+      if (tnav0) tnav0.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-type-val]'); if (!b) return;
+        typeVal = b.getAttribute('data-type-val'); apply();
+      });
+      document.addEventListener('ztor:creator-changed', apply);
+      document.addEventListener('ztor:lp-changed', apply);
+      window.addEventListener('load', function () { if (window.ztorDevState && window.ztorDevState.on) window.ztorDevState.on(apply); });
       nav.querySelectorAll('.tabs__item').forEach(function (btn) {
         btn.addEventListener('click', function () {
           nav.querySelectorAll('.tabs__item').forEach(function (b) {
@@ -295,7 +401,7 @@
       apply();
       window.addEventListener('load', apply);
       return function clear() {
-        status = 'all'; if (search) search.value = '';
+        status = 'all'; typeVal = 'all'; if (search) search.value = '';
         nav.querySelectorAll('.tabs__item').forEach(function (b) {
           var on = b.getAttribute('data-status-val') === 'all';
           b.classList.toggle('tabs__item--active', on);

@@ -97,7 +97,7 @@ table.stage td:nth-child(4){width:12%}
 
 <h2 id="detail-intro" class="no-num">概述</h2>
 <ul class="plain">
-  <li>從取貨清單列上的「開啟詳情」進入；bookyay 匯入的活動，活動詳情的「前往領取場次」也連到這裡</li>
+  <li>從取貨清單列上的「開啟詳情」進入；bookyay 匯入的活動，活動詳情的「前往領取場次」也連到這裡；下面除非標明，都是現場核銷場次的內容，掃碼領點場次見<a href="#scan">掃碼領點場次詳情</a></li>
   <li>各階段能做什麼，見取貨規則的<a href="pickup-rules.html#stage">取貨場次的階段</a>；已封存的場次只供查看歷史紀錄</li>
   <li>名單與核銷紀錄的單位都是一件（一個領取單位），見<a href="pickup-rules.html#redeem-unit">一個領取碼核銷一件</a></li>
 </ul>
@@ -282,12 +282,111 @@ table.stage td:nth-child(4){width:12%}
 </ul>
 <p class="note">依據：5.1.5.15 F4.3、F5.2；5.1.5.14 F1.3；D240、D242。</p>
 
+<h2 id="scan"><span class="n"></span>掃碼領點場次詳情</h2>
+<p>Admin 代管創作者時，掃碼領點場次的詳情是另一套內容，創作者本人看不到；沒有 Scanner 存取、名單與核銷紀錄。Admin 在這裡確認設定、決定要不要發點、看每個 QR 的名額、取得 QR 圖交給商家、查領取紀錄。設定與開關見<a href="#scan-basic">基本資料與啟用停用</a>；QR 的新增與管理見<a href="#scan-quota">QR 管理與 QR 圖</a>；誰領了見<a href="#scan-log">領取紀錄</a>；怎麼發點見<a href="#scan-rules">發點規則</a>；粉絲看到的提示見<a href="#scan-handoff">粉絲端的提示與紀錄</a>。</p>
+
+<h3 id="scan-basic">基本資料與啟用停用</h3>
+<p>顯示場次設定，並提供手動停發的開關。欄位的定義見建立取貨場次的<a href="pickup-create.html#scan-fields">掃碼領點場次的欄位</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>基本資料</td><td>—</td><td>顯示場次名稱、地點（有填才顯示）、開始與結束時間、時間狀態（尚未開始、進行中、已結束、已封存）、啟用狀態、場次 id、建立者（操作的 Admin）、建立時間</td></tr>
+    <tr><td>編輯</td><td>—</td><td>開啟建立取貨場次的同一個視窗；所有欄位可改，只影響之後的掃碼，不回算已發的點數</td></tr>
+    <tr><td>啟用／停用（Enabled／Disabled）</td><td>—</td><td>手動開關，切換立即生效<br>停用：場次內所有 QR 立即停止發點，與開始、結束時間無關<br>啟用：恢復發點<br>切成停用前先確認，說明「停用後此場次所有 QR 立即不再發點，粉絲掃碼會看到『此活動未啟用』；切回啟用即恢復」</td></tr>
+    <tr><td>封存</td><td>—</td><td>手動動作，封存後時間狀態變「已封存」，只供查看<br>有人領過的場次不能刪除，只能停用或封存</td></tr>
+    <tr><td>事件關閉提醒</td><td>平台忠誠點數設定把線下掃碼領點事件關閉時</td><td>頁面頂端顯示提醒，說明此刻任何掃碼都不發點，樣子與取貨管理的<a href="pickup.html#types-off">事件關閉提醒</a>相同</td></tr>
+  </tbody>
+</table></div>
+<p>進行中是依開始與結束時間算出的時間狀態，不能手動設定；啟用／停用是人工開關。要能發點，兩者必須同時成立，而且線下掃碼領點事件是開的，檢查順序見<a href="#scan-rules">發點規則</a>。</p>
+
+<h3 id="scan-quota">QR 管理與 QR 圖</h3>
+<p>QR 是掃碼領點場次裡的項目，不是電子商店的商品。這一區逐個列出場次裡的 QR，讓 Admin 新增、編輯、啟用或停用，並提供 QR 圖。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>QR 列</td><td>—</td><td>每列顯示 QR 名稱、每次領取點數、已領／總名額、啟用開關、狀態<br>「開啟」的視窗與列內展開，都看得到 QR 編號、建立者（操作的 Admin）與建立時間</td></tr>
+    <tr><td>新增 QR</td><td>—</td><td>按區塊上方的「新增 QR」；欄位同建立場次時的<a href="pickup-create.html#scan-qr">QR 的欄位</a>：名稱、每次領取點數、總名額、啟用<br>新增的 QR 屬於這個場次</td></tr>
+    <tr><td>編輯 QR</td><td>—</td><td>名稱、每次領取點數、總名額都能改，只影響之後的掃碼，不回算已發的點數</td></tr>
+    <tr><td>啟用開關</td><td>—</td><td>QR 自己的開關；停用就是只停這個 QR，同場次的其他 QR 與場次本身不受影響<br>停用的 QR 在列上標示「已停用」</td></tr>
+    <tr><td>名額已滿標示</td><td>已領次數等於總名額時</td><td>標示「名額已滿」；這個 QR 對所有人停止發點，其他 QR 不受影響</td></tr>
+    <tr><td>檢視與下載 QR 圖</td><td>—</td><td>每個 QR 的「開啟」視窗顯示 QR 圖，可檢視與下載，頂部有 QR 名稱、編號、建立者與建立時間<br>商家自行印出分發，沒有專用硬體；視窗裡沒有商品連結，因為 QR 不是商品</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>各 QR 的名額與點數互不影響，某個 QR 名額用完，不影響同場次的其他 QR</li>
+  <li>同一場次想避免一筆交易重複掃，做法是不同消費組合各建一個 QR，例如買 1 個 2 點、買 5 個 10 點，各一個 QR（數字為假設）；沒有其他防重複機制</li>
+</ul>
+
+<h3 id="scan-log">領取紀錄</h3>
+<p>讓 Admin 追查誰在何時領了哪個 QR、拿到多少點。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>領取紀錄的一列</td><td>—</td><td>一列是一次成功領取，顯示領取時間、粉絲、QR 名稱、點數（例如 +10）<br>Admin 看得到是哪位粉絲，可連到<a href="fans-roster-detail.html">粉絲詳情</a></td></tr>
+    <tr><td>篩選</td><td>—</td><td>可依粉絲、依 QR 篩選</td></tr>
+    <tr><td>修改或刪除</td><td>—</td><td>本列表不提供<br>每次成功領取是帳本的一筆分錄，只增不改；Admin 要校正，到粉絲詳情用「修改點數」，會新增一筆校正分錄、不改原筆</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>有紀錄</td><td>至少一位粉絲領過</td><td>依序列出每次成功領取</td></tr>
+    <tr><td>沒有紀錄</td><td>還沒有人領過</td><td>顯示「尚無領取紀錄」</td></tr>
+    <tr><td>失敗的掃碼</td><td>未啟用、尚未開始、已結束、已領取過、名額已滿、事件關閉</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>紀錄很多</td><td>—</td><td>分批載入，做法同全站共用的載入規則</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="scan-rules">發點規則</h3>
+<p>粉絲掃一個 QR 時，依下面的順序逐項檢查；任何一項不過就不發點、不扣點，粉絲現有的點數不變，粉絲 App 顯示對應提示，見<a href="#scan-handoff">粉絲端的提示與紀錄</a>。</p>
+<ol class="plain">
+  <li>線下掃碼領點事件的開關是開的，開關在<a href="admin-loyalty.html#offline-scan">平台忠誠點數設定</a></li>
+  <li>場次是啟用狀態</li>
+  <li>QR 是啟用狀態</li>
+  <li>掃碼時間在場次的開始與結束時間之間</li>
+  <li>這個粉絲帳號沒領過這個 QR</li>
+  <li>這個 QR 還沒達到總名額</li>
+  <li>通過後發點，並記一筆帳本分錄</li>
+</ol>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>每人領幾次</td><td>每個粉絲帳號每個 QR 只發一次，是固定規則，不是設定</td></tr>
+    <tr><td>發多少點</td><td>該 QR 設定的每次領取點數，不乘創作者設定的份量、不吃賽季加倍、不衰減</td></tr>
+    <tr><td>什麼會限制發點</td><td>不受 90 天滾動上限；只由有效期、每帳號一次與總名額控制<br>名額用滿後，這個 QR 對所有人停止發點；同場次各 QR 獨立計算</td></tr>
+    <tr><td>累計與分級</td><td>計入累計分與分級；也算有效動作，活躍粉絲、流失風險與最近活躍都會把掃碼領點算進去</td></tr>
+    <tr><td>修改場次或 QR 之後</td><td>只影響之後的掃碼，不回算已發的點數，歷史分錄不變</td></tr>
+    <tr><td>目前不做</td><td>專用硬體、創作者自助、自動退款沖銷<br>濫用風險目前先接受，採榮譽制，先驗證概念，之後再收緊</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="scan-handoff">粉絲端的提示與紀錄</h3>
+<p>粉絲端是前台，由前台團隊負責，不是 Creator Studio 的頁面；這裡列出前台要顯示的內容，供對照。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:42%">什麼情況</th><th>粉絲 App 顯示</th></tr></thead>
+  <tbody>
+    <tr><td>線下掃碼領點事件關閉</td><td>線下積分暫停中</td></tr>
+    <tr><td>場次停用或這個 QR 停用</td><td>此活動未啟用</td></tr>
+    <tr><td>尚未開始</td><td>活動尚未開始</td></tr>
+    <tr><td>已結束</td><td>活動已結束</td></tr>
+    <tr><td>這個帳號已領過這個 QR</td><td>你已領取過</td></tr>
+    <tr><td>這個 QR 名額已滿</td><td>本 QR 名額已滿</td></tr>
+    <tr class="grp"><td colspan="2">領取成功後，粉絲積分紀錄裡的一列</td></tr>
+    <tr><td>日期時間</td><td>掃碼的時間</td></tr>
+    <tr><td>標題</td><td>場次名稱</td></tr>
+    <tr><td>副標</td><td>QR 名稱</td></tr>
+    <tr><td>點數</td><td>+點數</td></tr>
+  </tbody>
+</table></div>
+<p>粉絲用 App 既有的 QR 掃描器掃商家的 QR，由後端依<a href="#scan-rules">發點規則</a>的順序判定。後台粉絲詳情的對應列見<a href="fans-roster-detail.html#detail-scan">掃碼領點的點數明細列</a>。</p>
+<p class="note">依據：5.1.5.15 F6.1～F6.5；5.1.5.11 F4.2、F5；D499、D503。</p>
+
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.15-取貨場次詳情.md</code>（v1.14）；<code>5.1.5.14-手機Scanner.md</code>（v1.11）F1.3、F3；<code>5.1.5.12-建立取貨場次.md</code>（v1.11）F3；<code>0-設計規格書.md</code>（v4.90）§7.2</li>
-    <li>決策：D116、D121、D122、D123、D240、D242、D252、D253、D337、D338、D401、D453、D455</li>
+    <li>規格：<code>5.1.5.15-取貨場次詳情.md</code>（v1.20）；<code>5.1.5.14-手機Scanner.md</code>（v1.16）F1.3、F3；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）F3、F5；<code>0-設計規格書.md</code>（v5.36）§7.2</li>
+    <li>決策：D116、D121、D122、D123、D240、D242、D252、D253、D337、D338、D401、D453、D455、D499、D503</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -298,8 +397,18 @@ table.stage td:nth-child(4){width:12%}
     <li>匯出的檔案格式與欄位</li>
     <li>已核銷之後才被撤銷的件（只會出現在歷史資料）在名單上怎麼呈現</li>
     <li>名單沒有資料或搜尋沒有命中時顯示什麼</li>
+    <li>掃碼領點場次的失敗掃碼（未啟用、尚未開始、已結束、已領取過、名額已滿、事件關閉）是否也留一列領取紀錄</li>
+    <li>QR 圖下載的檔案格式與解析度</li>
+    <li>場次停用時不改各 QR 自己的開關，場次切回啟用時各 QR 維持原本狀態</li>
+    <li>停用單一 QR 前要先確認，切回啟用不用確認</li>
+    <li>場次停用與 QR 停用，粉絲掃碼時共用同一句「此活動未啟用」</li>
+    <li>QR 的總名額不能改到低於已領次數</li>
+    <li>沒人領過的 QR 可以刪除、有人領過只能停用；場次只剩一個 QR 時不能刪除</li>
+    <li>場次已有人領過之後還能不能新增 QR</li>
+    <li>新增的 QR 不能移到別的場次</li>
+    <li>點數歸場次所屬的創作者的榜</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D455：場次狀態定案為 4 種、人工處理只留查看來源與反轉、核銷紀錄不記工作人員；對照 5.1.5.15 v1.14）；2026-10-19（新建頁面；對照 5.1.5.15 v1.13、5.1.5.14 v1.11、主規格 v4.90）</p>
+  <p class="k">最近同步：2026-11-02（D503：QR 是場次裡的項目，在這頁新增與管理；發點檢查多一項 QR 啟用；拿掉商品與移出場次的寫法；對照 5.1.5.15 v1.20）；上一次 2026-11-02（D499：新增掃碼領點場次詳情；對照 5.1.5.15）；上一次 2026-10-20（D455：場次狀態定案為 4 種、人工處理只留查看來源與反轉、核銷紀錄不記工作人員；對照 5.1.5.15 v1.14）；2026-10-19（新建頁面；對照 5.1.5.15 v1.13、5.1.5.14 v1.11、主規格 v4.90）</p>
 </details>
 </div>
 </body>

@@ -408,7 +408,7 @@
 - `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
 - `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 185 支；主 class 前 5 個）
+## 元件（ds-components/，共 190 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
@@ -468,7 +468,7 @@
 - `field-more.css` — .field-more, .form-grid, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
 - `field-source-tag.css` — .field-source, .field__label, .is-source-locked, .radio-cards, .segmented ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式
-- `field-system.css` — .field, .field__label, .field__hint, .field__req, .field__error ｜ Ztor Creator Studio - Field system molecule
+- `field-system.css` — .field, .field__label, .field__label--split, .field__label-aside, .field__hint ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
@@ -512,6 +512,7 @@
 - `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking）
 - `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta
 - `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access--bare, .scanner-access__main ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
+- `points-qr.css` — .points-qr, .points-qr--compact, .points-qr__code, .points-qr__name, .points-qr__points ｜ Points QR card — 點數 QR 卡（掃碼領點）
 - `post-composer.css` — .post-composer, .card, .post-composer__stub, .post-composer__head, .post-composer__foot ｜ Post composer · 發文框（2026-08-18 promote，自 progres
 - `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-split--phone, .preview-col ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
@@ -586,9 +587,13 @@
 - `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--slim, .upload-tile--video ｜ Upload tile · dashed upload affordance for creat
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vault-access.css` — .vault-access, .vault-reachline, .vault-access__head, .vault-method, .vault-method__head ｜ vault-access.css · 媒體庫「存取權限」分頁（2026-10-09）
+- `vault-list.css` — .vault-shell, .vault-stage, .vault-list, .vault-list__head, .vault-list__label ｜ Ztor — Vault list（媒體庫的庫房列表，左側欄）
+- `vault-open.css` — .vault-open, .vault-open__head, .vault-open__tabs, .vault-way, .vault-way__head ｜ Ztor — Vault open（媒體庫「開啟方式」：條件開啟｜鑰匙開啟 分頁）
 - `vault-overview.css` — .vault-ov, .vault-ov__pair, .vault-ov__viewer, .vault-ov__itemname, .vault-ov__tags ｜ vault-overview.css · 媒體庫「總覽」分頁的卡片內版面（2026-10-09）
 - `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板
+- `vault-stage.css` — .vault-bar, .vault-bar__title, .vault-bar__sched, .vault-bar__name, .vault-bar__nameinput ｜ Ztor — Vault stage（媒體庫主欄：標頭、成效 bento、內容卡片）
 - `vault-task.css` — .vault-tag, .vault-tag__text, .vault-tag--media, .vault-tag--plain, .vault-task ｜ vault-task.css · 媒體庫第二層：每件內容的任務（D377，2026-10-08）
+- `vault-wizard.css` — .wizard ｜ Ztor — Vault wizard（新增庫房的三步建立流程）
 - `venue-map.css` — .venue-map, .fep-shop, .venue-map__canvas, .venue-map__streets, .venue-map__road ｜ venue-map — 依完整地址產生的活動地點地圖（D369 決定二，2026-10-07 建
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
 - `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta

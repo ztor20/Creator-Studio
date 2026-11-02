@@ -97,7 +97,7 @@ table.stage td:nth-child(4){width:12%}
 
 <h2 id="create-intro" class="no-num">概述</h2>
 <ul class="plain">
-  <li>同一個視窗從取貨管理、建立實體商品、商品細節頁三個地方開啟，編輯既有場次也用它，見<a href="#entry">從哪裡開啟</a></li>
+  <li>同一個視窗從取貨管理、建立實體商品、商品細節頁三個地方開啟，編輯既有場次也用它，見<a href="#entry">從哪裡開啟</a>；Admin 代管創作者時視窗先選<a href="#fields-type">場次類型</a></li>
   <li>建好的場次在<a href="pickup.html#list">取貨清單</a>管理，Scanner 網址在<a href="pickup-detail.html#scanner">取貨場次詳情</a>取得</li>
   <li>能加入哪些商品與票券、一個商品只屬於一個場次，見取貨規則的<a href="pickup-rules.html#scope">場次能核銷哪些商品與票券</a></li>
 </ul>
@@ -142,7 +142,16 @@ table.stage td:nth-child(4){width:12%}
 <p class="note">依據：5.1.5.12 §2、§3、F1～F3、§6；主規格 §6.6。</p>
 
 <h2 id="create-fields"><span class="n"></span>功能與欄位</h2>
-<p>視窗的欄位分三組：先填<a href="#fields-basic">場次基本資訊</a>，再加<a href="#fields-items">可核銷項目</a>，最後設<a href="#fields-scanner">Scanner 存取</a>。</p>
+<p>Admin 代管創作者時，先<a href="#fields-type">選場次類型</a>。現場核銷的欄位分三組：先填<a href="#fields-basic">場次基本資訊</a>，再加<a href="#fields-items">可核銷項目</a>，最後設<a href="#fields-scanner">Scanner 存取</a>；掃碼領點的欄位見<a href="#scan-fields">掃碼領點場次的欄位</a>。</p>
+
+<h3 id="fields-type">場次類型</h3>
+<p>建立時先決定這個場次是現場核銷還是掃碼領點，之後的欄位依類型而定。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>場次類型（Session type）</td><td>只在 Admin 代管創作者時出現<br>必須先選才進欄位</td><td>現場核銷（On-site redemption）：工作人員掃粉絲的領取碼，放實體商品與票券<br>掃碼領點（Scan to earn points）：粉絲用 App 掃 QR 領忠誠點數<br>創作者本人開啟視窗時沒有這個選擇，直接進現場核銷的欄位<br>兩種類型不混放：掃碼領點場次裡放的是點數 QR，現場核銷放取貨商品與活動票券<br>兩種類型的差別見取貨管理的<a href="pickup.html#types">兩種場次類型</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="fields-basic">場次基本資訊</h3>
 <p>決定這個場次在哪裡、什麼時候可以核銷。</p>
@@ -181,6 +190,43 @@ table.stage td:nth-child(4){width:12%}
 </table></div>
 <p class="note">依據：5.1.5.12 F1～F3、§5、§6；主規格 §7.2「領取單位的正式定義」；D240、D339、D393、D455、D470、D471。</p>
 
+<h2 id="scan-fields"><span class="n"></span>掃碼領點場次的欄位</h2>
+<p>掃碼領點場次是一組點數 QR 的有效期與開關，QR 只存在於場次裡，不是電子商店的商品。這類場次只在 Admin 代管創作者時能建立；粉絲掃碼領點的規則見取貨場次詳情的<a href="pickup-detail.html#scan-rules">發點規則</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>場次名稱（Session name）</td><td>必填</td><td>Admin 辨識用<br>也是粉絲積分紀錄的標題，與粉絲詳情點數明細的行為名稱</td></tr>
+    <tr><td>開始時間（Start time）</td><td>必填</td><td>有效期的開始；只有這段期間內掃碼才發點</td></tr>
+    <tr><td>結束時間（End time）</td><td>必填</td><td>有效期的結束<br>必須晚於開始時間</td></tr>
+    <tr><td>地點（Location）</td><td>選填</td><td>商家發放 QR 的現場或店家說明，僅供辨識</td></tr>
+    <tr><td>QR 清單（QR list）</td><td>必填，至少一個 QR</td><td>在視窗裡逐列新增 QR，每個 QR 只屬於這個場次<br>每列有名稱、每次領取點數、總名額、啟用，見<a href="#scan-qr">QR 的欄位</a><br>可以新增多列；場次建立前可以刪列</td></tr>
+    <tr><td>啟用／停用（Enabled／Disabled）</td><td>—</td><td>手動開關；英文用 Enabled／Disabled，避免與取貨場次既有的時間狀態「進行中（Active）」撞名<br>停用的效果見取貨場次詳情的<a href="pickup-detail.html#scan-basic">基本資料與啟用停用</a></td></tr>
+    <tr><td>建立場次</td><td>必填齊全、結束時間晚於開始時間、至少一個 QR 且每列都填對才能按</td><td>沒有 QR 或有一列填不對時維持停用</td></tr>
+  </tbody>
+</table></div>
+
+<ul class="plain">
+  <li>沒有 Scanner 密碼、Scanner 網址與取貨說明；建立後不產生領取單位與領取碼</li>
+  <li>建立後所有欄位都能改，修改只影響之後的掃碼，不回算已發的點數</li>
+  <li>總名額在每個 QR 上設定，不在場次上設定</li>
+  <li>有人領過的場次不能刪除，只能停用或封存</li>
+</ul>
+<h3 id="scan-qr">QR 的欄位</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>QR 名稱（QR name）</td><td>必填</td><td>Admin 辨識用<br>也是粉絲積分紀錄的副標，與粉絲詳情點數明細的副說明</td></tr>
+    <tr><td>每次領取點數（Points per claim）</td><td>必填</td><td>正整數<br>每位粉絲掃這個 QR 成功領取一次得到的點數<br>點數怎麼算，見平台忠誠點數設定的<a href="admin-loyalty.html#offline-scan">線下掃碼領點的事件開關與計點</a></td></tr>
+    <tr><td>總名額（Total quota）</td><td>必填</td><td>整數 1 至 999,999<br>一律限量，不能關閉</td></tr>
+    <tr><td>啟用（Enabled）</td><td>—</td><td>只停用這個 QR，同場次的其他 QR 不受影響<br>預設啟用</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>系統自動記下 QR 編號、建立者與建立時間，不用填</li>
+  <li>建立場次後，也能在場次詳情新增 QR，見取貨場次詳情的<a href="pickup-detail.html#scan-quota">QR 管理與 QR 圖</a></li>
+</ul>
+<p class="note">依據：5.1.5.12 F4、F5、§5 第 6 項、§6 第 6 項；D499、D503。</p>
+
 <h2 id="entry"><span class="n"></span>從哪裡開啟</h2>
 <p>同一個視窗有四個開啟的地方，開啟時帶進來的內容不同。</p>
 <div class="tablewrap"><table>
@@ -208,8 +254,8 @@ table.stage td:nth-child(4){width:12%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.12-建立取貨場次.md</code>（v1.13）；<code>5.1.5.15-取貨場次詳情.md</code>（v1.13）F1；<code>0-設計規格書.md</code>（v4.90）§6.6、§7.2</li>
-    <li>決策：D111、D114、D240、D337、D338、D339、D393、D455、D470、D471</li>
+    <li>規格：<code>5.1.5.12-建立取貨場次.md</code>（v1.17）；<code>5.1.5.15-取貨場次詳情.md</code>（v1.20）F1；<code>0-設計規格書.md</code>（v5.36）§6.6、§7.2</li>
+    <li>決策：D111、D114、D240、D337、D338、D339、D393、D455、D470、D471、D499、D503</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -220,8 +266,12 @@ table.stage td:nth-child(4){width:12%}
     <li>視窗的標題，以及關閉、取消與填到一半離開時已填內容怎麼處理</li>
     <li>搜尋清單每一列顯示哪些資料，以及「已綁定」標示的樣子</li>
     <li>活動票券要不要能細到單張門票（目前選到活動與票種）</li>
+    <li>場次類型建立後能不能更改</li>
+    <li>掃碼領點場次建立時啟用／停用的預設值</li>
+    <li>QR 啟用開關建立時的預設值（目前寫預設啟用）</li>
+    <li>場次停用時不改各 QR 自己的開關，場次切回啟用時各 QR 維持原本狀態</li>
   </ul>
-  <p class="k">最近同步：2026-10-22（D471：恢復一個商品只屬於一個場次與「已綁定」；組合包另設的場次不讓成員商品標已綁定；對照 5.1.5.12 v1.13）；2026-10-22（D470：一個商品可以加入好幾個場次，拿掉「已綁定」；建立商品改在步驟 2 勾現場 QR 領取；對照 5.1.5.12 v1.12）；2026-10-20（D455：Scanner 密碼必填定案，依據補 D455）；2026-10-19（新建頁面；對照 5.1.5.12 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
+  <p class="k">最近同步：2026-11-02（D503：掃碼領點場次改在視窗裡逐列新增 QR，拿掉挑選商品與移出規則；對照 5.1.5.12 v1.17）；上一次 2026-11-02（D499：新增場次類型與掃碼領點場次的欄位；對照 5.1.5.12）；上一次 2026-10-22（D471：恢復一個商品只屬於一個場次與「已綁定」；組合包另設的場次不讓成員商品標已綁定；對照 5.1.5.12 v1.13）；2026-10-22（D470：一個商品可以加入好幾個場次，拿掉「已綁定」；建立商品改在步驟 2 勾現場 QR 領取；對照 5.1.5.12 v1.12）；2026-10-20（D455：Scanner 密碼必填定案，依據補 D455）；2026-10-19（新建頁面；對照 5.1.5.12 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
 </details>
 </div>
 </body>

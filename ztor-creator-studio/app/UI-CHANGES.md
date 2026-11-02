@@ -15,6 +15,412 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-02（四百六十一）· 現場核銷場次詳情：「新增項目」改在彈窗內搜尋加入，不再開編輯場次（B 反饋導入）
+
+**標籤**：release2.3
+
+使用者：「管理領取項目／新增項目不該開啟編輯取貨場次，只需要第二步可以添加項目的功能就好」。
+
+- 管理領取項目彈窗多一頁「新增領取項目」（標題左側 ← 返回、Esc 也回列表）：與建立／編輯場次第二步同一個搜尋加入（`.tag-input`＋`.combobox`），已選的是可移除 chip，底部「取消／加入」，至少選一項才能加入。加入後回列表、表格多出新列（進度 0／件數示意）、bento 的項目數跟著變。
+- 來源與規則照 5.1.5.12 F2：只有取貨方式含現場 QR 領取的單售商品與活動票券；已綁定其他場次的商品停用並標「已綁定」（D339）；組合包不在來源（D393）；表上已有的不再列出。
+- 來源資料單一：`partials/pickup-session-modal.js` 新增 `window.ZTOR_PARTIALS.pickupItemPool()`，回傳同一份 ITEMS（含 session 綁定），兩處不各自維護。
+- 移除仍走「編輯場次」（彈窗下方說明改為「要移除項目，請用『編輯場次』」）。新增 i18n `pk.ons.items.addtitle／addsub／addgo／cancel`，改寫 `pk.ons.items.note`。
+- 頁內 glue：新增頁的本體 `min-height:340px`，浮層選單才不會被彈窗裁掉（同建立場次彈窗 `[data-pks-form]` 的做法）。
+
+## 2026-11-02（四百六十）· 粉絲示範資料改成同一個母體、平台忠誠點數設定真的連動其他頁（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者要求修正原型「示範資料前後不一致、平台設定不連動」：名冊只有 9 位卻寫 1,283 位、KPI 與橫幅數字寫死、粉絲詳情的近 7 天入帳與最近活躍寫死、明細點數不照規格算、平台設定改了其他頁不變。本輪不改產品規則，規格沒寫清楚的照現行寫法並記 ASSUMPTIONS UIA-332。
+
+- **新 JS 模組 `js/loyalty-settings.js`**（`window.ztorLoyalty`）：平台忠誠點數設定按卡的「儲存」或切事件開關時，把值寫進 localStorage `ztor.loyaltySettings`；名冊、粉絲詳情、媒體庫、電子商店、分級設定、粉絲系統說明載入時讀。另向 `js/i18n.js` 註冊翻譯掛勾：分級名稱的 i18n 鍵有自訂名稱就換成自訂名稱（中英文同一個字），字串裡的 `[[token|預設]]` 換成目前天數、門檻與前 % 名。`js/i18n.js` 的 `t()` 加掛勾入口（沒載模組的頁照舊）。
+- **平台忠誠點數設定（`admin-platform-loyalty.html`）**：載入時讀回已儲存值與開關狀態，重新整理不再回到預設；修改紀錄仍只在這次載入的畫面上。修改紀錄卡底部加原型專用「還原預設」（ghost 小按鈕＋一行說明，理由：不是產品功能，不跟各卡的編輯／儲存搶位置）。
+- **`js/fans-roster.js` 改寫成完整母體**：1,340 位（固定種子），名冊原 9 位保留原點數與身分（林詩涵 874 是第 1 名、陳柏宇 821 是核心圈最低分、黃于潔 655 是超級粉絲最低分、李佳恩 512 是上榜粉絲最低分）。每一位都有自己的 P0 點數明細，點數＝明細淨額；名次、分級（D497 判定順序、名額捨去）、活躍、流失風險、已挽回、近 N 天營收都由明細與平台設定算。預設設定下活躍分級人數仍是 13／115／257／898（合計 1,283）。
+- **`js/tier-population.js`**：各級人數改由母體的活躍人數算（5.1.7 F3），跟著 S_floor、前 % 名、活躍視窗變；媒體庫、電子商店吃同一份。`media-vault.html`、`media-vault-popup.html`、`e-shop.html` 在它之前加載兩支新依賴。
+- **粉絲名冊（`fans-crm.html`）**：其餘 1,331 列由母體生成，全部依名次排、排名章寫真實名次；分級徽章、分級分頁人數、升級進度、狀態都依設定重算；「載入更多」回到規格的每次 25 列。四張 KPI（活躍粉絲／共 N 位、流失風險、活躍粉絲收入、平均忠誠點數）、流失風險小字與橫幅（各級人數、沉默 N/M 天）、群發收件對象人數、粉絲組成圓餅與圖例（含各級營收、Pareto 句）全部由母體算；KPI 說明與「近 N 天」讀平台設定的天數。分級設定彈窗的前 % 名與判定順序說明讀平台設定。
+- **粉絲詳情（`fan-detail.html`）**：點數明細改由這位粉絲自己的資料畫（`?fan=1`–`9` 與生成的 `?fan=g10`… 都有）。release2.4 只顯示 P0 事件：活動票券、電子商店商品（金額 × K_A × γ）、共創投票 150、按讚 5、收藏 10、邀請追蹤 400、線下掃碼領點（O43）、System Adjust；其餘示範列（每日簽到、連續簽到、留言、回覆、分享、發文、粉絲票選、項目支持、推薦 N 位新粉絲、帶金額的報到）掛 S118 只在最終版。第 1 位原本的電子商店購買列（親簽海報、巡演 T-shirt、黑膠加購組、周邊組合）點數照規格算後分給第 3、4、5、6 位與生成粉絲。「全站活動」分類分頁掛 S118（release2.4 沒有這類明細就不出現）；分類計數只算目前版本看得到的列。「近 N 天入帳」＝明細近 N 天淨值加總、「最近活躍」＝最近一筆可賺點數的行為（時間＋行為名），都由明細算；分級與狀態徽章每一位都依設定畫。
+- **「下一級目前無人／還差 0 分」統一說法**：名冊與詳情都顯示 100%，補充說明都寫「已達下一級門檻」（名冊在滑過提示、詳情在副標）；「已達最高級」只留給核心圈（沿用 UIA-324 第 8 點）。
+- **i18n**：新增明細列標題（票券、貼紙組、數位寫真集、共創投票、按讚、收藏、邀請追蹤）、最近活躍（今天／N 天前）、還原預設三個鍵；KPI 說明、營收副標、判定順序說明、群發對象、媒體庫「檢視身分」、前 % 名錯誤訊息改成讀設定的 token；`fans.kpi.active-meta` 改 `{n}`；分級設定說明例改 1,340／134。
+- **元件文件**：`design-system.md` 新增 Loyalty settings、Fans roster 兩列；`design-system.html` 無自帶 CSS 的 JS 元件群組加 §4.249、§4.250 兩張值域一覽卡（模組當場填數字）、TOC 與總表同步。
+
+## 2026-11-02（四百五十九）· 現場核銷場次詳情：照掃碼領點重排——標題區＋四個 bento＋兩個彈窗（B 反饋導入）
+
+**標籤**：release2.3
+
+使用者要現場核銷的場次詳情「照掃碼領點的邏輯重新設計」，先看 demo 後指示：領取項目要能新增、掃碼入口按鈕要有圖示、內容全部對照規格（5.1.5.15 F1／F2、5.1.5.12 F2）。
+
+- **標題區**：徽章（場次狀態）＋名稱，下方分行副標＝時間、地點、〔選填〕取貨說明（F1 的欄位，原頁沒顯示；示範資料填一句）。原本左側「場次」卡整張撤掉。
+- **四個 bento**（`.bento.pk-lp-kpis`，各 `bento--span-3`）：管理領取項目（`.kpi--tappable`，「5 項」，點開彈窗）、已核銷（含 `.stock-bar`）、尚未領取、買家（小字「一位買家可能領多件」）。進行中／已結束／尚未開始各一組（`data-pk-stage`，尚未開始新增第三組：0／80）。原右側「核銷數字＋Scanner 存取」卡撤掉。
+- **管理領取項目彈窗**：表格列＝取貨商品或活動票券（5.1.5.14 F2 名單範圍），欄＝領取項目／類型／已核銷／總件數（件＝領取單位，D240；數字為示意、總和對得上 bento，隨場次狀態換）。規格沒有「每人可領幾個」這個欄位，原頁側欄寫的 ×1／×2 撤掉。表尾虛線「＋ 新增項目」與下方說明都導向「編輯場次」同一個彈窗——可核銷項目的加入／移除、「已綁定其他場次」限制、移除後未核銷件回到「取貨場次待設定」都是 5.1.5.12 F2 的規則，本頁不另做表單。
+- **掃碼入口**：不佔 bento（它是動作、不是數字），移到頁首動作列、「編輯場次」左邊，按鈕帶 `qr-code` 圖示；彈窗內＝掃碼網址＋複製＋「顯示 QR code」（F2.1），密碼改成不顯示（F2.2「不可明文顯示」，原頁是明文＋複製鈕，複製鈕撤掉）。重設網址、停用／啟用、改密碼仍在「編輯場次」（先前已搬過去）。
+- **掃碼領點分支**：新增的 `[data-pk-ons-kpis]`、`[data-pk-ons-meta]`、`[data-pk-scanner-open]` 併進 `lpOnsiteBlocks()`，`?s=lps-…` 時收起。
+- **撤除**：頁內 `.detail-grid`／`.detail-rail` 版面 glue、`.pickup-rail` 兩欄卡；i18n 的 `pk.board.session/items/loc/when/left/noshow/redeemed.active/redeemed.ended`、`pk.f6.title` 九條死鍵。`pickup.css` 的 `.pickup-board__*` 等樣式本頁已不用，留待元件庫巡檢決定退場。
+- 新增 i18n：`pk.ons.*`、`pk.detail.note`（中英）。沒有新 DS 元件（彈窗與表格沿用 `.payout-modal`／`.ztor-table`／`.pk-lp-addline`）。
+
+## 2026-11-02（四百五十八）· 平台忠誠點數設定：改成分頁＋每頁一張卡、預設唯讀就地編輯（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者看過格式示範頁（`admin-platform-loyalty-demo.html`，未追蹤、本輪刪除）後裁示「套用」，示範頁的兩個設計一併採用：事件開關任何時候都能切（D508）；本頁與平台費率、平台優惠兩頁頁型不一致，本輪只改本頁、記 STYLE-DECISIONS Q138 待裁決。
+
+- **頁型**：`.list-toolbar` 底線分頁由「設定／修改紀錄」改成「賺分事件／分級／粉絲管理指標／其他設定／修改紀錄」（Q38，標籤包 span）；每個分頁一張 `.card`。卡頭 `.card__head--wrap` 左一句說明、右「變更歷史」（切到修改紀錄並篩選該類）＋「編輯」。預設唯讀，按編輯就地切成輸入框（`.tier-ov__read`／`__edit` 兩面、格子恆高、切換不跳動），出現取消／儲存，以卡為單位比對、取消還原成已儲存值。全域「儲存」與常駐「已儲存」橫幅撤除；三種生效類別的說明改放修改紀錄表下常駐，各卡卡頭或卡底寫該卡的生效時點。
+- **賺分事件**：事件為列、「給分／倍率｜滾動視窗｜上限｜開關」四欄；K_A 一列在表上方。開關不在唯讀／編輯兩面裡（D508）：唯讀時也能切、立即生效、當下記一筆；編輯中切了、再按取消，開關不還原。A6（S143）第一格寫「在商品與場次設定」，完整說明移到卡底。
+- **分級**：照粉絲分級設定彈窗格式，四級為欄（欄頭徽章跟著已儲存的顯示名稱）、顯示名稱與前 % 名為列；S_floor、降級緩衝、每週重算（唯讀）放卡內 `.settings-row`。
+- **粉絲管理指標**：三個指標為欄（`.tier-ov--cols3`）、「天數」「影響哪裡」為列，後者編輯態鎖住。
+- **其他設定（S132）**：全站活動（`--cols3` 對照表：給分｜上限｜入帳方式，候選列鎖住）、職務分點（S108）、賽季加倍（範圍與倍率欄 S109；新增彈窗不變，新增／移除當下記一筆）、衰減、平台常數、誠信規則、回填（S111）同一張卡內用 Q71 第 1 級分組（`.group-divider`＋`.group-title`）。release2.4 整個分頁與篩選鈕收起，其餘四個分頁可見；release2.3 仍看不到本頁（路由不變）。
+- **修改紀錄**：欄位不變（時間、操作者、參數、原值、新值、生效）；卡頭右側 `.filter-tabs` 依類別篩選，空類別顯示一列「這個類別還沒有紀錄。」。
+- **元件 promote**：`card.css` 新增 `.card__head--wrap`；`tier-overview.css` 新增 `--cols3`、`__cell--wrap`、`__cell--fluid`。`design-system.md`／`.html` 同步（Card 的 Class API 與 demo、Tier overview 的 anatomy、兩張新 demo、Do & Don't 更正「別加輸入框」）。頁面沒有 `<style>`。
+- **i18n**：新增 `ploy.tab.kpi`、`ploy.tab.other`、`ploy.history`、`ploy.edit`、`ploy.ev.head`、`ploy.ev.col.rate`、`ploy.ev.a6-short`、`ploy.tier.eff`、`ploy.kpi.head`、`ploy.kpi.days`、`ploy.kpi.where`、`ploy.other.head`、`ploy.log.all`、`ploy.log.empty`；其餘沿用既有 `ploy.*`。
+- 規格：5.1.0.8 頁面佈局與頁面狀態改寫（呈現參考、非約束）、F9 補開關互動規則（D508、Plan576）。假設見 ASSUMPTIONS UIA-331。
+
+## 2026-11-02（四百五十七）· 掃碼領點場次詳情：場次資訊併進標題照活動詳情頁、統計與領取項目合成單卡（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者反饋（附截圖標 A／B／C）：「C 併到標題 header」「A、B 放在同一行」；並要求先重新思考 UX 再設計 UI（任務順序＝辨識場次→看進度與開關→管 QR→查領取紀錄）。
+
+- **場次資訊（C）**：左側「場次資訊」卡撤除，地點與期間（圖示＋一行）放在標題與狀態徽章正下方；建立者、建立時間、場次 ID 縮成再下一行小字。頁內 `.pk-lp-headmeta`，只在掃碼領點場次顯示。
+- **A、B 同一列**：左＝領取項目（B，吃剩餘寬度，表格與表頭不變）、右＝統計與發點開關（A，固定 340px）；≤1100px 照 detail-rail 收單欄。因表格變窄，收欄門檻由容器 560px 調成 640px（先收每次點數與已發點數）。
+- **標題區照活動詳情頁**（使用者附 event-detail 截圖「1 參考 2」）：徽章列（進行中、啟用）移到標題上方；標題下改用 `.page-intro__sub--stack` 分行副標（日曆圖示＋期間、地點圖示＋地點），建立者／建立時間／場次 ID 是最後一行小字。徽章列包成頁內 `.pk-hd-badges`，現場核銷場次的標題區同一結構。
+- **領取項目彈窗重新思考 UX 後重做**（使用者：「可以重新思考這裡的 UX，再重新設計 UI，包含開啟的 QR 子頁畫面或新增」）。依任務頻率分層：看進度與下載最常做、新增其次、編輯／停用／刪除最少、整場發點開關是場次層級：
+  - **整場啟用／停用移到頁首**：它管整個場次、不是某一個 QR，從彈窗移到頁首動作列（「編輯場次」左邊）。使用者：「這不該叫發點」「是停用／啟用的 toggle」——維持開關（toggle），標籤跟著狀態顯示「啟用」或「停用」（不叫「發點」，也不做成「全部停用」按鈕）；滑過看說明，停用仍先跳確認，目前狀態同時反映在標題上方的徽章。
+  - **bento 與統計彈窗再改**（使用者標四處：「1 管理領取碼」「2 刪除」「3 放第一個」「4 全部都放同一個表格，不用分 bento」）：
+    - 原「啟用中的 QR」bento 改名「管理領取碼」，**排到四個 bento 的第一個**；底下小字「查看與管理 QR」刪除（值仍是啟用中數量／共幾個）。彈窗標題同步為「管理領取碼」（取代前一條的「QR 管理」）。
+    - 「領取統計」彈窗不再用四塊 KPI，**全部放進同一張表**：每個 QR 一列（領取次數、領取粉絲數、占粉絲比例、名額使用率、已發點數），最後一列「合計」（領取次數＝加總、領取粉絲數＝不重複人數所以小於各 QR 加總、名額使用率＝總已領／總名額、已發點數＝加總）；註腳說明合計列的算法。i18n 新增 `pk.lp.stats.col.claims`、`pk.lp.stats.total`，刪除 `pk.lp.stats.claims`、`pk.lp.stats.avg`、`pk.lp.d.qron.sub`。
+  - **窄螢幕收尾**：領取統計彈窗的表格在 375 寬放不下（英文欄名長，出現橫捲），≤560px 時收窄欄距與表頭字級，中英文都貼齊內容區、不再橫捲。
+  - **彈窗標題改名**（使用者：「標題名稱不對」）：「領取項目」改為「QR 管理」（與第四個 bento「啟用中的 QR」、小字「查看與管理 QR」同一組用語）。i18n 新增 `pk.lp.qrs.title`，`pk.lp.d.qron.sub` 改為「查看與管理 QR」。
+  - **清單只留看與拿**：每列＝名稱、每次點數、已領／總名額（量條）、已發點數、狀態，列尾只剩「下載」圖示（不用進頁面就能存 PNG）；整列點進該 QR 的頁面。編輯、停用、刪除三顆圖示鈕從列尾撤掉。
+  - **新增**：表格最後一列是整列寬的虛線「＋ 新增 QR」（取代上一版的輸入列），點了在同一個彈窗換到新增頁——左邊 QR 卡即時預覽（名稱、每次點數一邊打一邊更新，預覽不能下載）、右邊三個欄位；建好直接進新 QR 的頁面（下一步多半是下載印出）。
+  - **QR 頁**：左 QR 圖與下載、右明細（多一列「狀態」），明細下方是這個 QR 自己的動作——編輯、停用／啟用、刪除（有人領過時刪除停用並寫出原因）。編輯頁也有預覽；「←」與 Esc 回到上一層（從 QR 頁進的編輯回 QR 頁，從清單進的新增回清單），刪除後回清單。
+- **領取項目彈窗：同一個彈窗內換頁、新增改成表格最後一列**（使用者：「QR 頁面打開後沒有層級關係，QR 應該可以回到上一頁，類似這種 UX 請重新思考」；「這要在表單上，UI 格式要和表單一樣」）：
+  - 從表格點進某個 QR、或按列尾的編輯／刪除，不再疊一個新彈窗，而是在同一個「領取項目」彈窗裡換頁：標題換成 QR 名稱（或「編輯 QR」「要刪除這個 QR 嗎？」），左側出現「←」回領取項目；Esc 先回上一層，在領取項目那一層才關閉。原本獨立的 QR 圖彈窗與編輯小表單彈窗撤除，內容搬進同一個彈窗（`data-pk-lp-v="list|qr|form"`，`lpView()` 切換）。QR 檢視改兩欄：左 QR 圖與下載、右明細。停用確認仍是另一層確認框（確認類動作維持疊層）。
+  - 新增 QR 改成表格最後一列（`tfoot`）：輸入框對齊表頭欄位（名稱｜每次點數｜總名額），列尾「新增」；錯誤顯示在下一列。表格收起「每次點數」欄時，點數輸入改疊在總名額上方。i18n 新增 `pk.lp.add.go`，`pk.lp.add.name.ph` 縮短為「新增 QR 名稱」。
+- **領取紀錄回到原位、第三個 bento 改開「領取統計」彈窗**（使用者：「領取粉絲數的 bento 應該是開啟統計，不是列表；列表要在原本的位置」）：領取紀錄列表（工作列＋清單，`.product-list--inset`）搬回頁面四個 bento 下方；第三個 bento 的彈窗改成「領取統計」——上排四塊 compact KPI（領取粉絲數〔不重複〕、領取次數、平均每位粉絲領取、已發出點數），下面每個 QR 一列（領取人數、占粉絲比例、名額使用率、已發點數）。同一帳號同一個 QR 只能領一次，所以每個 QR 的領取人數＝已領次數；領取粉絲數為示範推估（呈現假設），附一行註腳。`.product-list--inset` 與 design-system 條目因此恢復（前一條「已移除」作廢）。i18n 新增 `pk.lp.stats.*`。
+- **領取項目彈窗再改**（使用者圈出：「1 移除」「新增 QR 可以在表單中直接輸入創建」）：QR 欄名稱前的 QR 圖示移除；操作列的「新增 QR」鈕撤掉，改在表格底下放一列輸入（QR 名稱、每次點數、總名額＋「新增 QR」鈕），Enter 或按鈕建立，驗證沿用 validQr、錯誤顯示在列下（手機寬度折兩排）；編輯／刪除仍用小表單。i18n 新增 `pk.lp.add.*`。
+- **兩個彈窗重新設計＋領取紀錄也收進彈窗**（使用者：「重新設計 popup」「第三個 bento 點擊後也有 popup，領取狀態的訊息應該在這個 popup」）：
+  - 第三個 bento（領取粉絲數）也改成 `.kpi--tappable`，點開「領取紀錄」彈窗（`.payout-dialog--wide`）：工作列（分頁＋收合搜尋）＋清單＋筆數與帳本說明；頁面最下面的領取紀錄整段移除，頁面只剩標題與四個 bento。紀錄清單點數欄靠右（頁內 glue）。
+  - 「領取項目」彈窗重做：標題列只放標題與關閉；內容先一條操作列（左＝發點開關＋說明句「停用時不論時間…」，右＝新增 QR），下面是 QR 表格；列尾的 ⋮ 選單改成編輯／停用（啟用）／刪除三顆圖示鈕（彈窗裡放得下，也不再被內容區裁掉；有人領過的 QR 刪除鈕停用、滑過顯示原因）。
+  - 新增／編輯 QR 小表單：兩個數字欄補示範值（例：2、例：500），不再是空白欄。
+  - i18n 新增 `pk.lp.qr.f.points.ph`、`pk.lp.qr.f.total.ph`。
+- **第四個 bento＋領取項目改 popup**（使用者圈出右上角：「新增第四個 bento，點擊後開 popup，可看到領取項目那一塊的資訊，這樣就不用攤出來」）：統計列變四塊 `.kpi.bento--span-3`，第四塊是「啟用中的 QR」（例：2／共 2 個，小字「查看與管理領取項目」，`.kpi--tappable` 整塊可點、右上 chevron）。原本攤在頁面上的領取項目區塊整個拿掉，改成 `.payout-dialog--wide` 彈窗：標題列＝領取項目＋發點開關＋新增 QR＋關閉，內容＝同一張 QR 表格（整列點開 QR 圖、⋮＝編輯／停用／刪除）。QR 圖與新增編輯小表單疊在這個彈窗上，Esc 逐層關；頁面捲動鎖定改由三個彈窗共用的 `lpSyncLock()` 判斷。啟用中數量＝`enabled !== false` 的 QR 數。i18n 新增 `pk.lp.d.qron`、`pk.lp.d.qron.total`、`pk.lp.d.qron.sub`。同日前一條「領取項目改單層」所述的區塊已移進彈窗，單層的做法保留。
+- **領取項目改單層**（使用者圈出：「不要有兩層 layers」）：區塊裡的表格不再包 `.admin-table-wrap` 自帶外框（卡中框），改直接坐在區塊裡、只留列分隔線；第一欄、最後一欄的左右內距歸零，文字與區塊標題、右上操作切齊。順帶：外框拿掉後，⋮ 選單的毛玻璃不再被祖先的 backdrop-filter 影響，前一版為此加的 `backdrop-filter:none` 一併移除。
+- **統計改三個 bento、領取項目回到有標題的區塊**（使用者圈出統計與操作列：「改成三個 bento，重新設計這個區塊的 UI」）：統計拆成三塊 `.kpi.bento--span-4`——已領次數（328／700 已領＋量條）、已發出點數、領取粉絲數（小字「不重複」）；下面「領取項目」區塊有標題列，右側放發點開關與「新增 QR」，表格照舊。取代上一條單卡的「卡頭統計＋操作一列」（那一列的開關與按鈕懸在卡片中間、與統計擠在一起）。
+- **標題區再調**：拿掉標題下的建立者／建立時間／場次 ID 小行（使用者「刪除」；資料仍在場次資料裡，只是頁面不顯示）；「編輯場次」移到右上角，與麵包屑同一列（`.detail-topbar`，同活動詳情頁；本頁不接黏附腳本）。
+- **採用單卡版面**（使用者「採用單卡」）：第一屏只剩一張卡——卡頭一列＝統計（已領／總名額＋量條、已發出點數、領取粉絲數）＋發點開關＋「新增 QR」，卡身＝全寬 QR 表格。取代上面「A、B 同一列」的左右兩塊；表格因此回到全寬，六欄都放得下（窄寬時照容器收欄）。發點說明句（停用時不論時間…）收成開關的 title 提示。
+- **⋮ 選單透出下層徽章**：選單是半透明毛玻璃，但祖先 `.admin-table-wrap` 也有 backdrop-filter，巢狀失效、下一列的徽章透到選單上；頁內把表框的 backdrop-filter 取消（表框本來就坐在玻璃卡裡）。
+- 先前（#456）移出左卡的領取項目區塊與領取紀錄左右內距（`.product-list--inset`）不變。
+
+## 2026-11-02（四百五十六）· 掃碼領點場次詳情：領取項目獨立成有外框的表格區塊、場次資訊回到鍵值列、領取紀錄左右內距（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者反饋（附截圖）：「topbar 這種下面的東西沒有 section，就要左右都有 padding」；「這裡要有表格，現在 UI 很零散，請重新思考整個 section 的 UI」。
+
+- **領取項目**：從左側場次資訊卡搬出，獨立成第一屏下方一張全寬區塊（標題「領取項目」＋右側「新增 QR」）。表格改包 `.admin-table-wrap.admin-table-wrap--fluid.admin-table-wrap--menu`（自帶外框與圓角，同後台忠誠點數設定的表），寬度夠了，「每次點數」恢復成獨立一欄：QR／每次點數／已領／總名額（量條）／已發點數／狀態／⋮。整列點開 QR、⋮ 選單行為不變。
+- **窄寬收欄**：依表格容器寬度收——≤560px 收起每次點數與已發點數（每次點數改在名稱下小字），≤380px 再收起狀態（改名稱下徽章）並收窄欄距；中英文在 375 寬都不超出外框。
+- **場次資訊卡**：領取項目搬走後，場次 ID、建立者、建立時間由卡底一行小字改回鍵值列，與地點、時間同一套對齊；左右兩卡高度也因此接近。
+- **領取紀錄**：清單直接接在工作列下、外面沒有卡片，表頭與每一列左右各退 24px，第一欄對齊第一個分頁的文字、點數欄靠右對齊搜尋鈕。
+- **元件**（`ds-components/product-list.css`）：新增 `.product-list--inset`（無卡片包覆、接在工作列下的清單用）；`design-system.md`／`.html` 的 Product list 條目同步。
+- **i18n**：新增 `pk.lp.items.col.per`；刪除 `pk.lp.d.meta`。
+
+## 2026-11-02（四百五十五）· D507 更正 D505：「認識粉絲系統」入口恢復在粉絲名冊頁首，其他頁一律移除（B 反饋導入＋C 撤除）
+
+**標籤**：release2.4
+
+使用者更正 D505 第 2 項：「截圖中，這裡應該要有『認識粉絲系統』的入口，現在變成只有在媒體庫有，要改過來」；並裁決其他頁的同一顆按鈕「移除，只留在粉絲管理的頁面」。上游 `documents/decisions.md` D507、`backup_plan.md` Plan575；規格 `5.1.7`、`5.1.7.5`、`5.1.7.2`、`5.1.7.4`、`5.1.7.4.1`、`5.1.7.6`、`5.1.7.7`、`0-設計規格書.md`（v5.38）。
+
+- **恢復**（`fans-crm.html`）：頁首右側 `<a class="btn btn--outline page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">`，markup、位置與 c8385a59 移除前相同（`.page-intro` 直接子元素、在左側文字區之後）；箭頭照舊由 `.page-intro__help::after` 的 CSS 畫，不另加 `<i>`。
+- **移除**（同一顆按鈕，換成一行 D507 註解）：`media-vault.html`、`media-vault-popup.html`、`tier-settings.html`（舊的分級設定備份頁）、`tier-benefits.html`、`brand-campaigns.html`、`brand-campaign-detail.html`、`fan-analytics.html`、`audience-report.html`。`fan-detail.html` 本來就沒有，維持。`.page-intro` 是 `justify-content: space-between`，各頁的動作列（`.page-intro__actions`）仍靠右。
+- **不動**：`fans-guide.html` 本頁、`js/fans-guide-firstrun.js` 的第一次自動跳轉（各頁 `<script>` 保留）、`js/sidebar.js`／`js/devtools.js` 的路由放行。i18n 鍵 `fans.btn.explain` 由名冊使用，保留；沒有其他頁專用的鍵要清。
+- **元件文件**：`ds-components/page-intro.css` 註解改寫消費頁（只剩名冊）；`design-system.md` §4.44 與 `design-system.html` Page intro 規格表補「`.page-intro__help` 只在 `fans-crm.html`」。
+- 規則手冊同步：`rulebook/fans-roster.html`（恢復「認識粉絲系統」一列）、`fans-guide.html`（常駐入口只在粉絲總覽；概述、流程圖、步驟清單同步）、`fans-roster-detail.html`、`fans-vault.html`、`fans-tier-settings.html`、`fans-benefits.html`、`fans-campaigns.html`、`fans-campaign-report.html`（刪粉絲系統說明一列）。
+
+---
+
+## 2026-11-02（四百五十四）· 掃碼領點場次詳情：領取項目改有欄位的表格、整列點開 QR、統計依重要性重排、領取紀錄間距（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者反饋（附截圖）：「要有欄位」「並且整列都可以點擊開啟，不用特別用按鈕」「間距要有」；統計資訊依重要性重排的提案，使用者回覆「照建議改完」。
+
+- **領取項目**：`.pk-items` 鍵值列改成 `.ztor-table.ztor-table--fluid.ztor-table--menu`，欄位＝QR（圖示＋名稱，名稱下小字「每次 +N 點」）、已領／總名額（數字＋細進度條 stock-bar）、已發點數（已領×每次點數）、狀態（啟用中 info；已停用、名額已滿 neutral）、⋮。「每次點數」原本是獨立一欄，驗收發現英文欄名在雙欄版面的左卡放不下，改成名稱下的小字。「開啟」按鈕拿掉，整列可點開 QR popup（Enter／空白鍵亦可，aria-label「查看 QR 圖：名稱」），點 ⋮ 與選單項目不觸發整列。欄名空間不夠時才折行；依表格實際可用寬度（container query，頁內 `.pk-lp-items`）分兩段讓位：≤430px 收起「已發點數」，≤340px 再收起「狀態」欄、改在名稱下標小徽章（只標已停用、名額已滿）。被收起的數字在 QR popup 看得到。
+- **元件**（`ds-components/table.css`）：新增 `.ztor-table--menu`（放行表格 overflow，⋮ 選單不被切掉）、`.ztor-table__opt`（窄螢幕收起的欄）、`.ztor-table__row:focus-visible`（鍵盤焦點框）；`design-system.md`／`.html` 的 Table 條目同步。
+- **右側統計**：大數字改「已領／總名額」（328／700 已領）＋進度條；下面只留「已發出點數」「領取粉絲數」（小字「不重複」）；拿掉「QR 數」。操作區（發點啟用開關）照舊。
+- **QR popup**：QR 圖＋下載，下面列這個 QR 的已領、總名額、已發點數、建立者、建立時間、ID。
+- **場次資訊卡**：鍵值列只留地點、開始與結束時間；場次 ID、建立者、建立時間收成卡片底部一行小字。
+- **領取紀錄間距**：頁內樣式原本把表頭最小高度也壓成 0，欄名貼上工作列；改成只壓資料列，表頭恢復元件的 44px，與現場核銷名單同距。
+- **i18n**：新增 `pk.lp.items.*`、`pk.lp.d.hero.total`、`pk.lp.d.fans.sub`、`pk.lp.qr.id`、`pk.lp.d.meta`；刪除 `pk.lp.d.qropen`。
+
+## 2026-11-02（四百五十三）· D506 粉絲名冊移除工具列排序選單、粉絲詳情移除頁首「分級設定」、媒體庫「查看／播放」改點成效格開彈窗（A 規格導入＋C 撤除）
+
+**標籤**：release2.4
+
+上游 `documents/decisions.md` D506（使用者裁決，看過原型後的三項調整；前兩項不採用 dev 頁此項）、`backup_plan.md` Plan574；規格 `5.1.7-粉絲關係管理.md`、`5.1.7.7-粉絲詳情.md`、`5.1.7.3-媒體庫.md`、`0-設計規格書.md`。
+
+- **粉絲名冊工具列排序選單撤除**（`fans-crm.html`）：`details#fans-sort`（排行榜〔點數〕／分級）與頁內接線（F6 區塊）移除，排序只留表頭點擊（`js/table-sort.js` 原有行為：第一下由高到低、第二下由低到高、第三下回原序）。連帶清理：i18n `fans.sort.label`／`fans.sort.rank`／`fans.sort.tier`、icon registry 的 `arrows-sort`（全庫無其他使用）、`js/table-sort.js` 上一輪為選單加的 `window.ztorTableSort.set()` 與內部 `__ztorSortSet`／`__ztorSetSort`（全庫無其他呼叫者；`scan()` 保留）。
+- **粉絲詳情頁首「分級設定」入口撤除**（`fan-detail.html`）：`.fan-hero__actions` 只剩「傳訊息」。i18n `fan-detail.btn.tier-settings` 刪除（無其他使用）。名冊自己的「分級設定」按鈕與彈窗不動；`fans-crm.html` 的 `?tier=<名稱>` 深連結處理保留（目前沒有頁面帶這個參數，但仍可用）。
+- **媒體庫「查看／播放」改彈窗**（`media-vault.html`、`js/media-vault.js`）：成效格下面常駐的 `section.vault-plays` 移除；成效第一格（現在已解鎖的人數／上架後可解鎖的人數）在預設檢視時加 `.vault-bento__tile--open`＋`role="button"`＋`aria-haspopup="dialog"`，標籤後接一個 xs `chevron-right`（`__go`），滑鼠點擊或 Enter／Space 開彈窗；滑過仍是 D505 的分級提示，兩者並存。彈窗沿用本頁確認視窗殼（`openConfirm`，新增 `quiet` 選項讓唯一一顆按鈕走 outline「關閉」），內容是原本的「累計 N 人」＋ Meter list／Stock bar（資料與計算不變，`renderPlays` 改名 `playsBody`）；庫房沒有內容時放 Empty card「還沒有內容」。新 i18n：`vault.plays.close`、`vault.plays.empty.title`、`vault.plays.empty.text`。
+- **元件**：`ds-components/vault-stage.css` 的 `.vault-plays*` 規則移除（零消費），新增 `.vault-bento__tile--open`（hover 照 STYLE-DECISIONS Q136：上浮 `--clickable-card-lift`＋底色 `--clickable-card-hover-bg`、減少動態不位移；`:focus-visible` `--ring` 外圈）與 `__go`；`design-system.md` §4.246（Anatomy、States、Token usage、Dependencies、Consumers）、Meter list／Stock bar 的 consumer、Sortable 對外 API 段同步；`design-system.html` Vault stage 兩張第一格 demo 改成可點、移除 `.vault-plays` demo、新增彈窗展開（有資料／空庫房）demo、組成多 Empty card 與 Payout dialog chip，Sortable 卡說明同步。
+- 規則手冊同步：`rulebook/fans-roster.html`、`fans-roster-detail.html`、`fans-tier-settings.html`、`fans-vault.html`。
+
+---
+
+## 2026-11-02（四百五十二）· 編輯態主鈕「儲存變更」改名「儲存」（B 反饋導入）
+
+**標籤**：release2.3
+
+使用者反饋：「改名儲存」（商品細節頁編輯態右上主鈕）。
+
+- `product-detail.btn.save-changes` 的文字由「儲存變更／Save changes」改「儲存／Save」；用同一個鍵的組合商品細節頁、商店設定的編輯態主鈕一併跟著改，維持三處一致。商品細節頁的後備文字同步。
+- 未動：其他各自獨立的「儲存變更」鍵（`ee.save`、`settings.btn.save`、`cp.save.changes`、`pks.save` 等）。
+
+---
+
+## 2026-11-02（四百五十一）· D505 媒體庫成效格分級分佈改滑過提示、粉絲名冊移除「認識粉絲系統」入口、媒體庫「發布」改稱「上架」（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/decisions.md` D505（使用者裁決，看過原型後的三項調整）、`backup_plan.md` Plan573；規格 `5.1.7.3-媒體庫.md`、`5.1.7-粉絲關係管理.md`、`5.1.7.5-粉絲系統說明.md`、`0-設計規格書.md`。
+
+- **成效第一格（F3）**：四分級「已／總」（核心圈、超級粉絲、上榜粉絲、一般粉絲）不再常駐格內，改成滑過或 focus 第一格才浮出的提示；格內常駐只留「N 位粉絲・佔全部 M 位 X%」。沿用站上既有的 Stock tip 貼格變體（`.stock-tip--anchored`，與商店設定優惠碼「範圍」欄同一顆），不新增樣式；格子本身 `tabindex="0"`＋`aria-describedby`，觸控點一下會 focus 也會打開，Esc 收起。檢視身分開著時第一格照舊換成該角度的結果、沒有提示。`js/media-vault.js` `renderBento()`＋新增 `wireTip()`；`media-vault.html` 多連 `stock-tip.css`。
+- **元件清理**：`ds-components/vault-stage.css` 的 `.vault-bento__tiers`／`__tier` 規則移除（零消費）；`design-system.md` §4.246 與 §4.56（Stock tip 第三個消費者）、`design-system.html` Vault stage demo（第一格改掛 stock tip、另加一張「滑過或 focus」展開狀態 demo、組成多一個 Stock tip chip）與 Stock tip 卡的 consumer 同步。
+- **粉絲名冊**（`fans-crm.html`）：頁首「認識粉絲系統」按鈕移除（不採用 dev 頁此項）。`fan-detail.html` 本來就沒有這個入口。`fans-guide.html` 與 `js/fans-guide-firstrun.js` 的第一次自動跳轉不動。i18n 鍵 `fans.btn.explain` 與 `.page-intro__help` 樣式仍有其他粉絲模組頁在用（`media-vault.html`、`tier-settings.html`、`audience-report.html` 等），保留。
+- **「發布」改稱「上架」**（媒體庫範圍）：頂列主按鈕、上架確認視窗標題、上架前提醒（沒有內容／沒有人進得來／無條件）、草稿提示、分享連結停用說明、建立流程第 3 步按鈕與提示，zh 改「上架」，en 照既有狀態字 Listed／List now／Relist 統一用 List（Publish → List、“Publish it” → “List it”、once published → once listed）。共 15 個 `vault.*` 鍵（鍵名不改）；DS 文件內媒體庫段落同步。
+
+## 2026-11-02（四百五十）· D503 點數 QR 改在取貨管理的掃碼領點場次裡產生：撤除電子商店「忠誠點數」數位類別與 D501 草稿機制（A 規格導入＋C 撤除）
+
+**標籤**：release2.4
+
+上游 `documents/decisions.md` D503（修訂 D499、作廢 D501）、`backup_plan.md` Plan571、規劃書第 3 版；規格 `5.1.5.12` F5、`5.1.5.15` F6、`5.1.5.11`、`5.1.5.2`、`5.1.5.1`、`5.1.5`、`商品分類與模組應用.md`、`0-設計規格書.md` §4.1 §4.4 §7.1 §7.2 §7.5、`5.1.0.8` F9、`5.1.7.7` §2.4；規則手冊 6 頁已同步。
+
+- **資料**：`partials/pickup-session-modal.js` 的 `window.ztorScanEarn` 改成「場次.qrs[]」唯一一份（QR id 前綴 `qr-`，sessionStorage `ztor.scanearn.v3`；場次啟用沿用 localStorage `ztor.lp.enabled`）；新增 `createSession`、`updateSession`、`addQr`、`updateQr`、`setQrEnabled`、`removeQr`、`validQr`；領取紀錄改指向 QR。`js/products-store.js` 的 `window.ztorLoyaltyProducts` 整段撤除（留墓碑註解）。
+- **建立場次彈窗**：掃碼領點的可領項目改成在彈窗裡逐列新增 QR（名稱、每次領取點數、總名額），至少一列才能建立；編輯時名額低於已領被擋、有人領過的 QR 不能移除。
+- **取貨管理**（`pickup.html`）：撤除 `?new=scan&lp=` 預選商品入口；列摘要改讀 QR（N 個 QR · 已領 M 次）。
+- **場次詳情**（`pickup-detail.html`）：標題列加「新增 QR」；每列 ⋮ 選單＝編輯、停用／啟用、刪除（有人領過的刪除項停用並說明）；停用的 QR 標「已停用」；QR popup 拿掉「查看商品」、改顯示建立者與建立時間；領取紀錄依 QR 篩選。
+- **C 撤除（電子商店）**：`create-product.html` 的忠誠點數類別、所屬場次欄、上架鎖、就緒檢查、QR 預覽與 lp* 函式；`product-detail.html` 的忠誠點數分支；`e-shop.html` 的忠誠點數清單列、建立後通知彈窗與計數。數位型別卡（S140）在 release2.4 因沒有可建類別自然收起；最終版文檔、會員卡照舊。
+- **功能表**：S142 改 ⚫ 退場（D503 撤除）；O43 描述改為「在場次裡新增與管理 QR」；`js/devtools.js` FEAT_TIER 的 S142 改 `'retired'`。
+- **元件**：points-qr 的 consumer 改成只有 `pickup-detail.html`（`design-system.md`／`.html` 同步）。
+- **i18n**：刪除 `cp.lp.*`、`product-detail.lp.*`、`e-shop.lp.*`、`cp.dsub.loyalty` 與 12 個不再使用的 `pk.lp.*`；新增 26 個 QR 管理鍵。
+
+## 2026-11-02（四百四十九）· 單一選項商品也有 SKU 欄：建立商品庫存區與商品細節頁設定分頁（B 反饋導入；D504）
+
+**標籤**：release2.3
+
+使用者反饋：「電子商店的單品中，單選項商品，設定庫存要新增 SKU 欄位。現在應該只有多選項商品有 SKU 欄位」（附 Shopify 庫存設定截圖）；再指示「要用開關開啟 SKU」。
+
+- 建立商品（實體、單一選項）：庫存設定的開關群組多一個「SKU」開關，打開才出現 SKU 欄（選填）；關掉清空。多選項不顯示（SKU 仍在逐選項組合表各列）。建立時存在商品記錄的 `sku`。
+- 商品細節頁設定分頁（實體、單一選項）：庫存設定開關群組多一個「SKU」開關，有 SKU 的商品預設開；編輯態可開關與改值，儲存寫回 `product.sku`（關掉＝清空），庫存分頁的單一規格列讀這個欄位顯示在名稱下。
+- 不做：條碼（Barcode）欄、SKU 唯一性檢查（見 D504 待確認）。
+- 新 i18n：`cp.sku.title`、`cp.sku.sub`。
+
+---
+
+## 2026-11-02（四百四十八）· 掃碼領點場次詳情三項反饋：領取項目「開啟」按鈕＋QR 圖示、右側改統計與操作面板、領取紀錄改現場核銷名單版型（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者反饋（附截圖）：「1.改成開啟的按鈕 2.前面加一個 QR 的 icon」「這裡是統計與操作的面板」「指出的地方要用截圖（現場核銷）中的設計」。
+
+- **領取項目列**：列尾 QR 圖示按鈕改成文字按鈕「開啟」（`btn--outline btn--sm`），點了照舊開 QR popup；商品名稱前加 QR 圖示，副標與名稱左緣對齊。新增 `ds-components/kv-list.css` 的 `.kv__k--icon` modifier，`design-system.md`、`design-system.html` 已同步。
+- **右側卡**：比照現場核銷右卡改成上半統計（大數字＝已領次數、進度條＝已領／總名額、已發出點數、領取粉絲數、QR 數）、下半操作（小標「發點」＋啟用開關，停用前確認照舊）。
+- **領取紀錄**：不再包在 outlined 卡裡，改成現場核銷名單同款：上方 `.list-toolbar`（左：全部商品／各商品分頁帶數量；右：搜尋，可依粉絲名稱過濾），下方同款列表；欄位維持時間、粉絲、商品、點數，四欄欄寬寫在頁內 `<style>`。
+- **i18n**：新增 `pk.lp.*` 若干鍵（開啟、統計列、搜尋）。
+
+## 2026-11-02（四百四十七）· D501 忠誠點數 QR 必須屬於場次：建立時「所屬場次」欄、沒有場次＝草稿、無 QR 圖、不能上架（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/decisions.md` D501（修訂 D499）、`backup_plan.md` Plan569；規格 `5.1.5.2` F16、`5.1.5.1` §2.20、`5.1.5` F4、`5.1.5.12` F5、`5.1.5.15` F6.2、`0-設計規格書.md` §7.1 §7.5；規則手冊 `eshop-create-digital.html`、`pickup-create.html`、`pickup-detail.html` 已同步。
+
+- **建立商品**（`create-product.html`）：忠誠點數表單新增「所屬場次」（既有掃碼領點場次＋「之後再指定」，必選、列入就緒檢查）；選「之後再指定」時上架設定鎖在不上架（其他選項停用並附說明）；右欄與第三步預覽改成占位「加入場次後才會產生 QR」；建立後依有無場次存草稿或照上架設定。
+- **商品細節**（`product-detail.html`）：沒有場次時 QR 位置是占位、沒有下載、上架鈕停用並說明，可在頁內選場次加入；有場次且沒人領過可「移出場次」（先確認、下架並退回草稿）；有人領過只顯示「只能下架」。
+- **電子商店清單**（`e-shop.html`）：沒有場次的忠誠點數列顯示草稿＋「未加入場次」；建立完成提示依有無場次換文案與按鈕。
+- **場次彈窗**（`partials/pickup-session-modal.js`）：可領項目由商品的所屬場次動態算出，沒有場次的草稿可勾選並標「草稿」；存檔寫回所屬場次；有人領過的取消勾選會被擋下並說明；沒人領過的移出後退回草稿。
+- **資料**（`js/products-store.js`）：`lp-tasting` 改成沒有場次的草稿；新增 `sessions()`、`assign()`、`unassign()`。
+
+## 2026-11-02（四百四十六）· 掃碼領點場次詳情：QR 改列在「場次資訊」卡的領取項目，點 QR 圖示開 popup 下載（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者反饋（附截圖）：「這個要像現場核銷的詳情頁，放在那個位置，點擊以後在 popup 開啟 QR 下載」。
+
+- **版型**：拿掉獨立的「QR 與名額」大區塊（兩張 points-qr 卡並排）；改在「場次資訊」卡的鍵值列之後加「領取項目」小節，結構照抄現場核銷的 `.pk-items`＋`.kv`。每列＝商品名稱、小字「每次 +N 點」、右側「已領 a／b」（名額用滿換成「名額已滿」badge）、列尾 QR 圖示按鈕。現場核銷的列本來不可點，所以只做列尾按鈕、不做整列可點。
+- **popup**：沿用同頁核銷紀錄 popup 的 `.payout-modal`＋`.payout-dialog--narrow`，內容是共用 points-qr 卡（QR 圖、已領／總名額、下載 QR），底部「查看商品」連到 `product-detail.html?id=<id>`；✕、點遮罩、Esc 都能關。
+- **i18n**：新增 `pk.lp.d.items`、`pk.lp.d.qrview`、`pk.lp.qr.title`；移除只在舊區塊使用的 `pk.lp.d.qrs`、`pk.lp.d.qrs.sub`、`pk.lp.d.listed`。
+- **元件**：沒有新增或改動元件 CSS。
+
+## 2026-11-02（四百四十五）· D500 五項裁決落地：上架中庫房移除最後一個條件前先確認、K_A 單位改中性「每 1 元基準幣別」（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/decisions.md` D500；`documents/5.1.7.3-媒體庫.md` F2「移除到庫房變成無條件」；`documents/5.1.0.8-平台忠誠點數設定.md` F9、`0-設計規格書.md` §7.5 基準費率。
+
+- **媒體庫移除條件的確認（S112 🟣）**：`js/media-vault.js` 移除條件時，若這一刪會讓庫房一種進庫方法都不剩（＝無條件、全員可解）且庫房上架中，先開頁面既有的確認視窗（`openConfirm`，canonical 對話框殼 Pattern 5.1.11）：標題「要開放給所有粉絲嗎？」，兩條說明（移除後所有粉絲都能解鎖；上架中立即生效），按鈕確認／取消。確認才移除並記解開紀錄；取消什麼都不動。草稿與已下架照舊直接移除，畫面的「無條件」說明與發布前提醒不變。新增 i18n `vault.open.confirm.title／li1／li2／ok`（en＋zh）。
+- **K_A 單位改中性（S65 🟣）**：`admin-platform-loyalty.html` 基礎比率的單位與說明由「NT$1」改成「每 1 元基準幣別」；i18n 鍵 `ploy.unit.per-ntd` 改名 `ploy.unit.per-base`（修改紀錄的單位一起跟著走），`ploy.ev.ka-hint` 改寫。
+- **同一個基準在創作者端對齊（S66 ⚪、粉絲系統說明 S130 ⚪）**：`tier-settings.html`、`fans-crm.html` 的「各購買品項的份量」讀數原本是「基準費率 40 × 份量／每 HK$1」，`fans-guide.html` 寫「每 HK$1 換 40 點」；拿掉幣別後若留 40 會跟 Admin 頁的 K_A 10 自相矛盾，所以一併改為 K_A 預設 10（D498）× 份量、單位「每 1 元基準幣別」（示範讀數 15／12.5／11／10／8）。i18n `tier-settings.weight.desc／unit`、`fg.earn.buy-v` 同步。
+- **不用改程式的兩項**：前 % 名的設定者（release2.4 唯讀 S116、最終版可編輯 S119）原型現況已符合 D500；「調整」分頁與粉絲詳情另開新視窗依 D500 不採用，維持現狀。
+- **沒做**：最終版平台常數區（S132 ⚪）的「平台基準幣別 HKD」維持不動——那是平台基準幣別本身（D316），不是 K_A 的單位。
+
+## 2026-11-02（四百四十四）· 粉絲名冊的流失風險人數與粉絲總數對齊示範資料：橫幅與收件對象不再寫死 5，總數統一為 1,283（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/5.1.7-粉絲關係管理.md` F2、F4（D497）；驗收代理指出的三個小尾巴。
+
+- **流失風險人數（F2、F4）**：KPI 卡與橫幅由 `fans-crm.html` 的 `RISK` 示意資料算出 7，但 i18n 的 `fans.alert.title` 寫「5 位粉絲有流失風險」、`msg.to.risk` 寫「流失風險 (5)」。`fans.alert.title` 改成 `{n}` 由 `paintRisk` 填入；`msg.to.risk` 預設改 7（新品貼文彈窗共用這個鍵，該頁沒有流失資料），粉絲總覽上由 `paintRisk` 依資料覆寫，零風險時寫 0。zh／en 兩邊同改；HTML 預設字同步。
+- **粉絲總數**：KPI「活躍粉絲」小字「共 1,840 位」與收件對象「全部粉絲 (1,840)」改為 1,283，與四級加總（13＋115＋257＋898）、`js/tier-population.js`、媒體庫的全部粉絲數一致；群發紀錄裡一筆「All fans」的收件人數同改。選擇理由記在 `ASSUMPTIONS.md` UIA-326。
+- **程式註解**：`fan-detail.html` 點數明細 ⋮ 的註解拿掉「或刪除這筆」，改寫成校正分錄（D497 已拿掉刪除）。
+- **沒做**：`design-system.html`、`design-components.html` 的群發下拉 demo 仍寫「All fans (1,840)」「At risk (5)」，屬元件示意字串，不在本輪範圍。
+
+## 2026-11-02（四百四十四）· 建立商品閘門只剩一張卡時置中（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者反饋（附截圖）：「如果只有一個，就要置中」。建立商品第一步「要賣什麼？」的實體／數位閘門，數位卡依版本與身分收起（D499：release2.3 全收、release2.4 只給 Admin 代管）後只剩實體卡，原本貼在兩欄的左欄。
+
+- **元件層**：`ds-components/radio-card.css` 新增一條規則——`--gate` 剛好兩張卡（`:nth-child(2):last-child`）且其中一張 `[hidden]` 或 `.ztd-ver-hidden` 時，剩下那張維持半欄寬、水平置中。六張的登入閘門與 `--3` 閘門收起一張時不受影響（後者仍走 D383 的平均分欄）。
+- **文件**：`design-system.md` Radio card 條目、`design-system.html` 的 Classes 列同步補上這個狀態。
+- **驗證**：本機 4326 以創作者本人開 `create-product.html`，單張置中；切 Admin 代管，兩張並排不變。
+
+## 2026-11-02（四百四十三）· 掃碼領點進 release2.4：忠誠點數商品（數位商品新類別）、取貨場次新類型「掃碼領點」、平台 A6 開關、粉絲詳情示意列（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/5.1.5.2-建立商品流程.md`（F16）、`5.1.5.1-商品細節頁.md`（§2.20）、`5.1.5-電子商店.md`、`5.1.5.11-取貨管理.md`、`5.1.5.12-建立取貨場次.md`、`5.1.5.14-手機Scanner.md`、`5.1.5.15-取貨場次詳情.md`（F6）、`5.1.0.8-平台忠誠點數設定.md`（F9 的 A6）、`5.1.7.7-粉絲詳情.md`、`decisions.md` D499、`backup_plan.md` Plan567、`requirement/05-線下QR積分需求.md`。這一輪只有 Admin 代管創作者時看得到（創作者本人看不到、不是看得到但不能點）。
+
+- **版本放行**：新增五個功能 ID，`feature-scope-map.md` 登記、`js/devtools.js` `FEAT_TIER` 後備補同一批。
+  - S140 數位商品型別卡 🟣 release2.4
+  - S141 數位類別「文檔」「會員卡」⚪（release2.4 不在範圍，只在最終版）
+  - S142 數位類別「忠誠點數」與忠誠點數商品（建立、商品細節 QR 卡、清單列）🟣 release2.4
+  - S143 平台忠誠點數設定 F9 的 A6 開關 🟣 release2.4
+  - O43 取貨場次類型「掃碼領點」🟣 release2.4
+- **數位型別卡與類別（5.1.5.2 F16）**：`create-product.html` 型別卡掛 S140，下拉的「文檔」「會員卡」掛 S141，「忠誠點數」掛 S142 並帶 `data-cp-lp-opt`。`syncDigiScope()` 依 `window.ztorCreator.adminScope()` 與版本切 `hidden`（隱藏、不是停用），聽 `ztor:creator-changed` 與 `ztor:devstate-changed` 重判；嵌入態與編輯態一律不提供。版本與身分的組合：
+  - release2.3：數位型別卡整張不出現
+  - release2.4 創作者本人：看不到數位卡
+  - release2.4 Admin 代管態：看得到數位卡，類別只剩「忠誠點數」
+  - 最終版：文檔、會員卡照舊；忠誠點數只在 Admin 代管態
+- **建立流程（忠誠點數）**：選了忠誠點數類別後 `state.lp` 為真，`applyVisibility` 改用 `loyalty` 當顯示判斷的類型（`data-cp-show` 多一個值），整張表單換一套。
+  - 第一步只留商品名稱（也是 QR 名稱，提示「一種購買組合一個 QR」）與分類
+  - 新區塊「點數」：每次領取點數（整數 ≥ 1）、總名額（1–999,999），兩欄都有即時錯誤
+  - 上架設定保留不上架／立刻／定時三選項、拿掉「顯示於商店」，說明改為「上架 = 這個 QR 會給點；下架只暫停這一個 QR」
+  - 右欄預覽改畫共用 QR 卡（`[data-cp-lp-preview]`，掛 `points-qr`）；第三步沿用共用預覽發布畫面，主按鈕「建立 QR」
+  - 建立後寫入 `sessionStorage` `ztor.loyalty.session`，新商品 QR 種子隨機；落地畫面提供「建立掃碼領點場次」與「加入既有場次」兩條路
+- **商品細節（5.1.5.1 §2.20）**：`product-detail.html` 的忠誠點數商品分支（檔尾 `[data-pd-lp-script]`）。
+  - 頭部縮圖與 `編輯／上下架／封存／刪除` 動作列，徽章「啟用中／名額已滿／已下架／已封存／草稿」
+  - QR 區（檢視、下載、已領／總名額）
+  - 掃碼領點場次區：已加入顯示場次連結，未加入顯示說明與「建立掃碼領點場次」（連到 `pickup.html?new=scan&lp=<id>`）
+  - 設定區：每次點數、已領／總名額、點數歸屬（目前代管的創作者）；編輯只影響之後的領取，總名額不得低於已領數
+  - 創作者本人或版本不含 S142 直連時顯示「這個項目不存在」空狀態
+- **電子商店清單（5.1.5）**：`e-shop.html` 的忠誠點數列（`data-loyalty`、`data-feat="S142"`）由該頁自己畫，只在 Admin 代管態出現；徽章「啟用中／名額已滿」，狀態篩選分頁借用既有「販售中」「售罄」，數量計算排除看不到的列。
+- **取貨場次兩種類型（O43）**：
+  - 清單（`pickup.html`）：加類型篩選分頁（全部／現場核銷／掃碼領點，不改網址）；新增示範列「貝果節 · 信義店」（`?s=lps-bagel-xinyi`）；啟用徽章資訊色、停用中性色；現場核銷列加類型標註
+  - 建立彈窗（`partials/pickup-session-modal.js`）：新增第 0 步選類型；掃碼領點的欄位為名稱、地點、起訖、可領項目（只列忠誠點數商品）與啟用開關，沒有 scanner 網址、密碼與取貨說明；建立後落地到示範場次；編輯現場核銷場次時類型為唯讀列
+  - 詳情（`pickup-detail.html?s=lps-…`）：場次資訊、啟用開關、已領計數；每個可領項目一張 QR 卡（標「上架中」、用量條、下載）；領取紀錄表（時間、粉絲連到 `fan-detail.html`、商品、點數），可依商品分頁，示範最近 12 筆、頁尾「最近 n 筆，共 m 筆」；沒有可領項目與沒有紀錄各有空狀態
+  - 啟用／停用：狀態存 `localStorage` `ztor.lp.enabled`，廣播 `ztor:lp-changed`；停用走確認窗，確認鈕用一般主按鈕（可逆）；停用後所有 QR 暫停給點
+  - A6 關閉提醒：清單頂與詳情頂各一條警示橫幅「線下掃碼領點已關閉」，連到平台忠誠點數設定；原型以網址參數 `?a6=off` 示範，清單列徽章另顯示「事件關閉中」（警示色）
+- **平台忠誠點數設定（5.1.0.8 F9）**：`admin-platform-loyalty.html` 賺分事件表新增一列「線下掃碼領點」（`data-ploy-ev="ploy.ev.a6"`、`data-feat="S143"`），名稱下標「線下」，點數與上限兩欄合併成一格說明「點數、名額、有效期在商品與取貨場次設定」，最後一格是開關，沿用 UI-CHANGES 四百四十二的立即生效、不經儲存與修改紀錄行為。
+- **粉絲詳情（5.1.7.7）**：`fan-detail.html` 點數明細新增 3 列掃碼領點示意（`data-cat="event"`、`data-feat="O43"`，圖示 `qr-code`），標題前綴「掃碼領點 ·」仿既有「已報到 ·」，副標為買的商品；點數 +2、+10、+2，場次與商品名稱、日期為示範資料；列的圖示為 `qr-code`，分類落在「活動」。
+- **新元件 `points-qr`（🟡 molecule）**：置中的 QR 卡（假 QR、商品名稱、「每次 +N 點」、可選的已領／總名額用量條與下載鈕），`.points-qr`／`--compact`／`--full`，下載鈕掛 `data-pqr-download`。
+  - 三件套：`ds-components/points-qr.css`、`js/points-qr.js`（`window.ztorPointsQr.mount(el, opts)`，語言切換自動重畫）、`design-system.md` 條目與 `design-system.html` demo 卡
+  - 另新增共用 `js/faux-qr.js`（`window.ztorFauxQr(seed)`），所有頁共用同一份假 QR
+  - 下載為 512px PNG（canvas 失敗時退 SVG）
+- **i18n**（en＋zh）新增前綴：
+  - `pqr.*`
+  - `cp.lp.*`、`cp.dsub.loyalty`
+  - `product-detail.lp.*`
+  - `e-shop.lp.*`
+  - `pk.lp.*`
+  - `ploy.ev.a6*`、`ploy.ev.cat.off`
+  - `fan-detail.tl.a6*`
+- **規則手冊**：7 頁已同步（`rulebook/eshop-create-digital.html`、`pickup.html`、`pickup-create.html`、`pickup-detail.html`、`pickup-scanner.html`、`admin-loyalty.html`、`fans-roster-detail.html`）。
+- **release2.2 不受影響**：現場核銷行為零變化（已比對）；本輪不標 release2.2，不需用 `release-port.sh` 搬。
+
+## 2026-11-02（四百四十二）· 平台忠誠點數設定進 release2.4：對齊需求站 dev 頁 Global Setting 的 P0——賺分事件與開關、分級、KPI 視窗、逐項修改紀錄（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/5.1.0.8-平台忠誠點數設定.md` v1.8（新增 F9、F10、F11；F4、F5、F6 同步）、`0-設計規格書.md` v5.32（§7.5、§8.29 第 4、15、16、25 項）、`decisions.md` D498、`backup_plan.md` Plan566；需求站 dev 頁 `note/loyalty-requirement-dev.md` 第 246–297 行。使用者裁決「dev 頁有的東西 release2.4 都要有」。
+
+- **版本放行**：S65 ⚪ 改 🟣 release2.4。`js/devtools.js` `FULL_ROUTES` 的 `admin-platform-loyalty.html` 由 `1` 改 `'S65'`、`js/sidebar.js` `TIER_ROUTES` 補同一筆（兩份一致），`FEAT_TIER` 後備 `S65: 'release2.4'`、`S132: 'tbd'`。release2.3 照舊看不到側欄入口、直連導回 E-Shop；release2.4 與最終版看得到。
+- **release2.4 只剩 dev 頁 P0**：全站活動（dev 頁 Type C，後續階段）、賽季加倍、衰減與等級保留、平台常數、誠信規則五區掛新登記的 S132（⚪），職務權重 S108、回填 S111 照舊；修改紀錄裡的賽季列也掛 S132。
+- **賺分事件（F9，新區塊，排第一）**：上方一列基礎比率 K_A（10 點／NT$1）；表格六列——活動票券 ×1.1、電子商店商品 ×1.0（購買類，無上限）；共創投票 150 點、按讚 5 點、收藏 10 點、邀請朋友追蹤 400 點，各自「上限 Y 在 X 天內」兩格（X 預設 90）。每列最後一格是開關（既有 `.switch`，`role="switch"`）：關掉立即生效、不經儲存，該列名稱下出現「已停止發分」徽章，當下記一列修改紀錄（開 → 關）並跳提示「已停止發分，已發的點數不扣」。表格下兩行說明：關閉只影響之後的發分、不回算不扣已發；異動只往後生效、創作者不能覆寫。
+- **分級（F10，新區塊）**：四級的顯示名稱（可編輯輸入框）與前 % 名（1／10／30，一般粉絲寫「其餘粉絲」）；下接最低忠誠點數門檻 500、降級緩衝 14 天（由衰減區移來，原列刪除）、分級重算「每週一次」唯讀；兩行說明判定順序與改名會全站同步。名稱沒改過時跟著介面語言顯示預設名，改過並儲存的保留原字。
+- **粉絲管理 KPI 視窗（F11，新區塊）**：活躍粉絲 90、流失風險 30、近期入帳 7 天。
+- **修改紀錄（F6）**：表格改成一筆異動一列，六欄＝時間、操作者、參數、原值、新值、生效；生效分三種徽章：之後的事件起（中性）、下一次每週重算起（警示）、立即（資訊）。每個輸入框掛 `data-ploy-kind`（event／recompute／now）決定類別，取代原本「label 以 `ploy.decay.` 開頭就算等級類」的推斷。操作者寫示範名字 Kelly Wu（沿用 UIA-324）。
+- **平台常數**：基準費率唯讀那一列刪除（D498 改為上方可調的 K_A），只剩平台基準幣別。
+- **頁首**：副標改成「這裡的參數套用到所有創作者的忠誠點數，創作者不能覆寫」；常駐提示改寫成三種生效時點。
+- **元件**：沒有新增或改動元件 CSS；新掛 `ds-components/switch.css`（既有元件）。版面只用既有 `.settings-row`、`.amount-field`、`.ztor-table`、`.badge`；上限格兩個輸入框並排用 inline flex＋`gap: var(--sp-8)`。
+- **i18n**（en＋zh）：新增 `ploy.ev.*`、`ploy.tier.*`、`ploy.kpi.*`、`ploy.unit.per-ntd／votes／people`、`ploy.log.col.item／from／to`、`ploy.log.st.now`、`ploy.log.season-add-item／season-remove-item`；改 `ploy.lede`、`ploy.pending`、`ploy.log.note`、`ploy.log.col.when／by`、`ploy.int.cap-hint`、`ploy.decay.grace-hint`；刪 `ploy.const.rate／rate-hint／rate-v`、`ploy.log.col.change`、`ploy.log.season-add／season-remove`、`ploy.log.by-admin`（全庫無其他引用）。
+- **規則手冊**：不在本輪範圍（D498 影響欄列為待同步）。
+
+## 2026-11-02（四百四十一）· 粉絲名冊、分級設定、粉絲詳情對齊 D497：四張 KPI 說明、工具列排序、動態升級進度、單一最低忠誠點數門檻、點數修改改 append-only（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/5.1.7-粉絲關係管理.md`（F1、F2、F4、F5、F6、F8）、`5.1.7.6-分級設定.md`（F2、F4）、`5.1.7.7-粉絲詳情.md`（§2.3、§2.4、情境 8）、`decisions.md` D497（修訂 D493／D494／D495 決定 3）、`backup_plan.md` Plan565；需求站 Dev 規格 v0.1（`note/loyalty-requirement-dev.md` 第 184–243 行）。
+
+- **示範資料單一來源**：新增 `js/fans-roster.js`（`window.ztorFans`）：9 位粉絲的點數、分級、距最近一筆有效動作的天數，加上 `progress()`、`status()`、`S_FLOOR = 500`。名冊與粉絲詳情都讀它。點數排得自洽：一般粉絲三位都低於 500；上榜粉絲 Park 由 498 改 512（舊值低於門檻卻在上榜，與新規則矛盾）。
+- **名冊 KPI（F2）**：四張都附 (i)，內容就是規格定義（有效動作＝任何可賺忠誠點數的行為）：活躍粉絲＝近 90 天至少 1 筆；流失風險＝近 30 天沒有任何一筆；活躍粉絲收入補上 (i)＝近 90 天粉絲營收總額；平均忠誠點數＝所有粉絲點數總和 ÷ 粉絲總數。四個 (i) 的 `aria-label` 也接 i18n。流失風險小字（S131）照 D493 格式，示意數字改成至少沉默 30 天（超級粉絲 34／90、上榜粉絲 41／90；舊值核心圈 10、超級粉絲 21）。
+- **工具列排序（F1、F6）**：排行榜分頁的動作群多一顆「排序」下拉（Dropdown `--choice` 值列：排行榜〔點數〕／分級），選了就叫 `js/table-sort.js` 把對應欄設成由高到低；點欄位標題時下拉跟著勾選，點的是其他欄就兩項都不勾、按鈕寫「排序」。`table-sort.js` 新增 `window.ztorTableSort.set(root, key, state)`。分級欄排序值改成「分級序 × 10000＋點數」，同一級裡永遠依點數排。新圖示 `arrows-sort`。
+- **升級進度（F5，D497 第 9 項）**：每列由公式算——低於 500 時 D＝500，達到 500 時 D＝下一級目前最低分；進度＝點數 ÷ D（封頂 100%）；核心圈寫「已達最高級」；滑過進度格看「還差 X 分」。拿掉逐列寫死的 `fans.row1–9.next`。
+- **狀態（F4、F5）**：近 30 天沒有有效動作＝流失中；流失中的人重新出現一筆有效動作＝已挽回（規格暫定〔產品待確認〕）。狀態格由資料畫，不再寫死。
+- **分級設定彈窗（5.1.7.6 F2、F4）**：表格裡「最低忠誠點數」每級一格（800／650／500，可編輯）整列拿掉，改成表格下方一列唯讀「最低忠誠點數門檻 500 點」＋說明「所有分級共用一個值，由 Ztor 設定，這裡只能查看」，再接三步「分級判定順序」。規則分頁的「雙重門檻升級」換成「分級判定順序」（release2.4 也看得到）；「門檻必須單調」改「前 % 名逐級放寬」。編輯態儲存前檢查前 % 名嚴格遞增，不過就在表格下方出錯並擋住儲存（編輯仍掛 S119，release2.4 看不到）。說明面板與變更歷史的示例改寫成全站一個門檻。
+- **粉絲詳情 KPI（§2.3）**：下一級進度由同一公式算出：未到最高級＝「84%」＋「還差 129 分」；核心圈＝「已達最高級」＋「以維繫為重」（舊值寫死 92% 配「已達最高級」，自相矛盾）。最近活躍的副標改成最近一筆可賺忠誠點數的行為（點數明細最上面那筆）。頁面接受 `?fan=<名冊列序>`，名冊每列都帶；換人時只換頁首身分、分級、狀態與 KPI，點數明細等仍是同一份示範（UIA-324）。
+- **點數修改改 append-only（§2.3、§2.4，D497 第 6 項）**：每列 ⋮ 只剩「修改點數」，「刪除」連同選單項、JS 分支與 7 個 i18n 鍵一起拿掉。修改＝在那一筆底下記一筆校正分錄（差額），原筆的入帳值不覆寫（資料層 `ledger` 保留原值＋校正清單，淨值由兩者加總）；列上顯示淨值、狀態欄標「已人工修改」，滑過看「原本 +120 · 校正 −20」。調整紀錄多一筆：調整內容＝「修改『原行為名』」＋原因、修改前＝舊淨值、修改後＝新淨值、修改額＝差額（負值紅字）。確認視窗沿用原本的修改彈窗（它本來就是修改與刪除共用，只拿掉刪除模式）。
+- **System Adjust（D497 第 7、8 項）**：新增一筆的列標題固定「System Adjust」（兩種語言同字），調整紀錄的新增者：調整內容＝System Adjust＋原因、修改前「—」、修改後＝調整值。日期與時間下面寫操作者（示範 Admin「Kelly Wu」，不再寫死「Admin」）。示範的那筆調整紀錄對上明細最下面那列（2026/02/10 +50）。
+- **沒做（待使用者裁決）**：沒有加回「調整」分類分頁、沒有加「另開新視窗」與關閉 ×、前 % 名的可編輯性不變。`tier-settings.html` 備份頁仍是各級各一個最低點數（不在本輪範圍）。
+- **元件**：沒有新增或改動元件 CSS；Sortable 的 `design-system.md` 條目與 `design-system.html` 說明補 `ztorTableSort.set()`。頁內 `<style>` 只多一條 `.fans-tier-order`（判定順序的清單間距）。
+- **i18n**（en＋zh）：新增 `fans.kpi.revenue.tip`、`fans.row.next*`、`fans.sort.*`、`tier-settings.rules.order*`、`tier-settings.gate.floor*`、`tier-settings.err.mono`、`fan-detail.kpi.progress-top／-need／-reached`、`fan-detail.entry.edited-tip`；改 `fans.kpi.*.tip`、`fans.kpi.risk-meta`、`fans.alert.meta`、`fans.tiers.sub-p0`、`fans.tiers.hist.v3`、`tier-settings.rules.mono*`、`tier-settings.explain.points.eg／.rule`、`tier-settings.explain.toppct.round`、`fan-detail.kpi.progress-meta`、`fan-detail.pts.adjust-title`、`fan-detail.log.kind.add`、`fan-detail.entry.edit-lede`、`fan-detail.adjust.demo-reason`；刪 `fans.row1–9.next`、`tier-settings.rules.dual*`、`fan-detail.entry.delete*`／`submit-delete`／`done-delete`／`log-delete`、`fan-detail.log.kind.delete`、`fan-detail.kpi.last-active-meta`（含 persona 覆寫）。
+- **功能標記**：都在 S115／S116／S117／S110／S126／S128／S129 既有範圍內，沒有新編號；規則分頁的判定順序不掛 S119（release2.4 範圍）。規則手冊不在本輪範圍。
+
+## 2026-11-02（四百四十）· 媒體庫對齊 D497：進庫方法上限、六種條件型別與無條件、庫房內容組成、已解鎖人數與分級分佈、每件查看／播放人數（A 規格導入）
+
+**標籤**：release2.4
+
+上游 `documents/5.1.7.3-媒體庫.md`（2026-11-02 版）、`decisions.md` D497、`backup_plan.md` Plan565：使用者裁決「都照 dev 頁的改」（需求站 Dev 規格 v0.1，`note/loyalty-requirement-dev.md` 第 117–182 行）。
+
+- **數量上限（F2）**：一種方法最多 10 個條件、一座庫房最多 5 種方法。到上限時「再加一個」「再加一種方法」停用（`.vault-door__add:disabled` 照 `.btn` 停用態；後者本來就是 `.btn`），旁邊一句「一種方法最多 10 個條件」「一座庫房最多 5 種方法」；選單與加方法的事件也擋。
+- **條件型別（F2）**：
+  - 無條件：一種進庫方法都沒設＝全員可解。新庫房（建立流程第 1 步）預設無條件；條件開啟分頁寫「無條件：N 位粉絲全都能解鎖」＋「加條件」；刪到最後一個條件時那一種方法跟著拿掉，回到無條件。發布彈窗與建立流程第 3 步提醒「發布後所有粉絲都能解鎖」，只提醒、不擋。示範庫房「公開花絮」改成無條件（原本寫成「分級 ≥ 一般粉絲」）。
+  - 購買過：商品之外補兩張票券（專輯簽名會・台北、LOVE·RAGE·HOPE 台中回顧 Watch Party），人數上限＝該場售出張數；商城消費任務的「指定商品」只列商品、不含票券。
+  - 支持過：沒有預設選項，只剩「曾支持過此藝人」一項；拿掉三個眾籌專案選項，條件晶片只寫這一句。
+  - 出席過：補 Watch Party（LOVE·RAGE·HOPE 台中回顧，上限 38）。
+  - 達成過：曾進核心圈、Ztor Score 800 以上、連續 12 個月支持；拿掉「名人堂」。
+  - 種子資料換成合法值：片場（支持過 → 曾支持過此藝人）、核心圈語音信（名人堂 → 曾進核心圈）、示範粉絲名單的挑選條件同步。
+- **存取權限文案（F2）**：條件開啟分頁的說明改成「達成任一種方法就進得來」（`vault.open.cond.desc`）；方法之間「或是」、方法內「這些要一起達成」保留。
+- **庫房清單（F1）**：每座庫房名稱下一行「X 圖・X 片・X 音」（`.vault-list__mix`，空庫房「尚無內容」）；縮圖只取自圖片或影片，只有音檔的庫房放音檔圖示、不再用每座庫房各自的圖示。
+- **成效第一格（F3）**：改成「N 位粉絲」＋依狀態的標題（上架中「現在已解鎖的人數」、草稿與已下架「上架後可解鎖的人數」）＋「佔全部 M 位的 X%」＋四分級「已/總」（`.vault-bento__tiers`）；四級加總＝N（同一份母體逐級算）。第二、三格（累計解開過、目前看得到）照舊。
+- **每件查看／播放人數（F3、F5）**：成效三格下新增一張「查看／播放」卡（`.vault-plays`，沿用 Meter list＋Stock bar），每件一條量條＝查看／播放過的人 ÷ 已解鎖的人，並附累計人數；內容卡片右下的人數改成查看／播放人數（提示裡仍有目前看得到與累計解開過）；單件設定多一列「查看人數／播放人數」。人數是示範資料（UIA-323）。
+- **保持原樣**：目前看得到、任務、鑰匙（S123）、排程（S125）、大彩蛋（S121）等 dev 頁沒有的功能屬 2026-10-23 另案裁決，沒動。
+- **功能標記**：新增的元素都在 dev 頁 MVP 範圍內，屬頁級 S120（不另編號）；第一格沿用 S93。卡片人數原掛 S86（目前看得到），改成查看／播放人數後拿掉標記、歸 S120。
+- **元件**：`vault-list.css` 加 `__mix`、`vault-stage.css` 加 `__tiers`／`__tier` 與 `.vault-plays`（640px 以下成效改單欄）、`media-vault.css` 加 `.vault-door__add:disabled`；頁面重新連入 `meter-list.css`、`stock-bar.css`。`design-system.md` §4.102、§4.245–§4.247、Meter list、Stock bar 與 `design-system.html` demo 已同步。
+- **新 i18n**（en＋zh）：`vault.ac.limit.*`、`vault.open.cond.none`、`vault.pub.check.open.*`、`vault.wiz.hint.open`、`vault.vas.open`、`vault.mix*`、`vault.ov.unlocked*`、`vault.plays.*`、`vault.tag.plays.*`；改 `vault.open.cond.desc`。
+- `lab-media-vault.html` 是獨立 demo（自帶資料），沒有改。規則手冊不在本輪範圍。
+
+---
+
+## 2026-11-02（四百三十九）· 媒體庫改版：左欄庫房列表、成效三格、內容卡片、開啟方式分頁、三步建立流程（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者要求重新思考媒體庫的流程與介面，demo（`lab-media-vault.html`，保留不動）反覆修了多輪後說「改到正式原型」。設計依據 `note/媒體庫UX重新規劃.md` 3.x（後面的條目取代前面的）。
+
+- **版面**：整頁改成「左欄庫房列表｜右側主欄」。左欄一座庫房一列（直式封面、名稱、狀態圓點・狀態字・人數），第一列是同形狀的虛線「新增庫房」；主欄由上而下是標頭、成效三格、檢視身分提示／上鎖卡、內容、開啟方式。取代右側庫房列表與三分頁（總覽／內容與任務／存取權限），網址 `#overview` 等 hash 不再有作用。
+- **標頭**：庫房名稱點一下就地改名（輸入框與名稱同字級、寬度跟著字量，徽章不換行）；右側分享（彈窗，F9）、依狀態的主要動作（發布／下架／重新上架／取消排程）、⋯（只剩刪除，上架中按下去說明要先下架）。
+- **成效三格**：現在打得開、累計解開過、目前看得到（未上架寫「上架後」）；檢視身分開著時第一格換成該角度的結果。
+- **內容**：灰底容器＋固定三欄直式（2:3）卡片，最後一張是「添加」；不分組、沒有篩選。卡片只放縮圖、名稱、任務、看得到的人數，整張卡點開單件設定抽屜（保留原型原有的抽屜；預覽改直式外框）。
+- **開啟方式**：底線分頁「條件開啟｜鑰匙開啟」。條件開啟＝每種進庫方法一張「方法 N」小卡、「或是」線、「再加一種方法」；鑰匙開啟＝已發鑰匙一把一列（複製連結、撤銷），下面「送給一位粉絲」「做成 NFC 商品」「管理鑰匙」。鑰匙（S123）不在 release2.4，所以 release2.4 只有條件開啟、不出分頁列。
+- **建立流程**：左欄「新增庫房」進全畫面三步（取名 → 放內容 → 誰開得了）。第 1 步按繼續就建立草稿；第 2、3 步重用頁面同一份內容與開啟方式；第 3 步可存成草稿或發布。
+- **檢視身分**：放回頁首下拉（我／四個分級／指定一位粉絲），邏輯沿用原本的 `lens()`；左欄人數、成效第一格、每張卡的小標、上鎖卡都跟著換。
+- **新元件**：`vault-list.css`（§4.245）、`vault-stage.css`（§4.246）、`vault-open.css`（§4.247）、`vault-wizard.css`（§4.248）；`media-preview.css` 加 `.mpreview--portrait`（§4.242）。DS 頁 `design-system.html` 的 demo 卡與 TOC、`design-system.md` 條目已同步。
+- **撤除（C）**：`js/media-vault.js` 的總覽分頁、存取權限分頁、`renderDoor`、內容分組列表、就地確認刪除與就地改名（`askDelete`／`startRename`）、就地新增庫房（`startDraft`）；`media-vault.html` 不再連結 `vault-overview.css`、`vault-access.css`、`meter-list.css`、`stock-bar.css`、`stat-row.css`、`list-toolbar.css`、`upload-tile.css`。這幾支 CSS 沒有刪（保存檔或其他頁可能還在用），退場待元件巡檢、須使用者確認。
+- **保存檔**：`media-vault-popup.html` 共用同一支 JS，改版後 `init()` 找不到新節點就直接返回，等於不再被驅動（早已過時、沒有頁面連過去）。
+- **新 i18n**：`vault.rail.people`、`vault.open.*`、`vault.bento.*`、`vault.pool.*`、`vault.wiz.*`、`vault.name.*`、`vault.act.share／more／publish.need`、`vault.key.claimed`（en＋zh）；其餘沿用既有 `vault.ac.*`、`vault.status.*`。
+- **取捨與待確認**：F5 規格寫「固定三分組」、F1 規格列「內容量摘要」、F4「鑰匙統計」與 F3「依來源拆解」「分級覆蓋條」在新版面都沒有畫；內容改名在抽屜裡改、不再就地。全部記在 ASSUMPTIONS UIA-322，等使用者裁決是否回寫規格或補回畫面。
+- 規則手冊沒有改動（沒有新定案的規則）。
+
+---
+
 ## 2026-10-30（四百三十八）· 商品細節頁（實體）庫存版本改成三個開關，與建立商品一致（A 規格導入；D496）
 
 **標籤**：release2.3

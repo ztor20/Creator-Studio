@@ -26,9 +26,11 @@
      第二層（2026-10-08，D377）：庫房裡每件內容可各自設一個任務（不設／行動／等級）、
      標大彩蛋；設定在單件內容抽屜，格子上掛小標。樣式：ds-components/vault-task.css。
      命名：「鑰匙」只指第一層的進庫憑證，第二層一律叫「任務」。
-     三分頁（2026-10-09，使用者確認的示範頁）：選中庫房後分「總覽／內容與任務／存取權限」，
-     網址 #overview／#content／#access 可直達。檢視身分在頁首，對三個分頁都有效。
-     樣式：ds-components/vault-overview.css（總覽卡內版面）、vault-access.css（存取權限）。
+     2026-11-02 改版（note/媒體庫UX重新規劃.md）：左欄庫房列表｜主欄由上而下是標頭、成效三格、內容卡片、
+     開啟方式（條件開啟｜鑰匙開啟）；新增庫房走三步建立流程（取名 → 放內容 → 誰開得了）。取代 2026-10-09 的
+     三分頁（總覽／內容與任務／存取權限）。檢視身分仍在頁首，對整頁有效。
+     樣式：ds-components/vault-list.css、vault-stage.css、vault-open.css、vault-wizard.css（舊的
+     vault-overview.css、vault-access.css 這頁不再連結，元件巡檢時再決定退場）。
      庫房狀態與排程（2026-10-23，D477）：草稿／上架中／已下架，庫房標頭依狀態給發布、下架、
      重新上架、取消排程、刪除；發布用中央彈窗（payout-modal＋listing-controls，同建立商品的上架區），
      下架與刪除用同一個確認視窗。檢視身分多「指定一位粉絲」（owner-lookup 搜尋），進不了庫時
@@ -47,12 +49,19 @@
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/explainer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/media-vault.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-share.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/vault-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/vault-stage.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-tip.css?v=r2.2"><!-- 成效第一格滑過浮出四分級「已／總」（.stock-tip--anchored，D505） -->
+<link rel="stylesheet" href="ds-components/vault-open.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/vault-wizard.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的下架時間已過的提示（D488） -->
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
@@ -60,13 +69,7 @@
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-task.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/meter-list.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/vault-overview.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/vault-access.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/media-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
@@ -74,6 +77,8 @@
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/owner-lookup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/meter-list.css?v=r2.2"><!-- 每件內容的查看／播放量條（D497） -->
+<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -101,7 +106,7 @@
             <p class="page-intro__sub" data-i18n="vault.sub">Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it — and give any item its own task. Every vault shows how many fans can open it right now.</p>
           </div>
         </div>
-        <a class="btn btn--outline page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">認識粉絲系統</a>
+        <!-- D507（2026-11-02 使用者裁決）：「認識粉絲系統」入口只留在粉絲名冊（fans-crm.html），本頁不設。 -->
         <div class="page-intro__actions">
           <!-- 檢視器：選一個分級，整座庫房換成那一級粉絲看到的樣子——清單把打不開的
                庫房壓暗、打不開的那座蓋上遮罩、總覽補一行這一級的人數、每件內容換成
@@ -145,62 +150,44 @@
         <span data-tier-name="fan"     data-i18n="tier-settings.tier.fan">Fan</span>
       </div>
 
-      <div class="vault-layout">
+      <!-- 版型（2026-11-02 改版，note/媒體庫UX重新規劃.md）：左欄庫房列表｜右側主欄。
+           主欄由上而下：庫房標頭 → 成效三格 → 檢視身分提示／上鎖卡 → 內容（灰底容器＋三欄直式卡片）→ 開啟方式（條件開啟｜鑰匙開啟）。
+           原本的三分頁（總覽／內容與任務／存取權限）取消，網址 #overview 等 hash 不再有作用。
+           樣式：ds-components/vault-list.css、vault-stage.css、vault-open.css、vault-wizard.css。 -->
+      <div class="vault-shell">
 
-        <!-- ── 庫房側欄（右側，切換與新增）────────────────── -->
-        <aside class="vault-rail" data-vault-rail aria-label="Vaults">
-          <div class="vault-rail__head">
-            <div class="vault-rail__label">
-              <span data-i18n="vault.rail.label">Vaults</span>
-              <span class="vault-rail__count" data-vault-count></span>
-            </div>
+        <aside class="vault-list" data-vault-rail aria-label="Vaults">
+          <div class="vault-list__head">
+            <span class="vault-list__label" data-i18n="vault.rail.label">Vaults</span>
+            <span class="vault-list__count" data-vault-count></span>
           </div>
-
-          <!-- 「新增庫房」在清單上面（2026-07-31 使用者裁示）：按下去長出來的名字欄
-               是清單的第一列，按鈕就該在那一列的正上方。 -->
-          <button type="button" class="vault-rail__new" data-vault-new>
-            <i data-lucide="plus" class="ztor-icon"></i><span data-i18n="vault.btn.new">New vault</span>
+          <!-- 新增庫房：跟庫房列同一個形狀；按下進入三步建立流程（頁尾的 .vault-wizard）。 -->
+          <button type="button" class="vault-list__row vault-list__row--new" data-vault-new>
+            <span class="vault-list__cover"><i data-lucide="plus" class="ztor-icon ztor-icon--lg"></i></span>
+            <span class="vault-list__text"><span class="vault-list__name" data-i18n="vault.btn.new">New vault</span></span>
           </button>
-
-          <div class="vault-rail__list" data-vault-list></div>
+          <div class="vault-list__items" data-vault-list></div>
         </aside>
 
-        <!-- 無庫房（頁面狀態，2026-10-23 刪除庫房後可能出現）：只留建立第一座的引導。 -->
+        <!-- 無庫房（頁面狀態，刪除庫房後可能出現）：只留建立第一座的引導。 -->
         <div class="empty-card empty-card--framed vault-none" data-vault-none hidden>
           <span class="empty-card__icon"><i data-lucide="key" class="ztor-icon"></i></span>
           <p class="empty-card__title" data-i18n="vault.none.title">No vaults yet</p>
           <p class="empty-card__text" data-i18n="vault.none.text">Use “New vault” to create your first vault.</p>
         </div>
 
-        <!-- ── 選中庫房 ───────────────────────────────────── -->
-        <div class="vault-main" data-vault-main>
+        <!-- ── 選中庫房 ── -->
+        <div class="vault-stage" data-vault-main>
 
-          <!-- 庫房名稱與說明。動作鈕（發鑰匙、分享頁面）2026-10-09 搬進「存取權限」分頁。 -->
-          <div class="vault-head">
-            <div class="vault-head__text">
-              <h2 class="vault-head__title" data-vault-title></h2>
-              <!-- 庫房狀態（F10，D477）：狀態徽章＋排程＋一句白話，跟名稱一起看到。 -->
-              <p class="vault-head__status" data-feat="S112" data-vault-status></p>
-              <p class="vault-head__note" data-vault-note></p>
-            </div>
-            <!-- 依狀態給的主要動作（發布／取消排程／下架／重新上架＋刪除），比照商品細節頁頁首。 -->
-            <div class="vault-head__actions" data-feat="S112" data-vault-actions></div>
-          </div>
+          <!-- 標頭（D477 F10）：名稱可改、狀態、排程；動作依狀態換（分享／發布或下架或重新上架或取消排程／⋯刪除）。內容由 JS 畫。 -->
+          <div class="vault-bar" data-vault-head></div>
 
-          <!-- 分頁列：沿用 .list-toolbar 殼＋底線式分頁（Q38：底線式要連殼帶）。
-               切換與網址 hash 由 js/media-vault.js 管（#overview／#content／#access）。 -->
-          <div class="list-toolbar">
-            <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" data-vault-tabs>
-              <button class="tabs__item tabs__item--active" type="button" role="tab" id="vault-tab-overview" aria-controls="vault-panel-overview" aria-selected="true" data-vault-tab="overview"><span data-i18n="vault.tab.overview">Overview</span></button>
-              <button class="tabs__item" type="button" role="tab" id="vault-tab-content" aria-controls="vault-panel-content" aria-selected="false" tabindex="-1" data-vault-tab="content"><span data-i18n="vault.tab.content">Items &amp; tasks</span><span class="tabs__item-count" data-vault-tabcount></span></button>
-              <button class="tabs__item" type="button" role="tab" id="vault-tab-access" aria-controls="vault-panel-access" aria-selected="false" tabindex="-1" data-vault-tab="access"><span data-i18n="vault.tab.access">Access</span></button>
-            </nav>
-          </div>
+          <!-- 成效三格（F3）：現在打得開（S93，滑過看分級、點開看查看／播放）、累計解開過與目前看得到（S114）。內容由 JS 畫。 -->
+          <div class="vault-bento" data-vault-bento></div>
 
-          <!-- 三個分頁都放在 .vault-body 裡：以粉絲身分檢視、這座打不開時，同一張遮罩
-               （.vault-gate）蓋住當下那個分頁。分頁列留在遮罩外，仍可切換。 -->
-          <div class="vault-body" data-vault-body>
+          <!-- 每件內容的查看／播放（F3，D497）：D506 起不常駐，點成效第一格開彈窗（沿用下方確認視窗殼，js/media-vault.js openPlays）。 -->
 
+          <div data-vault-body>
             <!-- 檢視身分那一列（F6，D477）：以分級＝這一級幾人打得開；指定一位粉絲＝他靠什麼進來；
                  草稿或已下架時多一句「以下是上架後的樣子」。進不了庫時讓位給下面的上鎖卡。 -->
             <div class="alert alert--row alert--info vault-viewas" data-vault-viewas hidden>
@@ -211,205 +198,19 @@
               </div>
             </div>
 
-            <!-- 上鎖卡（F2 可見性，D477）：進不了庫的角度看到「上鎖」＋要符合哪一種進庫方法。
-                 2026-10-23 起排在分頁內容最上面，不再整片模糊蓋住。內容由 media-vault.js 現算。 -->
+            <!-- 上鎖卡（F2 可見性，D477）：進不了庫的角度看到「上鎖」＋要符合哪一種進庫方法。 -->
             <div class="vault-gate" data-vault-gate data-feat="S113" hidden></div>
-
-            <!-- ═══ 總覽：只讀，數字全部向 vault-store 現算 ═══════════════ -->
-            <div class="tab-panel tab-panel--active" id="vault-panel-overview" role="tabpanel" aria-labelledby="vault-tab-overview" data-vault-panel="overview">
-              <div class="vault-ov">
-
-                <!-- 現在打得開的人數：總數／百分比、分級覆蓋條、靠條件／靠鑰匙／重疊 -->
-                <section class="vault-reach" data-vault-reach>
-                  <div class="vault-door__label">
-                    <i data-lucide="users" class="ztor-icon"></i>
-                    <span data-vault-reach-label>Who can open it now</span>
-                    <!-- 草稿與已下架：上架後的試算（F1／F3，D477）。 -->
-                    <span class="badge badge--neutral" data-feat="S112" data-vault-trial hidden><span data-i18n="vault.ov.trial">Not open to fans yet</span></span>
-                  </div>
-                  <p class="vault-door__reach">
-                    <span class="vault-door__num" data-vault-num>0</span>
-                    <span class="vault-door__of" data-vault-of></span>
-                  </p>
-                  <div class="vault-door__bar" data-vault-bar></div>
-                  <div class="vault-door__legend" data-vault-legend></div>
-                  <div class="vault-door__breakdown" data-vault-breakdown></div>
-                </section>
-
-                <!-- 解開紀錄（F3、F8，D477 → S114）：整座庫房的累計解開過與目前看得到，分開、不相加。 -->
-                <section class="card" data-feat="S114">
-                  <div class="card__head">
-                    <div class="card__title-group">
-                      <span class="card__title-icon"><i data-lucide="key" class="ztor-icon"></i></span>
-                      <h3 class="card__title" data-i18n="vault.ov.unlock">Unlocks</h3>
-                    </div>
-                  </div>
-                  <div class="stat-row" data-vault-ov-unlock></div>
-                  <p class="card__note" data-i18n="vault.ov.unlock.note">Unlocked in total counts fans who ever unlocked at least one item and never goes down. Currently visible counts fans who can see at least one item right now.</p>
-                  <p class="card__note" data-vault-ov-unlock-note hidden></p>
-                </section>
-
-                <!-- 每件內容的兩個數字（F3，D377 → S86；D477 拆成目前看得到＋累計解開過） -->
-                <section class="card" data-feat="S86">
-                  <div class="card__head">
-                    <div class="card__title-group">
-                      <span class="card__title-icon"><i data-lucide="eye" class="ztor-icon"></i></span>
-                      <h3 class="card__title" data-i18n="vault.ov.items">Unlocks by item</h3>
-                    </div>
-                  </div>
-                  <div class="meter-list meter-list--media" data-vault-ov-items></div>
-                  <p class="card__note" data-i18n="vault.ov.items.note">The bar is fans who can see the item now, out of everyone who can get into the vault; the line below is everyone who has ever unlocked it. TBC means the task has no per-fan data yet.</p>
-                  <p class="card__note" data-feat="S112" data-vault-ov-items-trial data-i18n="vault.ov.trial.note" hidden>These are the numbers once it is listed; fans can’t see it yet.</p>
-                </section>
-
-                <div class="vault-ov__pair">
-                  <!-- 鑰匙使用情況（F4 鑰匙統計）：鑰匙 S123（⚪，release2.4 不放） -->
-                  <section class="card" data-feat="S123">
-                    <div class="card__head">
-                      <div class="card__title-group">
-                        <span class="card__title-icon"><i data-lucide="key" class="ztor-icon"></i></span>
-                        <h3 class="card__title" data-i18n="vault.ov.keys">Key usage</h3>
-                      </div>
-                    </div>
-                    <div class="vault-ov__stats" data-vault-ov-keys></div>
-                  </section>
-
-                  <!-- 內容摘要（F1 內容量摘要；任務分組） -->
-                  <section class="card" data-feat="S93">
-                    <div class="card__head">
-                      <div class="card__title-group">
-                        <span class="card__title-icon"><i data-lucide="layout-grid" class="ztor-icon"></i></span>
-                        <h3 class="card__title" data-i18n="vault.ov.summary">Summary</h3>
-                      </div>
-                    </div>
-                    <div class="vault-ov__kvgroups">
-                      <div><p class="vault-ov__kvhead" data-i18n="vault.ov.summary.kind">Type</p><div data-vault-ov-kinds></div></div>
-                      <div><p class="vault-ov__kvhead" data-i18n="vault.ov.summary.task">Task</p><div data-vault-ov-tasks></div></div>
-                    </div>
-                  </section>
-                </div>
-
-                <!-- 待補規格的數字：只放灰色佔位，不放假數字（ASSUMPTIONS UIA-235）。
-                     2026-10-23 D477 定案解開紀錄，「實際解開人數」「解開率」拿掉，只剩觀看次數與熱門內容。 -->
-                <section class="card card--muted" data-feat="S124">
-                  <div class="card__head">
-                    <div class="card__title-group">
-                      <span class="card__title-icon"><i data-lucide="clock" class="ztor-icon"></i></span>
-                      <h3 class="card__title" data-i18n="vault.ov.pending">Numbers waiting on the spec</h3>
-                    </div>
-                  </div>
-                  <div class="stat-row">
-                    <div class="stat"><div class="stat__label" data-i18n="vault.ov.pending.views">Views</div><div class="stat__value stat__value--zero">—</div></div>
-                    <div class="stat"><div class="stat__label" data-i18n="vault.ov.pending.top">Top items</div><div class="stat__value stat__value--zero">—</div></div>
-                  </div>
-                  <p class="card__note" data-i18n="vault.ov.pending.note">The spec does not define where these come from yet, so nothing is shown.</p>
-                </section>
-
-              </div>
-            </div>
-
-            <!-- ═══ 內容與任務：上傳、三組同一種列表、點列開單件設定抽屜 ═══ -->
-            <div class="tab-panel" id="vault-panel-content" role="tabpanel" aria-labelledby="vault-tab-content" data-vault-panel="content">
-              <!-- 空庫房只給一張上傳方框；有內容之後方框矮一階，下面只長出真的有東西的分組。
-                   檔案選擇器固定住在標題列，兩種狀態共用同一個 input。 -->
-              <div class="vault-gridwrap">
-                <div class="vault-gridbar">
-                  <div class="vault-door__label">
-                    <i data-lucide="layout-grid" class="ztor-icon"></i>
-                    <span data-i18n="vault.grid.label">In this vault</span>
-                  </div>
-                  <span class="vault-gridbar__meta" data-vault-gridmeta></span>
-                  <input type="file" multiple accept="image/*,video/*,audio/*" hidden data-vault-file>
-                </div>
-                <!-- 第二層的入口說明（D377）：任務設在每一件內容上，點列才看得到設定。
-                     提到大彩蛋的那一句掛 S121；大彩蛋不在版本內（release2.4）改顯示不提大彩蛋的那一句。 -->
-                <p class="vault-door__fine" data-feat="S121" data-i18n="vault.grid.fine">Each item can carry its own task: fans who get into the vault finish it to see that item. Click an item to set its task or mark it as a grand surprise.</p>
-                <p class="vault-door__fine" data-feat-off="S121" data-i18n="vault.grid.fine.nk">Each item can carry its own task: fans who get into the vault finish it to see that item. Click an item to set its task.</p>
-                <div data-vault-grid></div>
-              </div>
-            </div>
-
-            <!-- ═══ 存取權限：即時人數 → 條件開放（F2）→ 直接開放（F4）→ 分享連結（F9） ═══ -->
-            <div class="tab-panel" id="vault-panel-access" role="tabpanel" aria-labelledby="vault-tab-access" data-vault-panel="access">
-              <div class="vault-access">
-
-                <p class="vault-reachline" data-feat="S93" data-vault-reachline></p>
-
-                <!-- 條件開放＝規格 F2 的進庫方法。每一種方法一張「方法 N」小卡＋這種方法幾人符合。
-                     判定方式與重算時機收進 ⓘ。 -->
-                <section class="vault-door" data-vault-door>
-                  <div class="vault-door__col">
-                    <div class="vault-access__head">
-                      <div class="vault-door__label">
-                        <i data-lucide="users" class="ztor-icon"></i>
-                        <span data-i18n="vault.ac.rules">Open by conditions</span>
-                      </div>
-                      <button class="explain-btn" type="button" data-explain="explain-vault-rules" data-i18n-aria-label="vault.ac.rules.help" aria-label="How conditions work"><i data-lucide="info" class="ztor-icon"></i></button>
-                    </div>
-                    <div class="alert alert--row alert--warning" data-vault-norules hidden>
-                      <span class="alert__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></span>
-                      <div class="alert__body">
-                        <div class="alert__title" data-vault-norules-title></div>
-                      </div>
-                    </div>
-                    <div class="vault-door__rules" data-vault-rules></div>
-                    <p class="vault-access__sum" data-vault-rules-sum></p>
-                  </div>
-                </section>
-
-                <!-- 直接開放＝規格 F4 的鑰匙。兩個入口直接開發鑰匙抽屜並預選意圖；已發鑰匙列成清單，
-                     撤銷走抽屜同一支撤銷流程（同一段確認文字）。整張卡屬鑰匙 S123（⚪，release2.4 不放）。 -->
-                <section class="card" data-feat="S123">
-                  <div class="card__head">
-                    <div class="card__title-group">
-                      <span class="card__title-icon"><i data-lucide="key" class="ztor-icon"></i></span>
-                      <h3 class="card__title" data-i18n="vault.ac.direct">Direct access</h3>
-                    </div>
-                    <button class="btn btn--ghost btn--sm" type="button" data-vault-share="keys">
-                      <i data-lucide="key" class="ztor-icon"></i><span data-i18n="vault.btn.share-links">Manage keys</span>
-                    </button>
-                  </div>
-                  <!-- 上架前不能領鑰匙（F4，D477）：草稿與已下架時出現；仍可先發。 -->
-                  <div class="alert alert--row alert--info" data-feat="S123" data-vault-keys-off hidden>
-                    <span class="alert__icon"><i data-lucide="clock" class="ztor-icon"></i></span>
-                    <div class="alert__body"><div class="alert__desc" data-i18n="vault.ac.keys.off">Fans can’t claim keys until the vault is listed — they just see “not open yet”, and no use is spent. You can still issue keys now.</div></div>
-                  </div>
-                  <div class="vault-access__direct">
-                    <button class="btn btn--outline btn--sm" type="button" data-vault-share="new" data-share-intent="gift">
-                      <i data-lucide="gift" class="ztor-icon"></i><span data-i18n="vault.ac.direct.gift">Send to one fan</span>
-                    </button>
-                    <button class="btn btn--outline btn--sm" type="button" data-vault-share="new" data-share-intent="nfc">
-                      <i data-lucide="scan" class="ztor-icon"></i><span data-i18n="vault.ac.direct.nfc">Make an NFC product</span>
-                    </button>
-                  </div>
-                  <div class="vault-keylist" data-feat="S123" data-vault-keylist></div>
-                </section>
-
-                <!-- 分享連結＝規格 F9（D475）：每座庫房一條公開連結，只帶粉絲到粉絲端的庫房頁、不給進庫權限，
-                     與上面的鑰匙是兩件事（不叫鑰匙）。連結列沿用 Link field（js/link-field.js 管複製與「已複製」回饋）；
-                     網址隨選中的庫房由 media-vault.js renderAccessTab 寫入，格式是示範（ASSUMPTIONS UIA-295）。 -->
-                <section class="card" data-feat="S106">
-                  <div class="card__head">
-                    <div class="card__title-group">
-                      <span class="card__title-icon"><i data-lucide="share" class="ztor-icon"></i></span>
-                      <h3 class="card__title" data-i18n="vault.ac.link">Share link</h3>
-                    </div>
-                  </div>
-                  <div class="linkf" data-linkf data-vault-sharelink>
-                    <div class="linkf__row">
-                      <input class="input linkf__input" type="text" readonly value="" aria-label="Share link" data-i18n-aria-label="vault.ac.link">
-                      <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="vault.ac.link.copy">Copy link</span></button>
-                    </div>
-                    <p class="linkf__hint" data-vault-link-hint data-i18n="vault.ac.link.hint">This link brings fans to the vault — it doesn’t let them in. They still need to meet a condition or hold a key.</p>
-                    <!-- 草稿與已下架不能分享（F9 其他狀態，D477）：連結列停用，這一句講原因。 -->
-                    <p class="linkf__hint" data-feat="S112" data-vault-link-off hidden></p>
-                  </div>
-                </section>
-
-              </div>
-            </div>
-
           </div>
+
+          <!-- 內容（F5、F8）：灰底容器＋固定三欄直式卡片，最後一張是「添加」。點卡片開單件設定抽屜。
+               檔案選擇器住在容器裡，頁面與建立流程共用同一個 input。 -->
+          <section class="vault-pool" data-vault-pool>
+            <div class="vault-pool__grid" data-vault-grid></div>
+            <input type="file" multiple accept="image/*,video/*,audio/*" hidden data-vault-file>
+          </section>
+
+          <!-- 開啟方式（F2、F4）：條件開啟｜鑰匙開啟 分頁。內容由 JS 畫（鑰匙分頁屬 S123，release2.4 不出現）。 -->
+          <section class="vault-open" data-vault-open></section>
 
         </div>
       </div>
@@ -544,6 +345,53 @@
   </section>
 </div>
 
+<!-- 分享連結（F9，D475）：標頭「分享」按鈕打開的彈窗，canonical 對話框殼（Q27）。連結列沿用 Link field
+     （js/link-field.js 管複製與「已複製」回饋）；草稿與已下架時連結列停用、說明句換成原因（F9 其他狀態，D477）。 -->
+<div class="payout-modal" data-vault-sharepop data-feat="S106" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="vault-sp-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="vault-sp-title" data-i18n="vault.ac.link">Share link</h2>
+      <button class="btn btn--icon" type="button" data-sp-close aria-label="Close" data-i18n-aria-label="tier-settings.explain.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="linkf" data-linkf data-vault-sharelink>
+        <div class="linkf__row">
+          <input class="input linkf__input" type="text" readonly value="" aria-label="Share link" data-i18n-aria-label="vault.ac.link">
+          <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="vault.ac.link.copy">Copy link</span></button>
+        </div>
+        <p class="linkf__hint" data-vault-link-hint data-i18n="vault.ac.link.hint">This link brings fans to the vault — it doesn’t let them in. They still need to meet a condition or hold a key.</p>
+        <p class="linkf__hint" data-vault-link-off hidden></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 新增庫房：取名 → 放內容 → 誰開得了（全畫面建立流程，版型照 create-project／create-event 的 .wizard）。
+     頂列進度條、底列按鈕與每一步的內容由 js/media-vault.js 畫；第 3 步用跟頁面同一個「開啟方式」分頁。 -->
+<div class="wizard vault-wizard" data-vault-wiz hidden>
+  <div class="wizard__sheet wizard__sheet--sectioned">
+    <header class="wizard__top">
+      <div class="wizard__top-bar">
+        <div class="wizard__top-lead">
+          <button class="wizard__back" type="button" data-wiz-exit aria-label="Back to Media Vault" data-i18n-aria-label="vault.wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+          <div class="wizard__top-titlewrap">
+            <span class="wizard__top-title" data-i18n="vault.wiz.title">Create vault</span>
+            <span class="wizard__top-sub" data-wiz-sub></span>
+          </div>
+        </div>
+        <div class="wizard__progress" data-wiz-progress></div>
+        <div class="wizard__top-actions">
+          <span class="wizard__save-status" data-state="saved" data-wiz-saved hidden><i class="wizard__save-status__dot"></i><span data-i18n="vault.wiz.saved">Saved as draft</span></span>
+        </div>
+      </div>
+    </header>
+    <div class="wizard__body wizard__body--form wizard__body--narrow" data-wiz-body-wrap></div>
+  </div>
+  <footer class="wizard__bottom wizard__bottom--end">
+    <div class="wizard__bottom-actions" data-wiz-foot></div>
+  </footer>
+</div>
+
 <!-- 新增條件的 popover（掛在 body 下、position:fixed：門條所在的欄有自己的
      圓角與 overflow，absolute 面板會被裁掉，同 zselect.js 的理由）。 -->
 <div class="vault-rulemenu" data-vault-rulemenu role="menu" hidden></div>
@@ -553,6 +401,8 @@
 <script src="js/explainer.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
 <script src="js/link-field.js?v=r2.2"></script>
+<script src="js/loyalty-settings.js?v=r2.2"></script>
+<script src="js/fans-roster.js?v=r2.2"></script>
 <script src="js/tier-population.js?v=r2.2"></script>
 <script src="js/vault-store.js?v=r2.2"></script>
 <script src="partials/relist-restore.js?v=r2.2"></script><!-- D488：重新上架時檢查保存的下架時間 -->

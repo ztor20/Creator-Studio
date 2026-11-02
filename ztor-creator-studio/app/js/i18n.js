@@ -136,7 +136,7 @@
     'fg.cta.fans':    { en: 'See my fans', zh: '看看我的粉絲' },
     /* 第一幕補計分模型摘要（D347，2026-10-02；§7.5）：來源、衰減、入帳與升降級時機（D476 起點數即時入帳、達標即時升級，降級每週重算）。 */
     'fg.earn.buy': { en: 'Purchases', zh: '購買' },
-    'fg.earn.buy-v': { en: '40 pts per HK$1 × purchase type value', zh: '每 HK$1 換 40 點 × 該品項的份量' },
+    'fg.earn.buy-v': { en: '10 pts per 1 unit of base currency × purchase type value', zh: '每 1 元基準幣別換 10 點 × 該品項的份量' },
     'fg.earn.event': { en: 'Event check-ins', zh: '活動報到' },
     'fg.earn.event-v': { en: '300 pts per check-in', zh: '每次 300 點' },
     'fg.earn.engage': { en: 'Engagement', zh: '投入類' },
@@ -406,11 +406,11 @@
     /* ── 平台忠誠點數設定（D347，2026-10-02；spec 5.1.0.8 F1～F6）── Admin 第 8 個同層目的地。
        頁型沿用平台費率設定；數值皆為 D347 預設值。命名空間 ploy＝platform loyalty。 */
     'admin.platform-loyalty': { en: 'Platform Loyalty Settings', zh: '平台忠誠點數設定' },
-    'ploy.lede': { en: 'These apply to loyalty points for every creator. Creators set their own activity value, purchase type value and max points per 90 days in tier settings.', zh: '這裡的參數套用到所有創作者的忠誠點數。各類行為的份量、各購買品項的份量與互動推薦每 90 天最多得分，由各創作者在自己的分級設定調整。' },
+    'ploy.lede': { en: 'These apply to loyalty points for every creator. Creators can’t override them.', zh: '這裡的參數套用到所有創作者的忠誠點數，創作者不能覆寫。' },
     'ploy.tab.settings': { en: 'Settings', zh: '設定' },
     'ploy.tab.log': { en: 'Change log', zh: '修改紀錄' },
     'ploy.save': { en: 'Save', zh: '儲存' },
-    'ploy.pending': { en: 'Saved. Scoring changes (activity values, caps, role weights, season boosts) count only for events from now on; points already credited aren’t rewritten. Tier changes (half-life, inactive days, demotion grace) take effect from the next weekly recompute.', zh: '已儲存。計分類（全站活動的給分與上限、職務權重、賽季加倍）只作用於之後發生的事件，已入帳的點數不改寫；等級類（衰減半衰期、多久沒有行為就往下掉一階、降級緩衝）從下一次每週重算起生效。' },
+    'ploy.pending': { en: 'Changes apply from now on and never recalculate past entries. Scoring changes count for later events; tier cut-offs take effect at the next weekly recompute; event switches, tier names and KPI windows apply right away.', zh: '異動只往後生效，不回算歷史紀錄。計分類只作用於之後發生的事件；分級切點從下一次每週重算起生效；事件開關、分級名稱與 KPI 視窗立即生效。' },
     'ploy.unchanged': { en: 'Nothing has changed since the last save.', zh: '與上次儲存相比沒有變更。' },
     'ploy.act.title': { en: 'Platform activities', zh: '全站活動' },
     'ploy.act.col.item': { en: 'Activity', zh: '項目' },
@@ -459,11 +459,8 @@
     'ploy.decay.active': { en: 'Inactive days before dropping a tier', zh: '多久沒有行為就往下掉一階' },
     'ploy.decay.active-hint': { en: 'Every time a fan goes this many days with no activity, their tier cap drops one step; points stay and keep fading', zh: '粉絲每滿這麼多天沒有任何行為，等級上限就往下掉一階，點數保留並繼續衰減' },
     'ploy.decay.grace': { en: 'Demotion grace', zh: '降級緩衝' },
-    'ploy.decay.grace-hint': { en: 'The countdown starts when a fan falls below a tier’s bar and is cancelled if they get back above it; a fan drops only if still short at the first weekly recompute after the days run out', zh: '粉絲掉到該級門檻以下就開始倒數；期間回到門檻以上就取消，天數到期後的下一次每週重算仍未達標才降級' },
+    'ploy.decay.grace-hint': { en: 'Starts when a fan falls below a tier’s bar and stops if they get back above it; they drop only if still short at the first weekly recompute after the days run out', zh: '粉絲掉到該級門檻以下就開始倒數；期間回到門檻以上就取消，天數到期後的下一次每週重算仍未達標才降級' },
     'ploy.const.title': { en: 'Platform constants', zh: '平台常數' },
-    'ploy.const.rate': { en: 'Base rate', zh: '基準費率' },
-    'ploy.const.rate-hint': { en: 'Purchases are converted to HKD, then multiplied by this and the purchase type value', zh: '購買金額先換算成港幣，再乘上這個費率與該品項的份量' },
-    'ploy.const.rate-v': { en: '40 pts / HK$1', zh: '每 HK$1 換 40 點' },
     'ploy.const.currency': { en: 'Platform base currency', zh: '平台基準幣別' },
     'ploy.const.currency-hint': { en: 'Exchange rates follow the platform currency rules', zh: '匯率依平台幣別規則' },
     'ploy.readonly': { en: 'Read-only', zh: '唯讀' },
@@ -477,21 +474,94 @@
     'ploy.int.self': { en: 'Self-invite detection', zh: '自我邀請偵測' },
     'ploy.int.self-hint': { en: 'Checked by payment method, device and address', zh: '以付款工具、裝置、地址偵測' },
     'ploy.int.cap': { en: 'Cap checks', zh: '上限判定' },
-    'ploy.int.cap-hint': { en: 'Rolling 90 days, checked when points are given, never retroactive', zh: '以滾動 90 天計，在給分當下判定，不追溯' },
+    'ploy.int.cap-hint': { en: 'Over each event’s rolling window, checked when points are given, never retroactive', zh: '以各事件的滾動視窗計，在給分當下判定，不追溯' },
     'ploy.always': { en: 'Always on', zh: '平台強制' },
     'ploy.log.title': { en: 'Change log', zh: '修改紀錄' },
-    'ploy.log.note': { en: 'Scoring changes count only for events after the save, and points already credited stay as they are. Tier changes take effect from the next weekly recompute.', zh: '計分類變更只作用於儲存之後發生的事件，已入帳的點數不改寫；等級類變更從下一次每週重算起生效。' },
-    'ploy.log.col.when': { en: 'Saved', zh: '儲存時間' },
-    'ploy.log.col.by': { en: 'By', zh: '執行者' },
-    'ploy.log.col.change': { en: 'Change', zh: '變更內容' },
+    'ploy.log.note': { en: 'Every change is logged. Nothing here recalculates past entries, and points already credited stay as they are.', zh: '每一次異動都留紀錄；異動不回算歷史紀錄，已入帳的點數不改寫。' },
+    'ploy.log.col.when': { en: 'Time', zh: '時間' },
+    'ploy.log.col.by': { en: 'By', zh: '操作者' },
+    'ploy.log.col.item': { en: 'Setting', zh: '參數' },
+    'ploy.log.col.from': { en: 'From', zh: '原值' },
+    'ploy.log.col.to': { en: 'To', zh: '新值' },
     'ploy.log.col.status': { en: 'Takes effect', zh: '生效' },
     'ploy.log.st.pending': { en: 'Next weekly recompute', zh: '下一次每週重算起' },
     'ploy.log.st.applied': { en: 'Later events', zh: '之後的事件起' },
     'ploy.log.initial': { en: 'First settings, from the scoring model defaults', zh: '初始設定，採計分模型預設值' },
-    'ploy.log.season-add': { en: 'Season boost added: {range}', zh: '新增賽季加倍：{range}' },
-    'ploy.log.season-remove': { en: 'Season boost removed: {range}', zh: '移除賽季加倍：{range}' },
-    'ploy.log.by-admin': { en: 'Admin', zh: 'Admin' },
+    'ploy.log.season-add-item': { en: 'Season boost added', zh: '新增賽季加倍' },
+    'ploy.log.season-remove-item': { en: 'Season boost removed', zh: '移除賽季加倍' },
+    'ploy.log.st.now': { en: 'Right away', zh: '立即' },
     'ploy.saved': { en: 'Saved', zh: '已儲存' },
+    'ploy.reset':      { en: 'Reset to defaults', zh: '還原預設' },   // 2026-11-02 #460：原型專用，清掉本機儲存的設定
+    'ploy.reset-hint': { en: 'Prototype only: clears the settings saved in this browser so every page goes back to the defaults.', zh: '僅原型：清除這台瀏覽器儲存的設定，所有頁面回到預設值。' },
+    'ploy.reset-done': { en: 'Back to the defaults', zh: '已還原預設' },
+    /* D498（2026-11-02，UI-CHANGES #442）：需求站 dev 頁 Global Setting 的 P0——賺分事件與開關、分級、KPI 視窗 */
+    'ploy.ev.title': { en: 'Earning events', zh: '賺分事件' },
+    'ploy.ev.ka': { en: 'Base rate (K_A)', zh: '基礎比率（K_A）' },
+    'ploy.ev.ka-hint': { en: 'Points per 1 unit of base currency = multiplier × base rate', zh: '每 1 元基準幣別得分＝倍率 × 基礎比率' },
+    'ploy.unit.per-base': { en: 'pts / 1 unit of base currency', zh: '點／每 1 元基準幣別' },  /* D500：K_A 幣別待確認，先用中性單位 */
+    'ploy.ev.col.event': { en: 'Event', zh: '事件' },
+    'ploy.ev.col.points': { en: 'Points', zh: '給分' },
+    'ploy.ev.col.cap': { en: 'Cap', zh: '上限' },
+    'ploy.ev.col.on': { en: 'On', zh: '開關' },
+    'ploy.ev.cat.buy': { en: 'Purchase', zh: '購買' },
+    'ploy.ev.cat.int': { en: 'Interaction', zh: '互動' },
+    'ploy.ev.cat.ref': { en: 'Referral', zh: '推薦' },
+    'ploy.ev.a3': { en: 'Event tickets', zh: '活動票券' },
+    'ploy.ev.a4': { en: 'E-Shop products', zh: '電子商店商品' },
+    'ploy.ev.b1': { en: 'Co-create vote', zh: '共創投票' },
+    'ploy.ev.b4': { en: 'Like', zh: '按讚' },
+    'ploy.ev.b5': { en: 'Save', zh: '收藏' },
+    'ploy.ev.b3': { en: 'Invite to follow', zh: '邀請朋友追蹤' },
+    'ploy.ev.nocap': { en: 'No cap', zh: '無上限' },
+    'ploy.ev.within': { en: 'within', zh: '在' },
+    'ploy.ev.cap-max': { en: 'Cap', zh: '上限' },
+    'ploy.ev.cap-window': { en: 'Rolling window', zh: '滾動視窗' },
+    'ploy.unit.votes': { en: 'votes', zh: '票' },
+    'ploy.unit.people': { en: 'people', zh: '位' },
+    'ploy.ev.a6': { en: 'Offline scan to earn', zh: '線下掃碼領點' },
+    'ploy.ev.cat.off': { en: 'Offline', zh: '線下' },
+    'ploy.ev.a6-where': { en: 'Points, quota and validity are set on the product and the pickup session, not here.', zh: '點數、名額與有效期在商品與取貨場次設定，不在本頁。' },
+    'ploy.ev.a6-off': { en: 'When off, no scan gives points and the fan app shows “Offline points paused”. Points already given are not affected.', zh: '關閉時任何掃碼都不發點，粉絲 App 顯示「線下積分暫停中」；已發點數不受影響。' },
+    'ploy.ev.stopped': { en: 'Stopped', zh: '已停止發分' },
+    'ploy.ev.on': { en: 'On', zh: '開' },
+    'ploy.ev.off': { en: 'Off', zh: '關' },
+    'ploy.ev.toast-off': { en: 'Stopped. Points already given stay.', zh: '已停止發分，已發的點數不扣。' },
+    'ploy.ev.toast-on': { en: 'Points are being given again.', zh: '已恢復發分。' },
+    'ploy.ev.note-off': { en: 'Turning an event off stops new points right away. It only affects points from now on: nothing is recalculated and points already given stay.', zh: '關閉後該事件立即停止發分；只影響之後的發分，不回算、不扣除已發放的點數。' },
+    'ploy.ev.note-scope': { en: 'Changes apply from now on and never recalculate past entries. Creators can’t override these settings.', zh: '異動只往後生效、不回算歷史紀錄；創作者不能覆寫這些設定。' },
+    'ploy.tier.title': { en: 'Tiers', zh: '分級' },
+    'ploy.tier.col.name': { en: 'Display name', zh: '顯示名稱' },
+    'ploy.tier.col.top': { en: 'Top %', zh: '前 % 名' },
+    'ploy.tier.rest': { en: 'Everyone else', zh: '其餘粉絲' },
+    'ploy.tier.floor': { en: 'Minimum loyalty points', zh: '最低忠誠點數門檻' },
+    'ploy.tier.floor-hint': { en: 'One value for every tier. Below it a fan is always Fan and isn’t ranked', zh: '所有分級共用一個值；低於它一律是一般粉絲，不進排名' },
+    'ploy.tier.recompute': { en: 'Tier recompute', zh: '分級重算' },
+    'ploy.tier.recompute-hint': { en: 'Cut-off scores and demotions update then; promotions happen right away', zh: '切點分數與降級在這時更新；升級即時發生' },
+    'ploy.tier.weekly': { en: 'Every week', zh: '每週一次' },
+    'ploy.tier.order': { en: 'Fans at or above the minimum are ranked, and the top % above decides their tier; anyone outside the last cut-off stays Fan.', zh: '達到門檻的粉絲才進排名，再依上方的前 % 名分級；名次落在最後一個切點以外的，仍是一般粉絲。' },
+    'ploy.tier.rename': { en: 'A new name shows everywhere the tier appears: the fan leaderboard, Fans and Media Vault.', zh: '改名後，所有顯示該分級的地方都用新名稱，含粉絲端排行榜、Fans CRM 與媒體庫。' },
+    'ploy.kpi.title': { en: 'Fans KPI windows', zh: '粉絲管理 KPI 視窗' },
+    'ploy.kpi.active': { en: 'Active fans', zh: '活躍粉絲' },
+    'ploy.kpi.active-hint': { en: 'At least one earning action in this many days; the revenue KPI uses the same window', zh: '這麼多天內至少 1 筆有效動作；收入 KPI 也採這個視窗' },
+    'ploy.kpi.risk': { en: 'At risk', zh: '流失風險' },
+    'ploy.kpi.risk-hint': { en: 'No earning action in this many days', zh: '這麼多天內沒有任何有效動作' },
+    'ploy.kpi.recent': { en: 'Recent points', zh: '近期入帳' },
+    'ploy.kpi.recent-hint': { en: 'The “+X in the last N days” line under loyalty points', zh: '忠誠點數副標「近 N 天入帳 +X」' },
+    /* 2026-11-02 頁型改版（UI-CHANGES #458，D508）：頁面分頁＋每頁一張卡、卡內就地編輯 */
+    'ploy.tab.kpi': { en: 'Fans KPIs', zh: '粉絲管理指標' },
+    'ploy.tab.other': { en: 'More settings', zh: '其他設定' },
+    'ploy.history': { en: 'History', zh: '變更歷史' },
+    'ploy.edit': { en: 'Edit', zh: '編輯' },
+    'ploy.ev.head': { en: 'How many points each action gives and how often it can earn. Switches work any time and take effect right away — no need to press Edit.', zh: '每種行為給多少點、多久內最多拿幾次。開關隨時可切、立即生效，不必先按編輯。' },
+    'ploy.ev.col.rate': { en: 'Points / multiplier', zh: '給分／倍率' },
+    'ploy.ev.a6-short': { en: 'Set per session', zh: '在商品與場次設定' },
+    'ploy.tier.eff': { en: 'New names show as soon as you save; top %, minimum points and demotion grace take effect from the next weekly recompute.', zh: '名稱儲存後立即換上；前 % 名、最低忠誠點數門檻與降級緩衝從下一次每週重算起生效。' },
+    'ploy.kpi.head': { en: 'How many recent days each Fans KPI looks at. KPIs switch to the new days as soon as you save.', zh: '粉絲管理頁的三個指標各看最近幾天。儲存後指標立即改用新天數。' },
+    'ploy.kpi.days': { en: 'Days', zh: '天數' },
+    'ploy.kpi.where': { en: 'Used for', zh: '影響哪裡' },
+    'ploy.other.head': { en: 'Platform activities, role shares, season boosts, decay and platform rules. Scoring changes count for later events; tier changes take effect from the next weekly recompute.', zh: '全站活動、職務分點、賽季加倍、衰減與平台規則。計分類只作用於之後的事件；等級類從下一次每週重算起生效。' },
+    'ploy.log.all': { en: 'All', zh: '全部' },
+    'ploy.log.empty': { en: 'No changes in this category yet.', zh: '這個類別還沒有紀錄。' },
     /* D476（2026-10-23）：賽季範圍與倍率、職務分到的點數（崗位歸屬）、歷史訂單回填 */
     'ploy.season.col.scope': { en: 'Scope', zh: '範圍' },
     'ploy.season.col.mult': { en: 'Multiplier', zh: '倍率' },
@@ -3748,7 +3818,7 @@
     'product-detail.nav.rules':       { en: 'Discounts & limits', zh: '折扣與限購' },
     'product-detail.nav.publish':     { en: 'Listing & sale',  zh: '上架與開賣' },
     'product-detail.btn.edit':        { en: 'Edit',            zh: '編輯' },   /* 2026-09-11 使用者：「改成編輯」——按鈕坐在該分頁的工具列上，對象已在脈絡裡 */
-    'product-detail.btn.save-changes': { en: 'Save changes',   zh: '儲存變更' },
+    'product-detail.btn.save-changes': { en: 'Save',   zh: '儲存' },   // 2026-11-02 使用者：「改名儲存」（商品細節頁編輯態主鈕；同鍵的組合包細節頁、商店設定一併改）
     'product-detail.setov.title':     { en: 'Settings overview', zh: '商品設定概覽' },
     'product-detail.setov.sub':       { en: 'Select a row to edit it.', zh: '點任一列前往修改。' },
     'product-detail.setov.go':        { en: 'Go to setting',   zh: '前往設定' },
@@ -3839,6 +3909,11 @@
     'pk.unbind.body':       { en: '{k} unredeemed items of this product will leave “{from}” and go back to “Pickup session not yet set”. Redeemed items stay redeemed.', zh: '這個商品尚未核銷的 {k} 件會離開「{from}」，回到「取貨場次待設定」；已核銷的件維持已核銷。' },
     'pk.rebind.ok':         { en: 'Change session', zh: '變更場次' },
     'pk.unbind.ok':         { en: 'Unlink session', zh: '取消綁定' },
+    /* 點數 QR 卡（.points-qr · js/points-qr.js）：{n}＝每次領的點數、{a}／{b}＝已領／總名額 */
+    'pqr.download':         { en: 'Download QR', zh: '下載 QR' },
+    'pqr.perScan':          { en: '+{n} pts per scan', zh: '每次 +{n} 點' },
+    'pqr.claimed':          { en: '{a} of {b} claimed', zh: '已領 {a}／{b}' },
+    'pqr.full':             { en: 'Fully claimed', zh: '名額已滿' },
     'bd.pickup.rebind.to':  { en: '{k} unredeemed items across this bundle’s members will move to “{to}”. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會改屬「{to}」；已核銷的件維持已核銷。' },
     'bd.pickup.rebind.back': { en: '{k} unredeemed items across this bundle’s members will go back to each member’s own pickup session. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會回到各成員自己的取貨場次；已核銷的件維持已核銷。' },
     /* ✝ 墓碑 · 'bd.pickup.member-meta'（2026-10-22 D470 退役）：組合詳情成員列改寫成員勾的取貨方式（cp.delivery.shipping／cp.delivery.qr）與場次。 */
@@ -4642,14 +4717,14 @@
     'fans.btn.tiers':        { en: 'Tier settings',                         zh: '分級設定' },
     'fans.btn.message':      { en: 'Message segment',                       zh: '群發訊息' },
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
-    'fans.kpi.active-meta':  { en: 'of 1,840 total',                        zh: '共 1,840 位' },
+    'fans.kpi.active-meta':  { en: 'of {n} total',                          zh: '共 {n} 位' },   // 2026-11-02 #460：{n} 由 js/fans-roster.js 的示範母數算（fans-crm.html 填入）   // 2026-11-02 #443：總數對齊示範母數 1,283（js/tier-population.js），舊值 1,840
     'fans.kpi.risk':         { en: 'At risk',                               zh: '流失風險' },
-    'fans.kpi.risk-meta':    { en: 'Super Fans · quiet 21/90d',              zh: '超級粉絲 · 沉默 21/90 天' },   // 2026-10-30 D493：分級 · 沉默 N/M 天（N＝該級最近有行為那位距今天數，M＝掉級天數）   // 2026-10-27 縮短（原「5 位超級粉絲 >14 天未互動」：數字已在卡上，不重複）
+    'fans.kpi.risk-meta':    { en: 'Super Fans · quiet 34/90d',              zh: '超級粉絲 · 沉默 34/90 天' },   // 2026-11-02 D497：流失風險＝近 30 天無有效動作，N 至少 30（D493 格式不變；舊值 21）
     'fans.kpi.risk-none':    { en: 'None',                                  zh: '無' },
     'fans.risk.short':       { en: '{tier} · quiet {d}/{m}d', zh: '{tier} · 沉默 {d}/{m} 天' },   // 2026-10-30 小字：分級最高的那一級
     'fans.risk.line':        { en: '{n} {tier} · quiet {d}/{m}d', zh: '{n} 位{tier} · 沉默 {d}/{m} 天' },   // 2026-10-30 hover 清單每一級一行   // 2026-10-27 零風險狀態
     'fans.kpi.revenue':      { en: 'Revenue (active)',                      zh: '活躍粉絲收入' },
-    'fans.kpi.revenue-meta': { en: 'Trailing 90 days',                      zh: '近 90 天' },
+    'fans.kpi.revenue-meta': { en: 'Trailing [[active|90]] days',           zh: '近 [[active|90]] 天' },   // 2026-11-02 #460：天數讀平台設定的活躍視窗（js/loyalty-settings.js）
     'fans.kpi.rep':          { en: 'Avg loyalty points',                    zh: '平均忠誠點數' },
     'fans.kpi.rep-meta':     { en: '+12 vs last month',                     zh: '較上月 +12' },
     'fans.who.title':        { en: "Who's who",                             zh: '粉絲組成' },
@@ -4667,8 +4742,8 @@
     'fans.tier.super-cnt':   { en: '115 fans',                              zh: '115 位' },
     'fans.tier.devoted-cnt': { en: '257 fans',                              zh: '257 位' },
     'fans.tier.fan-cnt':     { en: '898 fans',                              zh: '898 位' },
-    'fans.alert.title':      { en: '5 fans at risk of dropping',            zh: '5 位粉絲有流失風險' },
-    'fans.alert.meta':       { en: 'Super Fans · quiet 21/90d', zh: '超級粉絲 · 沉默 21/90 天' },   // 2026-10-30 D493：同 KPI 卡小字
+    'fans.alert.title':      { en: '{n} fans at risk of dropping',          zh: '{n} 位粉絲有流失風險' },   // 2026-11-02 #443：人數由 fans-crm.html 的 RISK 示意資料填入，不寫死
+    'fans.alert.meta':       { en: 'Super Fans · quiet 34/90d', zh: '超級粉絲 · 沉默 34/90 天' },   // 2026-11-02 D497：同 KPI 卡小字（舊值 21）
     'fans.alert.cta':        { en: 'Message them',                          zh: '發訊息' },
     'fans.tab.leaderboard':  { en: 'Leaderboard',                           zh: '排行榜' },
     'fans.tab.hof':          { en: 'Hall of fame',                          zh: '名人堂' },
@@ -4681,11 +4756,8 @@
     'fans.status.active':    { en: 'Active',                                zh: '活躍' },
     'fans.status.risk':      { en: 'At risk',                               zh: '流失中' },
     'fans.row1.meta':        { en: 'yuhan@studio · Taipei',                 zh: 'yuhan@studio · 台北' },
-    'fans.row1.next':        { en: '↗ next tier 92%',                       zh: '↗ 升級進度 92%' },
     'fans.row2.meta':        { en: 'yiwen@gmail · Tainan',                  zh: 'yiwen@gmail · 台南' },
-    'fans.row2.next':        { en: '↗ next tier 84%',                       zh: '↗ 升級進度 84%' },
     'fans.row3.meta':        { en: 'ahmed@hey · Singapore',                 zh: 'ahmed@hey · 新加坡' },
-    'fans.row3.next':        { en: '↗ next tier 62%',                       zh: '↗ 升級進度 62%' },
 
     /* 粉絲排行榜欄位標題（2026-07-27 表格化）。點欄名可排序：第一次高→低／A→Z，
        第二次低→高／Z→A，第三次回到預設排名順序。 */
@@ -4695,6 +4767,9 @@
     'fans.col.rep':      { en: 'Loyalty points', zh: '忠誠點數' },
     'fans.col.spent':    { en: 'Spent',       zh: '消費' },
     'fans.col.next':     { en: 'Next tier',   zh: '升級進度' },
+    'fans.row.next':      { en: '↗ next tier {p}%', zh: '↗ 升級進度 {p}%' },   // 2026-11-02 D497 第 9 項：進度由 js/fans-roster.js 算（取代逐列寫死的 fans.row1–9.next）
+    'fans.row.next-top':  { en: 'Top tier reached', zh: '已達最高級' },   // 2026-11-02 D497：核心圈
+    'fans.row.next-need': { en: '{n} pts to go', zh: '還差 {n} 分' },   // 2026-11-02 D497：進度格滑過的說明
     'fans.col.status':   { en: 'Status',      zh: '狀態' },
     'fans.col.rank':     { en: 'Rank',        zh: '排名' },
     'fans.col.since':    { en: 'Since',       zh: '達成年份' },
@@ -4787,7 +4862,7 @@
     'fans.tab.tiers':        { en: 'Tier settings',                        zh: '粉絲分級設定' },
     'fans.tiers.title':      { en: 'Organise your fan circle',             zh: '組織你的粉絲圈' },
     'fans.tiers.sub':        { en: 'Each tier\u2019s gates and what it unlocks. Going down the ladder, both the conditions and the benefits ease off.', zh: '四個分級各自的門檻與解鎖的權益。往下走條件遞減、權益也遞減。' },
-    'fans.tiers.sub-p0':     { en: 'The gates a fan must clear for each tier.', zh: '每個分級要達到的門檻。' },   // 2026-10-23 release2.4（S119 收起時，唯讀門檻）
+    'fans.tiers.sub-p0':     { en: 'Each tier\u2019s top %, and the one minimum loyalty points every tier shares.', zh: '每個分級的前 % 名，以及所有分級共用的最低忠誠點數門檻。' },   // 2026-11-02 D497（舊：每個分級要達到的門檻）
     'fans.tiers.toppct-hint':{ en: 'Ranked among fans with points', zh: '在有點數的粉絲中排名' },
     'fans.tiers.perkcount':  { en: 'Benefits',                             zh: '權益數量' },
     'fans.tiers.edit':       { en: 'Edit',                                 zh: '編輯' },
@@ -4808,7 +4883,7 @@
     'fans.tiers.hist.current': { en: 'Current', zh: '目前版本' },
     'fans.tiers.hist.first': { en: 'First version', zh: '初版' },
     'fans.tiers.hist.by': { en: 'By', zh: '操作者' },
-    'fans.tiers.hist.v3': { en: 'Ranked Fans · Min. loyalty points: 400 → 500', zh: '上榜粉絲 · 最低忠誠點數：400 → 500' },
+    'fans.tiers.hist.v3': { en: 'Ranked Fans · Top %: 25% → 30%', zh: '上榜粉絲 · 前 % 名：25% → 30%' },   // 2026-11-02 D497：最低忠誠點數改為全站一個值、不在分級設定改（舊：上榜粉絲 · 最低忠誠點數 400 → 500）
     'fans.tiers.hist.v3b': { en: 'Private livestreams · Inner Circle: Off → On', zh: '私人直播 · 核心圈：關閉 → 開啟' },
     'fans.tiers.hist.v3-n': { en: 'Re-tiered 34 fans', zh: '重新分級 34 位粉絲' },
     'fans.tiers.hist.v2': { en: 'Referrals activity value: 0.8× → 1.0×', zh: '各類行為的份量 · 推薦：0.8× → 1.0×' },
@@ -6104,6 +6179,8 @@
     'cb.tag.sub':           { en: 'Mark this bundle as limited on the storefront.', zh: '在前台標記為限量組合包。' },
     'cb.lock.sub':          { en: 'Lock some member stock for this bundle only; adjust any time.', zh: '暫時把部分成員庫存留給這個組合包，可隨時調整。' },
     'product-detail.lock.multi-hint': { en: 'Per-variation stock on sale isn’t editable here yet.', zh: '多選項逐組合的鎖定庫存量，這一頁還不能改。' },   // D496 商品細節頁
+    'cp.sku.title':         { en: 'SKU',                              zh: 'SKU' },   // D504 單一選項的 SKU 開關
+    'cp.sku.sub':           { en: 'Give this item a stock-keeping unit code.', zh: '為這件商品設定庫存單位編號。' },
     'cp.stock.title.set':   { en: 'Set stock quantity',               zh: '設定庫存量' },   // 2026-10-30 實體庫存設定（lab-stock-settings 定案）
     'cp.stock.title.cfg':   { en: 'Stock settings',                   zh: '庫存設定' },
     'cp.unl.title':         { en: 'Allow pre-orders after sell-out',  zh: '開啟不限量' },
@@ -8280,6 +8357,126 @@
     'pk.btn.search':    { en: 'Search sessions', zh: '搜尋取貨場次' },
     'pk.search.close':  { en: 'Close search',   zh: '關閉搜尋' },
     'pk.footer.count':  { en: 'Showing {n} of {m} sessions', zh: '顯示 {m} 個中的 {n} 個場次' },
+    /* ── D499 取貨場次類型「掃碼領點」（O43，只在 Admin 代管態）：pickup.html／partials/pickup-session-modal.js／pickup-detail.html ── */
+    'pk.lp.type.onsite':     { en: 'On-site redemption', zh: '現場核銷' },
+    'pk.lp.type.onsite.sub': { en: 'Staff scan each fan’s pickup code. For physical items and event tickets.', zh: '工作人員掃粉絲的領取碼，放實體商品與活動票券。' },
+    'pk.lp.type.lp':         { en: 'Scan to earn points', zh: '掃碼領點' },
+    'pk.lp.type.lp.sub':     { en: 'Fans scan a QR code you print and earn loyalty points in the app.', zh: '粉絲用 App 掃你印出的 QR，領忠誠點數。' },
+    'pk.lp.filter.all':      { en: 'All types', zh: '全部類型' },
+    'pk.lp.filter.aria':     { en: 'Filter by session type', zh: '依場次類型篩選' },
+    'pk.lp.f.type':          { en: 'Session type', zh: '場次類型' },
+    'pk.lp.f.type.hint':     { en: 'Set when the session was created. To use the other type, create a new session.', zh: '建立後不能更改；要換類型請另建場次。' },
+    'pk.lp.step0.sub':       { en: 'Choose a session type. It can’t be changed after you create the session.', zh: '先選場次類型，建立後不能更改。' },
+    'pk.lp.step1.sub':       { en: 'Set when this session gives points.', zh: '設定這個場次什麼時候發點。' },
+    'pk.lp.step2.sub': { en: 'Add the QR codes fans can scan here.', zh: '新增粉絲在這裡可以掃的 QR。' },
+    'pk.lp.f.loc':           { en: 'Location (optional)', zh: '地點（選填）' },
+    'pk.lp.f.loc.ph':        { en: 'Store or venue where the QR codes are handed out', zh: '發放 QR 的店家或現場' },
+    'pk.lp.f.name.ph':       { en: 'e.g., Bagel Fest · Xinyi', zh: '例：貝果節 · 信義店' },
+    'pk.lp.f.enabled':       { en: 'Enabled', zh: '啟用' },
+    'pk.lp.f.enabled.sub':   { en: 'When disabled, no QR code in this session gives points, whatever the time.', zh: '停用時不論時間，場次內所有 QR 都不發點。' },
+    'pk.lp.f.edithint':      { en: 'Changes apply to claims from now on. Points already given aren’t recalculated.', zh: '修改只影響之後的領取，已發的點數不回算。' },
+    'pk.lp.items.sub': { en: 'Add at least one QR code. Each QR gives its points once per fan account.', zh: '至少新增一個 QR。每個 QR 同一個粉絲帳號只能領一次。' },
+    'pk.lp.en':              { en: 'Enabled', zh: '啟用' },
+    'pk.lp.dis':             { en: 'Disabled', zh: '停用' },
+    'pk.lp.a6.badge':        { en: 'Event off', zh: '事件關閉中' },
+    'pk.lp.a6.title':        { en: 'Offline scan to earn is turned off', zh: '線下掃碼領點事件目前關閉' },
+    'pk.lp.a6.text':         { en: 'No scan gives points right now, and the fan app shows “Offline points paused”. Points already given aren’t affected.', zh: '任何掃碼都不發點，粉絲 App 會顯示「線下積分暫停中」；已發的點數不受影響。' },
+    'pk.lp.a6.cta':          { en: 'Open platform loyalty settings', zh: '前往平台忠誠點數設定' },
+    'pk.lp.act.open':        { en: 'Open details', zh: '開啟詳情' },
+    'pk.lp.act.edit':        { en: 'Edit', zh: '編輯' },
+    'pk.lp.act.enable':      { en: 'Enable', zh: '啟用' },
+    'pk.lp.act.disable':     { en: 'Disable', zh: '停用' },
+    'pk.lp.s.bagel.name':    { en: 'Bagel Fest · Xinyi', zh: '貝果節 · 信義店' },
+    'pk.lp.s.bagel.loc':     { en: 'Xinyi store', zh: '信義店' },
+    'pk.lp.s.bagel.time':    { en: 'Nov 1, 10:00 – Nov 30, 22:00', zh: '11/1 10:00 – 11/30 22:00' },
+    'pk.lp.s.bagel.by':      { en: 'Admin · Ivy Chen', zh: 'Admin · 陳以薇' },
+    'pk.lp.off.title':       { en: 'Disable this session?', zh: '要停用這個場次嗎？' },
+    'pk.lp.qroff.title': { en: 'Disable this QR code?', zh: '停用這個 QR？' },
+    'pk.lp.qroff.body':  { en: 'This QR code stops giving points right away. Other QR codes in the session keep working.', zh: '這個 QR 立刻停止發點，場次內其他 QR 不受影響。' },
+    'pk.lp.off.body':        { en: 'Every QR code in this session stops giving points right away, whatever the start and end time. Fans who scan will see “This event isn’t active”.', zh: '停用後，此場次所有 QR 立刻停止發點，與開始、結束時間無關；粉絲掃碼會看到「此活動未啟用」。' },
+    'pk.lp.off.back':        { en: 'You can enable it again any time. Points already given stay.', zh: '隨時可以切回啟用恢復發點，已發的點數不受影響。' },
+    'pk.lp.off.ok':          { en: 'Disable', zh: '停用' },
+    'pk.lp.off.cancel':      { en: 'Cancel', zh: '取消' },
+    'pk.lp.d.loc':           { en: 'Location', zh: '地點' },
+    'pk.lp.d.when':          { en: 'Start and end', zh: '開始與結束時間' },
+    'pk.lp.d.id':            { en: 'Session ID', zh: '場次 ID' },
+    'pk.lp.d.by':            { en: 'Created by', zh: '建立者' },
+    'pk.lp.d.at':            { en: 'Created', zh: '建立時間' },
+    'pk.lp.stats.title':     { en: 'Claim statistics', zh: '領取統計' },
+    'pk.lp.stats.col.claims': { en: 'Claims', zh: '領取次數' },
+    'pk.lp.stats.total':     { en: 'Total', zh: '合計' },
+    'pk.lp.stats.col.fans':  { en: 'Fans', zh: '領取粉絲數' },
+    'pk.lp.stats.col.share': { en: 'Share of fans', zh: '占粉絲比例' },
+    'pk.lp.stats.col.rate':  { en: 'Quota used', zh: '名額使用率' },
+    'pk.lp.stats.note':      { en: 'Each fan can claim a given QR code once, so fans per QR code equals its claims. The total row counts each fan once, so its fan count is lower than the sum. Fan totals are estimated in this prototype.', zh: '同一個帳號同一個 QR 只能領一次，所以每個 QR 的領取人數等於它的領取次數；合計列的領取粉絲數每人只算一次，因此少於各 QR 的加總。領取粉絲數在原型中為推估值。' },
+    'pk.lp.add.name.ph':     { en: 'New QR name', zh: '新增 QR 名稱' },
+    'pk.lp.qrs.title':       { en: 'Manage claim codes', zh: '管理領取碼' },
+    'pk.lp.d.qron':          { en: 'Manage claim codes', zh: '管理領取碼' },
+    'pk.lp.d.qron.total':    { en: '/ {n} total', zh: '／共 {n} 個' },
+    'pk.lp.d.rail':          { en: 'Giving points', zh: '發點' },
+    'pk.lp.d.qrcount':       { en: 'QR codes', zh: 'QR 數' },
+    'pk.lp.d.claimed':       { en: 'Claimed', zh: '已領次數' },
+    'pk.lp.d.times':         { en: '{n} times', zh: '{n} 次' },
+    'pk.lp.d.items':         { en: 'Claimable items', zh: '領取項目' },
+    'pk.lp.d.qrview':        { en: 'View QR code', zh: '查看 QR 圖' },
+    'pk.lp.qr.title':        { en: 'QR code', zh: 'QR 圖' },
+    'pk.lp.d.empty':         { en: 'No claimable items', zh: '沒有可領項目' },
+    'pk.lp.log.title':       { en: 'Claim log', zh: '領取紀錄' },
+    'pk.lp.log.aria': { en: 'Filter claims by QR code', zh: '依 QR 篩選領取紀錄' },
+    'pk.lp.log.col.time':    { en: 'Time', zh: '時間' },
+    'pk.lp.log.col.fan':     { en: 'Fan', zh: '粉絲' },
+    'pk.lp.log.col.points':  { en: 'Points', zh: '點數' },
+    'pk.lp.log.count':       { en: 'Showing the latest {n} of {m} claims', zh: '顯示最近 {n} 筆，共 {m} 筆' },
+    'pk.lp.log.empty':       { en: 'No claims yet', zh: '尚無領取紀錄' },
+    'pk.lp.log.note':        { en: 'Each claim is a ledger entry and can’t be edited. To correct points, adjust them on the fan’s page.', zh: '每筆都是帳本紀錄、不能修改；要校正點數，請到粉絲詳情調整。' },
+    'pk.lp.na.title':        { en: 'Session not found', zh: '找不到這個場次' },
+    'pk.lp.na.back':         { en: 'Back to pickup management', zh: '回到取貨管理' },
+    /* D503（2026-11-02）：點數 QR 只在掃碼領點場次裡產生——清單摘要、彈窗 QR 列、詳情頁 QR 新增／編輯／停用／刪除、依 QR 篩選紀錄 */
+    'pk.lp.sum': { en: '{n} QR codes · {m} claimed', zh: '{n} 個 QR · 已領 {m} 次' },
+    'pk.lp.qr.bagel1': { en: 'Buy 1 bagel', zh: '買 1 個貝果' },
+    'pk.lp.qr.bagel5': { en: 'Buy 5 bagels', zh: '買 5 個貝果' },
+    'pk.lp.qr.add': { en: 'Add QR code', zh: '新增 QR' },
+    'pk.lp.qr.addok': { en: 'Add', zh: '新增' },
+    'pk.lp.qr.edit': { en: 'Edit QR code', zh: '編輯 QR' },
+    'pk.lp.qr.save': { en: 'Save', zh: '儲存' },
+    'pk.lp.qr.no': { en: 'QR {n}', zh: 'QR {n}' },
+    'pk.lp.qr.remove': { en: 'Remove QR code', zh: '移除 QR' },
+    'pk.lp.qr.keep': { en: 'Claimed {n} times, so it can’t be removed. You can disable it on the session page.', zh: '已領 {n} 次，不能移除；只能到場次詳情停用。' },
+    'pk.lp.qr.f.name': { en: 'QR name', zh: 'QR 名稱' },
+    'pk.lp.qr.f.name.ph': { en: 'e.g., Buy 1 bagel', zh: '例：買 1 個貝果' },
+    'pk.lp.qr.f.points': { en: 'Points per scan', zh: '每次領取點數' },
+    'pk.lp.qr.f.points.ph': { en: 'e.g., 2', zh: '例：2' },
+    'pk.lp.qr.f.total.ph': { en: 'e.g., 500', zh: '例：500' },
+    'pk.lp.qr.f.total': { en: 'Total claims', zh: '總名額' },
+    'pk.lp.qr.err.name': { en: 'Enter a name.', zh: '請輸入名稱。' },
+    'pk.lp.qr.err.points': { en: 'Enter a whole number of 1 or more.', zh: '請輸入 1 以上的整數。' },
+    'pk.lp.qr.err.total': { en: 'Enter a whole number from 1 to 999,999.', zh: '請輸入 1～999,999 的整數。' },
+    'pk.lp.qr.err.below': { en: 'Can’t be lower than the {n} claims so far.', zh: '不能低於已領的 {n} 次。' },
+    'pk.lp.qr.off': { en: 'Disabled', zh: '已停用' },
+    'pk.lp.qr.del': { en: 'Delete', zh: '刪除' },
+    'pk.lp.qr.del.title': { en: 'Delete this QR code?', zh: '要刪除這個 QR 嗎？' },
+    'pk.lp.qr.del.body': { en: '“{n}” and its QR code will be removed. This can’t be undone.', zh: '「{n}」與它的 QR 圖會被移除，無法復原。' },
+    'pk.lp.qr.del.locked': { en: 'Already claimed, so it can only be disabled.', zh: '已有人領過，只能停用。' },
+    'pk.lp.log.allqr': { en: 'All QR codes', zh: '全部 QR' },
+    'pk.lp.log.col.qr': { en: 'QR code', zh: 'QR' },
+    'pk.lp.d.points.val': { en: '{n} points', zh: '{n} 點' },
+    /* 2026-11-02 領取項目改表格（使用者「要有欄位」）：欄名、每次點數值、啟用中狀態 */
+    'pk.lp.items.col.status': { en: 'Status', zh: '狀態' },
+    'pk.lp.items.on': { en: 'Active', zh: '啟用中' },
+    'pk.lp.items.col.given': { en: 'Points given', zh: '已發點數' },
+    'pk.lp.items.col.per':   { en: 'Points per claim', zh: '每次點數' },
+    /* 2026-11-02 使用者確認版面：統計大數字併入總名額、粉絲數不重複註記、QR 圖 ID、場次卡底部資訊行 */
+    'pk.lp.d.hero.total': { en: '/ {n} claimed', zh: '／{n} 已領' },
+    'pk.lp.d.fans.sub': { en: 'Each fan counted once', zh: '不重複' },
+    'pk.lp.qr.id': { en: 'ID', zh: 'ID' },
+    /* D501（2026-11-02）：可領項目寫回商品的所屬場次；詳情頁統計面板、領取項目「開啟」鈕、領取紀錄搜尋 */
+    'pk.lp.d.hero':          { en: 'claims so far', zh: '次領取' },
+    'pk.lp.d.usage':         { en: 'Claimed / total', zh: '已領／總名額' },
+    'pk.lp.d.points':        { en: 'Points given', zh: '已發出點數' },
+    'pk.lp.d.fans':          { en: 'Fans who claimed', zh: '領取粉絲數' },
+    'pk.lp.log.search':      { en: 'Search claims', zh: '搜尋領取紀錄' },
+    'pk.lp.log.search.ph':   { en: 'Fan name', zh: '粉絲名稱' },
+    'pk.lp.log.noresult':    { en: 'No matching claims', zh: '沒有符合的領取紀錄' },
     'pk.scanner.on':    { en: 'Scanner on',    zh: 'Scanner 已啟用' },
     'pk.scanner.off':   { en: 'Scanner off',   zh: 'Scanner 未啟用' },
     /* D401 決定四：從活動詳情「前往領取場次」（多個取貨場次）進來時的篩選說明 */
@@ -8331,7 +8528,6 @@
     'pk.empty.account.cta':    { en: 'Create pickup session', zh: '建立取貨場次' },
     'pk.detail.loc':    { en: 'Legacy Books, Xinyi Rd. Sec 4', zh: '典藏書店 · 信義路四段' },
     'pk.detail.time':   { en: 'Today 14:00 – 18:00', zh: '今日 14:00 – 18:00' },
-    'pk.f6.title':      { en: 'Scanner access', zh: 'Scanner 存取' },
     'pk.f6.url':        { en: 'Scanner URL',   zh: 'Scanner URL' },
     'pk.f6.enabled':    { en: 'Enabled',       zh: '已啟用' },
     'pk.f6.disabled':   { en: 'Disabled',      zh: '已停用' },
@@ -8403,19 +8599,36 @@
     'pk.log.note':      { en: 'The redemption log is the audit source; order-item and Events ticket status are the operational source. If they fall out of sync the row is flagged for retry.', zh: '核銷紀錄是稽核來源；訂單品項與 Events 票券狀態是營運來源。兩者不同步時，該列會標示待重試。' },
 
     /* ── 2026-08-01 · 取貨場次詳情頁改版（行動卡＋名單表格＋核銷紀錄 popup）── */
-    'pk.board.items':   { en: 'Pickup items',   zh: '領取項目' },
-    'pk.board.session': { en: 'Session',        zh: '場次資訊' },
-    'pk.board.loc':     { en: 'Pickup location', zh: '領取地點' },
-    'pk.board.when':    { en: 'Date and time',  zh: '領取日期與時間' },
     'pk.board.per':     { en: 'Per person',     zh: '每人領取' },
     'pk.board.progress':{ en: 'Redemption progress', zh: '核銷進度' },
     'pk.board.result':  { en: 'Session result', zh: '這場結果' },
-    'pk.board.left':    { en: 'units still to collect', zh: '件還沒領走' },
-    'pk.board.noshow':  { en: 'units not collected', zh: '件沒領走' },
     'pk.board.redeemed':{ en: 'Redeemed',       zh: '已核銷' },
     /* D240：核銷數字以「件」（領取單位）計；買家人數另列一行，一位買家可能有好幾件。 */
-    'pk.board.redeemed.active': { en: '44 / 80 units', zh: '44 / 80 件' },
-    'pk.board.redeemed.ended':  { en: '68 / 80 units', zh: '68 / 80 件' },
+    /* 現場核銷場次詳情改版（2026-11-02，照掃碼領點：標題區＋四個 bento＋兩個彈窗；5.1.5.15 F1／F2） */
+    'pk.detail.note':        { en: 'Show the QR code from your order email at the desk.', zh: '請在現場出示訂單通知信裡的 QR code。' },
+    'pk.ons.items.title':    { en: 'Manage pickup items', zh: '管理領取項目' },
+    'pk.ons.items.sub':      { en: 'Pickup products and event tickets this session can redeem.', zh: '這個場次可以核銷的取貨商品與活動票券。' },
+    'pk.ons.items.col.type': { en: 'Type', zh: '類型' },
+    'pk.ons.items.col.prog': { en: 'Redeemed / units', zh: '已核銷／總件數' },
+    'pk.ons.items.add':      { en: 'Add item', zh: '新增項目' },
+    'pk.ons.items.note':     { en: 'To remove an item, use “Edit session”.', zh: '要移除項目，請用「編輯場次」。' },
+    'pk.ons.items.addtitle': { en: 'Add pickup items', zh: '新增領取項目' },
+    'pk.ons.items.addsub':   { en: 'Search pickup products or event tickets by name. A product already in another session can’t be added.', zh: '依名稱搜尋取貨商品或活動票券；已在其他場次的商品不能加入。' },
+    'pk.ons.items.addgo':    { en: 'Add', zh: '加入' },
+    'pk.ons.items.cancel':   { en: 'Cancel', zh: '取消' },
+    'pk.ons.type.product':   { en: 'Pickup product', zh: '取貨商品' },
+    'pk.ons.type.ticket':    { en: 'Event ticket', zh: '活動票券' },
+    'pk.ons.k.items.unit':   { en: 'items', zh: '項' },
+    'pk.ons.k.of':           { en: '/ 80 units', zh: '／共 80 件' },
+    'pk.ons.k.left':         { en: 'Still to collect', zh: '尚未領取' },
+    'pk.ons.k.units':        { en: 'units', zh: '件' },
+    'pk.ons.k.buyers.unit':  { en: 'buyers', zh: '位' },
+    'pk.ons.k.buyers.sub':   { en: 'A buyer can have several units', zh: '一位買家可能領多件' },
+    'pk.ons.scan.open':      { en: 'Scanner access', zh: '掃碼入口' },
+    'pk.ons.scan.sub':       { en: 'Give staff the link and password. They open it on their own phone to scan and redeem.', zh: '把網址與密碼交給現場工作人員，他們用自己的手機開啟、掃碼核銷。' },
+    'pk.ons.scan.showqr':    { en: 'Show QR code', zh: '顯示 QR code' },
+    'pk.ons.scan.hideqr':    { en: 'Hide QR code', zh: '收起 QR code' },
+    'pk.ons.scan.pwnote':    { en: 'The password isn’t shown. To change it, or to reset or disable the link, use “Edit session”.', zh: '密碼不會顯示。要改密碼、重設或停用網址，請用「編輯場次」。' },
     'pk.board.buyers':  { en: 'Buyers',        zh: '買家' },
     'pk.board.buyers.val': { en: '52 people',  zh: '52 位' },
     'pk.a.copyurl':     { en: 'Copy scanner URL', zh: '複製掃碼網址' },
@@ -8706,24 +8919,19 @@
 
     /* Fans CRM — tabs / Pareto / list ops / Recovered / load-more (5.1.7 F1–F6) */
     'fans.btn.explain':      { en: 'Learn how fans work', zh: '認識粉絲系統' },   // 2026-10-27 使用者裁示：粉絲模組各頁統一改名（原「系統說明」）並另起一行
-    'fans.kpi.active.tip':     { en: 'Fans active in the trailing 90 days.', zh: '近 90 天內活躍的粉絲。' },
-    'fans.kpi.risk.tip':       { en: 'Fans who used to be active and were worth something to you (spent money, or in the top 3 tiers), but whose activity in the last 30 days fell by 60% or more.', zh: '以前很活躍、對你有價值（有消費過，或屬於前三個分級），但最近 30 天的互動比之前少了六成以上的粉絲。' },   // 2026-10-30 使用者：「看不懂」，改成白話並對上流失風險的判定條件
-    'fans.kpi.rep.tip': { en: 'Loyalty points are a fan’s overall value score, credited the moment they earn them.', zh: '忠誠點數是粉絲的整體價值分，即時入帳。' },
+    'fans.kpi.active.tip':     { en: 'Fans with at least one valid action in the last [[active|90]] days. A valid action is anything that earns loyalty points.', zh: '近 [[active|90]] 天內至少有 1 筆有效動作的粉絲。有效動作＝任何可賺忠誠點數的行為。' },   // 2026-11-02 D497 第 10 項（5.1.7 F2）
+    'fans.kpi.risk.tip':       { en: 'Fans with no valid action in the last [[risk|30]] days. A valid action is anything that earns loyalty points.', zh: '近 [[risk|30]] 天內沒有任何有效動作的粉絲。有效動作＝任何可賺忠誠點數的行為。' },   // 2026-11-02 D497 第 10 項（舊：以前很活躍、近 30 天互動少了六成以上）
+    'fans.kpi.rep.tip': { en: 'All fans’ loyalty points added up, divided by the number of fans.', zh: '所有粉絲的忠誠點數總和 ÷ 粉絲總數。' },   // 2026-11-02 D497 第 10 項（舊：忠誠點數是粉絲的整體價值分）
+    'fans.kpi.revenue.tip': { en: 'Total fan revenue in the last [[active|90]] days.', zh: '近 [[active|90]] 天內的粉絲營收總額。' },   // 2026-11-02 D497 第 10 項
     'fans.status.recovered':   { en: 'Recovered', zh: '已挽回' },
     'fans.row.message':        { en: 'Message', zh: '發訊息' },
     'fans.row.detail':         { en: 'Details', zh: '詳情' },
     'fans.row4.meta':          { en: 'meiling@mail · Kaohsiung', zh: 'meiling@mail · 高雄' },
-    'fans.row4.next':          { en: '↗ next tier 48%', zh: '↗ 升級進度 48%' },
     'fans.row5.meta':          { en: 'james@studio · London', zh: 'james@studio · 倫敦' },
-    'fans.row5.next':          { en: '↗ next tier 71%', zh: '↗ 升級進度 71%' },
     'fans.row6.meta':          { en: 'jiwoo@mail · Seoul', zh: 'jiwoo@mail · 首爾' },
-    'fans.row6.next':          { en: '↗ next tier 55%', zh: '↗ 升級進度 55%' },
     'fans.row7.meta':          { en: 'sofia@mail · Milan', zh: 'sofia@mail · 米蘭' },
-    'fans.row7.next':          { en: '↗ next tier 34%', zh: '↗ 升級進度 34%' },
     'fans.row8.meta':          { en: 'liam@mail · Sydney', zh: 'liam@mail · 雪梨' },
-    'fans.row8.next':          { en: '↗ next tier 28%', zh: '↗ 升級進度 28%' },
     'fans.row9.meta':          { en: 'emma@mail · Berlin', zh: 'emma@mail · 柏林' },
-    'fans.row9.next':          { en: '↗ next tier 19%', zh: '↗ 升級進度 19%' },
     'fans.loadmore':           { en: 'Load more', zh: '載入更多' },
     'fans.empty':              { en: 'No fans match your filters.', zh: '沒有符合篩選的粉絲。' },
     'fans.empty.noresult.title': { en: 'No fans match',             zh: '沒有符合的粉絲' },
@@ -8910,12 +9118,12 @@
     'msg.tab.compose':    { en: 'Compose', zh: '撰寫' },
     'msg.tab.history':    { en: 'History', zh: '歷史' },
     'msg.to':             { en: 'To', zh: '收件對象' },
-    'msg.to.all':         { en: 'All fans (1,840)', zh: '全部粉絲 (1,840)' },
-    'msg.to.inner':       { en: 'Inner Circle (13)', zh: '核心圈 (13)' },
-    'msg.to.super':       { en: 'Super Fans (115)', zh: '超級粉絲 (115)' },
-    'msg.to.devoted':     { en: 'Ranked Fans (257)', zh: '上榜粉絲 (257)' },
-    'msg.to.fan':         { en: 'Fan (898)', zh: '一般粉絲 (898)' },
-    'msg.to.risk':        { en: 'At risk (5)', zh: '流失風險 (5)' },
+    'msg.to.all':         { en: 'All fans (1,283)', zh: '全部粉絲 (1,283)' },   // 2026-11-02 #443：四級加總 13+115+257+898，舊值 1,840
+    'msg.to.inner': { en: '[[tier.inner|Inner Circle]] (13)', zh: '[[tier.inner|核心圈]] (13)' },   // 2026-11-02 #460：分級名稱讀平台設定、人數由 fans-crm.html 依母體填
+    'msg.to.super': { en: '[[tier.super|Super Fans]] (115)', zh: '[[tier.super|超級粉絲]] (115)' },   // 2026-11-02 #460：分級名稱讀平台設定、人數由 fans-crm.html 依母體填
+    'msg.to.devoted': { en: '[[tier.devoted|Ranked Fans]] (257)', zh: '[[tier.devoted|上榜粉絲]] (257)' },   // 2026-11-02 #460：分級名稱讀平台設定、人數由 fans-crm.html 依母體填
+    'msg.to.fan': { en: '[[tier.fan|Fan]] (898)', zh: '[[tier.fan|一般粉絲]] (898)' },   // 2026-11-02 #460：分級名稱讀平台設定、人數由 fans-crm.html 依母體填
+    'msg.to.risk':        { en: 'At risk (7)', zh: '流失風險 (7)' },   // 2026-11-02 #443：對齊 fans-crm.html 的 RISK 示意資料（2＋5），舊值 5；粉絲總覽上由 paintRisk 依資料覆寫，新品貼文彈窗沿用此預設
     'msg.to.recovered':   { en: 'Recovered (18)', zh: '已挽回 (18)' },
     'msg.to.singlenote':  { en: 'Messaging one fan — pick a segment above to broadcast.', zh: '正在傳訊給單一粉絲——選上方分群即可群發。' },
     'msg.to.filternote':  { en: 'Your current search or tag filter isn’t carried over.', zh: '目前的搜尋或標籤篩選不會帶入。' },   // 2026-10-30 D495
@@ -11300,17 +11508,35 @@
     'fan-detail.tags.done': { en: 'Done', zh: '完成' },
     'fan-detail.hero.edit-tags': { en: 'Edit tags', zh: '編輯標籤' },
     'fan-detail.btn.message': { en: 'Message', zh: '傳訊息' },
-    'fan-detail.btn.tier-settings': { en: 'Tier settings', zh: '分級設定' },
     'fan-detail.kpi.points': { en: 'Loyalty points', zh: '忠誠點數' },
-    'fan-detail.kpi.points-delta': { en: '+38 in the last 7 days', zh: '近 7 天入帳 +38' },   // 2026-10-30 D495 第 2 項（舊：比上次每週重算 +38）
-    'fan-detail.pts.adjust-title': { en: 'Points adjustment', zh: '點數調整' },   // 2026-10-30 D495 第 3 項
+    'fan-detail.kpi.points-delta': { en: '{x} in the last [[recent|7]] days', zh: '近 [[recent|7]] 天入帳 {x}' },   // 2026-10-30 D495 第 2 項（舊：比上次每週重算 +38）；2026-11-02 #460：{x} 由點數明細算、天數讀平台設定
+    'fan-detail.kpi.last-active-today': { en: 'Today', zh: '今天' },   // 2026-11-02 #460：最近活躍由點數明細最近一筆可賺點數的行為算
+    'fan-detail.kpi.last-active-day':   { en: '1 day ago', zh: '1 天前' },
+    'fan-detail.kpi.last-active-days':  { en: '{n} days ago', zh: '{n} 天前' },
+    'fan-detail.kpi.last-active-none':  { en: 'No earning action yet', zh: '尚無可賺點數的行為' },
+    /* 2026-11-02 #460：release2.4 P0 事件的點數明細列（A3 活動票券、A4 電子商店商品、B1 共創投票、B4 按讚、B5 收藏、B3 邀請追蹤） */
+    'fan-detail.tl.ticket1':   { en: 'Bought a ticket to the “LOVE RAGE HOPE” listening party', zh: '購買「LOVE RAGE HOPE 搶聽會」票券' },
+    'fan-detail.tl.ticket2':   { en: 'Bought a ticket to “Kowloon After Dark Live” in Tainan', zh: '購買「台南 九龍夜行 Live」票券' },
+    'fan-detail.tl.sticker':   { en: 'Bought the sticker set', zh: '購買貼紙組' },
+    'fan-detail.tl.photobook': { en: 'Bought the digital photobook', zh: '購買數位寫真集' },
+    'fan-detail.tl.vote1':     { en: 'Voted in a co-create poll', zh: '在共創投票投了 1 票' },
+    'fan-detail.tl.like1':     { en: 'Liked the “Kowloon After Dark” trailer', zh: '按讚「九龍夜行」預告片' },
+    'fan-detail.tl.like2':     { en: 'Liked a studio diary post', zh: '按讚工作室日記貼文' },
+    'fan-detail.tl.fav1':      { en: 'Saved “Moonlight over Sham Shui Po”', zh: '收藏「深水埗的月光」' },
+    'fan-detail.tl.fav2':      { en: 'Saved the “Kowloon After Dark” soundtrack', zh: '收藏「九龍夜行 原聲帶」' },
+    'fan-detail.tl.fav3':      { en: 'Saved the “LOVE RAGE HOPE” music video', zh: '收藏「LOVE RAGE HOPE」MV' },
+    'fan-detail.tl.like3':     { en: 'Liked the “LOVE RAGE HOPE” music video', zh: '按讚「LOVE RAGE HOPE」MV' },
+    'fan-detail.tl.invite1':   { en: 'Invited a friend to follow you', zh: '邀請朋友追蹤你' },
+    'fan-detail.pts.adjust-title': { en: 'System Adjust', zh: 'System Adjust' },   // 2026-11-02 D497 第 7 項：標題固定（舊：點數調整，D495）
     'fan-detail.kpi.spent': { en: 'Spent', zh: '消費額' },
     'fan-detail.kpi.spent-meta': { en: 'Lifetime · 18 orders', zh: '累計 · 18 筆訂單' },
     'fan-detail.kpi.progress': { en: 'Next tier progress', zh: '下一級進度' },
-    'fan-detail.kpi.progress-meta': { en: 'Already top tier — retention focus', zh: '已達最高級──以維繫為重' },
+    'fan-detail.kpi.progress-meta': { en: 'Focus on keeping them', zh: '以維繫為重' },   // 2026-11-02 D497 第 9 項：核心圈的副標（舊：已達最高級──以維繫為重，配寫死的 92%）
+    'fan-detail.kpi.progress-top': { en: 'Top tier reached', zh: '已達最高級' },   // 2026-11-02 D497：核心圈的大字
+    'fan-detail.kpi.progress-need': { en: '{n} pts to go', zh: '還差 {n} 分' },   // 2026-11-02 D497：D − 目前點數
+    'fan-detail.kpi.progress-reached': { en: 'At the next tier’s bar', zh: '已達下一級門檻' },   // 2026-11-02 D497：還差 0 分或下一級目前無人
     'fan-detail.kpi.last-active': { en: 'Last active', zh: '最近活躍' },
     'fan-detail.kpi.last-active-val': { en: '2 days ago', zh: '2 天前' },
-    'fan-detail.kpi.last-active-meta': { en: 'Opened the Kowloon After Dark OST drop', zh: '開啟了 九龍夜行 原聲帶 上架通知' },
     'fan-detail.batch-note': { en: 'Points land instantly and fans move up the moment they qualify; a fan below a tier’s bar gets a grace countdown, and drops only if still short at the next weekly recompute after it ends.', zh: '點數即時入帳、達標即時升級；掉到該級門檻以下先倒數緩衝天數，天數到期後下一次每週重算仍未達標才降。' },
     'fan-detail.tab.timeline': { en: 'Loyalty points', zh: '忠誠點數' },
     'fan-detail.tab.spending': { en: 'Spending records', zh: '消費紀錄' },
@@ -11334,26 +11560,21 @@
     /* 2026-10-27 忠誠點數分頁 demo（UIA-304 呈現假設）：每列右側是「當次入帳的點數」，分類篩選沿用 repmix 的五類＋調整。 */
     /* 2026-10-27（UIA-305）點數明細每列的 ⋮：修改這筆的點數／刪除這筆。 */
     'fan-detail.entry.edit': { en: 'Edit points', zh: '修改點數' },
-    'fan-detail.entry.delete': { en: 'Delete', zh: '刪除' },
     'fan-detail.entry.edit-title': { en: 'Edit entry points', zh: '修改這筆的點數' },
-    'fan-detail.entry.delete-title': { en: 'Delete this entry', zh: '刪除這筆紀錄' },
-    'fan-detail.entry.edit-lede': { en: 'Change how many points this entry earned. It can go up or down, but not below 0. The change is logged with who, when and why.', zh: '修改這筆入帳的點數，可以調高或調低，但不能小於 0。修改會記錄操作者、時間與原因。' },
-    'fan-detail.entry.delete-lede': { en: 'This removes the entry and takes its points off the total. The deletion is logged with who, when and why.', zh: '刪除會移除這筆紀錄，並從總點數扣掉它的點數。刪除會記錄操作者、時間與原因。' },
+    'fan-detail.entry.edit-lede': { en: 'Enter what this entry should be worth (0 or more) and why. A correction entry is added and linked to this one; the original amount stays on record. Logged with who and when.', zh: '填寫這一筆修改後的點數（0 以上）與原因。系統會另記一筆校正分錄連回這一筆，原本入帳的點數不會被覆寫；操作者與時間一併記錄。' },   // 2026-11-02 D497 第 6 項：append-only（舊：修改這筆入帳的點數）
     'fan-detail.entry.submit-edit': { en: 'Save change', zh: '儲存修改' },
-    'fan-detail.entry.submit-delete': { en: 'Delete entry', zh: '刪除這筆' },
     'fan-detail.entry.err.range': { en: 'Enter a whole number, 0 or more.', zh: '請輸入 0 以上的整數。' },
     'fan-detail.entry.err.same': { en: 'That is the current number.', zh: '與目前相同，沒有變更。' },
     'fan-detail.entry.done-edit': { en: 'Entry updated', zh: '已更新這筆點數' },
-    'fan-detail.entry.done-delete': { en: 'Entry deleted', zh: '已刪除這筆紀錄' },
     'fan-detail.entry.new-meta': { en: 'Adjustment · Admin · today', zh: '調整 · Admin · 今天' },
     'fan-detail.entry.log-edit': { en: 'Edited “{t}”: {a} → {b} pts — {r}', zh: '修改「{t}」：{a} → {b} 點（{r}）' },
-    'fan-detail.entry.log-delete': { en: 'Deleted “{t}” ({a} pts) — {r}', zh: '刪除「{t}」（{a} 點）：{r}' },
     /* 2026-10-27（UIA-306）粉絲詳情五頁優化 */
     'fan-detail.pts.sum.total': { en: 'Current points', zh: '目前點數' },
     'fan-detail.pts.sum.week': { en: 'Earned this week', zh: '本週入帳' },
     'fan-detail.pts.sum.tier': { en: 'Tier', zh: '目前分級' },
     'fan-detail.pts.sum.tier-meta': { en: 'Top tier reached', zh: '已達最高分級' },
     'fan-detail.entry.edited': { en: 'Edited', zh: '已人工修改' },
+    'fan-detail.entry.edited-tip': { en: 'Originally {a} · correction {d}', zh: '原本 {a} · 校正 {d}' },   // 2026-11-02 D497：已人工修改徽章滑過的說明
     'fan-detail.spend.src.label': { en: 'Source', zh: '來源' },
     'fan-detail.spend.src.eshop': { en: 'E-Shop', zh: '電商' },
     'fan-detail.spend.src.events': { en: 'Event tickets', zh: '活動票券' },
@@ -11402,6 +11623,12 @@
     'fan-detail.tl.s03': { en: 'Bought the vinyl add-on bundle', zh: '購買專輯黑膠加購組' },
     'fan-detail.tl.s04': { en: 'Bought the merch bundle (tote + zine)', zh: '購買周邊組合（托特包＋雜誌）' },
     'fan-detail.tl.s05': { en: 'Checked in · “LOVE RAGE HOPE listening party #2”', zh: '已報到 ·「LOVE RAGE HOPE 搶聽會 第 2 場」' },
+    'fan-detail.tl.a6a': { en: 'Scan to earn · “Bagel Fest · Xinyi”', zh: '掃碼領點 ·「貝果節 · 信義店」' },
+    'fan-detail.tl.a6a-sub': { en: 'Buy 1 bagel', zh: '買 1 個貝果' },
+    'fan-detail.tl.a6b': { en: 'Scan to earn · “Bagel Fest · Xinyi”', zh: '掃碼領點 ·「貝果節 · 信義店」' },
+    'fan-detail.tl.a6b-sub': { en: 'Buy 5 bagels', zh: '買 5 個貝果' },
+    'fan-detail.tl.a6c': { en: 'Scan to earn · “Bagel Fest · Xinyi”', zh: '掃碼領點 ·「貝果節 · 信義店」' },
+    'fan-detail.tl.a6c-sub': { en: 'Buy 1 bagel', zh: '買 1 個貝果' },
     'fan-detail.tl.s06': { en: 'Checked in · “NICKTHEREAL signing”', zh: '已報到 ·「NICKTHEREAL 簽名會」' },
     'fan-detail.tl.s07': { en: 'Commented on the new single post', zh: '在新曲貼文留言' },
     'fan-detail.tl.s08': { en: 'Shared a video to socials', zh: '分享影片到社群' },
@@ -11502,10 +11729,9 @@
     'fan-detail.log.col.before': { en: 'Before', zh: '修改前' },
     'fan-detail.log.col.after': { en: 'After', zh: '修改後' },
     'fan-detail.log.col.delta': { en: 'Change', zh: '修改額' },
-    'fan-detail.log.kind.add': { en: 'Added points', zh: '新增點數' },
+    'fan-detail.log.kind.add': { en: 'System Adjust', zh: 'System Adjust' },   // 2026-11-02 D497 第 8 項：新增者的調整內容＝標題＋原因（舊：新增點數）
     'fan-detail.log.kind.edit': { en: 'Edited “{t}”', zh: '修改「{t}」' },
-    'fan-detail.log.kind.delete': { en: 'Deleted “{t}”', zh: '刪除「{t}」' },
-    'fan-detail.adjust.demo-reason': { en: 'Points missed when the Sep 28 check-in scan failed', zh: '補發 9/28 活動報到掃碼失敗漏給的點數' },
+    'fan-detail.adjust.demo-reason': { en: 'Points missed when the Feb 8 check-in scan failed', zh: '補發 2/8 活動報到掃碼失敗漏給的點數' },   // 2026-11-02 D497：對上明細最下面那筆 2026/02/10 的 System Adjust（舊：9/28）
 
     /* Tier settings & benefits (5.1.7 F8) */
     'tier-settings.crumb.fans': { en: 'Fans', zh: '粉絲' },
@@ -11576,10 +11802,10 @@
     'vault.btn.new':    { en: 'New vault', zh: '新增庫房' },
     'vault.rail.label': { en: 'Vaults', zh: '庫房' },
     'vault.viewer.me':      { en: 'View as: you (all vaults)', zh: '檢視身分：你（全部庫房）' },
-    'vault.viewer.inner':   { en: 'View as: Inner Circle',      zh: '檢視身分：核心圈' },
-    'vault.viewer.super':   { en: 'View as: Super Fans',          zh: '檢視身分：超級粉絲' },
-    'vault.viewer.devoted': { en: 'View as: Ranked Fans',        zh: '檢視身分：上榜粉絲' },
-    'vault.viewer.fan':     { en: 'View as: Fan',               zh: '檢視身分：一般粉絲' },
+    'vault.viewer.inner':   { en: 'View as: [[tier.inner|Inner Circle]]', zh: '檢視身分：[[tier.inner|核心圈]]' },   // 2026-11-02 #460：分級名稱讀平台設定的自訂顯示名稱
+    'vault.viewer.super':   { en: 'View as: [[tier.super|Super Fans]]', zh: '檢視身分：[[tier.super|超級粉絲]]' },
+    'vault.viewer.devoted': { en: 'View as: [[tier.devoted|Ranked Fans]]', zh: '檢視身分：[[tier.devoted|上榜粉絲]]' },
+    'vault.viewer.fan':     { en: 'View as: [[tier.fan|Fan]]', zh: '檢視身分：[[tier.fan|一般粉絲]]' },
     'vault.door.rules': { en: 'Unlock conditions', zh: '解鎖條件' },
     'vault.door.who':   { en: 'Who gets in', zh: '誰進得來' },
     /* 分享／鑰匙（2026-07-29 使用者裁示）：加密連結可以直接送給粉絲當禮物，
@@ -11688,17 +11914,17 @@
     'vault.status.unlisted':   { en: 'Unlisted', zh: '已下架' },
     'vault.sched.list':        { en: 'Lists {t}', zh: '{t} 上架' },
     'vault.sched.unlist':      { en: 'Unlists {t}', zh: '{t} 定時下架' },
-    'vault.head.draft':        { en: 'Fans can’t see a draft. Publish it when it’s ready.', zh: '草稿粉絲看不到，準備好再發布。' },
+    'vault.head.draft':        { en: 'Fans can’t see a draft. List it when it’s ready.', zh: '草稿粉絲看不到，準備好再上架。' },
     'vault.head.unlisted':     { en: 'Fans can’t see it. Settings, items and unlock records are kept.', zh: '粉絲看不到；設定、內容與解開紀錄都保留。' },
     'vault.rail.trial':        { en: 'once listed', zh: '上架後' },
     'vault.rail.trial.title':  { en: 'Fans who could open it once it is listed — not open to fans yet', zh: '上架後可打開的人數，尚未對粉絲開放' },
     'vault.rail.in':           { en: 'Can get in', zh: '進得了' },
-    'vault.act.publish':       { en: 'Publish', zh: '發布' },
+    'vault.act.publish':       { en: 'List', zh: '上架' },
     'vault.act.relist':        { en: 'Relist', zh: '重新上架' },
     'vault.act.unlist':        { en: 'Unlist', zh: '下架' },
     'vault.act.cancel':        { en: 'Cancel schedule', zh: '取消排程' },
     'vault.act.delete':        { en: 'Delete', zh: '刪除' },
-    'vault.pub.title':         { en: 'Publish “{n}”', zh: '發布「{n}」' },
+    'vault.pub.title':         { en: 'List “{n}”', zh: '上架「{n}」' },
     'vault.pub.title.relist':  { en: 'Relist “{n}”', zh: '重新上架「{n}」' },
     'vault.pub.now':           { en: 'List now', zh: '立刻上架' },
     'vault.pub.now.sub':       { en: 'Fans can see it as soon as you confirm', zh: '確認後粉絲立刻看得到' },
@@ -11713,11 +11939,11 @@
     'vault.pub.err.time.past': { en: 'Pick a time later than now.', zh: '要晚於現在。' },
     'vault.pub.err.unlist.req': { en: 'Turned on — add the unlisting date and time.', zh: '打開定時下架後，要填下架日期與時間。' },
     'vault.pub.err.unlist.early': { en: 'Must be later than the listing time.', zh: '要晚於上架日期與時間。' },
-    'vault.pub.check.empty.t': { en: 'Add at least one item first', zh: '至少放一件內容才能發布' },
+    'vault.pub.check.empty.t': { en: 'Add at least one item first', zh: '至少放一件內容才能上架' },
     'vault.pub.check.empty.d': { en: 'This vault is empty. Add photos, clips or audio under Items & tasks.', zh: '這座庫房還沒有內容，先到「內容與任務」放進來。' },
-    'vault.pub.check.noway.t': { en: 'Nobody will be able to get in', zh: '發布後沒有人進得來' },
-    'vault.pub.check.noway.d': { en: 'There are no conditions and no keys yet. You can still publish and set them later.', zh: '還沒有進庫方法、也沒有鑰匙；仍可發布，之後再設定。' },
-    'vault.pub.check.noway.d.nk': { en: 'There are no conditions yet. You can still publish and set them later.', zh: '還沒有進庫方法；仍可發布，之後再設定。' },   // 2026-10-23 release2.4：鑰匙／大彩蛋不在版本內時的版本（UIA-304）
+    'vault.pub.check.noway.t': { en: 'Nobody will be able to get in', zh: '上架後沒有人進得來' },
+    'vault.pub.check.noway.d': { en: 'There are no conditions and no keys yet. You can still list it and set them later.', zh: '還沒有進庫方法、也沒有鑰匙；仍可上架，之後再設定。' },
+    'vault.pub.check.noway.d.nk': { en: 'There are no conditions yet. You can still list it and set them later.', zh: '還沒有進庫方法；仍可上架，之後再設定。' },   // 2026-10-23 release2.4：鑰匙／大彩蛋不在版本內時的版本（UIA-304）
     'vault.pub.ok.now':        { en: 'List now', zh: '立刻上架' },
     'vault.pub.ok.sched':      { en: 'Schedule listing', zh: '排定上架' },
     'vault.pub.cancel':        { en: 'Cancel', zh: '取消' },
@@ -11728,6 +11954,10 @@
     'vault.toast.deleted':     { en: 'Deleted “{n}”', zh: '已刪除「{n}」' },
     'vault.toast.auto.listed': { en: '“{n}” listed on schedule', zh: '「{n}」已依排程上架' },
     'vault.toast.auto.unlisted': { en: '“{n}” unlisted on schedule', zh: '「{n}」已依排程下架' },
+    'vault.open.confirm.title': { en: 'Open this vault to all fans?', zh: '要開放給所有粉絲嗎？' },
+    'vault.open.confirm.li1':   { en: 'This is the last condition. Once it’s removed, the vault has no entry methods, so every fan can unlock it.', zh: '這是最後一個條件。移除後庫房沒有任何進庫方法，所有粉絲都能解鎖。' },
+    'vault.open.confirm.li2':   { en: 'The vault is listed, so this takes effect right away.', zh: '庫房上架中，移除後立即生效。' },
+    'vault.open.confirm.ok':    { en: 'Confirm', zh: '確認' },
     'vault.unlist.title':      { en: 'Unlist “{n}”?', zh: '要下架「{n}」嗎？' },
     'vault.unlist.li1':        { en: 'Fans can’t see this vault any more — including fans who already unlocked items.', zh: '粉絲看不到這座庫房，已經解開過內容的粉絲也看不到。' },
     'vault.unlist.li2':        { en: 'The unlisting time you set is saved and paused. When you relist, it comes back if it hasn’t passed; if it has, you’ll change it first.', zh: '已設的下架日期與時間會保存並暫停。重新上架時沒過就直接恢復，已經過了就要先改。' },   /* D488 */
@@ -11805,8 +12035,86 @@
     'vault.ac.reachline.trial.nk': { en: 'Once listed, <b class="vault-reachline__big">{total}</b> fans could open it', zh: '上架後 <b class="vault-reachline__big">{total}</b> 人打得開' },   // 2026-10-23 release2.4：鑰匙／大彩蛋不在版本內時的版本（UIA-304）
     'vault.ac.reachline.trial.one.nk': { en: 'Once listed, <b class="vault-reachline__big">1</b> fan could open it', zh: '上架後 <b class="vault-reachline__big">1</b> 人打得開' },   // 2026-10-23 release2.4：鑰匙／大彩蛋不在版本內時的版本（UIA-304）
     'vault.ac.keys.off':       { en: 'Fans can’t claim keys until the vault is listed — they just see “not open yet”, and no use is spent. You can still issue keys now.', zh: '上架前粉絲不能領取鑰匙：領取只會看到「尚未開放」，不會用掉次數；現在仍可先發鑰匙。' },
-    'vault.ac.link.off.draft': { en: 'Drafts can’t be shared — fans can’t see this vault yet. Publish it to share the link.', zh: '草稿不能分享：粉絲還看不到這座庫房，發布後才能分享。' },
+    'vault.ac.link.off.draft': { en: 'Drafts can’t be shared — fans can’t see this vault yet. List it to share the link.', zh: '草稿不能分享：粉絲還看不到這座庫房，上架後才能分享。' },
     'vault.ac.link.off.unlisted': { en: 'Unlisted vaults can’t be shared — fans can’t see it. Relist it to share the link.', zh: '已下架不能分享：粉絲看不到這座庫房，重新上架後才能分享。' },
+    /* 2026-11-02 媒體庫改版（庫房列表／成效三格／內容卡片／開啟方式／三步建立流程；note/媒體庫UX重新規劃.md） */
+    'vault.rail.people': { en: '{n} fans', zh: '{n} 人' },
+    'vault.rail.people.trial': { en: 'Once listed · {n} fans', zh: '上架後 {n} 人' },
+    'vault.name.rename': { en: 'Click to rename', zh: '點一下改名' },
+    'vault.name.aria': { en: 'Vault name', zh: '庫房名稱' },
+    'vault.act.share': { en: 'Share', zh: '分享' },
+    'vault.act.more': { en: 'More actions', zh: '更多動作' },
+    'vault.act.publish.need': { en: 'Add at least one item to list it', zh: '至少放一件內容才能上架' },
+    'vault.bento.of': { en: 'of {n} fans', zh: '共 {n} 位粉絲' },
+    'vault.bento.ever.s': { en: 'Only goes up', zh: '只增不減' },
+    'vault.bento.now.s': { en: 'At least one item', zh: '至少一件' },
+    'vault.bento.tier': { en: '{who} can open it', zh: '{who}打得開' },
+    'vault.pool.add': { en: 'Add', zh: '添加' },
+    'vault.pool.add.aria': { en: 'Add media (photos, clips, audio)', zh: '添加內容（照片、影片、音檔）' },
+    'vault.open.aria': { en: 'Ways to open', zh: '開啟方式' },
+    'vault.open.cond': { en: 'By condition', zh: '條件開啟' },
+    'vault.open.key': { en: 'By key', zh: '鑰匙開啟' },
+    'vault.open.cond.desc': { en: 'Meet any one way to get in', zh: '達成任一種方法就進得來' },   // 2026-11-02 D497 存取權限固定文案
+    'vault.open.cond.n': { en: '{n} fans meet any one', zh: '{n} 人符合任一種' },
+    'vault.open.cond.add': { en: 'Add condition', zh: '加條件' },
+    'vault.open.key.desc': { en: 'Holding a key opens it, no conditions checked', zh: '拿到鑰匙就能開，不看條件' },
+    'vault.open.key.n': { en: '{n} fans claimed', zh: '已領 {n} 人' },
+    'vault.key.claimed': { en: 'Claimed {c} / {u}', zh: '已領 {c} / {u}' },
+    'vault.wiz.title': { en: 'Create vault', zh: '建立庫房' },
+    'vault.wiz.back': { en: 'Back to Media Vault', zh: '回到媒體庫' },
+    'vault.wiz.saved': { en: 'Saved as draft', zh: '已存成草稿' },
+    'vault.wiz.sub.new': { en: 'New vault', zh: '新庫房' },
+    'vault.wiz.s1': { en: 'Name', zh: '取名' },
+    'vault.wiz.s2': { en: 'Add media', zh: '放內容' },
+    'vault.wiz.s3': { en: 'Who can open', zh: '誰開得了' },
+    'vault.wiz.step.done': { en: 'Done', zh: '已完成' },
+    'vault.wiz.step.cur': { en: 'Editing', zh: '編輯中' },
+    'vault.wiz.step.todo': { en: 'Not done', zh: '未完成' },
+    'vault.wiz.h1': { en: 'Name your vault', zh: '幫庫房取個名字' },
+    'vault.wiz.sub1': { en: 'Fans see this name. You can change it later.', zh: '粉絲會看到這個名字，之後可以改。' },
+    'vault.wiz.h2': { en: 'Add what fans will get', zh: '放進要給粉絲的內容' },
+    'vault.wiz.sub2': { en: 'Photos, clips and audio all work. You can give each item a task now or later.', zh: '照片、影片、音檔都可以。每件可以順手設任務，也可以之後再設。' },
+    'vault.wiz.h3': { en: 'Who can open this vault', zh: '誰開得了這座庫房' },
+    'vault.wiz.sub3': { en: 'Fans who meet any one way in, or hold a key, can open it. Once they’re in, each item’s task still applies.', zh: '符合任一種進庫方法、或拿到鑰匙，就能打開。打開之後，每件內容的任務照常。' },
+    'vault.wiz.sub3.nk': { en: 'Fans who meet any one way in can open it. Once they’re in, each item’s task still applies.', zh: '符合任一種進庫方法，就能打開。打開之後，每件內容的任務照常。' },
+    'vault.wiz.name': { en: 'Name', zh: '名稱' },
+    'vault.wiz.name.ph': { en: 'e.g. Unreleased demos and stems', zh: '例如：未發行 Demo 與分軌' },
+    'vault.wiz.name.req': { en: 'Give it a name first', zh: '先取個名字' },
+    'vault.wiz.next1': { en: 'Next: add media', zh: '繼續：放內容' },
+    'vault.wiz.next2': { en: 'Next: who can open', zh: '繼續：誰開得了' },
+    'vault.wiz.skip': { en: 'Skip for now', zh: '先跳過' },
+    'vault.wiz.prev': { en: 'Back', zh: '上一步' },
+    'vault.wiz.draft': { en: 'Save as draft', zh: '存成草稿' },
+    'vault.wiz.publish': { en: 'List…', zh: '上架…' },
+    'vault.wiz.hint.empty': { en: 'Nothing added yet, so it can’t be listed. Save it as a draft for now.', zh: '還沒放內容，不能上架；可以先存成草稿。' },
+    'vault.wiz.hint.noway': { en: 'Nobody can open it yet: no way in and no key. You can still list it.', zh: '還沒設誰開得了：沒有進庫方法、也沒有鑰匙。仍然可以上架。' },
+    'vault.wiz.hint.noway.nk': { en: 'Nobody can open it yet: no way in. You can still list it.', zh: '還沒設誰開得了：沒有進庫方法。仍然可以上架。' },
+    /* 2026-11-02 D497 對齊需求站 Dev 規格：數量上限、無條件、內容組成、已解鎖人數、查看／播放人數 */
+    'vault.ac.limit.items': { en: 'Up to {n} conditions per way', zh: '一種方法最多 {n} 個條件' },
+    'vault.ac.limit.methods': { en: 'Up to {n} ways per vault', zh: '一座庫房最多 {n} 種方法' },
+    'vault.open.cond.none': { en: 'No condition — all {n} fans can unlock it', zh: '無條件：{n} 位粉絲全都能解鎖' },
+    'vault.pub.check.open.t': { en: 'All fans will be able to unlock it', zh: '上架後所有粉絲都能解鎖' },
+    'vault.pub.check.open.d': { en: 'No way in is set, so there’s no condition. Add a way in first to limit who can unlock it.', zh: '沒有設進庫方法，就是無條件；要限定誰能解鎖，先加進庫方法。' },
+    'vault.wiz.hint.open': { en: 'No condition: once listed, all fans can unlock it.', zh: '無條件：上架後所有粉絲都能解鎖。' },
+    'vault.vas.open': { en: 'No condition', zh: '無條件' },
+    'vault.mix': { en: 'Photos {i} · Clips {c} · Audio {a}', zh: '{i} 圖・{c} 片・{a} 音' },
+    'vault.mix.none': { en: 'No media yet', zh: '尚無內容' },
+    'vault.ov.unlocked': { en: 'Unlocked now', zh: '現在已解鎖的人數' },
+    'vault.ov.unlocked.trial': { en: 'Can unlock once listed', zh: '上架後可解鎖的人數' },
+    'vault.ov.unlocked.unit': { en: 'fans', zh: '位粉絲' },
+    'vault.ov.unlocked.of': { en: '{p}% of all {m} fans', zh: '佔全部 {m} 位的 {p}%' },
+    'vault.plays.title': { en: 'Views & plays', zh: '查看／播放' },
+    'vault.plays.close': { en: 'Close', zh: '關閉' },   // D506：查看／播放改成點成效第一格開的彈窗
+    'vault.plays.empty.title': { en: 'No content yet', zh: '還沒有內容' },
+    'vault.plays.empty.text': { en: 'Once you add content, each item’s viewers and plays show up here.', zh: '加入內容後，這裡會列出每件內容的查看／播放人數。' },
+    'vault.plays.total': { en: '{n} fans in total', zh: '累計 {n} 人' },
+    'vault.plays.row': { en: '{n} fans · {p}%', zh: '{n} 人 · {p}%' },
+    'vault.plays.view': { en: 'Viewed by', zh: '查看人數' },
+    'vault.plays.play': { en: 'Played by', zh: '播放人數' },
+    'vault.plays.n': { en: '{n} fans', zh: '{n} 人' },
+    'vault.tag.plays.view': { en: '{n} fans viewed it', zh: '{n} 人查看過' },
+    'vault.tag.plays.play': { en: '{n} fans played it', zh: '{n} 人播放過' },
+    'vault.wiz.toast.draft': { en: 'Saved as a draft. Open it from the list to keep going.', zh: '已存成草稿，之後可以從庫房列表打開繼續。' },
 
     'tier-settings.gate.toppct': { en: 'Top %', zh: '前 % 名' },
     'tier-settings.gate.points': { en: 'Min. loyalty points', zh: '最低忠誠點數' },
@@ -11820,13 +12128,13 @@
     'tier-settings.explain.toppct.s1': { en: 'Every fan with more than 0 points on your board is ranked by loyalty points, highest first.', zh: '榜上忠誠點數大於 0 的粉絲，依忠誠點數由高到低排名。' },
     'tier-settings.explain.toppct.s2': { en: 'Their rank becomes a percentile — rank ÷ fans with points.', zh: '名次換算成百分位——名次 ÷ 有點數的粉絲數。' },
     'tier-settings.explain.toppct.s3': { en: '“Top 10%” means the highest-scoring tenth of your audience.', zh: '「前 10%」就是點數最高的那十分之一。' },
-    'tier-settings.explain.toppct.eg': { en: 'With <strong>1,283 fans</strong> who have points, Top 10% is the highest-ranked <strong>128</strong> of them.', zh: '有點數的粉絲 <strong>1,283 位</strong>時，前 10% 就是排名最前的 <strong>128 位</strong>。' },
+    'tier-settings.explain.toppct.eg': { en: 'With <strong>1,340 fans</strong> who have points, Top 10% is the highest-ranked <strong>134</strong> of them.', zh: '有點數的粉絲 <strong>1,340 位</strong>時，前 10% 就是排名最前的 <strong>134 位</strong>。' },   // 2026-11-02 #460：對齊示範母體 1,340 位（名額捨去，D476）
     'tier-settings.explain.toppct.note': { en: 'Because it is relative, the bar moves as your audience grows. A fan can drop out of the top 10% without losing a single point — someone else simply overtook them. Followers with 0 points aren’t counted; they stay regular Fans.', zh: '因為是相對的，粉絲變多時這條線會跟著移動。一位粉絲可能一點都沒少，卻掉出前 10%——只是被別人超車了。0 分的追蹤者不計入，屬於一般粉絲。' },
-    'tier-settings.explain.toppct.round': { en: 'Seats are rounded down, but Inner Circle always has at least 1. Every fan still has to clear that tier’s points floor.', zh: '名額無條件捨去，但核心圈至少 1 人；仍須通過該級的最低忠誠點數。' },
+    'tier-settings.explain.toppct.round': { en: 'Seats are rounded down, but Inner Circle always has at least 1. Every fan still has to reach the minimum loyalty points.', zh: '名額無條件捨去，但核心圈至少 1 人；仍須達到最低忠誠點數門檻。' },   // 2026-11-02 D497：全站一個門檻（舊：仍須通過該級的最低忠誠點數）
     'tier-settings.explain.points.title': { en: 'Why there is also a points floor', zh: '為什麼還要有點數下限' },
     'tier-settings.explain.points.lead': { en: 'An <strong>absolute</strong> gate. A percentile always produces a top 1% — even in a tiny audience. The floor is what stops a tier being handed out to someone who has not earned it.', zh: '這是<strong>絕對</strong>門檻。百分位一定算得出「前 1%」——就算總共只有幾十個人也一樣。點數下限就是用來擋住「還沒真的達標卻被發了分級」。' },
-    'tier-settings.explain.points.eg': { en: 'A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> and Inner Circle’s floor is <strong>800</strong>, they still do not enter. The tier stays empty until someone genuinely reaches it.', zh: '一位創作者只有 <strong>40 位</strong>粉絲：前 1% 就是一個人。若這位粉絲只有 <strong>120 點</strong>，而核心圈的下限是 <strong>800</strong>，他仍然進不去。這個分級會一直空著，直到有人真的達標。' },
-    'tier-settings.explain.points.rule': { en: 'A fan must clear both gates. Being top 1% is not enough on its own, and neither is a high score outside the percentile.', zh: '兩道門檻都要通過。只在前 1% 不夠，點數再高但排不進百分位也不夠。' },
+    'tier-settings.explain.points.eg': { en: 'A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> — below the minimum of <strong>500</strong> — they stay a Fan and are not ranked. Inner Circle stays empty until someone genuinely reaches it.', zh: '一位創作者只有 <strong>40 位</strong>粉絲：前 1% 就是一個人。若這位粉絲只有 <strong>120 點</strong>，低於最低忠誠點數門檻 <strong>500</strong>，他仍是一般粉絲、不進排名。核心圈會一直空著，直到有人真的達標。' },   // 2026-11-02 D497 第 12 項：全站一個門檻（舊：核心圈的下限是 800）
+    'tier-settings.explain.points.rule': { en: 'There is one minimum for every tier. Reaching it only lets a fan into the ranking; their rank then decides the tier. Outside the top 30%, a fan above the minimum is still a Fan.', zh: '所有分級共用一個最低門檻。達到門檻只是取得進排名的資格，分到哪一級看名次；名次在前 30% 以外，即使達到門檻仍是一般粉絲。' },
     'event.notfound.title':  { en: 'Event not found',  zh: '找不到這場活動' },
     'event.notfound.sub':    { en: 'This link may be out of date, or the event was removed. Go back to the list and pick one.', zh: '這個連結可能已經過期，或這場活動已被移除。回到活動列表重新選一場。' },
     'event.notfound.back':   { en: 'Back to events', zh: '回到活動列表' },
@@ -11874,10 +12182,16 @@
     'tier-settings.mult.event-hint': { en: 'Verified attendance', zh: '經驗證的出席' },
     'tier-settings.mult.interact-hint': { en: 'Comments, reactions, DMs, votes, likes, saves', zh: '留言、回應、私訊、共創投票、按讚、收藏' },
     'tier-settings.mult.referral-hint': { en: 'New fans, tastemaker sales, invites to follow you', zh: '帶進新粉絲、帶貨推薦、邀請朋友追蹤你' },
-    'tier-settings.rules.dual':      { en: 'Both gates must pass',        zh: '雙重門檻升級' },
-    'tier-settings.rules.dual-body': { en: 'A fan moves up only after clearing both of that tier\u2019s gates — the Top % <b>and</b> the minimum loyalty points.', zh: '粉絲要同時通過該分級的兩道門檻——前 % 名<b>以及</b>最低忠誠點數——才會升級。' },
-    'tier-settings.rules.mono':      { en: 'Gates must climb',            zh: '門檻必須單調' },
-    'tier-settings.rules.mono-body': { en: 'A higher tier must ask strictly more than the one below it, or the settings won\u2019t save. <em>Exact validation logic pending upstream.</em>', zh: '高分級的要求必須嚴格高於低分級，否則不能儲存。<em>確切驗證邏輯待上游確認。</em>' },
+    'tier-settings.rules.mono':      { en: 'Top % must widen',            zh: '前 % 名逐級放寬' },   // 2026-11-02 D497：只剩前 % 名要比（舊：門檻必須單調）
+    'tier-settings.rules.mono-body': { en: 'Each lower tier must cover a larger top % than the one above it (Inner Circle < Super Fans < Ranked Fans), or the settings won\u2019t save. The minimum loyalty points is one value for all tiers, so it is not compared. <em>Exact validation logic pending upstream.</em>', zh: '前 % 名必須逐級放寬（核心圈 < 超級粉絲 < 上榜粉絲），否則不能儲存。最低忠誠點數門檻全站只有一個，不在這裡比較。<em>確切驗證邏輯待上游確認。</em>' },
+    'tier-settings.rules.order':      { en: 'How a fan\u2019s tier is decided', zh: '分級判定順序' },   // 2026-11-02 D497 第 12 項（取代 rules.dual「雙重門檻升級」）
+    'tier-settings.rules.order-body': { en: 'First the minimum loyalty points: below it, a fan is always [[tier.fan|Fan]]. At or above it, the fan joins the ranking and is placed by rank into the top [[p1|1]]%, [[p2|10]]% or [[p3|30]]%. At or above it but outside the top [[p3|30]]%, still [[tier.fan|Fan]].', zh: '先看最低忠誠點數門檻：低於門檻一律是[[tier.fan|一般粉絲]]；達到門檻才進排名，依名次分到前 [[p1|1]]%、[[p2|10]]%、[[p3|30]]%；達到門檻但名次在前 [[p3|30]]% 以外，仍是[[tier.fan|一般粉絲]]。' },   // 2026-11-02 #460：百分比與分級名稱讀平台設定
+    'tier-settings.rules.order-1':    { en: 'Below the minimum loyalty points: always [[tier.fan|Fan]].', zh: '低於最低忠誠點數門檻：一律是[[tier.fan|一般粉絲]]。' },
+    'tier-settings.rules.order-2':    { en: 'At or above it: the fan joins the ranking and is placed by rank — top [[p1|1]]% [[tier.inner|Inner Circle]], top [[p2|10]]% [[tier.super|Super Fans]], top [[p3|30]]% [[tier.devoted|Ranked Fans]].', zh: '達到門檻：進入排名，依名次分級——前 [[p1|1]]% [[tier.inner|核心圈]]、前 [[p2|10]]% [[tier.super|超級粉絲]]、前 [[p3|30]]% [[tier.devoted|上榜粉絲]]。' },
+    'tier-settings.rules.order-3':    { en: 'At or above it but outside the top [[p3|30]]%: still [[tier.fan|Fan]].', zh: '達到門檻但名次在前 [[p3|30]]% 以外：仍是[[tier.fan|一般粉絲]]。' },
+    'tier-settings.gate.floor':       { en: 'Min. loyalty points', zh: '最低忠誠點數門檻' },   // 2026-11-02 D497：全站一個值（S_floor），創作者唯讀
+    'tier-settings.gate.floor-hint':  { en: 'One value for every tier, set by Ztor. View only.', zh: '所有分級共用一個值，由 Ztor 設定，這裡只能查看。' },
+    'tier-settings.err.mono':         { en: 'Top % must widen down the ladder: [[tier.inner|Inner Circle]] < [[tier.super|Super Fans]] < [[tier.devoted|Ranked Fans]].', zh: '前 % 名要逐級放寬：[[tier.inner|核心圈]] < [[tier.super|超級粉絲]] < [[tier.devoted|上榜粉絲]]。' },   // 2026-11-02 #460：分級名稱讀平台設定
     'tier-settings.rules.ver':       { en: 'Versioned, never retroactive', zh: '版本化、不回溯' },
     'tier-settings.rules.ver-body': { en: 'Every save creates an immutable version recording who saved, when, and the old and new values. Changes only apply going forward; revenue and badges already earned under an older version are never rewritten.', zh: '每次儲存產生一個不可變更的版本，記錄操作者、時間與原值、新值。變更只往後生效，舊版本下已賺到的收入與徽章不會被改寫。' },
     'tier-settings.rules.when':      { en: 'When changes take effect',    zh: '變更何時生效' },
@@ -11902,9 +12216,9 @@
        〔產品待確認〕、候選兩項功能是否存在〔產品待確認〕，都不列成欄位）。
        全站活動、賽季加倍與衰減由 Admin 在平台忠誠點數設定管理，這裡只有一句說明。 */
     'tier-settings.weight.title': { en: 'Purchase type value', zh: '各購買品項的份量' },
-    'tier-settings.weight.desc': { en: 'Purchases earn 40 points per HK$1, multiplied by the value of what was bought. The amount is the list price in HKD — tier discounts and promo codes aren’t deducted, and paying with Popcorn or cash makes no difference.', zh: '購買類每 HK$1 換 40 點，再乘上買了什麼的份量。金額以商品定價換算港幣，不扣分級折扣與優惠碼；用爆米花或現金付都一樣。' },
+    'tier-settings.weight.desc': { en: 'Purchases earn 10 points per 1 unit of base currency, multiplied by the value of what was bought. The amount is the list price converted to the base currency — tier discounts and promo codes aren’t deducted, and paying with Popcorn or cash makes no difference.', zh: '購買類每 1 元基準幣別換 10 點，再乘上買了什麼的份量。金額以商品定價換算成基準幣別，不扣分級折扣與優惠碼；用爆米花或現金付都一樣。' },
     'tier-settings.weight.rental-hint': { en: 'Counts on payment, no viewing needed; renting the same film again within 90 days counts once', zh: '付款成功即入帳，不需觀看；同一部片 90 天內重複租只計第一次' },
-    'tier-settings.weight.unit': { en: 'pts / HK$1', zh: '點／HK$1' },
+    'tier-settings.weight.unit': { en: 'pts / 1 unit of base currency', zh: '點／每 1 元基準幣別' },
     'tier-settings.weight.backing': { en: 'Project backing', zh: '項目支持' },
     'tier-settings.weight.backing-hint': { en: 'Co-create and pre-order', zh: '共創、預購的方案' },
     'tier-settings.weight.auction': { en: 'Auction wins', zh: '拍賣成交' },
@@ -12569,7 +12883,6 @@
       'fans.hof.row3.country': { en: 'Taiwan', zh: '台灣' },
       'fan-detail.identity': { en: 'shihan@studio · Taipei, Taiwan · Fan since Mar 2024', zh: 'shihan@studio · 台灣台北 · 自 2024 年 3 月起的粉絲' },
       'fan-detail.hero.email': { en: 'shihan@studio', zh: 'shihan@studio' },
-      'fan-detail.kpi.last-active-meta': { en: 'Opened the “LOVE RAGE HOPE” album drop', zh: '開啟了《LOVE RAGE HOPE》上架通知' },
       'fan-detail.tl.eshop1':    { en: 'Pre-ordered “LOVE RAGE HOPE” vinyl', zh: '預購了《LOVE RAGE HOPE》黑膠' },
       'fan-detail.tl.interact1': { en: 'Commented on a NICKTHEREAL Club post', zh: '在 NICKTHEREAL 後援會貼文留言' },
       'fan-detail.tl.event1':    { en: 'Checked in · “REALIVE Tour · Taipei”', zh: '已報到 ·「REALIVE 巡迴演唱會 台北場」' },
@@ -12718,17 +13031,30 @@
     return 'en';
   }
 
+  /* 2026-11-02（UI-CHANGES 四百六十）：平台忠誠點數設定的掛勾（js/loyalty-settings.js 註冊 window.ztorI18nHook）。
+     - 分級名稱的鍵有自訂顯示名稱就回自訂名稱（使用者輸入的字，中英文介面都不翻）。
+     - 字串裡的 [[token|預設]] 換成目前設定值；頁面沒載入那支模組時用預設。 */
+  function hookTokens(v) {
+    if (typeof v !== 'string' || v.indexOf('[[') === -1) return v;
+    const hook = window.ztorI18nHook;
+    return v.replace(/\[\[([\w.]+)\|([^\]]*)\]\]/g, function (m, k, d) {
+      const r = hook && hook.token ? hook.token(k) : null;
+      return r == null ? d : r;
+    });
+  }
   function t(key) {
     const lang = currentLang();
+    const hook = window.ztorI18nHook;
+    if (hook && hook.name) { const n = hook.name(key); if (n != null) return n; }
     /* persona 覆蓋層優先：非 default persona 且該 key 有覆蓋值就用它（見檔頭 Persona 說明）。 */
     const persona = currentPersona();
     if (persona !== 'default') {
       const ov = PERSONA_DICT[persona];
-      if (ov && ov[key] && ov[key][lang] != null) return ov[key][lang];
+      if (ov && ov[key] && ov[key][lang] != null) return hookTokens(ov[key][lang]);
     }
     const entry = DICT[key];
     if (!entry) return null;
-    return entry[lang];
+    return hookTokens(entry[lang]);
   }
 
   function apply(root) {

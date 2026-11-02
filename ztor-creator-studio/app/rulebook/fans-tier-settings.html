@@ -155,6 +155,8 @@ table.map td:nth-child(2){width:22%}
   <li>粉絲的點數即時入帳、達標即時升級；粉絲掉到該級門檻以下時開始倒數降級緩衝天數（Admin 設定，預設 14 天），期間回到門檻以上就取消，天數到期後的下一次每週重算仍未達標才降，見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></li>
   <li>在這位創作者榜上忠誠點數大於 0 的人就算這位創作者的粉絲，不要求先追蹤；上線前 365 天內的歷史訂單會回填成點數，邀請朋友加入 Ztor 的點數在粉絲選定主要應援對象前先暫存，見<a href="fans-tiers.html#backfill">上線時把歷史訂單算進點數</a>與<a href="fans-tiers.html#primary-rules">主要應援對象的規則</a></li>
   <li>門檻改了，下一次每週重算才生效；計分設定儲存後只作用於之後發生的事件，已入帳的點數不改寫；各級福利則是儲存後立即生效</li>
+  <li>最低忠誠點數門檻是全站單一的值，由 Admin 設定，這頁只能看；前 % 名由創作者在這頁設定</li>
+  <li>基準費率、活動票券與電子商店商品的份量、共創投票與按讚收藏與邀請朋友追蹤的給分與上限，主規格改由 Admin 設定、不開放創作者覆寫，這頁的寫法尚未同步，見頁尾尚待確認</li>
   <li>全站活動、各職務的計入比例、全平台與特定藝人的賽季加倍由 Admin 設定，儲存後只作用於之後發生的事件；衰減、多久沒有行為就往下掉一階、降級緩衝也由 Admin 設定，下一次每週重算起生效；這些都不在這頁，見<a href="fans-tiers.html#who-adjusts">誰能調整什麼</a></li>
 </ul>
 
@@ -162,7 +164,7 @@ table.map td:nth-child(2){width:22%}
 <p>創作者調好門檻與計分設定後儲存，通過檢查就存成新的設定版本；門檻等下一次每週重算生效，計分設定只作用於之後發生的事件。</p>
 <div class="dg" role="img" aria-label="分級設定流程圖，由左往右：進分級設定，調門檻與計分設定並看將重新分級幾位粉絲，按儲存；門檻高低順序正確就存成新的設定版本（門檻下一次每週重算生效、計分設定只作用於之後的事件），順序不對就擋下儲存">
 <div class="dg-hg" style="--dg-c:5">
-  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進分級設定<small>從粉絲總覽或粉絲詳情的「分級設定」</small></div>
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>進分級設定<small>從粉絲總覽的「分級設定」</small></div>
   <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
   <div class="dg-node" style="grid-row:1/3;grid-column:3"><span class="s">2</span>調門檻與計分設定<small>看「將重新分級 N 位粉絲」預覽</small></div>
   <span class="dg-a" style="grid-row:1/3;grid-column:4"></span>
@@ -177,7 +179,7 @@ table.map td:nth-child(2){width:22%}
 </div>
 <p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
 <ol class="plain">
-  <li>從粉絲總覽<a href="fans-roster.html#roster-tiers">分級分布</a>或<a href="fans-roster-detail.html#detail-profile">粉絲詳情</a>的「分級設定」進來</li>
+  <li>從粉絲總覽<a href="fans-roster.html#roster-tiers">分級分布</a>的「分級設定」進來；粉絲詳情不設這個入口</li>
   <li>在<a href="#thresholds">門檻</a>與<a href="#scoring">計分設定</a>調整數值，並看「將重新分級 N 位粉絲」的預覽</li>
   <li>按儲存，見<a href="#settings-save">儲存與放棄</a></li>
   <li>門檻的高低順序對嗎？見<a href="#threshold-check">儲存前檢查</a>
@@ -200,8 +202,8 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>前 % 名（Top %）</td><td>核心圈<br>超級粉絲<br>上榜粉絲<br>一般粉絲不設</td><td>每一級各設一個<br>各級預設見<a href="fans-tiers.html#gate-defaults">預設值</a><br>名額無條件捨去，但核心圈至少 1 人，見<a href="fans-tiers.html#rank-edge">排名的邊界規則</a></td></tr>
-    <tr><td>最低忠誠點數（Min. loyalty points）</td><td>核心圈<br>超級粉絲<br>上榜粉絲<br>一般粉絲不設</td><td>每一級各設一個<br>各級預設見<a href="fans-tiers.html#gate-defaults">預設值</a></td></tr>
+    <tr><td>前 % 名（Top %）</td><td>核心圈<br>超級粉絲<br>上榜粉絲<br>一般粉絲不設</td><td>每一級各一個，創作者在這頁設定<br>Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>也有一組，兩者怎麼並存見頁尾尚待確認<br>各級預設見<a href="fans-tiers.html#gate-defaults">預設值</a><br>名額無條件捨去，但核心圈至少 1 人，見<a href="fans-tiers.html#rank-edge">排名的邊界規則</a></td></tr>
+    <tr><td>最低忠誠點數門檻（Min. loyalty points）</td><td>—</td><td>全站只有一個值，三個排名分級共用，預設 500 點<br>由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定；這頁只能看、不能改<br>點數未達門檻一律是一般粉絲，判定順序見<a href="fans-tiers.html#gates">兩道門檻</a></td></tr>
     <tr><td>門檻說明</td><td>—</td><td>前 % 名與最低忠誠點數各有一個入口<br>說明這道門檻管什麼<br>滑鼠、鍵盤、觸控都打得開，打開時不遺失目前的設定</td></tr>
     <tr><td>各級目前人數</td><td>—</td><td>每一級顯示目前人數<br>還沒有粉絲時顯示 0，門檻照樣能儲存</td></tr>
     <tr><td>重新分級預覽</td><td>—</td><td>儲存前顯示「將重新分級 N 位粉絲」<br>還沒有粉絲時顯示 0</td></tr>
@@ -209,12 +211,11 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 
 <h4 id="threshold-check">儲存前檢查</h4>
-<p>門檻的高低順序不對，儲存會被擋下。</p>
+<p>前 % 名的高低順序不對，儲存會被擋下；最低忠誠點數門檻只有一個值，不用檢查順序。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:24%">門檻</th><th>規定的順序</th></tr></thead>
   <tbody>
     <tr><td>前 % 名</td><td>核心圈小於超級粉絲，超級粉絲小於上榜粉絲</td></tr>
-    <tr><td>最低忠誠點數</td><td>核心圈大於超級粉絲，超級粉絲大於上榜粉絲</td></tr>
   </tbody>
 </table></div>
 
@@ -229,6 +230,7 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 <ul class="plain">
+  <li>活動票券與電子商店商品的份量，以及共創投票、按讚與收藏、邀請朋友追蹤這位創作者的上限，主規格改由 Admin 設定、不開放創作者覆寫，見<a href="fans-tiers.html#who-adjusts">誰能調整什麼</a>；這幾欄在這頁怎麼呈現見頁尾尚待確認</li>
   <li>購買類的金額以商品定價計，不扣分級折扣與優惠碼，見<a href="fans-tiers.html#buy">購買怎麼換算成點數</a></li>
   <li>外部平台行為見<a href="fans-tiers.html#external">外部平台的行為目前不計入點數</a></li>
 </ul>
@@ -262,20 +264,21 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>儲存（Save thresholds）</td><td>—</td><td>一次送出門檻與計分設定的修改<br>沒通過<a href="#threshold-check">儲存前檢查</a>就擋下<br>成功時提示「Thresholds saved（門檻已儲存）」<br>每次儲存存成一個<a href="#versions">設定版本</a><br>門檻下一次每週重算才生效<br>計分設定只作用於之後發生的事件</td></tr>
     <tr><td>放棄（Discard）</td><td>—</td><td>捨棄這次沒儲存的門檻與計分設定修改，回到上次儲存的版本</td></tr>
-    <tr><td>粉絲系統說明</td><td>—</td><td>前往<a href="fans-guide.html">粉絲系統說明</a></td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.7.6 F1～F4；5.1.7 F8；主規格 §7.5；D169、D347、D348、D350、D351、D474、D476、D479。</p>
+<p class="note">依據：5.1.7.6 F1～F4；5.1.7 F8；主規格 §7.5；D169、D347、D348、D350、D351、D474、D476、D479、D497、D498。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.7.6-分級設定.md</code>（最後更新 2026-10-05）、<code>5.1.7-粉絲關係管理.md</code>、<code>0-設計規格書.md §7.5／§8.29</code></li>
-    <li>決策：D169、D347、D348、D350、D351、D474、D476、D479</li>
+    <li>規格：<code>5.1.7.6-分級設定.md</code>（最後更新 2026-11-02）、<code>5.1.7-粉絲關係管理.md</code>、<code>0-設計規格書.md §7.5／§8.29</code></li>
+    <li>決策：D169、D347、D348、D350、D351、D474、D476、D479、D497、D498、D500、D507</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
+    <li>活動票券與電子商店商品的份量、共創投票與按讚收藏與邀請朋友追蹤的上限，主規格已改由 Admin 設定；分級設定規格仍寫創作者可調，這幾欄在這頁改成唯讀的寫法待確認</li>
+    <li>創作者在這頁設的前 % 名，與 Admin 在平台忠誠點數設定設的前 % 名怎麼並存（例如創作者沒設時是否沿用 Admin 的值）</li>
     <li>創作者能調整的份量與上限，各自可調的範圍</li>
     <li>我的賽季加倍能設幾段、能不能關閉或刪除、倍率可以填的範圍</li>
     <li>付費首映對應哪一種品項</li>
@@ -288,7 +291,7 @@ table.map td:nth-child(2){width:22%}
     <li>分級設定載入中時畫面怎麼顯示</li>
     <li>門檻與點數規則的待確認列在<a href="fans-tiers.html">粉絲分級</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-23（D479：降級改以緩衝天數為準、誰算粉絲、回填範圍、主要應援對象未選時的邀請點數暫存、Admin 參數生效時點）；2026-10-23（D476：我的賽季加倍、名額捨去且核心圈至少 1 人、點數即時入帳與即時升級、計分以定價計）；2026-10-22（D474：設定版本補操作者與原值、新值）；2026-10-19（從粉絲分級拆成獨立畫面頁，補概述與操作流程）；2026-10-09（至 D351）</p>
+  <p class="k">最近同步：2026-11-02（D507：不設粉絲系統說明的入口，入口只在粉絲總覽）；2026-11-02（D506：粉絲詳情不設分級設定的入口，只從粉絲總覽進）；2026-11-02（D500：前 % 名由創作者在這頁設定，從尚待確認移除；改列創作者與 Admin 兩組前 % 名怎麼並存）；2026-11-02（D497：最低忠誠點數門檻改為全站單一值、Admin 設定、這頁唯讀，順序檢查只剩前 % 名；D498：前 % 名與部分份量、上限改由 Admin 設定，這頁寫法待同步）；2026-10-23（D479：降級改以緩衝天數為準、誰算粉絲、回填範圍、主要應援對象未選時的邀請點數暫存、Admin 參數生效時點）；2026-10-23（D476：我的賽季加倍、名額捨去且核心圈至少 1 人、點數即時入帳與即時升級、計分以定價計）；2026-10-22（D474：設定版本補操作者與原值、新值）；2026-10-19（從粉絲分級拆成獨立畫面頁，補概述與操作流程）；2026-10-09（至 D351）</p>
 </details>
 </div>
 </body>
