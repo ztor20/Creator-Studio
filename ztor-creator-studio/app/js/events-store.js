@@ -74,6 +74,12 @@
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
+
+  /* 相對今天的時間字串（2026-10-29 示範資料補齊）：relDT＝'YYYY-MM-DD HH:MM'（活動 listing／sale 欄的格式）、relT＝'YYYY-MM-DDTHH:MM'（組合包 sched／paused 的格式）。
+     只給新增的重新上架測試活動 test-event-relist 用，讓它的上架、下架、開賣、停售四個時間永遠落在今天前後、原型不過期。 */
+  function relDT(n, hm) { return addDays(todayStr(), n) + ' ' + hm; }
+  function relT(n, hm) { return addDays(todayStr(), n) + 'T' + hm; }
+
   var EVENTS = [
     {
       id: 'realive-asia-kaohsiung',
@@ -1393,6 +1399,62 @@
       revenue: 1772900,   // 2026-10-16 示範資料修正（UI-CHANGES 二百四十四）：含組合包整組金額（D408）＝門票 1,653,200＋組合包 63 × 1,900
       status: 'on-sale',
       sale: { from: '2026-09-20 12:00', to: '' },   // D414：補開賣時間——免費門票訂單的下單日期落在開賣日之後、不晚於昨天（沒寫時下單日期會落到未來）
+      images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      /* ══ 重新上架測試活動（2026-10-29 示範資料補齊，使用者：活動端也要有「重新上架」的複雜流程假資料）══
+         已下架（unlisted）的售票中活動，活動自己的四個時間條件全開、相對今天：上架 20 天前 → 開賣 15 天前 → 停售 60 天後 → 定時下架 70 天後（活動日 75 天後）。
+         三個已下架的活動組合包各示範一種結果（活動詳情頁按「重新上架」會彈窗，組合包本頁按「上架」走組合包確認）：
+           bd-test-ev-ok     ＝ 成員都上架中、保存的四個時間都沒到 → 彈窗「同時上架」那一區，選「上架活動與組合包」會恢復排程
+           bd-test-ev-member ＝ 成員「24CE Skateboard」已下架 → 不能與活動一起上架，彈窗另外提示（D489）；組合包本頁按「上架」會問要不要連帶上架成員（D289）
+           bd-test-ev-passed ＝ 保存的開賣、停售時間已過 → 這次不上架，彈窗列出已過的時間（D488 決定 7）
+         非 bookyay 活動＝掛 S95，release2.3 看不到（最終版看得到）。名稱的中英文都標明用途；活動名稱是賣家內容，與其他示範活動一樣不進 i18n（清單列的中文名走 events.r.test-event-relist.*）。 */
+      id: 'test-event-relist',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: null,
+      name: 'Test: event bundle with an unlisted item',
+      desc: 'Relist-flow test event: the event is unlisted, and its three unlisted bundles each show a different outcome.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Taipei Music Center',
+      city: 'Taipei, Taiwan',
+      country: 'TW',
+      languages: ['cmn'],
+      address: '',
+      date: addDays(todayStr(), 75),
+      start: '19:30',
+      end: '22:00',
+      doors: '18:30',
+      tiers: [
+        { id: 'tier-test-front', name: 'Front block', price: 1200, qty: 300, sold: 80 },
+        { id: 'tier-test-rear', name: 'Rear block', price: 800, qty: 600, sold: 40 }
+      ],
+      bundles: [
+        { id: 'bd-test-ev-ok', name: '前區票 ＋ 限量黑膠（成員都上架中）', desc: '重新上架測試：成員都上架中，保存的時間都還沒到，會出現在「同時上架」。', tickets: { tierIds: ['tier-test-front'], qty: 1 },
+          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp', price: 700 }],
+          disc: 10, price: 1710, sold: 0, cap: 50, listed: false, stopped: true,
+          paused: { listAt: relT(-5, '12:00'), unlistAt: relT(55, '23:59'), saleStart: relT(5, '12:00'), saleEnd: relT(50, '23:59'), onSale: true,
+                    sched: { listAt: relT(-5, '12:00'), unlistAt: relT(55, '23:59'), saleStart: relT(5, '12:00'), saleEnd: relT(50, '23:59') } } },
+        { id: 'bd-test-ev-member', name: '前區票 ＋ 滑板（成員已下架）', desc: '重新上架測試：成員「24CE Skateboard」已下架，不能與活動一起上架；到組合商品細節頁按「上架」可選連帶上架。', tickets: { tierIds: ['tier-test-front'], qty: 1 },
+          products: [{ name: '24CE Skateboard', img: 'images/products/24ce-skateboard-01.jpg', price: 2400, listed: false }],
+          disc: 10, price: 3240, sold: 0, cap: 30, listed: false, stopped: true,
+          paused: { listAt: relT(-5, '12:00'), unlistAt: relT(55, '23:59'), saleStart: relT(5, '12:00'), saleEnd: relT(50, '23:59'), onSale: true,
+                    sched: { listAt: relT(-5, '12:00'), unlistAt: relT(55, '23:59'), saleStart: relT(5, '12:00'), saleEnd: relT(50, '23:59') } } },
+        { id: 'bd-test-ev-passed', name: '後區票 ＋ 白 Tee（保存的時間已過）', desc: '重新上架測試：下架前排的開賣與停售時間都已過，會被擋下、列出已過的時間。', tickets: { tierIds: ['tier-test-rear'], qty: 1 },
+          products: [{ name: '26MS T-Shirt (白)', img: 'images/products/26ms-t-shirt-w-01.jpeg', price: 1880 }],
+          disc: 5, price: 2546, sold: 0, cap: 40, listed: false, stopped: true,
+          paused: { listAt: relT(-5, '12:00'), unlistAt: relT(55, '23:59'), saleStart: relT(-3, '12:00'), saleEnd: relT(-1, '23:59'), onSale: true,
+                    sched: { listAt: relT(-5, '12:00'), unlistAt: relT(55, '23:59'), saleStart: relT(-3, '12:00'), saleEnd: relT(-1, '23:59') } } }
+      ],
+      publish: { pickup: 'eticket', shown: true },
+      sold: 120,
+      revenue: 128000,
+      status: 'on-sale',
+      unlisted: true,
+      sale: { from: relDT(-15, '12:00'), to: relDT(60, '23:59') },
+      listing: { from: relDT(-20, '12:00'), to: relDT(70, '23:59') },
       images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
       video: false
     },
