@@ -39,6 +39,10 @@
     { code: 'LAUNCH50',    kind: 'own',     pct: 50, status: 'exhausted', period: '6/1 – 6/30',   full: true, scope: { items: [] } }
   ];
 
+  /* D492：優惠碼字串全局唯一（創作者碼與平台優惠碼不可重複）。平台優惠碼的示意資料在 admin-platform-promotions.html，這裡只留字串供比對。 */
+  var PLATFORM_CODES = ['WELCOME50', 'APPFIRST'];
+  function isPlatformCode(code) { return PLATFORM_CODES.indexOf(String(code || '').toUpperCase()) !== -1; }
+
   function load() {
     try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o && typeof o === 'object') return o; } catch (e) {}
     return {};
@@ -132,7 +136,7 @@
   /* 新建自用碼（Phase 1 只有自用碼）。字串已由呼叫端驗過格式；重複回 null */
   function create(spec) {
     var code = String(spec.code || '').toUpperCase();
-    if (!code || byCode(code) || SEED.some(function (c) { return c.code === code; })) return null;
+    if (!code || byCode(code) || isPlatformCode(code) || SEED.some(function (c) { return c.code === code; })) return null;
     var o = ov();
     var rec = { code: code, kind: 'own', pct: Number(spec.pct) || 0, status: spec.status || 'active', period: spec.period || '—',
                 scope: spec.all ? { all: true } : { items: spec.items ? spec.items.slice() : (spec.key ? [spec.key] : []) }, fresh: true };
@@ -141,7 +145,7 @@
     save(o); changed();
     return byCode(code);
   }
-  function exists(code) { code = String(code || '').toUpperCase(); return SEED.some(function (c) { return c.code === code; }) || ov().created.some(function (c) { return c.code === code; }); }
+  function exists(code) { code = String(code || '').toUpperCase(); return isPlatformCode(code) || SEED.some(function (c) { return c.code === code; }) || ov().created.some(function (c) { return c.code === code; }); }
   function labelFor(key) {
     var o = ov(); if (o.names[key]) return o.names[key];
     var P = window.ProductsStore, p = P && P.get && P.get(key);
@@ -156,6 +160,6 @@
     switchOn: switchOn, setSwitch: setSwitch, defaultOn: defaultOn,
     selectedFor: selectedFor, setSelected: setSelected, selectable: selectable,
     autoApplied: autoApplied, applicable: applicable,
-    create: create, exists: exists, labelFor: labelFor, reset: reset
+    create: create, exists: exists, isPlatformCode: isPlatformCode, labelFor: labelFor, reset: reset
   };
 })();

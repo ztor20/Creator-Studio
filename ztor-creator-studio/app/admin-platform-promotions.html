@@ -6,6 +6,7 @@
 <title>平台優惠設定 · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2"><!-- Admin 頁門禁的無權限狀態（js/sidebar.js applyAdminGate）重用這支，也用於各清單與紀錄分頁空狀態 -->
@@ -484,6 +485,8 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 幣別換算的匯率表（D316：js/currency.js 委派 ztorEvents.fx） -->
 <script src="js/currency.js?v=r2.2"></script><!-- 平台基準幣別（D316）：門檻金額的符號與換算讀數 -->
+<script src="js/toast.js?v=r2.2"></script>
+<script src="js/discount-codes-store.js?v=r2.2"></script><!-- D492：優惠碼字串全局唯一，建平台碼時與創作者碼比對 -->
 <script src="js/sidebar.js?v=r2.2"></script>
 <script>
   /* 平台優惠設定頁互動（spec 5.1.0.7 F2–F6，D277）——demo，非真後端。
@@ -927,6 +930,11 @@
       var name = nameInput.value.trim(), code = codeInput.value.trim().toUpperCase();
       if (!name) { nameInput.focus(); return; }
       if (!code) { codeInput.focus(); return; }
+      /* D492：全局唯一——與創作者優惠碼、其他平台碼的字串都不能重複（編輯自己時略過自己） */
+      var dup = (window.ztorCodes && window.ztorCodes.exists(code) && !codeState.some(function (x) { return x.code === code; })) ||
+        codeState.some(function (x) { return x.code === code && x.id !== codeEditingId; });
+      if (dup) { codeInput.setAttribute('aria-invalid', 'true'); codeInput.focus(); if (window.ztorToast) window.ztorToast.show((window.i18nT && window.i18nT('pprom.code.err.taken')) || 'That code is already in use.', { tone: 'error' }); return; }
+      codeInput.removeAttribute('aria-invalid');
       var unit = getSegmented(codeUnitGroup, 'data-unit') || 'pct';
       var discount = Number(document.getElementById('pprom-code-discount').value) || 0;
       var fixedMode = getSegmented(codeFixedModeGroup, 'data-fixedmode') || 'once';

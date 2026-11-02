@@ -1282,7 +1282,8 @@
         const scope = readScope();
         if (!scope.all && !scope.types.length && !scope.items.length) { toast('store-settings.codes.err.scope'); return; }
         if (modal.dataset.mode === 'new') {
-          const taken = [...rows.querySelectorAll('.ss-code-cell__code')].some(el => el.textContent.trim().toUpperCase() === raw.toUpperCase());
+          const taken = [...rows.querySelectorAll('.ss-code-cell__code')].some(el => el.textContent.trim().toUpperCase() === raw.toUpperCase())
+            || !!(window.ztorCodes && window.ztorCodes.isPlatformCode(raw));   /* D492：全局唯一，平台優惠碼的字串也不能重複 */
           if (taken) { if (inp) { inp.setAttribute('aria-invalid', 'true'); inp.focus(); } toast('store-settings.codes.err.taken'); return; }
           const dv = discountValue();
           const discount = currentUnit() === 'pct' ? dv + '%' : '$' + dv;
