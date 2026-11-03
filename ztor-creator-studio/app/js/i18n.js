@@ -4728,6 +4728,7 @@
     'fans.kpi.rep':          { en: 'Avg loyalty points',                    zh: '平均忠誠點數' },
     'fans.kpi.rep-meta':     { en: '+12 vs last month',                     zh: '較上月 +12' },
     'fans.who.title':        { en: "Who's who",                             zh: '粉絲組成' },
+    'fans.compose.sub':      { en: '{n} active fans, by tier', zh: '{n} 位活躍粉絲，依分級' },   // 2026-11-03 S133
     'fans.who.tier':         { en: 'Tier settings',                         zh: '等級設定' },
     'fans.who.benefits':     { en: 'Edit benefits',                         zh: '編輯權益' },
     'fans.tier.inner':       { en: 'Inner Circle',                          zh: '核心圈' },
