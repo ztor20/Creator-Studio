@@ -135,7 +135,7 @@
   /* RELEASE_LOCK（2026-11 起）：各交付版是獨立分支＋獨立網址，切換版本＝跳到另一個網址、看另一份檔案（下方 go: 列）。
      main 這裡是 null；release-cut.sh 切分支時只改這一行，其餘程式與 main 完全相同，修正搬進分支才不會卡在鎖定段落。
      有值時：版本鎖死在這一版，網址參數與瀏覽器記憶都無效，也不跳首次選版本的 popup。 */
-  var RELEASE_LOCK = null;
+  var RELEASE_LOCK = {"key": "release2.3", "name": "release2.3（凍結版）", "rule": "tier:release2.2,release2.3", "desc": "活動交付版"};
   if (RELEASE_LOCK) VERSIONS = [[RELEASE_LOCK.key, RELEASE_LOCK.name, '開發', RELEASE_LOCK.rule, RELEASE_LOCK.desc]];
   /* 版本清單放在完整版網址的 js/release-links.js（只有一份），舊分支也讀得到之後新增的版本。
      用 script 載入，跨網域不需要另外設定；讀不到（離線）時面板就只少這幾列。 */
