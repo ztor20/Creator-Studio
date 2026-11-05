@@ -383,7 +383,7 @@
       return ADMIN_ROUTES.has(f) ? f : null;
     } catch (e) { return null; }
   }
-  /* 返回鍵上的字。側欄那顆只有一行的位置，所以用短名（「Creator 名冊」的同級寫法），
+  /* 返回鍵上的字。側欄那顆只有一行的位置，所以用短名（「Creator 管理」的同級寫法），
      aria 才寫完整的「返回 X」。沒有短名的 Admin 頁退回 ADMIN_NAV 的頁名。 */
   const BACK_LABEL = {
     "creators.html":           { label: "admin.back-short",  aria: "admin.back" },
@@ -783,7 +783,7 @@
     const marker = adminView()
       ? `<span class="app-topbar__context app-topbar__context--admin">
            <i data-lucide="shield-check" class="ztor-icon ztor-icon--sm"></i>
-           <span data-i18n="admin.creator-mgmt">Creator Management</span>
+           <span data-i18n="admin.studio">Admin Creator Studio</span>
          </span>`
       : (adminScope ? `<span class="app-topbar__context">
            <span class="app-topbar__context-label" data-i18n="admin.managing">Managing</span>
@@ -1439,11 +1439,32 @@
         '<a class="btn btn--outline empty-card__cta" href="index.html" data-i18n="admin.gate.back">Back to the workspace</a>' +
       '</div>' +
     '</div>';
+  /* 2026-11-05（D510／稽核 A15）：Admin 身分、但還沒選創作者（persona 不在名冊上）時，
+     創作者介面的頁面沒有可代管的對象——規格 §6.4／§5.2.1 要顯示「請先從 Creator 管理選取」。
+     同一套門禁機制、換一則文案與去處（creators.html）；只在有 app 外框的頁面生效，
+     登入頁、掃碼頁、設計系統頁等沒有 app 外框（.app-sidebar／.app-topbar）的頁面不受影響。 */
+  const NO_CREATOR_GATE_HTML =
+    '<div ' + GATE_ATTR + '>' +
+      '<div class="empty-card">' +
+        '<div class="empty-card__icon empty-card__icon--warning"><i data-lucide="users" class="ztor-icon"></i></div>' +
+        '<h2 class="empty-card__title" data-i18n="admin.nocreator.title">Select a creator first</h2>' +
+        '<p class="empty-card__text" data-i18n="admin.nocreator.text">Pick a creator in Creator Management to open their workspace.</p>' +
+        '<a class="btn btn--outline empty-card__cta" href="' + ROSTER_PAGE + '" data-i18n="admin.nocreator.cta">Go to Creator Management</a>' +
+      '</div>' +
+    '</div>';
+  function needsCreatorPick() {
+    return !isAdminPlatform && !isRoster && isAdminRole() && !getCreator()
+        && !!document.querySelector(".app-sidebar, .app-topbar");
+  }
   function applyAdminGate() {
-    if (!isAdminPlatform) return;
+    const noCreator = needsCreatorPick();
+    if (!isAdminPlatform && !noCreator) {
+      const old = document.querySelector("[" + GATE_ATTR + "]");
+      if (!old) return;
+    }
     const host = gateHost();
     if (!host) return;
-    const denied = !isAdminRole();
+    const denied = isAdminPlatform ? !isAdminRole() : noCreator;
     const hideAlso = gateAlsoHide();
     [].slice.call(host.children).concat(hideAlso).forEach(function (el) {
       if (el.hasAttribute(GATE_ATTR)) return;
@@ -1457,7 +1478,7 @@
     });
     let gate = host.querySelector("[" + GATE_ATTR + "]");
     if (denied && !gate) {
-      host.insertAdjacentHTML("beforeend", GATE_HTML);
+      host.insertAdjacentHTML("beforeend", isAdminPlatform ? GATE_HTML : NO_CREATOR_GATE_HTML);
       gate = host.querySelector("[" + GATE_ATTR + "]");
       if (window.ztorIcons) window.ztorIcons.applyIcons(gate);
       if (window.applyI18n) window.applyI18n(gate);

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商品庫存 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -194,7 +194,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">數字</th><th>內容</th></tr></thead>
   <tbody>
-    <tr><td>在庫</td><td>這件商品此刻的在庫數；限量商品同時帶上限</td></tr>
+    <tr><td>在庫</td><td>這件商品此刻的在庫數</td></tr>
     <tr><td>單售可售</td><td>單售此刻能賣的量：<br>有鎖給單售時＝鎖給單售的量 − 這一格的保留<br>沒鎖時＝沒有被鎖定的量 − 這一格的保留<br>有鎖的單售賣完就售罄，不吃沒有被鎖定的量</td></tr>
     <tr><td>鎖給組合</td><td>各組合包從這件商品鎖走、還沒賣掉的量的總和</td></tr>
     <tr><td>補貨中</td><td>計時補貨已送出、還沒確認到貨的量</td></tr>
@@ -203,7 +203,7 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 <ul class="plain">
   <li>沒有被鎖定的量不另成一格；逐選項組合的數字在<a href="#st-manage">庫存管理</a>每一列看</li>
-  <li>所有販售管道都設了鎖定時，沒有被鎖定的量留在庫存池、沒有任何販售管道賣得到，要提醒創作者重新分配，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a></li>
+  <li>所有販售管道都設了鎖定時，沒有被鎖定的量留在庫存池、沒有任何販售管道賣得到，要提醒創作者重新分配（提醒怎麼呈現見頁尾尚待確認），見<a href="eshop-sales.html#stock-lock">鎖定庫存</a></li>
   <li>庫存狀態在每次售出、撤銷、補貨與手動調整後重算，狀態的意思見<a href="common-status.html#stock">狀態語言</a>：
     <ul class="plain">
       <li>充足</li>
@@ -214,6 +214,23 @@ table.map td:nth-child(2){width:22%}
     </ul>
   </li>
 </ul>
+<p>庫存現況依條件換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">庫存狀態</td></tr>
+    <tr><td>充足</td><td>在庫量不低於低庫存門檻（推導）</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>低庫存</td><td>在庫量低於低庫存門檻</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>售罄</td><td>販售管道的可賣量歸零</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>補貨中</td><td>送出計時補貨後、到貨確認之前</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>不限量</td><td>開啟不限量</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">五個數字</td></tr>
+    <tr><td>沒有補貨中的量</td><td>沒有送出還沒到貨的單</td><td>「補貨中」數字是 0；下方「補貨中」區整塊不出現</td></tr>
+    <tr><td>沒有保留中的量</td><td>沒有人下單後還沒付款</td><td>「保留中」數字是 0</td></tr>
+    <tr><td>單售有鎖定而賣完</td><td>鎖給單售的量賣到 0</td><td>單售可售是 0，算售罄；跟沒鎖定的 0 要分得出來，怎麼區分<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>所有販售管道都鎖定，剩下的量沒人能賣</td><td>沒有被鎖定的量留在庫存池</td><td>要提醒創作者重新分配；提醒的樣子<span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="st-pending">補貨中</h3>
 <p>計時補貨送出後、還沒確認到貨的單逐筆列在這裡，讓創作者看到「下了單還沒到」的貨。沒有補貨中的單時整塊不出現。</p>
@@ -221,7 +238,7 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>補貨中的單</td><td>有計時補貨還沒到貨時</td><td>每一筆列出選項組合、數量、供應商、預計到貨</td></tr>
-    <tr><td>到貨確認</td><td>每一筆補貨中的單</td><td>確認後數量入庫，這一筆轉為已完成<br>跟<a href="#st-history">庫存歷史紀錄</a>裡同一筆的到貨確認是同一個動作<br>補進來的量算沒有被鎖定的量：有鎖定的販售管道要再鎖一次才能繼續賣，沒鎖定的自動恢復</td></tr>
+    <tr><td>到貨確認</td><td>每一筆補貨中的單</td><td>確認後數量入庫，這一筆轉為已完成<br>跟<a href="#st-history">庫存歷史紀錄</a>裡同一筆的到貨確認是同一個動作<br>補進來的量算沒有被鎖定的量，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a></td></tr>
   </tbody>
 </table></div>
 
@@ -230,9 +247,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>三個庫存開關</td><td>實體商品</td><td>開啟不限量、開啟限量標籤、鎖定庫存，建立後可以在編輯時改，規則同<a href="eshop-create-physical.html#edition">三個庫存開關</a></td></tr>
-    <tr><td>庫存版本</td><td>數位商品</td><td>不限量或限量，建立後不能改，只顯示，見<a href="eshop-create-digital.html">數位商品</a>的建立規則</td></tr>
-    <tr><td>上限</td><td>數位限量商品<br>多選項時逐選項組合</td><td>可以改，但不能低於已售＋各鎖定配額＋未鎖定格的<a href="eshop-sales.html#stock-reserve">保留</a><br>各鎖定配額指單售鎖定與各組合包鎖定，已含它們自己的保留</td></tr>
+    <tr><td>三個庫存開關</td><td>實體商品</td><td>開啟不限量、開啟限量標籤、鎖定庫存，規則同<a href="eshop-create-physical.html#edition">三個庫存開關</a><br>建立後在編輯時可以調整（推導）</td></tr>
     <tr><td>目前在庫</td><td>每一列</td><td>這個選項組合此刻的在庫數</td></tr>
     <tr><td>鎖給單售的量</td><td>每一列<br>選填</td><td>留空或填 0＝不鎖定，跟其他沒鎖定的販售管道共用這個選項組合沒有被鎖定的量<br>鎖給單售的量是還沒賣掉的配額，賣一件少一件，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a><br>填了不能大於這個選項組合當下的未鎖定可賣（未鎖定 − 未鎖定這一格的保留），表單直接擋下<br>每次儲存都寫進<a href="#st-history">庫存歷史紀錄</a></td></tr>
     <tr><td>沒有被鎖定的量</td><td>每一列</td><td>唯讀，＝目前在庫 − 這個選項組合各販售管道的鎖定量之和</td></tr>
@@ -245,8 +260,21 @@ table.map td:nth-child(2){width:22%}
 <ul class="plain">
   <li>組合包從各成員鎖走的量，在組合包那邊用鎖定套數設定，本頁不呈現也不改，見<a href="bundles.html#stock-lock">鎖定套數</a></li>
   <li>多選項商品的鎖定逐選項組合記，見<a href="eshop-sales.html#stock-lock-variants">多選項商品的鎖定</a></li>
+  <li>數位商品沒有這個分頁；數位商品的庫存版本與限量上限在哪裡呈現，見頁尾尚待確認</li>
   <li>低庫存提醒與門檻在商品設定分頁設，見<a href="eshop-product-settings.html#low-stock">低庫存提醒</a></li>
 </ul>
+
+<p>庫存管理的列與鎖定欄依條件換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>單一規格商品</td><td>商品只有一個選項組合</td><td>表只有一列，用商品名當那一列</td></tr>
+    <tr><td>鎖給單售的量留空或填 0</td><td>這一列沒鎖定</td><td>跟其他沒鎖定的販售管道共用這一列沒有被鎖定的量</td></tr>
+    <tr><td>鎖給單售的量大於可鎖的量</td><td>填的數字超過這個選項組合當下的未鎖定可賣</td><td>表單直接擋下；擋下時的提示文字<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>有鎖定且賣到 0</td><td>鎖給單售的量賣完</td><td>算售罄；列上怎麼標示<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已封存的商品</td><td>商品已封存</td><td>整頁唯讀，見<a href="eshop-product.html#pd-tabs">各狀態有哪些分頁</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="st-history">庫存歷史紀錄</h3>
 <p>補貨與鎖定變動合併成一張清單，一張單一筆，最新的在上；讓創作者回頭查每一次庫存是怎麼變的。</p>
@@ -265,6 +293,17 @@ table.map td:nth-child(2){width:22%}
     <tr><td>看全部</td><td>—</td><td>本頁只列最近幾筆，按這裡看全部紀錄</td></tr>
   </tbody>
 </table></div>
+<p>庫存歷史紀錄依條件換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>補貨中的筆</td><td>計時補貨送出、還沒到貨確認</td><td>狀態寫「補貨中」，可以按到貨確認</td></tr>
+    <tr><td>已完成的補貨</td><td>立即補貨，或計時補貨已到貨確認</td><td>狀態寫「已完成」</td></tr>
+    <tr><td>鎖定變動</td><td>每次儲存鎖給單售的量</td><td>狀態一律是已完成</td></tr>
+    <tr><td>紀錄超過本頁列出的筆數</td><td>紀錄很多</td><td>只列最近幾筆，按「看全部」</td></tr>
+    <tr><td>還沒有任何紀錄</td><td>商品從沒補貨或調整鎖定</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 <ul class="plain">
   <li>補貨那些筆的資料來自<a href="eshop-restock.html">補貨</a>流程</li>
   <li>鎖定變動那些筆，在本頁的鎖給單售的量每次儲存時逐選項組合寫入</li>
@@ -275,8 +314,8 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.1-商品細節頁.md</code>（v1.61；§2.10 保留中與單售可售對照 v1.69；§2.10 上限的下限對照 v1.71）§2.10、§3 第 3 項、第 4 段「頁面狀態」；<code>0-設計規格書.md</code> §7.2、§7.14</li>
-    <li>決策：D137、D241、D255、D258、D260、D266、D288、D455、D465</li>
+    <li>規格：<code>5.1.5.1-商品細節頁.md</code>（v1.84）§2.10、§3 第 3 項、第 4 段「頁面狀態」；<code>0-設計規格書.md</code>（v5.39）§7.2、§7.14</li>
+    <li>決策：D137、D241、D255、D258、D260、D266、D288、D455、D465、D496、D510</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -285,9 +324,14 @@ table.map td:nth-child(2){width:22%}
     <li>所有販售管道都鎖定、剩下的量沒人能賣時，本頁怎麼提醒</li>
     <li>庫存歷史紀錄本頁列幾筆、看全部開在哪裡</li>
     <li>手動調整在庫數的入口在哪裡</li>
+    <li>數位商品的庫存版本（不限量或限量）與限量上限在哪個分頁呈現；規格的庫存設定段同時寫了這兩項，但庫存分頁只有實體商品</li>
+    <li>多選項商品的逐選項組合，鎖給單售的量能不能編輯（規格寫三個庫存開關的逐組合鎖定庫存量尚未開放編輯，同段又設計了逐列鎖給單售的量）</li>
+    <li>庫存狀態五種與庫存現況在畫面上各長什麼樣子</li>
+    <li>鎖給單售的量超過可鎖的量時，提示文字怎麼寫；有鎖定賣到 0 與沒鎖定的 0 在列上怎麼區分</li>
+    <li>庫存歷史紀錄還沒有任何紀錄時，畫面怎麼呈現</li>
     <li>庫存與補貨的其他待確認，列在<a href="eshop-sales.html">電子商店販售流程</a>與<a href="eshop-restock.html">補貨</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-30（D496：實體商品改成三個庫存開關、沒有上限；數位不變）；2026-10-21（D465 補充三：限量的上限不能低於已售＋各鎖定配額＋未鎖定格的保留，比照門票張數下限；對照 5.1.5.1 v1.71）；2026-10-21（D465 驗收修正：鎖給單售的上限改寫成未鎖定可賣）；2026-10-21（D465：庫存現況加「保留中」成為五個數字；單售可售改成有鎖時只算鎖給單售的可賣、沒鎖時算沒有被鎖定的可賣，兩者都扣掉該格保留；對照 5.1.5.1 v1.69）；2026-10-20（D455：單獨下架只下架那一個選項組合、其他照賣，定案；對照 5.1.5.1 v1.59；來源版本對照到 v1.61）；2026-10-19（新頁，對照 5.1.5.1 v1.58）</p>
+  <p class="k">最近同步：2026-11-04（全手冊補齊：對照規格；5.1.5.1 v1.84、主規格 v5.39）</p>
 </details>
 </div>
 </body>

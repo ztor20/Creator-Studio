@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>手動補登收入 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -90,7 +90,7 @@ tr:last-child td{border-bottom:0}
 <h2 id="me-intro" class="no-num">概述</h2>
 <ul class="plain">
   <li>手動補登是交易明細裡開啟的視窗，一張表單填完送出，沒有類型分支</li>
-  <li>補登的收入不算進可提領、提款與稅務文件，最多算進展示用的收入統計並標未驗證，見<a href="#me-scope">補登的收入算進哪裡</a></li>
+  <li>補登的收入一律標為手動、未驗證，算進哪些數字見<a href="#me-scope">補登的收入算進哪裡</a></li>
 </ul>
 
 <h2 id="me-flow"><span class="n"></span>操作流程</h2>
@@ -118,9 +118,6 @@ tr:last-child td{border-bottom:0}
   </li>
   <li>送出後回到交易明細，新增一列補登收入，見<a href="#me-result">送出結果</a></li>
 </ol>
-<ul class="plain">
-  <li>關閉視窗時，若已填了內容，先問要不要離開</li>
-</ul>
 <p class="note">依據：5.1.8.2 §1、§2、§3；5.1.8 F7、F10。</p>
 
 <h2 id="me-fields"><span class="n"></span>功能與欄位</h2>
@@ -138,9 +135,24 @@ tr:last-child td{border-bottom:0}
     <tr><td>幣別（Currency）</td><td>必填，單選</td><td>USD、TWD、HKD、SGD、JPY 五種，跟全站的幣別清單同一份，見<a href="common-currency.html">定價幣別</a><br>換算與顯示照收入管理的規則，這裡不另算匯率</td></tr>
     <tr><td>備註（Note）</td><td>—</td><td>補充說明</td></tr>
     <tr><td>佐證附件（Attachment）</td><td>—</td><td>佐證資料；上傳失敗時見<a href="#me-result">送出結果</a></td></tr>
-    <tr><td>送出前提示</td><td>送出按鈕前</td><td>提醒手動資料可能影響收入統計與稅務文件的判讀<br>說明這筆會標手動、未驗證，不算進可提領、提款與稅務文件</td></tr>
+    <tr><td>送出前提示</td><td>送出按鈕前</td><td>提醒手動資料可能影響收入統計與稅務文件的判讀<br>說明這筆會標手動、未驗證，影響範圍見<a href="#me-scope">補登的收入算進哪裡</a></td></tr>
     <tr><td>送出補登</td><td>必填都完成才能按</td><td>送出後不能重複送出</td></tr>
-    <tr><td>關閉</td><td>—</td><td>已填了內容時，先問要不要離開</td></tr>
+    <tr><td>關閉</td><td>—</td><td>已填了內容時，先問要不要離開；視窗一定要有關閉操作</td></tr>
+  </tbody>
+</table></div>
+
+<p>表單與入口依條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">手動補登收入入口</td></tr>
+    <tr><td>可以補登</td><td>創作者所屬角色有收入補登權限</td><td>交易明細有手動補登收入入口</td></tr>
+    <tr><td>沒有補登權限</td><td>創作者所屬角色沒有收入補登權限</td><td>入口不能按並顯示原因；團隊角色的權限還沒定案 <span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">送出補登</td></tr>
+    <tr><td>必填沒填完</td><td>交易項目、收入分類、日期、金額、幣別有一項沒填</td><td>送出補登不能按</td></tr>
+    <tr><td>金額、日期不合法</td><td>金額不是正數，或日期不合法</td><td>標出對應欄位並提示更正</td></tr>
+    <tr><td>日期是未來的日子</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>附件上傳失敗</td><td>佐證附件上傳沒成功</td><td>可以移除或重試，不擋其他欄位送出</td></tr>
   </tbody>
 </table></div>
 
@@ -164,6 +176,8 @@ tr:last-child td{border-bottom:0}
     <tr><td>財務摘要卡、收入趨勢、收入來源</td><td>算進統計時，標示含手動補登資料</td></tr>
     <tr><td>可提領、提款可申請金額、稅務文件</td><td>不算進去</td></tr>
     <tr><td>儀表板的近期收入</td><td>不出現，因為補登的收入永遠不會結算</td></tr>
+    <tr><td>項目收益、收入去向</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>儀表板營運摘要的當前總收入</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.8.2 §4.1.3、§5、§7；5.1.8 F7、F10；5.1.1 F3；主規格 §7.2、§7.3；D250。</p>
@@ -172,7 +186,7 @@ tr:last-child td{border-bottom:0}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.8.2-手動補登收入流程.md</code>（最後更新 2026-09-23）§1～§7；<code>5.1.8-收入管理.md</code> F7、F10；<code>5.1.1-儀表板.md</code> F3；<code>0-設計規格書.md</code> §7.2、§7.3、§7.15</li>
+    <li>規格：<code>5.1.8.2-手動補登收入流程.md</code>（最後更新 2026-09-23）§1～§7；<code>5.1.8-收入管理.md</code> F7、F10；<code>5.1.1-儀表板.md</code> F3；<code>0-設計規格書.md</code>（v5.39）§7.2、§7.3、§7.15</li>
     <li>決策：D250、D316</li>
   </ul>
   <p class="k">尚待確認</p>
@@ -183,9 +197,10 @@ tr:last-child td{border-bottom:0}
     <li>每位創作者補登的次數或金額有沒有上限</li>
     <li>補登後能不能編輯或刪除</li>
     <li>團隊成員裡哪些角色可以補登；沒有權限時入口停用並顯示原因</li>
+    <li>補登的收入是否計入項目收益、收入去向與儀表板營運摘要的當前總收入（規格只寫「最多計入展示用的收入統計」）</li>
     <li>視窗送出中的畫面</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.8.2 最後更新 2026-09-23）</p>
+  <p class="k">最近同步：2026-11-04（全手冊補齊：對照規格；5.1.8.2 最後更新 2026-09-23、主規格 v5.39）</p>
 </details>
 </div>
 </body>

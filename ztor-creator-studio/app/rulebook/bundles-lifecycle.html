@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>組合包的階段與連動 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+ul.plain ul.plain{margin:4px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.ex{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--wait-key);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.ex p{margin:0 0 4px}
+.ex ul{margin:0;padding-left:18px}
+.tablewrap{overflow-x:auto}
+/* 設定對照表：欄位多，窄螢幕在外框內橫向捲動 */
+.wrap table.cmp{min-width:1100px}
+.wrap table.cmp-modes{min-width:600px}
+.wrap table.cmp tr.colhead th{background:transparent;color:var(--text-3,var(--text-2));font-size:12px;font-weight:500;text-align:left;padding:6px 12px;border-bottom:1px solid var(--border,rgba(128,128,128,.25))}.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.k{font-size:12px;color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 互動：試算分配 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label{font-size:13px;color:var(--text-2)}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>組合包的階段與連動</h1>
+<p class="lede">創作者管組合包從草稿到封存的每個階段，並用上架、下架、封存、刪除控制它。成員或活動一變，組合包跟著連動。</p>
+
+<div class="toc"></div>
+
+<h2 id="stages"><span class="n"></span>組合包的階段</h2>
+<p>組合包的階段跟單售商品同一套，通用定義見<a href="eshop-sales.html#archive-lifecycle">販售管道的生命週期</a>；下表只寫組合包這個對象。清單上標什麼，見<a href="#timing-badge">電子商店清單的徽章</a>。</p>
+<p><span class="tag wait">草稿</span> → <span class="tag ok">上架中</span> → <span class="tag off">已下架</span> → <span class="tag warn">已封存</span> → 解除封存回到 <span class="tag off">已下架</span></p>
+<div class="tablewrap"><table class="cmp-modes">
+  <thead><tr><th style="width:12%">階段</th><th style="width:24%">什麼時候進入</th><th style="width:24%">創作者能做</th><th style="width:16%">Admin 額外能做</th><th>連動</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag wait">草稿</span><div class="k">Draft</div></td><td>建立時存草稿或選「不上架」<br>所屬活動還沒發布</td><td>接著編輯<br>刪除，要先確認<br>發布</td><td>—</td><td>不對外<br>所屬活動還沒發布時，不列在電子商店的組合包清單<br>草稿活動被刪除時一起刪除</td></tr>
+    <tr><td><span class="tag ok">上架中</span><div class="k">Listed</div></td><td>立刻上架<br>定時上架的時間到<br>按「上架」</td><td>切換顯示與開賣<br>改庫存，見<a href="#published-edit">組合包在活動發布後的修改</a><br>下架，要先確認</td><td>撤銷賣出的組合包品項，只有 Admin 能按 <span class="tag adm">Admin</span></td><td>成員一律在上架中<br>成員或活動下架時一起下架</td></tr>
+    <tr><td><span class="tag off">已下架</span><div class="k">Unlisted</div></td><td>手動下架<br>定時下架到期<br>成員或活動下架時連動<br>定時上架的時間還沒到</td><td>編輯內容<br>修改成員，見<a href="#member-edit">組合包修改成員的條件</a><br>上架、封存<br>零成交可刪除</td><td>撤銷賣出的組合包品項，只有 Admin 能按 <span class="tag adm">Admin</span></td><td>開賣退回未開賣<br>四個排程時間保存但暫停<br>顯示的值保留、不能調</td></tr>
+    <tr><td><span class="tag warn">已封存</span><div class="k">Archived</div></td><td>已下架後封存</td><td>解除封存<br>零成交可刪除</td><td>—</td><td>整頁唯讀<br>不牽連成員</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.14「三個狀態開關」「下架確認與組合包連動」「封存與刪除」、§4.1 第 5 項；5.1.5.4 §4 F5、F6；5.1.5.9 §2.2、§2.3；D252、D265、D284、D290、D293、D298、D307、D340、D455、D481。</p>
+
+<h2 id="timing"><span class="n"></span>票務商品的上架與開賣時間</h2>
+<p>票務商品的上架與開賣時間預設跟隨所屬活動，創作者也可以在活動的上架區間內另設。活動還沒發布時，見<a href="#timing-draft">活動還是草稿時</a>；預設跟隨哪些時間，見<a href="#timing-follow">四個時間預設跟隨活動</a>；另設有哪些限制，見<a href="#timing-own">另設自己的時間</a>；清單上標什麼，見<a href="#timing-badge">電子商店清單的徽章</a>。只含商品的組合包，見<a href="#source">只含商品的組合包和票務商品的差別</a>。</p>
+<div class="dg" role="img" aria-label="票務商品的時間示意：活動上架期間最長；活動的正式售票在上架期間裡，從開賣到停售；跟隨活動的票務商品和正式售票同一段；另設的票務商品可以早於活動開賣，但不早於活動上架，也不晚於活動停售">
+<div class="dg-tl wide">
+  <div class="dg-tl__marks"><i style="left:0"></i><i style="left:14%"></i><i style="left:36%"></i><i style="left:78%"></i><i style="left:100%"></i></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">活動階段<span>Stage</span></div><div class="dg-tl__track"><span class="dg-tl__bar st" style="left:0;width:14%"><i>已排程</i></span><span class="dg-tl__bar st ok" style="left:14%;width:64%"><i>售票中</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">活動上架<span>上架區間 · Listing period</span></div><div class="dg-tl__track"><span class="dg-tl__bar ok" style="left:0;width:100%"><i>上架期間</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">活動開賣<span>售票期間 · Sales period</span></div><div class="dg-tl__track"><span class="dg-tl__bar wait" style="left:36%;width:42%"><i>正式售票</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">票務商品開賣<span>跟隨活動</span></div><div class="dg-tl__track"><span class="dg-tl__bar wait" style="left:36%;width:42%"><i>跟著活動</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">票務商品開賣<span>另設</span></div><div class="dg-tl__track"><span class="dg-tl__bar pink" style="left:14%;width:64%"><i>組合包預售到停售</i></span></div></div>
+  <div class="dg-tl__row axis"><div class="dg-tl__k"></div><div class="dg-tl__axis"><span class="l" style="left:0">活動上架</span><span class="low" style="left:14%">另設開賣</span><span class="key" style="left:36%">活動開賣</span><span class="key" style="left:78%">活動停售</span><span class="r" style="left:100%">活動下架</span></div></div>
+</div>
+</div>
+<p class="dg-cap">示意圖：時間由左到右，畫的是活動選定時開賣、填了停售，票務商品另設開賣早於活動開賣的情形。第一個票務商品開始能買時，活動就進入售票中。售罄與下架跟時間點無關，不畫在圖上，見<a href="#unlist">組合包的下架與上架連動</a>。</p>
+<ul class="plain">
+  <li>活動的上架區間是最大的範圍，包住活動的售票期間</li>
+  <li>時間線的定義見<a href="event-rules.html#timing">活動的販售時間</a></li>
+</ul>
+
+<h3 id="timing-draft">活動還是草稿時</h3>
+<p>活動還沒發布時，票務商品也是草稿，不對外，也不出現在電子商店的組合包清單。</p>
+
+<h3 id="timing-follow">四個時間預設跟隨活動</h3>
+<p>票務商品的上架、下架、開賣、停售四個時間，沒另設時跟隨活動對應的時間。</p>
+<div class="dg" role="img" aria-label="繼承圖：活動的開賣時間往下帶給票務商品；跟隨活動的票務商品隨活動一起改，另設的票務商品用自己的時間，活動改了不跟">
+<div class="dg-inh">
+  <div class="dg-node">活動的開賣時間<small>假設從 6/1 改成 6/5</small></div>
+  <div class="dg-inh__kids">
+    <div class="dg-inh__kid"><span class="dg-inh__rel">跟隨活動（預設）</span><div class="dg-node">票務商品 A<small>跟著變成 6/5</small></div></div>
+    <div class="dg-inh__kid own"><span class="dg-inh__rel">另設</span><div class="dg-node">票務商品 B<small>維持自己的時間</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">繼承圖：實線是跟隨活動，虛線是另設、用自己的時間；四個時間各自判斷，日期是假設。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:30%">票務商品的時間</th><th>沒另設時跟隨活動的</th></tr></thead>
+  <tbody>
+    <tr><td>上架日期與時間</td><td>活動的上架設定（立刻上架時＝活動發布當下）</td></tr>
+    <tr><td>下架日期與時間</td><td>活動的下架日期與時間（活動沒填＝不自動下架）</td></tr>
+    <tr><td>開賣日期與時間</td><td>活動的開賣日期與時間（活動選立即開賣時＝上架即開賣）</td></tr>
+    <tr><td>停售日期與時間</td><td>活動的停售日期與時間（活動沒填＝賣到活動開始）</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>建立與編輯時，每個時間是跟隨活動還是另設，都要看得出來</li>
+  <li>活動的時間改了，跟隨中的票務商品立刻跟著改，不是建立時抄一份</li>
+  <li>跟隨停售時，連同活動「停售沒填＝賣到活動開始」一起跟</li>
+</ul>
+
+<h3 id="timing-own">另設自己的時間</h3>
+<p>創作者可以另設票務商品自己的時間，每個時間都必須落在活動上架區間內。</p>
+<ul class="plain">
+  <li>四個時間各自判斷，有另設就用另設的值，沒設就跟隨活動</li>
+  <li>另設的時間不能早於活動上架，也不能晚於活動下架</li>
+  <li>超出活動上架區間時，擋下這次儲存並就地提示</li>
+  <li>另設的開賣與停售不能晚於活動停售</li>
+  <li>另設的時間可以早於活動開賣，例如組合包預售</li>
+  <li>活動之後改了上架、下架、開賣或停售時間，讓已另設時間的票務商品落到活動允許的範圍外時，擋下活動的這次修改，並列出衝突的項目</li>
+</ul>
+
+<h3 id="timing-badge">電子商店清單的徽章</h3>
+<p>票務商品在電子商店清單上的狀態徽章跟所屬活動一致，只含商品的組合包徽章跟單售商品相同；已封存優先於其他徽章。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:44%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">票務商品</td></tr>
+    <tr><td>活動已排程</td><td>活動已發布，還沒有任何東西能買</td><td>標「已排程」</td></tr>
+    <tr><td>活動售票中</td><td>任一張門票或票務商品開始能買</td><td>標「售票中」</td></tr>
+    <tr><td>活動進行中</td><td>活動開始之後</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>活動已結束</td><td>活動結束</td><td>標「已結束」</td></tr>
+    <tr><td>售罄</td><td>組合包的可售量歸零</td><td>照組合包自己的狀態標「售罄」</td></tr>
+    <tr><td>無法販售</td><td>某一個門票成員允許的門票全部隨場次刪除</td><td>標「無法販售」，取代「即將開賣」或「販售中」，見<a href="bundles.html#what-ticket">票務商品</a></td></tr>
+    <tr><td>自己下架或隱藏</td><td>活動售票中，票務商品自己下架或隱藏</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>活動還是草稿</td><td>活動還沒發布</td><td>不列在清單，見<a href="#timing-draft">活動還是草稿時</a></td></tr>
+    <tr class="grp"><td colspan="3">只含商品的組合包</td></tr>
+    <tr><td>販售中</td><td>上架、開賣</td><td>標「販售中」</td></tr>
+    <tr><td>即將開賣</td><td>開賣時間到之前</td><td>標「即將開賣」</td></tr>
+    <tr><td>販售結束</td><td>停售時間到</td><td>標「販售結束」；已售罄時改標這個</td></tr>
+    <tr><td>售罄</td><td>可售量歸零</td><td>標「售罄」</td></tr>
+    <tr><td>已隱藏</td><td>顯示開關關閉</td><td>標「已隱藏」</td></tr>
+    <tr><td>已下架</td><td>組合包下架，或被成員下架連動</td><td>標「已下架」，原因看組合商品細節頁</td></tr>
+    <tr><td>未完成</td><td>草稿</td><td>標「未完成」</td></tr>
+    <tr><td>已封存</td><td>已下架後封存</td><td>標「已封存」</td></tr>
+    <tr><td>急需補貨</td><td>組合包要不要設低庫存門檻</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.14「活動販售的時間層級」第 2、5～9 條、「三個狀態開關」「售罄與販售結束」、「適用範圍與產品待確認」第 9 項；5.1.5 F4；5.1.5.4 §4 F2、F6；5.1.5.9 §2.2；5.1.6.2 F14；D293、D294、D342、D361、D363、D390、D391、D405、D406、D457。</p>
+
+<h2 id="actions"><span class="n"></span>組合包能做的動作</h2>
+<p>下列動作都在組合商品細節頁做，各自的條件與效果見底下子節。</p>
+<ul class="plain">
+  <li><a href="#switches">組合包的上架、顯示、開賣開關</a></li>
+  <li><a href="#self-unlist">組合包的下架與封存</a></li>
+  <li><a href="#member-edit">組合包修改成員的條件</a></li>
+  <li><a href="#published-edit">組合包在活動發布後的修改</a></li>
+  <li><a href="#unlist-lock">售出後鎖定成員內容</a></li>
+  <li><a href="#void">撤銷賣出的組合包</a></li>
+  <li><a href="#unlist-delete">刪除組合包</a></li>
+</ul>
+
+<h3 id="switches">組合包的上架、顯示、開賣開關</h3>
+<p>組合包發布後有自己的一組上架、顯示、開賣開關，定義與狀態組合同<a href="eshop-sales.html#switches">電子商店販售流程的三個開關</a>。組合包能不能賣只看自己的開賣；成員與活動怎麼影響這組開關，見<a href="#unlist">組合包的下架與上架連動</a>。</p>
+<ul class="plain">
+  <li>隱藏＋開賣是合法組合，組合包不在商店陳列，粉絲經非公開連結購買</li>
+</ul>
+
+<h3 id="self-unlist">組合包的下架與封存</h3>
+<p>組合包下架一律先確認；通用規則見<a href="eshop-sales.html#archive">電子商店販售流程的下架、封存與刪除</a>。</p>
+<ul class="plain">
+  <li>取消就不下架；定時下架到期的自動下架不經確認</li>
+  <li>已下架才能封存，上架中不能封存，動作停用並提示要先下架</li>
+  <li>封存時，尚未生效的定時上架一併取消</li>
+  <li>封存組合包不牽連成員</li>
+  <li>解除封存回到已下架，不連動任何成員，也不會被成員的狀態擋下</li>
+  <li>曾因成員下架而被連動下架的組合包，解除封存後仍是已下架</li>
+  <li>要重新對外販售，解除封存後另外按「上架」，見<a href="#unlist-relist">組合包重新上架時帶著成員上架</a></li>
+</ul>
+<p class="note">依據：主規格 §7.14「三個狀態開關」「下架確認與組合包連動」「封存與刪除」；5.1.5.4 §4 F6；5.1.5.9 §2.2、§2.3；D241、D284、D288、D298。</p>
+
+<h3 id="member-edit">組合包修改成員的條件</h3>
+<p>還沒賣出任何一套的組合包，要同時符合兩條才能修改成員：組合包已下架，而且沒有結帳中的訂單。只含商品的組合包與票務商品都適用。</p>
+<ul class="plain">
+  <li>修改成員包括：新增、移除、替換成員，改每套用量，門票成員改允許的門票與張數 n</li>
+  <li>組合包已下架：下架只擋新訂單，不會取消已經在結帳中的訂單</li>
+  <li>沒有結帳中的訂單：粉絲下單後到付款前，這筆訂單的量先保留給他（見<a href="eshop-sales.html#stock-reserve">保留</a>）；付款計時結束前，訂單會付款成功，或逾時、付款失敗而釋放；這個組合包保留中的量歸零才能改成員</li>
+  <li>只含商品的組合包，上架中照樣能改其他欄位，只有成員內容要先下架</li>
+  <li>賣出任何一套之後成員內容鎖定，下架也不解鎖，見<a href="#unlist-lock">售出後鎖定成員內容</a></li>
+</ul>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">狀態</th><th style="width:38%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">組合商品細節頁的成員區</td></tr>
+    <tr><td>可以改</td><td>還沒賣出、已下架、沒有結帳中的訂單</td><td>照常編輯</td></tr>
+    <tr><td>上架中</td><td>組合包上架中</td><td>唯讀，說明要先下架</td></tr>
+    <tr><td>還有訂單結帳中</td><td>已下架，但這個組合包保留的量還沒歸零</td><td>唯讀，提示「還有 N 筆訂單結帳中，結清後才能修改成員」</td></tr>
+    <tr><td>已賣出</td><td>賣出任何一套之後</td><td>鎖定，說明鎖定的理由，見<a href="#unlist-lock">售出後鎖定成員內容</a></td></tr>
+  </tbody>
+</table></div>
+<div class="ex">
+  <p>範例（數字皆為假設）：組合包是「A 票 ×1＋衣服 ×1」，上架中、還沒賣出，創作者想改成「B 票 ×1＋衣服 ×1」。</p>
+  <ul>
+    <li>先下架組合包；這時還有 2 筆訂單在結帳中，成員區仍不能改</li>
+    <li>這 2 筆訂單付款或逾時之後，才能把 A 票換成 B 票，存好再自己上架</li>
+    <li>如果其中 1 筆付款成功，這個組合包就算賣出 1 套，成員內容從此鎖定，要換內容就建新組</li>
+  </ul>
+</div>
+
+<h3 id="published-edit">組合包在活動發布後的修改</h3>
+<p>所屬活動已發布（已排程、售票中、進行中）的票務商品，上架中時只有鎖定套數，以及上架、下架、開賣、停售的時間能直接改，其他資料要先下架才能改；要不要先下架看組合包自己的上架狀態，不看活動。只含商品的組合包不受影響，照電子商店的規則；只有修改成員例外，見<a href="#member-edit">組合包修改成員的條件</a>。整場活動的規則見活動詳情的<a href="event-detail.html#edit-published">發布後能改什麼</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">項目</th><th>包括哪些</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">庫存：不必下架，直接改</td></tr>
+    <tr><td>鎖定套數</td><td>鎖定套數與它的逐規格或逐項門票分配，見<a href="bundles-stock.html#stock-lock">鎖定套數</a></td></tr>
+    <tr class="grp"><td colspan="2">其他資料：要先下架才能改</td></tr>
+    <tr><td>內容</td><td>組合名稱與描述<br>素材<br>成員內容（尚未售出時；另須沒有結帳中的訂單，見<a href="#member-edit">組合包修改成員的條件</a>）</td></tr>
+    <tr><td>價格</td><td>售價與組合折扣<br>排程特價<br>優惠碼選碼<br>各幣別價格</td></tr>
+    <tr><td>翻譯</td><td>預覽與在地化裡各語系的譯文</td></tr>
+    <tr><td>購買條件與限購</td><td>見<a href="bundles.html#rules">票務商品的購買條件</a></td></tr>
+    <tr class="grp"><td colspan="2">營運動作：隨時可做</td></tr>
+    <tr><td>開關</td><td>顯示與隱藏<br>上架與下架<br>開賣與停售</td></tr>
+    <tr><td>庫存設為 0</td><td>開啟鎖定庫存、鎖定套數收到保留中的套數、可售 0；恢復也一樣不必先下架，見<a href="bundles-stock.html#stock-zero">把票務商品的庫存設為 0</a></td></tr>
+    <tr><td>上架、下架、開賣、停售的時間</td><td>組合包另設的這四個時間，上架中也可以直接改<br>仍要落在活動的上架區間內，見<a href="#timing-own">另設自己的時間</a><br>活動自己的時間限制，見活動詳情的<a href="event-detail.html#edit-published">發布後能改什麼</a></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>改完儲存後，由創作者自己重新上架，不會自動上架</li>
+  <li>下架後哪些照舊鎖定，見活動詳情的<a href="event-detail.html#edit-published">發布後能改什麼</a>；成員內容的鎖見<a href="#unlist-lock">售出後鎖定成員內容</a></li>
+  <li>例如活動售票中時想多鎖幾套給組合包，直接改鎖定套數後儲存，組合包維持上架；想改售價，要先下架，改完儲存再自己上架</li>
+</ul>
+
+<h3 id="unlist-lock">售出後鎖定成員內容</h3>
+<p>組合包賣出任何一套之後，成員內容就鎖定；所有組合包都適用，包含創作者在 ztor 自建的。</p>
+<ul class="plain">
+  <li>鎖定的內容：成員清單、門票成員的允許的門票與張數 n、各成員數量</li>
+  <li>還能改的只有：
+    <ul class="plain">
+      <li>售價（組合折扣）</li>
+      <li>購買條件與限購：只影響之後的購買，商品組合包與票務商品都可以改</li>
+      <li>停售</li>
+      <li>組合包另設的上架、下架、開賣、停售時間：只影響之後的購買，見<a href="#timing-own">另設自己的時間</a></li>
+    </ul>
+  </li>
+  <li>票務商品上架中時，售價、購買條件與限購要先下架才能改，見<a href="#published-edit">組合包在活動發布後的修改</a>；停售隨時可做</li>
+  <li>尚未售出時，門票成員的允許的門票與張數 n 可以在組合商品細節頁改，條件見<a href="#member-edit">組合包修改成員的條件</a></li>
+  <li>要換內容就建新組、停售舊組</li>
+  <li>畫面要說明鎖定的理由</li>
+</ul>
+
+<h3 id="void">撤銷賣出的組合包 <span class="tag adm">Admin</span></h3>
+<p>撤銷組合包品項只有 Admin 能按，在訂單詳情操作，見<a href="order-detail.html#void-where">門票與組合包在哪裡撤銷</a>；撤銷只能整組。</p>
+<ul class="plain">
+  <li>撤銷一套，組內門票全部失效、商品一起取消；不能只撤銷其中一部分成員</li>
+  <li>組合包裡有任何一件商品已領取，或任何一張門票已掃碼入場，就不能撤銷</li>
+  <li>撤銷後，量退回這一套賣出時的那個鎖定，見<a href="eshop-sales.html#stock-void">撤銷後退回原本賣出的那個鎖定</a></li>
+  <li>撤銷不寄 email 給買家</li>
+  <li>含 bookyay 門票時，見<a href="#source-bookyay">含 bookyay 門票的組合包</a></li>
+</ul>
+<p class="note">依據：主規格 §4.1 第 5 項、§7.14「撤銷退回原本賣出的那個鎖定」；5.1.5.3.1 §2.8；5.1.5.4 §4 F9；5.1.5.9 §2.3；D252、D282、D292、D431、D434、D446、D452、D465。</p>
+
+<h3 id="unlist-delete">刪除組合包</h3>
+<p>零成交、且已下架或已封存的組合包可以刪除，見<a href="eshop-sales.html#archive">電子商店販售流程</a>。</p>
+<ul class="plain">
+  <li>零成交是建立以來沒有任何訂單品項；已取消或已撤銷的品項也算曾有銷售，有成交的組合包沒有刪除入口，只能封存</li>
+  <li>刪除前要先確認，並說明不能復原</li>
+  <li>刪除組合包不影響成員的狀態</li>
+  <li>鎖給這個組合包的量，退回成員沒有被鎖定的庫存量，成員的總量不變</li>
+  <li>刪除組合包不寫操作紀錄</li>
+  <li>單售商品仍是任何組合包的成員時（不論組合包上架中、已下架或已封存），刪除商品會被擋下並列出這些組合包</li>
+  <li>要先自己把商品從組合包移除，刪除商品不會自動把它從組合包移除</li>
+  <li>草稿活動被刪除時，創作者自己建、含該活動門票的草稿組合包一起刪除</li>
+  <li>刪除草稿活動的確認內容，列出會一起刪除的組合包名稱</li>
+  <li>活動發布後不能被刪空或停空：停售、下架、封存或刪除最後一組仍在販售的組合包，若會讓活動也沒有還在的門票（隱藏的也算），就擋下並就地提示「至少要有 1 張門票或 1 組仍在販售的組合包」，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></li>
+  <li>活動的門票全部隱藏時，門票仍算還在，這些動作不擋</li>
+  <li>替最後一組設定時下架或定時停售，到期後會造成同樣的結果時，設定當下就擋下</li>
+</ul>
+<p class="note">依據：主規格 §7.14「下架確認與組合包連動」（含「組合包修改成員的條件」）「活動發布後的修改規則」「封存與刪除」；5.1.5.9 §2.2、§2.3；5.1.6.3 §2.1；D292、D307、D330、D331、D340、D425、D435、D436、D437、D438、D455、D467、D468、D478、D481。</p>
+
+<h2 id="unlist"><span class="n"></span>組合包的下架與上架連動</h2>
+<p>成員或活動一變，組合包跟著連動。成員的開關管到哪，見<a href="#switches-member">商品成員開關的影響範圍</a>；哪些下架會連動，見<a href="#unlist-cascade">誰下架會帶著組合包一起下架</a>；重新上架怎麼帶成員，見<a href="#unlist-relist">組合包重新上架時帶著成員上架</a>；門票成員看什麼，見<a href="#switches-ticket">門票成員看所屬活動</a>；活動怎麼限制票務商品，見<a href="#switches-ceiling">活動是票務商品開關的上限</a>；關掉票務商品的開關有什麼效果，見<a href="#switches-noback">票務商品的開關不回寫活動</a>。</p>
+
+<h3 id="switches-member">商品成員開關的影響範圍</h3>
+<p>商品的顯示與開賣只管單售，只有下架會帶著組合包一起下架。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">商品的開關</th><th style="width:22%">管到哪</th><th>對含這件商品的組合包</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag ok">上架</span> ／ <span class="tag off">下架</span></td><td>商品本身</td><td>單售下架時，含這件商品的上架中組合包一同下架，見<a href="#unlist">組合包的下架與上架連動</a></td></tr>
+    <tr><td><span class="tag ok">顯示</span> ／ <span class="tag off">隱藏</span></td><td>只管單售</td><td>隱藏的商品照樣能被組合包帶著成交</td></tr>
+    <tr><td><span class="tag ok">開賣</span> ／ <span class="tag off">未開賣</span><div class="k">含即將開賣、販售結束</div></td><td>只管單售</td><td>單售即將開賣、未開賣或已販售結束時，組合包照樣能帶著這件商品成交</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>要連組合包一起停賣一件商品，要用下架；只停售的話，停的是單售，組合包照樣賣</li>
+</ul>
+
+<h3 id="unlist-cascade">誰下架會帶著組合包一起下架</h3>
+<p>單售商品下架、活動下架時，含該商品或該活動門票的上架中組合包一同下架。</p>
+<div class="dg" role="img" aria-label="下架連動流程圖：單售商品或活動下架時，手動下架先確認並列出組合包，確認才下架、取消不動；自動下架不確認並通知創作者；兩條路都讓含它的上架中組合包一同下架">
+<div class="dg-flow">
+  <div class="dg-node">單售商品或活動要下架</div><span class="dg-arr"></span>
+  <div class="dg-node q">創作者手動下架嗎？</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">手動</span><span class="dg-arr"></span><div class="dg-node">確認內容列出這些組合包<small>取消就都不下架</small></div><span class="dg-join"></span></div>
+    <div class="dg-lane"><span class="dg-exit">自動</span><span class="dg-arr"></span><div class="dg-node">不經確認<small>通知創作者</small></div><span class="dg-join"></span></div>
+  </div>
+  <span class="dg-arr"></span>
+  <div class="dg-node stop">上架中的組合包一同下架<small>看得出是哪一個成員造成</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，橘框是組合包下架的結果；已下架或已封存的組合包不受影響。</p>
+<ul class="plain">
+  <li>手動下架：單售商品或活動下架時，確認內容列出這些組合包名稱</li>
+  <li>自動下架：單售定時下架到期、活動因排程或結束轉為不可售、活動因 bookyay 端修改而下架</li>
+  <li>已下架或已封存的組合包不受影響</li>
+  <li>成員資格不因下架而移除</li>
+  <li>組合包因成員下架而一同下架時，組合商品細節頁要看得出原因與是哪一個成員</li>
+</ul>
+
+<h3 id="unlist-relist">組合包重新上架時帶著成員上架</h3>
+<p>上架中的組合包，成員一律在上架中；組合包從已下架重新上架，會連帶重新上架這個組合包所有已下架的成員。下架時保存的時間怎麼檢查，見電子商店販售流程的<a href="eshop-sales.html#archive-unlist">下架與重新上架</a>。創作者在組合包按「上架」，見<a href="#relist-self">在組合包按上架</a>；活動重新上架時，見<a href="#relist-event">活動重新上架時</a>；哪些動作不連動，見<a href="#relist-none">不連動組合包的動作</a>。</p>
+<div class="dg" role="img" aria-label="組合包重新上架流程圖：按上架後，所屬活動已結束或已封存、成員有已封存、保存的時間已過，任一情形就擋下；都沒有時，有已下架的成員先確認連帶上架，沒有就直接上架">
+<div class="dg-flow">
+  <div class="dg-node">創作者按「上架」</div><span class="dg-arr"></span>
+  <div class="dg-node q">有擋下的情形嗎？<small>活動已結束或已封存<br>成員有已封存<br>保存的時間已過</small></div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">有</span><span class="dg-arr"></span><div class="dg-node stop">不讓上架<small>就地說明原因</small></div></div>
+    <div class="dg-lane"><span class="dg-exit">沒有</span><span class="dg-arr"></span><div class="dg-node q">有已下架的成員嗎？</div><span class="dg-arr"></span>
+      <div class="dg-fork">
+        <div class="dg-lane"><span class="dg-exit">有</span><span class="dg-arr"></span><div class="dg-node">列出成員<small>確認連帶上架；不連帶就不上架</small></div><span class="dg-arr"></span><div class="dg-node end">組合包與成員一起上架</div></div>
+        <div class="dg-lane"><span class="dg-exit">沒有</span><span class="dg-arr"></span><div class="dg-node end">組合包上架<small>恢復保存的排程</small></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，橘框是擋下，綠框是上架成功。</p>
+
+<h4 id="relist-self">在組合包按上架</h4>
+<ul class="plain">
+  <li>有已下架的成員時，先確認並列出這些成員，創作者選連帶上架或不連帶；不連帶就是這次不上架組合包</li>
+  <li>成員中有已封存的：擋下並列出，提示先把這些成員個別解除封存，或從組合包移除</li>
+  <li>所屬活動已結束或已封存：擋下，就地說明原因</li>
+  <li>保存的開賣、停售、定時下架時間有已過的：不讓上架並提示先去改；都沒過就直接上架並恢復排程</li>
+  <li>只檢查組合包自己保存的時間，不檢查成員：成員的時間是單獨販售用的，組合包不繼承</li>
+  <li>組合包能不能賣只看自己的開賣，不必等成員開賣；單品要單獨販售，到單品頁自己設定開賣</li>
+</ul>
+
+<h4 id="relist-event">活動重新上架時</h4>
+<ul class="plain">
+  <li>先前隨活動一起下架的組合包不會自動上架：重新上架前彈窗問要不要同時上架，沒選的要在組合商品細節頁各自上架</li>
+  <li>bookyay 匯入的活動自動下架後，創作者手動重新上架活動時也一樣</li>
+  <li>已封存的組合包、成員有已封存的組合包不列入彈窗</li>
+  <li>成員單品有已下架的組合包不能一起上架：彈窗另外提示這些組合包，要先把單品上架或從組合包移除</li>
+  <li>一起上架的組合包各自檢查保存的時間：有已過的組合包不上架，其餘照常上架</li>
+</ul>
+
+<h4 id="relist-none">不連動組合包的動作</h4>
+<ul class="plain">
+  <li>單售自己重新上架，不連動任何組合包</li>
+  <li>封存單售商品，不牽連含它的組合包</li>
+</ul>
+<p class="note">依據：主規格 §7.14「下架確認與組合包連動」「封存與刪除」「bookyay 匯入活動的上下架同步」；5.1.5.9 §2.2、§2.3；D288、D289、D290、D292、D298、D371、D375、D415、D437、D448、D457、D481、D488、D489。</p>
+
+<h3 id="switches-ticket">門票成員看所屬活動</h3>
+<p>門票成員能不能賣，看所屬活動是否已上架、未封存、未結束，見<a href="bundles-stock.html#deal">組合包什麼時候能成交</a>。</p>
+<ul class="plain">
+  <li>單張門票的顯示開關只管單張購買，隱藏的門票照樣能當門票成員</li>
+  <li>票務商品用自己的購買條件，見<a href="bundles.html#rules">票務商品的購買條件</a></li>
+</ul>
+
+<h3 id="switches-ceiling">活動是票務商品開關的上限</h3>
+<p>票務商品的上架、顯示、開賣只能在活動允許的範圍內收窄，不能比活動寬。</p>
+<ul class="plain">
+  <li>活動未上架、已下架、已封存或已結束時，票務商品不能上架</li>
+  <li>活動已結束或已封存後，先前隨活動下架的組合包也不能重新上架，見<a href="#unlist-relist">組合包重新上架時帶著成員上架</a></li>
+  <li>活動隱藏時，含其門票的組合包在電子商店的清單與搜尋都找不到，組合包自己的顯示開關也不能切成顯示</li>
+  <li>活動隱藏期間，粉絲仍可以經組合包自己的非公開連結購買，比照隱藏的組合包</li>
+  <li>組合包原本的顯示值保留，活動切回顯示後，照組合包自己的開關</li>
+  <li>開賣與停售的限制，見<a href="#timing-own">另設自己的時間</a></li>
+  <li>完整的上限規則見<a href="event-rules.html#ceiling">活動設定是門票與票務商品的上限</a></li>
+</ul>
+
+<h3 id="switches-noback">票務商品的開關不回寫活動</h3>
+<p>票務商品自己的開關可以在活動允許的範圍內調整，關掉不影響活動本身與單張門票的販售。</p>
+<ul class="plain">
+  <li>活動開賣中，票務商品可以自己先停售、隱藏或下架</li>
+  <li>要讓票務商品完全停賣，用停售或下架</li>
+  <li>隱藏的組合包只是不在商店陳列，開賣中仍可經非公開連結購買</li>
+  <li>活動發布後，最後一組仍在販售的組合包也可以隱藏，見<a href="event-create.html#sellable-ok">不擋的情形</a></li>
+</ul>
+<p class="note">依據：主規格 §7.14「三個狀態開關」「組合包成交條件」「活動販售的時間層級」「下架確認與組合包連動」；5.1.6.3 §2.1；D241、D288、D292、D294、D328、D332、D342、D352、D363、D371、D390、D424、D425、D429、D437。</p>
+
+<h2 id="source"><span class="n"></span>只含商品的組合包和票務商品的差別</h2>
+<p>只含商品的組合包與票務商品共用定價、庫存、三個開關、封存與下架連動，差別只有下表；含 bookyay 門票時另見<a href="#source-bookyay">含 bookyay 門票的組合包</a>。</p>
+<div class="tablewrap"><table class="cmp-modes">
+  <thead><tr><th style="width:22%">項目</th><th style="width:36%">只含商品的組合包</th><th>票務商品</th></tr></thead>
+  <tbody>
+    <tr><td>上架與下架</td><td>預設立刻上架，不看成員<br>不填下架＝不自動下架</td><td>預設跟隨活動，可另設，見<a href="#timing-follow">四個時間預設跟隨活動</a></td></tr>
+    <tr><td>開賣與停售</td><td>不填開賣＝上架即開賣<br>不填停售＝不自動停售</td><td>預設跟隨活動，可另設，見<a href="#timing-own">另設自己的時間</a></td></tr>
+    <tr><td>顯示開關</td><td>只看組合包自己</td><td>活動隱藏時不能切成顯示，見<a href="#switches-ceiling">活動是票務商品開關的上限</a></td></tr>
+    <tr><td>清單的徽章</td><td>跟單售商品相同</td><td>跟所屬活動一致，見<a href="#timing-badge">電子商店清單的徽章</a></td></tr>
+    <tr><td>各幣別售價</td><td>換算值，唯讀</td><td>可逐幣別改，見<a href="common-currency.html#override">逐幣別覆寫</a></td></tr>
+    <tr><td>平台費率</td><td>照電子商店組合商品的費率</td><td>整筆照活動票券的費率，不拆成員</td></tr>
+    <tr><td>上架中改資料</td><td>只有成員內容要先下架</td><td>活動發布後，大多要先下架，見<a href="#published-edit">組合包在活動發布後的修改</a></td></tr>
+    <tr><td>庫存設為 0</td><td>—</td><td>可以在活動詳情設，見<a href="bundles-stock.html#stock-zero">把票務商品的庫存設為 0</a></td></tr>
+    <tr><td>刪除的限制</td><td>—</td><td>不能把活動刪空或停空，見<a href="#unlist-delete">刪除組合包</a></td></tr>
+    <tr><td>取貨與核銷</td><td>照各成員的取貨方式</td><td>門票每張各自一個 QR、各自報到</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="source-bookyay">含 bookyay 門票的組合包</h3>
+<p>含 bookyay 匯入門票的組合包都由創作者在 ztor 自建，照一般組合包的規則，只有下列差別。</p>
+<ul class="plain">
+  <li>門票的票價與張數在 ztor 鎖定，要回 bookyay 改；下架也不解鎖</li>
+  <li>門票張數就是帶入的時段人數上限，見<a href="bundles-stock.html#stock-lock">鎖定套數</a></li>
+  <li>門票成員的原價先由港幣換算成基準幣別再加總</li>
+  <li>價格表的港幣欄以 bookyay 原價算出並鎖定，港幣以外的幣別可以逐幣別改</li>
+  <li>活動因 bookyay 端修改而自動下架時，組合包一併自動下架並通知創作者，見<a href="#unlist-cascade">誰下架會帶著組合包一起下架</a></li>
+  <li>撤銷在 ztor 做，同時到 bookyay 撤銷這幾張門票；全部撤成功才算撤銷，任何一張沒撤成功整筆都不撤，見<a href="order-detail.html#void-after">撤銷之後</a></li>
+</ul>
+<p class="note">依據：主規格 §7.6「平台費率」、§7.14「三個狀態開關」「bookyay 匯入活動的上下架同步」「活動發布後的修改規則」、§7.15「逐幣別覆寫」「含 bookyay 票券的組合包」；5.1.5.4 §4 F3、F6、F9；5.1.5.9 §2.3；D292、D293、D318、D330、D331、D415、D429、D434、D435、D446、D447、D455。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>0-設計規格書.md</code>（v5.41）§7.12、§7.14、§7.15、<code>5.1.5.4-建立組合流程.md</code>（v2.88）、<code>5.1.5.9-組合商品細節頁.md</code>（v2.03）、<code>5.1.5-電子商店.md</code>（最後更新 2026-11-02）F4、<code>5.1.5.3.1-訂單詳情.md</code>（v2.34）§2.8、<code>5.1.6.2-編輯活動.md</code>（v3.94）F14、<code>5.1.6.3-活動詳情.md</code>（v111）§2.1</li>
+    <li>決策：D241、D252、D265、D282、D284、D288、D289、D290、D292、D293、D294、D298、D307、D318、D328、D330、D331、D332、D340、D342、D352、D361、D363、D371、D375、D390、D391、D405、D406、D415、D424、D425、D429、D431、D434、D435、D436、D437、D438、D446、D447、D448、D452、D455、D457、D465、D467、D468、D478、D481、D488、D489、D510、D513</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>票務商品可購買的時間：有加限時購買看限時購買，沒加看自己的開賣設定，跟隨時就是活動的售票期間（推導）</li>
+    <li>預售是否只有在活動選定時開賣、填一個晚於上架的開賣時間時才成立（活動選立即開賣＝上架即開賣，推導為沒有早於開賣的空間）</li>
+    <li>多場次時，跟隨停售的「活動開始」指哪一個場次</li>
+    <li>另設時間逐場次設，還是整組設</li>
+    <li>活動選「立刻上架」時，早於發布當下的另設時間或限時購買，發布時算不算超出上架區間</li>
+    <li>票務商品下架後重新上架，回到跟隨活動，還是停在未開賣</li>
+    <li>活動進行中，票務商品在電子商店清單標什麼徽章</li>
+    <li>活動售票中，票務商品自己下架或隱藏時，清單標活動的徽章還是自己的狀態</li>
+    <li>組合包是否設低庫存門檻，低庫存狀態是否適用組合包</li>
+    <li>成員不足或還沒備齊時，能不能選「立刻上架」</li>
+    <li>重新上架時，保存的開賣時間還沒到的恢復為定時開賣；沒有時間的開賣方式回到未開賣（推導）</li>
+    <li>連帶上架的成員，自己保存的排程恢復或不恢復（規格只寫不檢查成員）</li>
+    <li>單售商品解除封存是否連動含它的組合包（規格只寫單售自己上架與封存不連動）</li>
+    <li>活動隱藏只是顯示的上限，不觸發下架的副作用（推導）</li>
+    <li>組合包的定時上架時間還沒到時，視同已下架、可以修改成員；草稿照建立流程修改成員（皆為推導）</li>
+    <li>已封存的組合包賣出的品項能不能撤銷：規格沒有限制，撤銷在訂單詳情做（推導）</li>
+    <li>含 bookyay 門票的組合包，港幣欄＝（門票港幣原價 × 張數＋商品換算成港幣的價）×（1 − 組合折扣 %）（推導），以及港幣換算成基準幣別的匯率時點</li>
+  </ul>
+  <p class="k">最近同步：2026-11-05（D513：組合包販售上限退場；主規格 v5.41、5.1.5.4 v2.88、5.1.5.9 v2.03）</p>
+</details>
+</div>
+</body>
+</html>

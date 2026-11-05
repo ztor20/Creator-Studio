@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>步驟 5：票務商品 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -90,7 +90,6 @@ tr:last-child td{border-bottom:0}
 <ul class="plain">
   <li>這一步決定每一組組合包的成員（門票與商品）、價格與庫存、販售時間和購買條件</li>
   <li>建好的組合包同時出現在電子商店的組合包清單與活動詳情的票務商品分頁，兩處是同一份資料</li>
-  <li>共看派對沒有這一步</li>
   <li>從 bookyay 帶入的活動同樣可以建票務商品，見<a href="#product-bookyay">從 bookyay 帶入時</a></li>
 </ul>
 
@@ -104,9 +103,9 @@ tr:last-child td{border-bottom:0}
   <span class="dg-a" style="grid-row:1;grid-column:4"></span>
   <div class="dg-node" style="grid-row:1;grid-column:5"><span class="s">3</span>設成員<small>門票已預帶<br>每套張數<br>需要時加商品</small></div>
   <span class="dg-a" style="grid-row:1;grid-column:6"></span>
-  <div class="dg-node" style="grid-row:1;grid-column:7"><span class="s">4</span>填基本內容<small>名稱、描述、素材</small></div>
+  <div class="dg-node" style="grid-row:1;grid-column:7"><span class="s">4</span>填基本內容<small>名稱、描述<br>素材、電影關聯</small></div>
   <span class="dg-a" style="grid-row:1;grid-column:8"></span>
-  <div class="dg-node" style="grid-row:1;grid-column:9"><span class="s">5</span>設價格與庫存<small>組合折扣<br>不限量或限量<br>鎖定套數</small></div>
+  <div class="dg-node" style="grid-row:1;grid-column:9"><span class="s">5</span>設價格與庫存<small>組合折扣<br>庫存的三個開關<br>鎖定套數</small></div>
   <span class="dg-a" style="grid-row:1;grid-column:10"></span>
   <div class="dg-node" style="grid-row:1;grid-column:11"><span class="s">6</span>確認上架與開賣<small>預設跟隨活動</small></div>
   <span class="dg-a" style="grid-row:1;grid-column:12"></span>
@@ -131,8 +130,8 @@ tr:last-child td{border-bottom:0}
   </li>
   <li>新增一組組合包</li>
   <li>設成員：門票已預帶，取消不想讓粉絲挑的項目、設每套張數；需要時加電子商店的商品</li>
-  <li>填基本內容：名稱、描述、素材</li>
-  <li>設價格與庫存：組合折扣、不限量或限量、鎖定套數</li>
+  <li>填基本內容：名稱、描述、素材、電影關聯</li>
+  <li>設價格與庫存：組合折扣、庫存的三個開關、鎖定套數</li>
   <li>確認上架與開賣：預設跟隨活動</li>
   <li>確認購買條件與限購：預設沒有任何條件</li>
   <li>儲存這個組合包</li>
@@ -158,6 +157,15 @@ tr:last-child td{border-bottom:0}
     <tr><td>跳過這一步</td><td>不建任何組合包時</td><td>直接按下一步往步驟 6<br>不影響發布，見<a href="#product-publish">票務商品與活動發布</a></td></tr>
   </tbody>
 </table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">票務商品清單</td></tr>
+    <tr><td>還沒建過組合包</td><td>這一步沒建過任何組合包</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>建過</td><td>這一步建過組合包</td><td>每一組列在清單，同一份資料也在電子商店與活動詳情；每一組顯示哪些資料<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>跳過</td><td>不建任何組合包</td><td>直接往步驟 6，不影響發布</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.6.1 §4.5 開頭、F20「定位」「是否必做」「建立之後」；D292、D429。</p>
 
 <h3 id="fields-bundle">組合包的內容</h3>
@@ -166,21 +174,56 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>門票成員：允許的門票</td><td>必填，可以多選<br>預設這場活動的全部門票，票種與獨立票都勾上</td><td>預帶一筆這場活動的門票成員，只能是這場活動的門票，見<a href="#product-diff">從活動進來時的差異</a><br>每場各一組時，只列該場次的獨立票</td></tr>
+    <tr><td>每套張數</td><td>預設 1</td><td>粉絲購買時，從允許的門票挑一項，拿到那一項 × 每套張數</td></tr>
+    <tr><td>商品成員</td><td>選填</td><td>可以再加電子商店的商品<br>一個組合包只能含一場活動的門票，不能再加別場活動的門票</td></tr>
     <tr><td>組合名稱（Bundle name）</td><td>必填</td><td>沒填就存不了這個組合包<br>不列入活動的發布前檢核</td></tr>
+    <tr><td>組合描述（Description）</td><td>—</td><td>多行文字，告訴粉絲會拿到什麼<br>是否必填、字數上限見頁尾尚待確認</td></tr>
+    <tr><td>素材（Show it off）</td><td>—</td><td>主圖加附圖，每一格可以放圖片或影片<br>主圖必填的門檻見頁尾尚待確認</td></tr>
+    <tr><td>電影關聯（Linked movies）</td><td>選填，可多部</td><td>只能選前台已上架的電影，已加入的可以個別移除</td></tr>
+    <tr><td>組合折扣 %（Bundle discount）</td><td>選填，0～100</td><td>空白或 0＝沒有組合優惠<br>售價＝成員原價合計 ×（1 − 組合折扣 %）</td></tr>
     <tr><td>售價（Selling price）</td><td>自動算出，不能改</td><td>各幣別售價在步驟 7 處理，見<a href="event-create-step8.html#preview-prices">各幣別價格</a></td></tr>
-    <tr><td>啟用限時折扣（Activate scheduled sale）</td><td>開關<br>預設關</td><td>票務商品要做早鳥價，就用限時折扣</td></tr>
-    <tr><td>顯示（Show in shop）</td><td>—</td><td>活動隱藏期間不能切成顯示，見<a href="bundles.html#switches-ceiling">組合包與票務商品</a></td></tr>
+    <tr><td>啟用限時折扣（Activate scheduled sale）</td><td>開關<br>預設關</td><td>打開才出現限時折扣 %（必填，0～100）、特價開始日（必填）、特價結束日（必填，要晚於開始日）<br>疊在售價之上；就是購買條件裡的「限時折扣」，同一份資料</td></tr>
+    <tr><td>優惠碼（選碼欄）</td><td>—<br>沒有開關</td><td>全部商店的碼一律適用，在欄內唯讀列出、標「全店」，不能排除<br>特定商品範圍的碼可以多選，也可以建立新碼</td></tr>
+    <tr><td>顯示（Show in shop）</td><td>—</td><td>活動隱藏期間不能切成顯示，見<a href="bundles-lifecycle.html#switches-ceiling">組合包與票務商品</a></td></tr>
     <tr><td>上架、下架時間</td><td>預設跟隨步驟 6 的上架設定</td><td>可以另設，要在活動上架區間內<br>看得出每個時間是跟隨還是另設<br>見<a href="#product-timing">上架、開賣與購買條件</a></td></tr>
     <tr><td>開賣、停售時間</td><td>預設跟隨步驟 6 的開賣設定</td><td>可以另設：要在活動上架區間內，可以早於活動開賣（預售），停售不能晚於活動停售<br>超出時存不了，並就地提示</td></tr>
-    <tr><td>鎖定套數（Locked sets）</td><td>不限量時選填<br>限量時不能改</td><td>限量時＝限量 − 已售，跟著限量走，見<a href="bundles.html#stock-limit">限量與鎖定</a><br>門票成員的鎖定從這張門票還沒鎖走的量取，步驟 4 鎖給單售的部分組合包拿不到<br>步驟 4 與這一步都不設時，單售與組合包共用這張門票的張數<br>見<a href="bundles.html#stock-lock">鎖定套數</a></td></tr>
+    <tr><td>開啟不限量</td><td>開關</td><td>組合包賣完後轉為預購，粉絲可以繼續下單<br>和開啟限量標籤不能同時開</td></tr>
+    <tr><td>開啟限量標籤</td><td>開關</td><td>只在粉絲端標記為限量組合包，跟可售量無關<br>和開啟不限量不能同時開</td></tr>
+    <tr><td>鎖定庫存</td><td>開關<br>還沒有成員時不提供鎖定套數</td><td>開啟＝鎖定，填鎖定套數；關閉才是不鎖定</td></tr>
+    <tr><td>鎖定套數（Locked sets）</td><td>開啟鎖定庫存時</td><td>單位「套」；填 N＝只有這個組合包能賣這 N 套，可以填 0、代表可售 0<br>門票成員的鎖定從這張門票還沒鎖走的量取，步驟 4 鎖給單售的部分組合包拿不到<br>步驟 4 與這一步都不設時，單售與組合包共用這張門票的張數<br>最多能鎖幾套與逐項分配，見<a href="bundles-stock.html#stock-lock">鎖定套數</a></td></tr>
+    <tr><td>組合可售量</td><td>自動算出，不能改</td><td>見<a href="bundles-stock.html#stock-sellable">組合包可售量</a></td></tr>
     <tr><td>購買條件與限購（Purchase rules）</td><td>預設沒有任何條件</td><td>組合包自己的一組七種條件，所含門票與商品成員的條件不帶入，之後改了也不跟<br>可以比所含門票寬，也可以比較嚴<br>限購設上限時最低 1 組，額度與單張門票各自計算，見<a href="bundles.html#limits">組合包的限購</a><br>見<a href="bundles.html#rules">票務商品的購買條件</a></td></tr>
     <tr><td>儲存這個組合包</td><td>—</td><td>下列情形存不了：<br>組合名稱沒填<br>沒有成員<br>允許的門票一個都沒勾<br>時間超出活動允許的範圍<br>活動還是草稿時，存好的組合包也是草稿，活動發布時一起發布，見<a href="event-create-step8.html#preview-publish">發布</a></td></tr>
   </tbody>
 </table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">門票成員與原價</td></tr>
+    <tr><td>只勾一項門票</td><td>允許的門票只留 1 項</td><td>等於指定那一項；原價用該項票價 × 每套張數</td></tr>
+    <tr><td>勾多項門票</td><td>允許的門票留 2 項以上</td><td>粉絲購買時任選一項；原價寫「從 $最低允許票價 × 每套張數 起」</td></tr>
+    <tr><td>價格不是單一值</td><td>允許多項門票，或含多規格成員</td><td>組合包編輯畫面的主價格維持「從 $X 起」，下方多一行區間小字「$最低–$最高」，粉絲端不變</td></tr>
+    <tr class="grp"><td colspan="3">庫存</td></tr>
+    <tr><td>不鎖定</td><td>鎖定庫存關閉</td><td>成員庫存與其他販售管道共用沒被鎖走的量</td></tr>
+    <tr><td>鎖定</td><td>鎖定庫存開啟</td><td>填鎖定套數，只有這個組合包能賣這些套</td></tr>
+    <tr><td>不限量與限量標籤同時開</td><td>兩個開關都打開</td><td>不能同時開</td></tr>
+    <tr class="grp"><td colspan="3">時間</td></tr>
+    <tr><td>跟隨活動</td><td>沒另設（預設）</td><td>上架、下架跟步驟 6 的上架設定，開賣、停售跟開賣設定；活動改了立刻跟著改</td></tr>
+    <tr><td>另設</td><td>創作者另設其中任何一個</td><td>看得出這個時間是另設</td></tr>
+    <tr class="grp"><td colspan="3">顯示</td></tr>
+    <tr><td>活動顯示中</td><td>活動的顯示設定是顯示</td><td>組合包依自己的顯示開關</td></tr>
+    <tr><td>活動隱藏中</td><td>活動的顯示設定是隱藏</td><td>電子商店的清單與搜尋找不到這組；不能切成顯示，原本的顯示值保留，活動切回顯示後依自己的開關</td></tr>
+    <tr class="grp"><td colspan="3">組合包的狀態</td></tr>
+    <tr><td>草稿</td><td>活動還是草稿</td><td>組合包也是草稿，不對外，活動發布時一起發布</td></tr>
+    <tr class="grp"><td colspan="3">儲存</td></tr>
+    <tr><td>存得了</td><td>名稱已填、有成員、允許的門票至少勾 1 項、時間在範圍內</td><td>儲存這個組合包</td></tr>
+    <tr><td>存不了</td><td>名稱沒填、沒有成員、允許的門票一個都沒勾，或時間超出範圍</td><td>存不了；時間超出時就地提示</td></tr>
+  </tbody>
+</table></div>
 <ul class="plain">
-  <li>取貨與核銷沒有輸入欄：門票每張各自一個 QR、各自報到；商品成員照各自的取貨方式</li>
+  <li>門票每張各自一個 QR、各自報到；商品成員照各自的取貨方式；成員含現場 QR 領取的商品時，可另選組合包自己的取貨場次，見<a href="eshop-create-bundle.html#cb-pickup">取貨與核銷</a></li>
 </ul>
-<p class="note">依據：5.1.6.1 §4.5 F20「欄位定義與本步驟收哪些欄位」「從活動脈絡進來時的差異」「上架與開賣」「購買條件」「最少成員數」；5.1.5.4 §4（F1～F4、F6～F10）；D259、D292、D293、D295、D296、D342、D363、D380、D382、D390、D402、D422、D427、D463、D465、D480。</p>
+<p class="note">依據：5.1.6.1 §4.5 F20「欄位定義與本步驟收哪些欄位」「從活動脈絡進來時的差異」「上架與開賣」「購買條件」「最少成員數」；5.1.5.4 §4（F1～F4、F6～F10）；D259、D292、D293、D295、D296、D342、D363、D380、D382、D390、D402、D422、D427、D463、D465、D473、D481、D486、D496。</p>
 
 <h2 id="product-bookyay"><span class="n"></span>從 bookyay 帶入時</h2>
 <p>從 bookyay 帶入的活動，門票資料鎖定，創作者仍可以把門票與商品綁成票務商品；這一步的組合包都由創作者自己建立。</p>
@@ -194,8 +237,8 @@ tr:last-child td{border-bottom:0}
 <h2 id="product-what"><span class="n"></span>票務商品就是組合包</h2>
 <p>票務商品＝成員含本活動門票的電子商店組合包，跟電子商店的組合包是同一種東西；這一步只是從活動直接建立組合包的捷徑。這一頁只寫從活動進來時的差異，組合包的通用規則見<a href="bundles.html">組合包與票務商品</a>。</p>
 <ul class="plain">
-  <li>欄位、價格、庫存、三個開關、封存與下架連動，都照組合包的規則，見<a href="bundles.html#what-ticket">票務商品</a></li>
-  <li>活動發布後，組合包上架中時只有鎖定套數，以及另設的上架、下架、開賣、停售時間能直接改，其他資料要先下架，見<a href="bundles.html#published-edit">組合包在活動發布後的修改</a></li>
+  <li>欄位、價格、庫存、上架顯示開賣三個開關、封存與下架連動，都照組合包的規則，見<a href="bundles.html#what-ticket">票務商品</a></li>
+  <li>活動發布後，組合包上架中時只有鎖定套數，以及另設的上架、下架、開賣、停售時間能直接改，其他資料要先下架，見<a href="bundles-lifecycle.html#published-edit">組合包在活動發布後的修改</a></li>
   <li>至少 1 個成員即可：只有門票 × n 張、沒有商品成員的組合包也合法</li>
   <li>共看派對沒有票種，沒有這一步</li>
 </ul>
@@ -203,13 +246,10 @@ tr:last-child td{border-bottom:0}
 <p class="note">依據：5.1.6.1 §4.5 開頭、F20「定位」「欄位定義」「最少成員數」、§4.9；5.1.5.4 §4 F2；D292、D293、D438。</p>
 
 <h2 id="product-publish"><span class="n"></span>票務商品與活動發布</h2>
-<p>這一步選用；唯一牽動發布的是活動有沒有可賣的東西。</p>
+<p>這一步選用；唯一牽動發布的是活動有沒有可賣的東西，發布前檢核不檢查這一步的欄位，必填在儲存這個組合包時檢查。</p>
 <ul class="plain">
-  <li>發布前檢核不檢查這一步的欄位，必填在儲存這個組合包時檢查</li>
-  <li>發布前，全部門票都隱藏時，至少要有 1 組仍在販售的組合包才能發布，見<a href="event-create.html#sellable-check">發布前檢核</a></li>
-  <li>活動發布後，最後一組仍在販售的組合包也可以隱藏</li>
-  <li>活動發布後，停售、下架、封存或刪除最後一組仍在販售的組合包，只在活動也沒有還在的門票（隱藏的也算）時擋下，見<a href="event-create.html#sellable-block">發布後擋下的動作</a></li>
-  <li>活動還是草稿時，這一步建的組合包也是草稿、不對外，停售、下架、隱藏、封存或刪除組合包都不擋，交給發布前檢核，見<a href="bundles.html#timing-draft">活動還是草稿時</a></li>
+  <li>發布前與發布後的可賣條件、發布後擋下的動作，見<a href="event-create.html#sellable-what">什麼算可賣</a>與<a href="event-create.html#sellable-block">發布後擋下的動作</a></li>
+  <li>活動還是草稿時，這一步建的組合包也是草稿、不對外，停售、下架、隱藏、封存或刪除組合包都不擋，交給發布前檢核，見<a href="bundles-lifecycle.html#timing-draft">活動還是草稿時</a></li>
 </ul>
 
 <p class="note">依據：5.1.6.1 §4.5 F20「是否必做」「上架與開賣」、§4.4 F22「可賣性防呆」、§4.7 F11、F12；D293、D294、D329、D330、D331、D340、D424、D425。</p>
@@ -232,7 +272,7 @@ tr:last-child td{border-bottom:0}
   <li>獨立票是不掛票種、只屬於一個場次的門票，見<a href="event-create-step4.html">步驟 4 票種與票務</a></li>
   <li>要做別的活動的組合包，到那場活動或電子商店建立</li>
   <li>有多個場次的活動沿用「每場各一組」與「一組通用所有場次」兩種模式；一組通用所有場次時，允許清單可以含任一場次的獨立票，粉絲挑到獨立票，拿到的是它所屬場次的票</li>
-  <li>原價怎麼算、販售上限怎麼定，見<a href="bundles.html#price">組合包的價格</a>與<a href="bundles.html#stock">組合包的庫存與鎖定套數</a></li>
+  <li>原價怎麼算、鎖定套數與可售量怎麼定，見<a href="bundles.html#price">組合包的價格</a>與<a href="bundles-stock.html#stock">組合包的庫存與鎖定套數</a></li>
   <li>翻譯與各幣別售價不在這一步，和活動一起在步驟 7 處理，見<a href="event-create-step8.html#preview-prices">各幣別價格</a></li>
 </ul>
 
@@ -251,7 +291,7 @@ tr:last-child td{border-bottom:0}
 </div>
 <p class="dg-cap">示意圖：實線是跟隨活動，虛線是另設；兩種都不能比活動寬。四條時間線怎麼互相包住，見<a href="event-rules.html#timing">活動的販售時間</a>。</p>
 <ul class="plain">
-  <li>各欄位的預設與限制見<a href="#fields-bundle">組合包的內容</a>；跟隨與另設的規則見<a href="bundles.html#timing-follow">四個時間預設跟隨活動</a>與<a href="bundles.html#timing-own">另設自己的時間</a></li>
+  <li>各欄位的預設與限制見<a href="#fields-bundle">組合包的內容</a>；跟隨與另設的規則見<a href="bundles-lifecycle.html#timing-follow">四個時間預設跟隨活動</a>與<a href="bundles-lifecycle.html#timing-own">另設自己的時間</a></li>
   <li>活動隱藏時，組合包在電子商店的清單與搜尋都找不到，見<a href="event-rules.html#ceiling">活動設定是門票與票務商品的上限</a></li>
   <li>購買條件不沿用所含門票，見<a href="bundles.html#rules">票務商品的購買條件</a>；不沿用單張門票的哪些設定，見<a href="bundles.html#rules-skip">不沿用的設定</a></li>
 </ul>
@@ -262,8 +302,8 @@ tr:last-child td{border-bottom:0}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v2.67；F20 購買條件不能改、電影關聯對照 v2.76；F20、F22 可賣條件對照 v2.78；F20、F21 限購只留每人總限購對照 v2.79；F20、F21 從 bookyay 帶入時對照 v2.81）§4.5 F20、§4.4 F22、§4.1 F21、§4.8；<code>5.1.5.4-建立組合流程.md</code>（v2.48；限購對照 v2.54；F2、F7 對照 v2.55）§4；<code>0-設計規格書.md</code>（v4.49；§7.14 可賣性對照 v4.65；§7.14 限購對照 v4.67；§7.15 bookyay 帶入的活動對照 v4.69；§7.14 待確認的組合包排序對照 v4.79）§5.2.4／§7.14／§7.15</li>
-    <li>決策：D060、D259、D292、D293、D295、D296、D328、D329、D330、D331、D340、D342、D363、D366、D367、D375、D380、D382、D390、D391、D402、D417、D419、D422、D424、D425、D427、D429、D435、D438、D443、D463、D465</li>
+    <li>規格：<code>5.1.6.1-建立活動流程.md</code>（v3.17）§4.5 F20、§4.4 F22、§4.1 F21、§4.8；<code>5.1.5.4-建立組合流程.md</code>（v2.88）§4；<code>0-設計規格書.md</code>（v5.41）§5.2.4／§7.14／§7.15</li>
+    <li>決策：D060、D259、D292、D293、D295、D296、D328、D329、D330、D331、D340、D342、D363、D366、D367、D375、D380、D382、D390、D391、D402、D417、D419、D422、D424、D425、D427、D429、D435、D438、D443、D463、D465、D473、D481、D486、D488、D496、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -283,9 +323,11 @@ tr:last-child td{border-bottom:0}
     <li>限時折扣起訖的時區與時間精細到哪、檔期結束是否自動回到原售價，以及與粉絲分級優惠的關係</li>
     <li>組合包是否設低庫存門檻</li>
     <li>這一步載入中、清單還沒有組合包、儲存失敗時畫面怎麼顯示</li>
+    <li>鎖定庫存開啟時鎖定套數可以是 0、代表可售 0，關閉才是不鎖定（推導）</li>
+    <li>組合包的預購細節（開啟不限量、賣完轉預購），以及組合包的「鎖定」跟建立商品的「鎖定庫存量」是否統一</li>
     <li>票務商品的其他待確認列在<a href="bundles.html">組合包與票務商品</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-23（D480：限量時鎖定套數跟著限量走、不能另外改；對照 5.1.6.1 v3.11）；2026-10-21（D463 票務商品的購買條件是組合包自己的一組七種條件，預設沒有任何條件，不再照所含門票最嚴的條件、不再只能收窄；D465 組合包的鎖定從門票還沒鎖走的量取，步驟 4 鎖給單售的部分拿不到；對照 5.1.6.1 v3.08）；2026-10-20（D456 票務商品的限購不再照所含門票取最小值，改為組合包自己設；對照 5.1.6.1 v3.00）；2026-10-19（組合包的內容只留從活動建立時的差異，其餘欄位改連到建立組合包）；2026-10-19（D444 活動要停賣改用提前停售時間或下架，完售規則不變；對照主規格 §7.14）；2026-10-16（D443 粉絲活動頁的門票與組合包合成同一頁，尚待確認的組合包排序改寫成活動頁購買區；對照主規格 v4.79）；2026-10-16（D438 組合包另設的上架、下架、開賣、停售時間上架中也能直接改，對照 5.1.6.2 v3.70、主規格 v4.74）；2026-10-16（D435 活動發布後組合包只有鎖定套數能直接改）；2026-10-16（D429 bookyay 套票不再自動建立組合包，從 bookyay 帶入時改為只有創作者自建的組合包）；2026-10-16（D427 限購只有每人總限購數量；自動建立的組合包只帶入每人總限購並鎖定，每次交易上限不帶入）；2026-10-16（D425 發布後隱藏組合包不擋定案，停售、下架、封存、刪除改看還在的門票）；2026-10-15（D424 自動建立的組合包港幣欄公式定案）；2026-10-15（D422 購買條件不能改的項目拿掉單張門票的停售項目，確認電影關聯；D419 自動建立的組合包組合折扣與限時折扣可以設定，比照一般組合包；D417 自動建立的組合包不帶入組合折扣、限時折扣與限購次數）；2026-10-12（至 D391，另加 D402）</p>
+  <p class="k">最近同步：2026-11-05（D513：組合包販售上限退場；5.1.6.1 v3.17、5.1.5.4 v2.88、主規格 v5.41）</p>
 </details>
 </div>
 </body>

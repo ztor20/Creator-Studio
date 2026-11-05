@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>收益 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -171,7 +171,7 @@ table.map td:nth-child(2){width:22%}
   <div class="dg-node end" style="grid-row:2;grid-column:9">淨利池全歸創作者<small>不用分配</small></div>
 </div>
 </div>
-<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方。圓圈數字對應下方步驟清單的編號。沒有已結算的收入或淨利池為負時不能觸發，見<a href="#pool">淨利池與分配</a>。</p>
+<p class="dg-cap">流程圖：由左往右走，紫色框是要回答的問題，綠框是結束的地方。圓圈數字對應下方步驟清單的編號。</p>
 <ol class="plain">
   <li>看<a href="#waterfall">收益摘要與瀑布</a></li>
   <li>是共創嗎？
@@ -190,12 +190,36 @@ table.map td:nth-child(2){width:22%}
 
 <h3 id="waterfall">收益摘要與瀑布</h3>
 <p>收益摘要與瀑布把本項目的收益一層層拆開，讓創作者看出錢從哪來、扣了什麼。</p>
+<p>錢從總收入一層層往下扣，扣到淨利池，再分給收款人；畫面上叫「收入去向」，淨利池叫「可分配淨利」。</p>
+<div class="dg" role="img" aria-label="收入去向示意圖，由左往右：總收入扣直接成本得毛利，再扣平台費、支付費與稅費，扣 IP 版稅，扣推薦或聯盟分潤，得淨收入，扣 Ztor 平台抽成，得淨利池；共創的淨利池分給創作者與分潤名額持有者，其他發行模式全歸創作者">
+<div class="dg-flow">
+  <div class="dg-node">總收入</div><span class="dg-arr"></span>
+  <div class="dg-node">扣直接成本<small>得毛利</small></div><span class="dg-arr"></span>
+  <div class="dg-node">扣平台費、支付費、稅費</div><span class="dg-arr"></span>
+  <div class="dg-node">扣 IP 版稅</div><span class="dg-arr"></span>
+  <div class="dg-node opt">扣推薦或聯盟分潤<small>若有</small></div><span class="dg-arr"></span>
+  <div class="dg-node">扣 Ztor 平台抽成<small>從淨收入扣</small></div><span class="dg-arr"></span>
+  <div class="dg-node q">淨利池</div><span class="dg-arr"></span>
+  <div class="dg-fork">
+    <div class="dg-lane"><span class="dg-exit">共創</span><span class="dg-arr"></span><div class="dg-node end">創作者與持有者分<small>預設 60%／40%</small></div></div>
+    <div class="dg-lane"><span class="dg-exit">其他</span><span class="dg-arr"></span><div class="dg-node end">全歸創作者</div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">示意圖：由左往右走，紫色框是淨利池，綠框是結果，虛線框是有才扣。多個 IP 的版稅同時從毛收入扣，不是一層扣完再扣下一層。</p>
 <ul class="plain">
-  <li>呈現本項目的收益拆解（財務階梯，也叫瀑布）</li>
-  <li>每一筆收入都綁定本項目，可以追到它所用的費率版本</li>
+  <li>每一筆收入都綁定本項目，每一階扣項對應它的費率版本（收入發生當下適用的費率），事後改費率不回溯，見<a href="common-finance.html#fee-version">費率版本與平台費率</a></li>
   <li>完整的逐筆明細在<a href="revenue.html">收入管理</a></li>
 </ul>
-<p class="note">依據：5.1.2.2 §2.3、§2.3.1；主規格 §7.3、§7.6。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>有收入</td><td>本項目已有收入</td><td>顯示收入去向，逐階扣項各對應費率版本</td></tr>
+    <tr><td>還沒有任何收入</td><td>本項目還沒有收入</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已取消</td><td>項目已取消</td><td>只顯示歷史，不接受新的收入事件</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.2.2 §2.3、§2.3.1；主規格 §7.3「金流瀑布與淨利池」、§7.6。</p>
 
 <h3 id="pool">淨利池與分配</h3>
 <p>淨利池是本項目可以分配的淨利，口徑見<a href="common-finance.html">財務術語與收入事件</a>；共創要把它分給創作者與分潤名額的持有者，其他模式全歸創作者。</p>
@@ -212,23 +236,37 @@ table.map td:nth-child(2){width:22%}
   <li>分配與結算紀錄只能新增、不能改寫，更正用沖銷分錄</li>
   <li>本項目的收益獨立結算，不跨項目挪用</li>
   <li>淨利池分配和共創的<a href="project-detail-overview.html#payout">撥款進度</a>是兩筆不同的錢，不合併呈現</li>
-  <li>已取消的項目只顯示歷史，不接受新的收入事件</li>
 </ul>
+<h4 id="pool-states">觸發分配的狀態</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">觸發分配</td></tr>
+    <tr><td>可以觸發</td><td>共創，有已結算的收入，淨利池是正數</td><td>顯示淨利池金額、逐位收款人明細與費率版本，可手動觸發</td></tr>
+    <tr><td>沒有已結算的收入</td><td>共創，還沒有任何已結算的收入</td><td>不能觸發；提示文字 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>淨利池是負數</td><td>共創</td><td>暫停分配，並說明虧損結轉、不回收已撥款</td></tr>
+    <tr><td>淨利池是 0</td><td>共創</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已經分配過</td><td>共創，之後又有新的已結算收入</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>非共創</td><td>直接發佈或預購</td><td>只顯示淨利池金額與「全歸創作者」，沒有分配明細與觸發按鈕</td></tr>
+    <tr><td>已取消</td><td>項目已取消</td><td>只顯示歷史，不接受新的收入事件；取消前尚未觸發的分配能不能觸發 <span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.2.2 §2.3.2、§2.2.4、§2.1.1「撥款進度的口徑」；主規格 §5.2.2、§7.3、§7.6；D192、D345。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.2.2-專案詳情.md</code>（v3.23）§2.0、§2.3、§2.3.1、§2.3.2、§2.4 第 3 項；<code>0-設計規格書.md</code> §5.2.2、§7.3、§7.6</li>
-    <li>決策：D192、D345</li>
+    <li>規格：<code>5.1.2.2-專案詳情.md</code>（v3.25）§2.0、§2.2.4、§2.3、§2.3.1、§2.3.2、§2.4 第 3 項；<code>0-設計規格書.md</code> §5.2.2、§7.3、§7.6</li>
+    <li>決策：D041、D192、D345、D455</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>取消前尚未觸發的分配，取消後是否仍可觸發</li>
     <li>還沒有任何收入時，收益分頁的畫面</li>
+    <li>淨利池是 0、已經分配過後又有新收入，與沒有已結算收入時觸發鈕的畫面</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.2.2 v3.23）</p>
+  <p class="k">最近同步：2026-11-04（全手冊補齊：對照規格；5.1.2.2 v3.25）</p>
 </details>
 </div>
 </body>

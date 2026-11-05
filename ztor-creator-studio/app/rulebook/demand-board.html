@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>需求看板 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -65,6 +65,7 @@ tr:last-child td{border-bottom:0}
 .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
 .tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
 .tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
 .stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
 .formula{margin:8px 0 10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-sunken);font-size:14px}
 .flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
@@ -93,7 +94,7 @@ tr:last-child td{border-bottom:0}
 <body>
 <div class="wrap">
 
-<h1>需求看板</h1>
+<h1 id="demand-board">需求看板</h1>
 <p class="lede">創作者在下生產單之前，依市場看各尺寸的需求占比與建議生產量，決定各尺寸要做多少。看板上的數字只供參考，不連動庫存、出貨規則或生產單。</p>
 
 <div class="toc"></div>
@@ -119,22 +120,22 @@ tr:last-child td{border-bottom:0}
 <p>訂單的收件資料在完整地址之外，新增「國家」與「城市」兩個欄位，作為需求看板的市場依據。</p>
 <ul class="plain">
   <li>完整收件地址欄位保留，粉絲結帳時照舊必填，與國家、城市兩個欄位並存</li>
-  <li>國家與城市由粉絲結帳時填寫；兩欄為空時不從完整地址推估國家或城市</li>
+  <li>國家與城市由粉絲結帳時填寫；兩欄為空時不從完整地址推估，欄位規則見<a href="order-detail.html#fields-buyer">訂單詳情的買家</a></li>
   <li>粉絲個人檔案的所在地是自由文字，不作為市場依據</li>
 </ul>
 
 <h3 id="market-group">市場怎麼分組</h3>
 <ul class="plain">
   <li>國家一定有；城市只在資料有記錄時才顯示，沒有就只分到國家</li>
-  <li>看板的市場列以國家為主體，可展開到城市</li>
+  <li>看板的市場列以國家為主體，可展開到城市，見<a href="#market-table">市場需求表</a></li>
   <li>沒有國家的需求歸在「未提供地區」，照常計入總量與尺寸占比</li>
   <li>預設依需求指數由高到低排列，「未提供地區」排在最後</li>
-  <li>粉絲端結帳頁新增兩個欄位之前，所有需求都在「未提供地區」；看板只有總需求量與各尺寸占比，沒有市場之間的比較</li>
+  <li>所有需求都沒有國家資料時，所有需求都在「未提供地區」；看板只有總需求量與各尺寸占比，沒有市場之間的比較</li>
 </ul>
 <p class="note">依據：主規格 §7.17「市場：國家與城市兩層」；5.1.5.3.1 §2.4；5.1.5.16 F4.1；D360。</p>
 
 <h2 id="algo"><span class="n"></span>需求估算的算法</h2>
-<p>看板上的需求量、需求指數、建議生產量、差距與預測售罄天數，都照下列公式算；看板與單品數據不各自改公式。先看公式裡的詞，再依序看各個數字，最後是資料不夠時怎麼辦與試算：</p>
+<p>看板上的需求量、需求指數、建議生產量、差距與預測售罄天數，都照下列公式算。先看公式裡的詞，再依序看各個數字，最後是資料不夠時怎麼辦與試算：</p>
 <ul class="plain">
   <li><a href="#algo-terms">算法用到的名詞</a></li>
   <li><a href="#algo-demand">需求量</a></li>
@@ -156,8 +157,8 @@ tr:last-child td{border-bottom:0}
     <tr><td>需求量</td><td>統計期間內，各需求來源的件數依權重加總</td></tr>
     <tr><td>尺寸占比</td><td>某尺寸的需求量 ÷ 該市場全部尺寸的需求量</td></tr>
     <tr><td>比較期間</td><td>算成長係數時，拿近期與前期的需求量相比，近期與前期各是一段時間</td></tr>
-    <tr><td>成長係數的允許範圍（上下限）</td><td>成長係數允許的最高值與最低值</td></tr>
-    <tr><td>最少樣本</td><td>一個市場至少要有幾件需求量，數字才算數</td></tr>
+    <tr><td>需求成長趨勢（畫面上的「成長係數」）</td><td>近期需求量相對前期的變化倍數，算出後限制在最高值與最低值之間</td></tr>
+    <tr><td>資料夠不夠的門檻（最少樣本）</td><td>一個市場至少要有幾件需求量，數字才算數</td></tr>
   </tbody>
 </table></div>
 
@@ -207,7 +208,7 @@ tr:last-child td{border-bottom:0}
 <ul class="plain">
   <li>日均需求量與建議生產量用同一個基準</li>
   <li>計算層級跟著計畫生產量：填到市場層就算市場層，填到尺寸層就算各尺寸</li>
-  <li>沒填計畫生產量，或填 0，不顯示</li>
+  <li>顯示條件同<a href="#algo-gap">計畫生產量與差距</a></li>
 </ul>
 
 <h3 id="algo-fallback">新商品與資料不足</h3>
@@ -219,7 +220,7 @@ tr:last-child td{border-bottom:0}
 </ol>
 <ul class="plain">
   <li>尺寸占比與成長係數直接用參考資料算</li>
-  <li>建議生產量的基數，改用參考資料中每件商品的平均需求量</li>
+  <li>建議生產量算式裡「該市場統計期間的需求量」，改用參考資料中每件商品的平均需求量</li>
   <li>用到參考資料的市場，標明「參考同類商品」與參考的是哪一層（次分類或大類）</li>
 </ul>
 
@@ -247,7 +248,7 @@ tr:last-child td{border-bottom:0}
 <p class="note">依據：主規格 §7.17「需求量」至「新商品與資料不足」；5.1.5.16 F4.2、F4.3；D360。</p>
 
 <h2 id="board"><span class="n"></span>需求看板</h2>
-<p>看板畫面依序是：從哪裡進來、拿來做什麼，見<a href="#intro">入口與用途</a>；怎麼縮小統計範圍，見<a href="#filter">篩選與分組</a>；目前範圍的量體與資料缺口，見<a href="#metrics">摘要指標</a>；逐市場的尺寸占比、建議生產量與計畫生產量，見<a href="#market-table">市場需求表</a>。</p>
+<p>看板畫面依序是：從哪裡進來、拿來做什麼，見<a href="#intro">入口與用途</a>；怎麼縮小統計範圍，見<a href="#filter">篩選與分組</a>；目前範圍的量體與資料缺口，見<a href="#metrics">摘要指標</a>；逐市場的尺寸占比、建議生產量與計畫生產量，見<a href="#market-table">市場需求表</a>；各種狀態下看板的樣子，見<a href="#board-states">需求看板的各種樣子</a>。</p>
 
 <h3 id="intro">入口與用途</h3>
 <p>需求看板是電子商店底下的一個獨立頁，創作者在下生產單之前用它看各市場各尺寸的需求，再決定各尺寸的生產量與各市場的出貨量。</p>
@@ -267,12 +268,12 @@ tr:last-child td{border-bottom:0}
   <tbody>
     <tr><td>商品分類（Category）</td><td>選填<br>可只選大類，也可再選到次分類</td><td>沒選時涵蓋所有有尺寸選項的商品<br>分類見<a href="taxonomy.html#apparel">服飾配件的大類與次分類</a></td></tr>
     <tr><td>適用對象（Department）</td><td>—</td><td>男、女、中性、童分開統計<br>尺寸占比不跨適用對象混算，因為同一個尺寸在不同適用對象代表的大小不同</td></tr>
-    <tr><td>單一商品（Product）</td><td>選填</td><td>選定後顯示該商品自己的數字<br>與商品細節頁的單品數據是同一份資料、同一套算法</td></tr>
+    <tr><td>單一商品（Product）</td><td>—</td><td>選定後顯示該商品自己的數字，見<a href="#intro">入口與用途</a></td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>篩選的選項只列出統計期間內有需求的分類、商品與適用對象</li>
-  <li>統計期間內沒有任何可統計的需求時，篩選仍可操作，但沒有可選的內容</li>
+  <li>統計期間內沒有任何可統計的需求時，篩選仍可操作，但沒有可選的內容，見<a href="#board-states">需求看板的各種樣子</a></li>
 </ul>
 <p class="note">依據：5.1.5.16 F2；主規格 §7.16、§7.17「分階段與統計切面」；D360。</p>
 
@@ -290,8 +291,7 @@ tr:last-child td{border-bottom:0}
 </table></div>
 <ul class="plain">
   <li>預測售罄天數與尺寸差距的對象，在市場需求表選定，見下方表格的「選定市場與尺寸」</li>
-  <li>沒有任何國家資料時（見<a href="#market-group">市場怎麼分組</a>），未提供地區占比是 100%，涵蓋市場數是 0，預測售罄天數與尺寸差距因沒有可選定的國家市場而不顯示</li>
-  <li>統計期間內沒有任何可統計的需求時，只顯示資料來源與統計期間，不顯示數字</li>
+  <li>各種情況下指標的樣子，見<a href="#board-states">需求看板的各種樣子</a></li>
 </ul>
 <p class="note">依據：5.1.5.16 F3、F4.1、「頁面狀態」；D360。</p>
 
@@ -301,7 +301,7 @@ tr:last-child td{border-bottom:0}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>展開城市</td><td>國家有城市資料時</td><td>國家列可展開到該國的城市<br>城市只在資料有記錄時出現，沒有就只到國家</td></tr>
-    <tr><td>選定市場與尺寸（Focus）</td><td>選填，預設不選定</td><td>先選定一個市場，可再選定該市場內的一個尺寸<br>同一時間只有一個選定對象，可取消<br>選定對象是摘要指標裡預測售罄天數與尺寸差距的對象<br>選定對象沒達到顯示條件時，這兩個指標不顯示，條件見<a href="#algo-gap">計畫生產量與差距</a>、<a href="#algo-soldout">預測售罄天數</a></td></tr>
+    <tr><td>選定市場與尺寸（Focus）</td><td>預設不選定</td><td>先選定一個市場，可再選定該市場內的一個尺寸<br>同一時間只有一個選定對象，可取消<br>選定對象是摘要指標裡預測售罄天數與尺寸差距的對象<br>選定對象沒達到顯示條件時，這兩個指標不顯示，條件見<a href="#algo-gap">計畫生產量與差距</a>、<a href="#algo-soldout">預測售罄天數</a></td></tr>
     <tr><td>計畫生產量（Planned quantity）</td><td>選填<br>可填到市場層，或市場與尺寸層</td><td>數量為整數，不得為負<br>綁定目前的篩選範圍，例如某個單一商品<br>填了之後立即算出差距，見<a href="#algo-gap">計畫生產量與差距</a><br>儲存結果與錯誤照各頁共通的表單規則，見專案概覽的<a href="index.html#cross">每個頁面都要處理的情境</a></td></tr>
   </tbody>
 </table></div>
@@ -310,7 +310,7 @@ tr:last-child td{border-bottom:0}
   <li>需求指數，見<a href="#algo-index">需求指數</a></li>
   <li>各尺寸占比，見<a href="#algo-terms">算法用到的名詞</a></li>
   <li>各尺寸的建議生產量與市場合計，見<a href="#algo-suggest">建議生產量</a></li>
-  <li>建議生產量高於計畫生產量時，加強提示</li>
+  <li>建議生產量高於計畫生產量時，加強提示（提示的樣子見<a href="#board-states">需求看板的各種樣子</a>）</li>
   <li>差距，見<a href="#algo-gap">計畫生產量與差距</a></li>
   <li>用到參考資料的市場標明「參考同類商品」與參考的層級，仍不足的標「資料不足」，見<a href="#algo-fallback">新商品與資料不足</a></li>
 </ul>
@@ -318,14 +318,46 @@ tr:last-child td{border-bottom:0}
 <ul class="plain">
   <li>尺寸值用標準尺寸；賣家自行輸入的尺寸怎麼合併與顯示，見<a href="taxonomy.html#custom-values">自行輸入的值怎麼統計</a></li>
 </ul>
+
+<h3 id="board-states">需求看板的各種樣子</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">整個頁面</td></tr>
+    <tr><td>無資料</td><td>統計期間內沒有任何可統計的需求</td><td>只顯示資料來源與統計期間，摘要指標與市場需求表不顯示數字；篩選仍可操作，但沒有可選的內容</td></tr>
+    <tr><td>沒有國家資料</td><td>有需求，但統計範圍內所有需求都沒有國家資料</td><td>所有需求歸在「未提供地區」，仍顯示總需求量與各尺寸占比；市場之間的比較無法呈現</td></tr>
+    <tr><td>有資料</td><td>至少一筆需求帶有國家資料</td><td>各區塊正常顯示</td></tr>
+    <tr><td>篩選的組合沒有需求</td><td>例如選了某個分類，又選了該分類沒有需求的適用對象</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">摘要指標</td></tr>
+    <tr><td>沒有國家資料時</td><td>所有需求都在未提供地區</td><td>未提供地區占比是 100%，涵蓋市場數是 0，預測售罄天數與尺寸差距不顯示</td></tr>
+    <tr><td>沒有選定對象</td><td>創作者還沒選定市場與尺寸</td><td>預測售罄天數與尺寸差距不顯示</td></tr>
+    <tr><td>選定對象沒達顯示條件</td><td>選定的市場或尺寸沒填計畫生產量，或填 0</td><td>預測售罄天數與尺寸差距不顯示</td></tr>
+    <tr class="grp"><td colspan="3">差距</td></tr>
+    <tr><td>差距為正</td><td>建議生產量大於計畫生產量</td><td>顯示建議比計畫多的百分比</td></tr>
+    <tr><td>差距為負</td><td>建議生產量小於計畫生產量</td><td>顯示建議比計畫少的百分比</td></tr>
+    <tr><td>差距為零</td><td>建議生產量等於計畫生產量</td><td>怎麼顯示：<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>建議高於計畫</td><td>建議生產量高於計畫生產量</td><td>加強提示；提示的樣子：<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>預測售罄天數算不出來</td><td>日均需求量是 0</td><td>怎麼顯示：<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">市場列</td></tr>
+    <tr><td>資料夠</td><td>市場的需求量達到最少樣本</td><td>用該市場自己的資料算建議生產量</td></tr>
+    <tr><td>參考同類商品</td><td>市場的需求量低於最少樣本，同次分類或同大類的資料夠</td><td>標明「參考同類商品」與參考的層級，例如「參考：T-Shirt」</td></tr>
+    <tr><td>資料不足</td><td>參考到大類仍不足</td><td>該市場標「資料不足」，不給建議生產量</td></tr>
+    <tr><td>只有未提供地區一列</td><td>所有需求都沒有國家資料</td><td>需求指數怎麼呈現：<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">需求成長趨勢</td></tr>
+    <tr><td>前期沒有需求</td><td>前期需求量是 0</td><td>成長係數取 1</td></tr>
+    <tr><td>超出範圍</td><td>算出的值高於最高值或低於最低值</td><td>取最高值或最低值</td></tr>
+    <tr class="grp"><td colspan="3">統計範圍</td></tr>
+    <tr><td>單一新商品</td><td>篩選到單一商品，且商品本身需求不足</td><td>所有有需求的市場都參考同類商品；仍不足的市場資料不足</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.5.16 F4.1、F4.2、F4.3；主規格 §6.6、§7.16、§7.17；D360。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.16-需求看板.md</code>、<code>5.1.5.3.1-訂單詳情.md §2.4</code>、<code>5.1.5.1-商品細節頁.md §2.19</code>、<code>0-設計規格書.md §7.1／§7.16／§7.17</code></li>
-    <li>決策：D360、D452</li>
+    <li>規格：<code>5.1.5.16-需求看板.md</code>（v1）、<code>5.1.5.3.1-訂單詳情.md</code>（v2.33）§2.4、<code>5.1.5.1-商品細節頁.md</code>（v1.84）§2.19、<code>0-設計規格書.md</code>（v5.39）§7.1／§7.16／§7.17</li>
+    <li>決策：D360</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -339,12 +371,15 @@ tr:last-child td{border-bottom:0}
     <li>選定單一商品時，看板的尺寸值照實顯示，或維持把自行輸入的尺寸歸入「其他尺寸」</li>
     <li>沒有適用對象值的商品怎麼歸組</li>
     <li>沒有尺寸選項的商品是否不在看板範圍</li>
+    <li>單一商品入口：草稿商品是否出現、數位商品是否適用</li>
+    <li>篩選的組合（分類加適用對象）沒有需求時，畫面怎麼顯示</li>
     <li>計畫生產量能否在跨多個商品的範圍填寫，填了怎麼儲存</li>
     <li>商品改分類或適用對象之後，歷史需求按下單當時或改後的分類歸組</li>
     <li>男、女、中性、童分開統計時，畫面用切換、分組或並排呈現（規格列為呈現決策）</li>
     <li>市場需求表除了預設排序，能不能改用其他排序（規格列為呈現決策）</li>
+    <li>建議生產量高於計畫生產量時，加強提示的樣子；差距為零、預測售罄天數算不出來時，畫面怎麼顯示</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（D452 同步稽核修正：需求來源表拿掉分期字樣）；2026-10-09</p>
+  <p class="k">最近同步：2026-11-05（D360 逐條對照規格；5.1.5.16 v1）</p>
 </details>
 </div>
 

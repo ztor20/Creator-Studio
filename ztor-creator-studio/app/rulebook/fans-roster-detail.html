@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>粉絲詳情 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -154,7 +154,6 @@ table.map td:nth-child(2){width:22%}
   <li>這一頁只彙整電子商店、活動、項目的紀錄，不重算</li>
   <li>金額和收入管理是同一個口徑</li>
   <li>分級、忠誠點數與狀態只顯示結果，怎麼算見<a href="fans-tiers.html">粉絲分級</a>與<a href="fans-roster.html#status">粉絲狀態</a></li>
-  <li>行為、消費、活動與項目、標籤四類紀錄各有一區，見<a href="#s4">功能與欄位</a></li>
 </ul>
 
 <h2 id="detail-flow"><span class="n"></span>操作流程</h2>
@@ -218,9 +217,9 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>麵包屑與返回</td><td>—</td><td>顯示來源路徑，例如「Fans / Wei Yu-han」<br>回到粉絲總覽時，保留原本的篩選、分級與搜尋</td></tr>
     <tr><td>發訊息（Message）</td><td>—</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</td></tr>
-    <tr><td>調整點數（Adjust points）</td><td>只在 Admin 代管創作者時出現</td><td>新增一筆調整，標題固定為「System Adjust」，不能自訂<br>加點或扣點，點數與原因必填<br>每次記成帳本的一筆，規則見<a href="fans-tiers.html#manual-adjust">Admin 手動調整點數</a></td></tr>
-    <tr><td>修改點數（每一筆的 ⋮）</td><td>只在 Admin 代管創作者時出現</td><td>修改這一筆的點數，必填原因<br>記成一筆校正分錄，連回原筆，不覆寫原值<br>不能刪除任何一筆<br>規則見<a href="fans-tiers.html#manual-adjust">Admin 手動調整點數</a></td></tr>
-    <tr id="detail-adjust-log"><td>調整紀錄</td><td>只在 Admin 代管創作者時出現</td><td>列出每次新增與修改，欄位見下表</td></tr>
+    <tr><td>調整點數（Adjust points）<span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>新增一筆調整，標題固定為「System Adjust」、不能自訂<br>加點或減點，點數與原因必填，沒填原因不能送出，規則見<a href="fans-tiers.html#manual-adjust">Admin 手動調整點數</a></td></tr>
+    <tr><td>修改點數（每一筆的 ⋮）<span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>修改這一筆的點數，原因必填；修改後的點數須是 0 以上的整數，規則見<a href="fans-tiers.html#manual-adjust">Admin 手動調整點數</a></td></tr>
+    <tr id="detail-adjust-log"><td>調整紀錄<span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>列出每次新增與修改，欄位見下表</td></tr>
   </tbody>
 </table></div>
 <p>調整紀錄的欄位：</p>
@@ -241,20 +240,20 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:24%">指標</th><th>內容</th></tr></thead>
   <tbody>
-    <tr><td>忠誠點數</td><td>目前點數，附近 7 天入帳的點數，例如「近 7 天入帳 +38」（數字為假設）<br>天數預設 7 天，由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>調整</td></tr>
+    <tr><td>忠誠點數</td><td>目前點數，附近 7 天入帳的點數，例如「近 7 天入帳 +38」（數字為假設）<br>天數預設 7 天，由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定</td></tr>
     <tr><td>累積消費（Spent）</td><td>累積消費金額，附訂單數</td></tr>
     <tr><td>下一分級進度</td><td>進度百分比與「還差 X 分」，算法見下方<a href="#detail-progress">升級進度怎麼算</a><br>已是核心圈（Inner Circle）時改顯示「已達最高級」，副標「以維繫為重」，不顯示百分比</td></tr>
     <tr><td>最近活躍</td><td>距離最近一次互動多久，附互動內容<br>線下掃碼領點也會更新最近活躍</td></tr>
   </tbody>
 </table></div>
 <h4 id="detail-progress">升級進度怎麼算</h4>
-<p>升級進度拿目前點數和下一級的門檻分數 D 比；門檻分數 D 會隨情況變：</p>
+<p>升級進度拿目前點數和下一級的門檻分數（簡稱 D）比；D 會隨情況變：</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:36%">情況</th><th>門檻分數 D</th></tr></thead>
+  <thead><tr><th style="width:36%">情況</th><th>下一級的門檻分數（D）</th></tr></thead>
   <tbody>
     <tr><td>目前點數低於最低忠誠點數門檻（預設 500）</td><td>D＝500</td></tr>
     <tr><td>目前點數達到 500</td><td>D＝下一級目前最低分那位粉絲的分數；會隨其他粉絲的分數浮動</td></tr>
-    <tr><td>下一級目前沒有人</td><td>視為已達該級，顯示 100%</td></tr>
+    <tr><td>下一級目前沒有人</td><td>視為已達該級，顯示 100%（規格另並列「已達最高級」，用哪一種見頁尾尚待確認）</td></tr>
     <tr><td>已是核心圈</td><td>沒有下一級，顯示「已達最高級」</td></tr>
   </tbody>
 </table></div>
@@ -265,7 +264,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 <div class="stepsum">例：假設一般粉絲有 620 分，上榜粉絲目前最低分是 700 分，D＝700，進度 88.6%，還差 80 分。</div>
 <ul class="plain">
-  <li>這一區要提示：點數即時入帳、達標即時升級；降級先倒數緩衝天數，到期後下一次每週重算仍未達標才降，見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></li>
+  <li>這一區要提示：點數即時入帳、達標即時升級、降級另有時機，見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></li>
   <li>主要應援對象只能看到是或否，見<a href="fans-tiers.html#primary-rules">主要應援對象的規則</a>；這一欄要不要正式顯示，見頁尾尚待確認</li>
 </ul>
 
@@ -282,8 +281,8 @@ table.map td:nth-child(2){width:22%}
     </ul>
   </li>
   <li>純互動沒有金額</li>
-  <li>每一筆寫出當時入帳的點數；Admin 新增的減分那一筆是負數</li>
-  <li>Admin 新增的調整，創作者也看得到：分類寫「調整」、標題寫「System Adjust」；原因與操作者只在 Admin 的調整紀錄</li>
+  <li>每一筆寫出當時入帳的點數；調整點數新增的減分那一筆是負數</li>
+  <li>調整點數新增的調整，創作者也看得到：分類寫「調整」、標題寫「System Adjust」；原因與操作者只在調整紀錄</li>
   <li>附「點數從哪來」說明卡，概覽點數來自哪些行為，卡上的百分比是示意，不能編輯；各類行為怎麼給分見<a href="fans-tiers.html#sources">點數從哪來</a></li>
 </ul>
 
@@ -292,9 +291,9 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:22%">狀態</th><th style="width:36%">什麼時候</th><th>畫面</th></tr></thead>
   <tbody>
     <tr><td>一般</td><td>照規則入帳的行為</td><td>狀態欄空白，點數照入帳的寫</td></tr>
-    <tr><td>已人工修改</td><td>Admin 改過這一筆的點數，記成一筆校正分錄，不覆寫原值</td><td>狀態欄標「已人工修改」，點數寫修改後的合計淨值</td></tr>
+    <tr><td>已人工修改</td><td>這一筆被修改過點數，記成一筆校正分錄，不覆寫原值</td><td>狀態欄標「已人工修改」，點數寫修改後的合計淨值</td></tr>
     <tr><td>已達上限</td><td>這類行為在最近 90 天已達上限，這次入帳 0 點，上限見<a href="fans-tiers.html#integrity">誠信規則</a></td><td>照樣列出，狀態欄標「已達上限」，點數寫 0</td></tr>
-    <tr><td>已達上限後被改分</td><td>Admin 把已達上限的那一筆改成大於 0</td><td>改標「已人工修改」，不再標「已達上限」</td></tr>
+    <tr><td>已達上限後被改分</td><td>已達上限的那一筆被改成大於 0</td><td>改標「已人工修改」，不再標「已達上限」</td></tr>
   </tbody>
 </table></div>
 
@@ -310,8 +309,8 @@ table.map td:nth-child(2){width:22%}
     <tr><td>日期時間</td><td>—</td><td>領取時間</td></tr>
     <tr><td>金額</td><td>—</td><td>無消費金額，顯示「—」</td></tr>
     <tr><td>點數</td><td>—</td><td>+該 QR 設定的每次領取點數；不乘份量、不吃賽季加倍、不衰減，見<a href="pickup-detail.html#scan-rules">發點規則</a></td></tr>
-    <tr><td>狀態</td><td>—</td><td>不會有「已達上限」，因為不受 90 天滾動上限<br>Admin 修改過這一筆就標「已人工修改」</td></tr>
-    <tr><td>修改點數（每一筆的 ⋮）</td><td>只在 Admin 代管創作者時出現</td><td>用來校正，會新增一筆校正分錄，不改原筆，規則見<a href="fans-tiers.html#manual-adjust">Admin 手動調整點數</a></td></tr>
+    <tr><td>狀態</td><td>—</td><td>不會有「已達上限」，因為不受 90 天滾動上限<br>被修改過點數就標「已人工修改」</td></tr>
+    <tr><td>修改點數（每一筆的 ⋮）<span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>用來校正，會新增一筆校正分錄，不改原筆，規則見<a href="fans-tiers.html#manual-adjust">Admin 手動調整點數</a></td></tr>
   </tbody>
 </table></div>
 
@@ -365,32 +364,68 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 
 <h3 id="detail-empty">沒有資料時</h3>
-<ul class="plain">
-  <li>行為時間線、消費紀錄沒有資料時，各自顯示空狀態，不放假資料</li>
-  <li>活動與項目紀錄的兩份清單各自顯示空狀態</li>
-</ul>
+<p>各區沒有資料時各自顯示空狀態，不放假資料；其他會依數字換樣子的地方一併列在下表。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">忠誠點數</td></tr>
+    <tr><td>有入帳</td><td>近 7 天有點數入帳</td><td>點數旁寫「近 7 天入帳 +N」（數字為假設）</td></tr>
+    <tr><td>近 7 天入帳是 0 或負數</td><td>近 7 天沒有入帳，或入帳合計不是正數</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">下一分級進度</td></tr>
+    <tr><td>低於最低忠誠點數門檻</td><td>目前點數不到預設 500</td><td>進度以 500 為 D 算，例如 300 分是 60%、還差 200 分（數字為假設）</td></tr>
+    <tr><td>達到門檻、還沒到下一級</td><td>目前點數達到 500，且下一級有人</td><td>進度以下一級目前最低分為 D 算</td></tr>
+    <tr><td>下一級目前沒有人</td><td>下一級還沒有任何粉絲</td><td>顯示 100%，另一種寫法「已達最高級」尚待確認 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已是核心圈</td><td>沒有下一級</td><td>顯示「已達最高級」，副標「以維繫為重」，不顯示百分比</td></tr>
+    <tr class="grp"><td colspan="3">最近活躍</td></tr>
+    <tr><td>有互動</td><td>有被記錄的互動，含線下掃碼領點</td><td>寫距今多久，附互動內容</td></tr>
+    <tr><td>沒有任何互動</td><td>從來沒有被記錄的互動</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">行為時間線</td></tr>
+    <tr><td>有行為</td><td>至少一筆行為</td><td>依時間分組列出，每一筆的狀態見行為時間線的狀態表</td></tr>
+    <tr><td>沒有任何行為</td><td>尚無任何跨模組行為</td><td>顯示空狀態，不放假資料</td></tr>
+    <tr class="grp"><td colspan="3">消費紀錄</td></tr>
+    <tr><td>有消費</td><td>至少一筆消費</td><td>顯示三個指標與消費明細</td></tr>
+    <tr><td>沒有任何消費</td><td>尚無消費紀錄</td><td>顯示空狀態，不放假資料；平均訂單金額的分母是 0，怎麼顯示<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>近 90 天消費比前 90 天多</td><td>兩段期間都有資料，近 90 天較高</td><td>附與前 90 天比較的變化量；上升怎麼標示<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>比前 90 天少或相同</td><td>近 90 天較低，或兩段相同</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>前 90 天沒有資料</td><td>粉絲在近 90 天內才開始消費</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">活動與項目紀錄</td></tr>
+    <tr><td>有紀錄</td><td>至少一場活動或一個項目</td><td>活動與項目兩份清單各列各的</td></tr>
+    <tr><td>其中一份沒有紀錄</td><td>只參與過活動，或只支持過項目</td><td>沒有紀錄的那份清單顯示空狀態</td></tr>
+    <tr class="grp"><td colspan="3">標籤與長期貢獻</td></tr>
+    <tr><td>還沒有標籤</td><td>這位粉絲沒有任何標籤</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>名人堂沒有紀錄</td><td>這位粉絲從來沒有進過名人堂</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">創作者與 Admin 看到的差別</td></tr>
+    <tr><td>創作者本人進入</td><td>創作者自己登入</td><td>看不到調整點數、修改點數與調整紀錄；點數明細裡的「調整」列看得到</td></tr>
+    <tr><td>Admin 代管創作者 <span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>多出調整點數、每一筆的修改點數與調整紀錄</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.7.7 §2.1～§2.7、§3、§5；5.1.7 F7、F9～F12；主規格 §7.5；D169、D347、D348、D494、D495、D497、D498、D499（§2.3 最近活躍、§2.4 掃碼領點列）。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.7.7-粉絲詳情.md</code>（掃碼領點列對照 2026-11-02 版）、<code>5.1.7-粉絲關係管理.md</code>、<code>0-設計規格書.md §7.5／§8.29</code></li>
-    <li>決策：D169、D347、D348、D494、D495、D497、D498、D499、D503、D507</li>
+    <li>規格：<code>5.1.7.7-粉絲詳情.md</code>（最後更新 2026-11-02）、<code>5.1.7-粉絲關係管理.md</code>（最後更新 2026-11-03）、<code>0-設計規格書.md</code>（v5.39）§7.5／§8.29</li>
+    <li>決策：D169、D347、D348、D494、D495、D497、D498、D499、D503、D507、D510</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>頭像是否支援真實大頭照，以及預設樣式</li>
     <li>粉絲的正式識別依據用帳號 ID 還是 Email</li>
     <li>Email、所在地、加入時間能顯示到什麼範圍、能不能複製或匯出</li>
-    <li>哪些行為算「互動」、記錄到多細</li>
+    <li>哪些行為算「互動」、記錄到多細；從來沒有互動時，最近活躍顯示什麼</li>
+    <li>近 7 天入帳是 0 或負數時，忠誠點數旁的小字顯示什麼</li>
+    <li>平均訂單金額在沒有訂單時顯示什麼；近 90 天消費比前 90 天多、少、相同或前 90 天沒有資料時各顯示什麼</li>
+    <li>粉絲還沒有標籤時，以及從來沒有進過名人堂時，這一區顯示什麼</li>
+    <li>行為時間線有沒有分類切換、展開或載入更多的操作</li>
     <li>時間線的分組界線、更早紀錄怎麼載入、資料保留多久</li>
     <li>消費明細能不能點進對應的訂單詳情</li>
     <li>粉絲標籤由創作者自訂，還是由平台統一定義</li>
     <li>粉絲詳情要不要正式顯示「是否以你為主要應援對象」欄；全站活動的點數來源長條目前保留顯示</li>
+    <li>下一級目前沒有人時，升級進度顯示 100% 還是「已達最高級」</li>
     <li>行為時間線、消費紀錄、活動與項目紀錄、標籤與長期貢獻四區，是否用切換的方式共用同一塊畫面（規格標為呈現參考）</li>
   </ul>
-  <p class="k">最近同步：2026-11-02（D507：不設粉絲系統說明的入口，入口只在粉絲總覽）；2026-11-02（D506：頁首不設分級設定的入口，分級設定從粉絲總覽進）；上一次 2026-11-02（D503：掃碼領點明細列的副說明與點數來源改稱 QR，不再是商品）；上一次 2026-11-02（D497：升級進度改用門檻分數 D 與「還差 X 分」、修改點數改為校正分錄並拿掉刪除、新增調整標題 System Adjust、調整紀錄欄位；D498：近 7 天的天數由 Admin 調整）；2026-11-02（D499：行為時間線新增掃碼領點的點數明細列、最近活躍納入掃碼領點）；上一次 2026-10-30（D495：忠誠點數比近 7 天、調整列創作者看得到；D494：每一筆的點數與狀態、修改與刪除、調整紀錄）；2026-10-23（D476 點數即時入帳與升降級時機；Admin 手動調整點數的入口）；2026-10-19（從粉絲總覽拆成獨立一頁，補概述與操作流程）</p>
+  <p class="k">最近同步：2026-11-05（逐條對照：調整點數與修改點數補標題固定與整數限制；對照規格 5.1.7.7 最後更新 2026-11-02）</p>
 </details>
 </div>
 </body>

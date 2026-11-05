@@ -74,7 +74,7 @@
     'dash.h1':          { en: 'Studio',     zh: '工作室' },
     'dash.sub':         { en: 'What came in, what needs you, and where your work is playing right now.', zh: '進來的錢、需要你處理的事，以及你的作品現在正在哪裡被聽見、被看見。' },
     'nav.projects':     { en: 'Projects',   zh: '項目' },
-    'nav.ip-bank':      { en: 'IP Bank',    zh: 'IP 資產' },
+    'nav.ip-bank':      { en: 'IP Bank',    zh: 'IP Bank' },
     'nav.eshop':        { en: 'E-Shop',     zh: '電子商店' },
     'nav.events':       { en: 'Events',     zh: '活動' },
     'nav.fans':         { en: 'Fans',       zh: '粉絲' },
@@ -219,8 +219,8 @@
     /* ─── Platform-operator (Admin) layer · spec §4.1 / D086 ─── */
     'admin.creator-mgmt': { en: 'Creator Management', zh: 'Creator 管理' },
     'admin.managing':     { en: 'Managing',           zh: '管理中' },
-    'admin.back':         { en: 'Back to creators',   zh: '返回 Creator 名冊' },
-    'admin.back-short':   { en: 'Creators',           zh: 'Creator 名冊' },
+    'admin.back':         { en: 'Back to Creator Management', zh: '返回 Creator 管理' },
+    'admin.back-short':   { en: 'Creator Management', zh: 'Creator 管理' },
     /* Admin 從審核佇列進入某位創作者的工作區時，返回鍵回的是佇列而不是名冊 */
     'admin.back-review':     { en: 'Review queue',          zh: '審核佇列' },
     'admin.back-review-aria': { en: 'Back to video publishing review', zh: '返回影片上架審核' },
@@ -230,6 +230,9 @@
     'admin.gate.title':   { en: 'Admin access required', zh: '需要 Admin 身分' },
     'admin.gate.text':    { en: 'This page is for Admin. Switch the Role to Admin in Cheat Codes, or sign in as an Admin.', zh: '這一頁屬於 Admin。請在 Cheat Code 的 Role 組切換為 Admin 身分，或由 Admin 帳號登入。' },
     'admin.gate.back':    { en: 'Back to the workspace', zh: '回到工作區' },
+    'admin.nocreator.title': { en: 'Select a creator first', zh: '請先從 Creator 管理選取' },
+    'admin.nocreator.text':  { en: 'Pick a creator in Creator Management to open their workspace.', zh: '請先到 Creator 管理選一位創作者，再進入他的工作區。' },
+    'admin.nocreator.cta':   { en: 'Go to Creator Management', zh: '前往 Creator 管理' },
     'admin.ip-bank':      { en: 'Admin IP Bank',      zh: 'Admin IP Bank' },
     'admin.ip-reporting': { en: 'IP Bank Reporting',  zh: 'IP Bank Reporting' },
     'admin.video-review': { en: 'Video publishing review', zh: '影片上架審核' },
@@ -853,7 +856,7 @@
     'creators.pending-n': { en: 'To set up: {n}',      zh: '待設定 {n}' },
     /* D224 · Creator 詳情／編輯頁 creator-detail.html */
     'cd.imported-n':      { en: 'Imported events: {n}', zh: '已匯入 {n} 場活動' },
-    'cd.enter':           { en: 'Enter workspace',     zh: '前往工作區' },
+    'cd.enter':           { en: 'Enter workspace',     zh: '前往創作者介面' },
     'cd.created':         { en: 'Created {date}',      zh: '建立於 {date}' },
     'cd.saved':           { en: 'Saved',               zh: '已儲存' },
     'cd.acc.title':       { en: 'Account source',      zh: '帳號來源' },
@@ -918,7 +921,7 @@
     'creators.lookup-selected':{ en: 'Selected {name} · {email}', zh: '已選擇 {name}（{email}）' },
     'creators.locked-note':{ en: 'Pick a creator to unlock their workspace.', zh: '選一個 creator 以解鎖其工作區。' },
 
-    'nav.my-ip':              { en: 'My IP',                 zh: '我的 IP' },
+    'nav.my-ip':              { en: 'IP Assets',                 zh: 'IP 資產' },
     'nav.my-ip-sub':          { en: 'Owned & rented · 12 records', zh: '自有與租用中 · 12 筆' },
     'nav.ip-market':          { en: 'IP Market',             zh: 'IP 市場' },
     'nav.ip-market-sub':      { en: "License other creators' worlds", zh: '瀏覽其他創作者的可授權 IP' },
@@ -978,7 +981,7 @@
     'notif.source.earnings':  { en: 'Earnings',               zh: '收入管理' },
     'notif.source.orders':    { en: 'Orders',                 zh: '訂單管理' },
     'notif.source.eshop':     { en: 'E-Shop',                 zh: '電子商店' },
-    'notif.source.ipbank':    { en: 'IP Bank',                zh: 'IP 資產' },
+    'notif.source.ipbank':    { en: 'IP Bank',                zh: 'IP Bank' },
     'notif.source.projects':  { en: 'Projects',               zh: '項目' },
     'notif.source.fans':      { en: 'Fans CRM',               zh: 'Fans CRM' },
     'notif.source.analytics': { en: 'Fan analytics',          zh: '粉絲分析' },
@@ -1067,7 +1070,7 @@
     'btn.create-event':       { en: 'Host an event',         zh: '舉辦活動' },
     'btn.see-events':         { en: 'See events',            zh: '查看活動' },
     'btn.open-market':        { en: 'Explore',               zh: '探索' },
-    'btn.my-ip':              { en: 'My IP',                 zh: '我的 IP' },
+    'btn.my-ip':              { en: 'IP Assets',                 zh: 'IP 資產' },
     'btn.start-project':      { en: 'Start a project',       zh: '建立項目' },
     'btn.see-projects':       { en: 'See projects',          zh: '查看項目' },
 
@@ -1168,7 +1171,7 @@
     'tx.tickets-settled.meta':  { en: 'Event tickets · Nov 17', zh: '活動票券 · 11/17' },
 
     /* F4 · per-alert meta line: severity · associated object · processing status */
-    'alert.ip-rental.meta':   { en: 'Warning · My IP · In progress', zh: '警告 · 我的 IP · 處理中' },
+    'alert.ip-rental.meta':   { en: 'Warning · IP Assets · In progress', zh: '警告 · IP 資產 · 處理中' },
     'alert.stock.meta':       { en: 'Critical · E-Shop · Open',      zh: '緊急 · 電子商店 · 待處理' },
     'alert.event.meta':       { en: 'Warning · Events · Open',       zh: '警告 · 活動 · 待處理' },
     'alert.payout-block.meta':{ en: 'Critical · Settings · Open · Blocking', zh: '緊急 · 設定 · 待處理 · 阻斷' },
@@ -1209,7 +1212,7 @@
     /* Dashboard alerts (4 cards) */
     'alert.ip-rental.title':  { en: 'IP rental expires in 6 days', zh: 'IP 租借 6 天後到期' },
     'alert.ip-rental.desc':   { en: '<em>Dragon Tiger Gate key art</em> brand license expires May 25. Renew or release before expiry to avoid breach.', zh: '<em>龍虎門 主視覺</em> 品牌授權於 25 May 到期，請於到期前續租或解除以避免違約。' },
-    'alert.ip-rental.src':    { en: 'From · My IP',           zh: '來自 · 我的 IP' },
+    'alert.ip-rental.src':    { en: 'From · IP Assets',           zh: '來自 · IP 資產' },
     'alert.ip-rental.cta':    { en: 'Renew',                  zh: '續租' },
     'alert.stock.title':      { en: 'Low stock · 3 items',    zh: '庫存過低 · 3 項商品' },
     /* 2026-07-27：品名對齊 e-shop 自身低庫存橫條（PERSONA_ITEMS）——CTA 深連結落地後
@@ -1970,7 +1973,7 @@
     'dash.recent.row1.date': { en: 'Nov 23', zh: '11/23' },
     'dash.recent.row2.mod': { en: 'Fans CRM', zh: 'Fans CRM' },
     'dash.recent.row2.date': { en: 'Nov 21', zh: '11/21' },
-    'dash.recent.row3.mod': { en: 'My IP', zh: 'My IP' },
+    'dash.recent.row3.mod': { en: 'IP Assets', zh: 'IP Assets' },
     'dash.recent.row3.date': { en: 'Nov 19', zh: '11/19' },
     'dash.recent.row4.mod': { en: 'Earnings', zh: 'Earnings' },
     'dash.recent.row4.date': { en: 'Nov 17', zh: '11/17' },
@@ -2006,7 +2009,7 @@
     'dash.recent.row2.title': { en: 'Fan milestone — Inner Circle reached 10',             zh: '粉絲里程碑 — 核心圈達 10 人' },
     'dash.recent.row2.meta':  { en: 'Fans · Fans CRM · Nov 21',                            zh: '粉絲 · Fans CRM · 11/21' },
     'dash.recent.row3.title': { en: 'Expiring IP renewed — NICKTHEREAL likeness',    zh: '過期 IP 已更新 — NICKTHEREAL 肖像續約' },
-    'dash.recent.row3.meta':  { en: 'IP · My IP · Nov 19',                                 zh: 'IP · My IP · 11/19' },
+    'dash.recent.row3.meta':  { en: 'IP · IP Assets · Nov 19',                                 zh: 'IP · IP Assets · 11/19' },
     'dash.recent.row4.title': { en: 'Brand partnership signed — Cypress Audio',            zh: '品牌合作簽約 — 松柏音響' },
     'dash.recent.row4.meta':  { en: 'Income · Earnings · Nov 17',                          zh: '收入 · Earnings · 11/17' },
     'dash.recent.row5.title': { en: 'Ticket sales opened — <em>REALIVE (R2)</em>',           zh: '演唱會開賣 — <em>REALIVE (R2)</em> 特仕版' },
@@ -2162,7 +2165,7 @@
 
     /* ─── IP Market page ──────────────────────────────────── */
     'ip-market.h1':              { en: 'IP Market',                     zh: 'IP 市場' },
-    'ip-market.crumb.bank':      { en: 'IP Bank',                       zh: 'IP 資產' },
+    'ip-market.crumb.bank':      { en: 'IP Bank',                       zh: 'IP Bank' },
     'ip-market.crumb.self':      { en: 'IP Market',                     zh: 'IP 市場' },
     'ip-market.sub':             { en: "License other creators' worlds, music, and brands for your next project.", zh: '為下一個企劃授權其他創作者的世界、音樂與品牌。' },
     'ip-market.btn.my-filters':  { en: 'My filters',                    zh: '我的篩選' },
@@ -2289,9 +2292,9 @@
     'projects.footer.count':      { en: 'Showing {n} of {m} projects',           zh: '顯示 {m} 筆中的 {n} 筆項目' },
 
     /* ─── My IP page ──────────────────────────────────────── */
-    'my-ip.h1':              { en: 'My IP',                      zh: '我的 IP' },
-    'my-ip.crumb.bank':      { en: 'IP Bank',                    zh: 'IP 資產' },
-    'my-ip.crumb.self':      { en: 'My IP',                      zh: '我的 IP' },
+    'my-ip.h1':              { en: 'IP Assets',                      zh: 'IP 資產' },
+    'my-ip.crumb.bank':      { en: 'IP Bank',                    zh: 'IP Bank' },
+    'my-ip.crumb.self':      { en: 'IP Assets',                      zh: 'IP 資產' },
     'my-ip.sub':             { en: 'Your intellectual property on Ztor — owned, rented, and licensed out.', zh: '你在 Ztor 上的智慧財產——自有、租入與授權出去的 IP。' },
     'my-ip.btn.import':      { en: 'Import waterfall data',      zh: '匯入 waterfall 資料' },
     'my-ip.btn.add':         { en: '+ Add your IP',             zh: '＋ 新增 IP' },
@@ -2336,7 +2339,7 @@
     'fans.hof.row3.name': { en: 'Lin Yiwen',     zh: 'Lin Yiwen' },
     'fan-detail.name':    { en: 'Wei Yu-han',    zh: 'Wei Yu-han' },
     'fan-detail.avatar':  { en: 'W',             zh: 'W' },
-    'my-ip.tab.my':          { en: 'My IP',                      zh: '我的 IP' },
+    'my-ip.tab.my':          { en: 'IP Assets',                      zh: 'IP 資產' },
     'my-ip.tab.rented':      { en: 'Rented',                     zh: '租入' },
     /* 來源（2026-07-25）：取代原本兩段標題分組。「Ztor 產出」＝項目上架時由 Ztor 自動建立的 IP 紀錄；
        「站外登錄」＝創作者本來就擁有、從 Ztor 之外登錄進來的權利。 */
@@ -2461,7 +2464,7 @@
     'manage-ip.listing.title':    { en: 'Marketplace listing',         zh: '市場上架' },
     'manage-ip.listing.sub':      { en: 'Off keeps waterfall tracking running, but nobody can rent it.', zh: '關閉後仍持續追蹤 waterfall，但沒有人能租用。' },
     'manage-ip.listing.label':    { en: 'List in IP Market',           zh: '在 IP 市場上架' },
-    'manage-ip.listing.hint':     { en: 'Controls the same switch shown in the My IP list.', zh: '與「我的 IP」清單上的市場開關是同一個。' },
+    'manage-ip.listing.hint':     { en: 'Controls the same switch shown in the IP Assets list.', zh: '與「IP 資產」清單上的市場開關是同一個。' },
 
     /* 2026-07-27 定價模型改版：一次性費用＋分潤%，各自可「請洽詢」；最短租期欄位退場。 */
     'manage-ip.terms.title':      { en: 'Licence pricing',             zh: '授權定價' },
@@ -2528,7 +2531,7 @@
     'manage-ip.footer':           { en: 'Rental revenue rolls up to Earnings → IP Royalties', zh: '租賃收益匯入「我的收益 → IP 版稅」' },
 
     /* ─── IP detail page ──────────────────────────────────── */
-    'ip-detail.crumb.bank':       { en: 'IP Bank',                     zh: 'IP 資產' },
+    'ip-detail.crumb.bank':       { en: 'IP Bank',                     zh: 'IP Bank' },
     'ip-detail.crumb.market':     { en: 'IP Market',                   zh: 'IP 市場' },
     'ip-detail.badge.available':  { en: 'Available',                   zh: '可租用' },
     'ip-detail.badge.story':      { en: 'Story World',                 zh: '故事世界' },
@@ -2613,7 +2616,7 @@
     'ip-detail.bid.row3-title':   { en: 'Gary Lin (you)',             zh: '林家維（你）' },
     'ip-detail.bid.row3':         { en: 'Yesterday · outbid',          zh: '昨天 · 被超越' },
     'ip-detail.manage.title':     { en: 'Manage as owner',             zh: '以所有人身分管理' },
-    'ip-detail.manage.sub':       { en: 'This panel shows because you also entered this IP from <a class="card__link" href="my-ip.html">My IP</a>', zh: '因為你同時從 <a class="card__link" href="my-ip.html">我的 IP</a> 進入此頁，所以顯示此面板' },
+    'ip-detail.manage.sub':       { en: 'This panel shows because you also entered this IP from <a class="card__link" href="my-ip.html">IP Assets</a>', zh: '因為你同時從 <a class="card__link" href="my-ip.html">IP 資產</a> 進入此頁，所以顯示此面板' },
     'ip-detail.set.list.label':   { en: 'List in IP Market',           zh: '上架到 IP 市場' },
     'ip-detail.set.list.hint':    { en: 'When OFF, this IP is tracked for waterfall but cannot be rented.', zh: '關閉時，此 IP 仍會追蹤 waterfall 但無法被租用。' },
     'ip-detail.set.accept.label': { en: 'Accept new rentals',          zh: '接受新租用' },
@@ -3649,7 +3652,6 @@
     'ce.tier.err.lock':             { en: 'Enter a whole number, or leave blank to not lock.', zh: '請填整數，或留空表示不鎖定。' },
     'ce.tier.err.lock-over':        { en: "Can't exceed the quantity ({n}).", zh: '不得超過張數（{n}）。' },
     'ce.tier.err.lock-over-bd':     { en: "Can't exceed {n} — the quantity minus {b} locked by bundles.", zh: '不得超過 {n}：張數扣掉組合包已鎖定的 {b} 張。' },
-    'bd.cap.under-hold':            { en: 'Can’t go below {n} sets — {s} sold plus {h} reserved', zh: '不得低於 {n} 套：已售 {s} 套＋保留中 {h} 套' },
     'bd.lock.under-hold':           { en: 'Can’t go below the {n} sets reserved — those orders are awaiting payment', zh: '不得低於保留中的 {n} 套，那些訂單還在等付款' },
     'bd.lock.held':                 { en: '{a}/{n} sets sellable, {h} reserved', zh: '可賣 {a}/{n} 套，保留中 {h} 套' },
     'od.lock.from.single':          { en: 'Sold from: single-sale lock', zh: '賣出自：單售鎖定' },
@@ -6071,6 +6073,11 @@
     'cp.spec.title':        { en: 'Specifications',                   zh: '詳細規格' },
     'cp.spec.sub':          { en: "Help buyers know exactly what they're getting.", zh: '讓買家清楚會拿到什麼。' },
     /* 尺寸指南（D211）：預設沿用商店的全部，可改成這件商品專屬的一份 */
+    'cp.sg.on.sub':         { en: 'Show fans a measurement chart on this item.', zh: '在商品頁給粉絲看量測對照。' },   // D512 尺寸指南開關
+    'cp.sg.mode.default':   { en: 'Default size guide',         zh: '預設尺寸指南' },
+    'cp.sg.mode.own':       { en: 'Item size guide',            zh: '專屬尺寸指南' },
+    'cp.sg.own.empty':      { en: 'No item size guide yet',     zh: '還沒有專屬尺寸指南' },
+    'cp.sg.own.create':     { en: 'Create',                     zh: '建立' },
     'cp.sg.title':          { en: 'Size guide',                 zh: '尺寸指南' },
     'cp.sg.inherit':        { en: "Using your shop's size guides", zh: '沿用商店的尺寸指南' },
     /* 「預設 衣服 · 褲子 · 帽子 尺寸指南。點擊查看」——中英文句構不同，所以拆成
@@ -6529,7 +6536,6 @@
     'cb.qty.col':           { en: 'Per set',                          zh: '每組' },
     'cb.why.name':          { en: 'Name it first',                    zh: '先填名稱' },
     'cb.why.disc':          { en: 'Discount must be 0–100',           zh: '折扣須為 0–100' },
-    'cb.why.cap':           { en: 'Limited needs a cap',              zh: '限量要填上限' },
     'cb.why.sale':          { en: 'Finish the limited-time discount (%, start, end)', zh: '限時折扣的 %、起訖日還沒填齊' },
     'cb.why.listing-time':  { en: 'Scheduled listing needs a time',   zh: '定時上架要填時間' },
     'cb.note.tickets':      { en: "Includes event tickets — each set draws its tickets from the tier's own pool, and every ticket gets its own QR and check-in.", zh: '含活動票券：每賣一套就從該票種的數量池扣掉張數（與單賣票共用），每張票各自一個 QR、各自報到。' },
@@ -6537,7 +6543,7 @@
     'cb.follow-event':      { en: 'Includes tickets for “{name}” ({status}). Stays a draft until the event is published; listing and sale times follow the event unless you set your own; unlisted if the event is unlisted.', zh: '含活動「{name}」（{status}）的票券。活動未發布時為草稿；上架與開賣時間預設跟隨活動、可另設；活動下架時一同下架。' },
     'bd.members.ticket-note': { en: "Ticket members draw from the tier's own pool — each set sold takes its tickets from the tier. Every ticket gets its own QR and checks in on its own.", zh: '票券成員與單賣票共用同一個票種數量池，每賣一套就從該票種扣掉張數；每張票各自一個 QR、各自報到。' },
     /* D437 決定二（2026-10-16）：賣出後另設的上架、下架、開賣、停售時間仍可改，只影響之後的購買 */
-    'bd.members.locked':    { en: '{n} sold — members and quantities are locked. You can still change the price, discount, cap, purchase rules and limits, listing and sale times, and sale; to change what is inside, create a new bundle.', zh: '已售出 {n} 套，成員與數量已鎖定。仍可改售價、折扣、販售上限、購買條件與限購、上架與開賣時間、停售；要換內容請另建新組、停售這一組。' },
+    'bd.members.locked':    { en: '{n} sold — members and quantities are locked. You can still change the price, discount, purchase rules and limits, listing and sale times, and sale; to change what is inside, create a new bundle.', zh: '已售出 {n} 套，成員與數量已鎖定。仍可改售價、折扣、購買條件與限購、上架與開賣時間、停售；要換內容請另建新組、停售這一組。' },
     /* D478（2026-10-23）：尚未售出時改成員要同時符合「已下架」與「沒有結帳中（保留中）的訂單」——成員區唯讀時的兩種說明 */
     'bd.members.listed':    { en: 'This bundle is listed. Unlist it to change its members.', zh: '組合包上架中，要先下架才能修改成員。' },
     'bd.members.checkout':  { en: '{n} orders are still in checkout. You can change members once they’re settled.', zh: '還有 {n} 筆訂單結帳中，結清後才能修改成員。' },
@@ -6623,7 +6629,6 @@
     'cb.qc.name':           { en: 'Name',                             zh: '名稱' },
     'cb.qc.disc':           { en: 'Discount between 0–100%',          zh: '折扣介於 0–100%' },
     'cb.qc.lock':           { en: 'Locked sets within the ceiling',   zh: '鎖定套數未超過上限' },
-    'cb.qc.cap':            { en: 'Cap filled in, within supply',     zh: '限量上限已填、未超過可供應套數' },
     'cb.qc.sale':           { en: 'Limited-time discount complete',   zh: '限時折扣已填完整' },
     'cb.qc.listing':        { en: 'Listing & sale times',             zh: '上架與開賣時間' },
     /* 組合資訊：素材＋描述（spec 5.1.5.4 §4 F1）*/
@@ -6639,8 +6644,6 @@
     'cb.edition.unlimited-hint': { en: 'Sells as long as members are in stock — no extra cap.', zh: '只要成員有貨就可賣，無額外上限。' },
     'cb.edition.limited':   { en: 'Limited',                          zh: '限量' },
     'cb.edition.limited-hint': { en: 'Add a hard cap on top of member stock.', zh: '在成員庫存之上再設一個硬上限。' },
-    'cb.total':             { en: 'Total quantity',                   zh: '組合上限' },
-    'cb.total.hint':        { en: 'Hard cap · still limited by member stock', zh: '硬上限 · 仍受成員庫存約束' },
     'cb.avail.label':       { en: 'Goods in stock',                   zh: '目前在庫' },
     'cb.avail.readonly':    { en: 'Auto · lowest member stock (min of members)', zh: '自動 · 取成員最低庫存（min(成員)）' },
     /* D241（spec 0-設計規格書 §7.14）：庫存卡改成成員鎖定量分配表後的新文案。 */
@@ -7213,7 +7216,6 @@
     'cb.sec.offers':            { en: 'Discounts', zh: '優惠' },   /* 2026-10-21 三步驟：第二步的限時折扣＋使用優惠碼 */
     'cb.sec.limit':             { en: 'Purchase limit', zh: '限購' },   /* 2026-10-21 三步驟：原「購買條件與限購」拆開，限購留第一步 */
     'cb.sec.buy':               { en: 'Purchase conditions', zh: '購買條件' },   /* 2026-10-21 三步驟：購買條件移到第二步 */
-    'cb.sec.qty':               { en: 'Quantity', zh: '數量' },
     'cb.sec.listing':           { en: 'Listing & sale', zh: '上架與開賣' },
     'cb.mt.name':               { en: 'Name', zh: '名稱' },
     'cb.mt.price':              { en: 'Price', zh: '原價' },
@@ -7256,25 +7258,11 @@
     'cb.pl.total.both':         { en: 'Usual / during the discount', zh: '平時／限時折扣期間' },
     'cb.pl.total.during':       { en: 'During the discount: {p}', zh: '期間 {p}' },
     'cb.qty.max':               { en: 'Can sell', zh: '最多可賣' },
-    'cb.lock.q':                { en: 'Lock stock for this bundle?', zh: '要鎖定庫存給這個組合嗎？' },
-    'cb.lock.s':                { en: 'Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.', zh: '鎖定後，這些組數用到的成員庫存不會被單買買走；不鎖定就和單買共用剩餘，先買先得。' },
-    'cb.lock.no':               { en: 'Don’t lock', zh: '不鎖定' },
-    'cb.lock.yes':              { en: 'Lock', zh: '鎖定' },
     'cb.lock.sets':             { en: 'Sets to lock', zh: '鎖定組數' },
     'cb.lock.max':              { en: 'Up to {n} sets can be locked.', zh: '最多可鎖定 {n} 組。' },
     'cb.lock.blank':            { en: 'Enter how many sets to lock — up to {n}.', zh: '填要鎖定幾組，最多 {n} 組。' },
     'cb.lock.col.member':       { en: 'Member', zh: '成員' },
-    'cb.cap.q':                 { en: 'Set your own sales cap?', zh: '要另設販售上限嗎？' },
-    'cb.cap.s':                 { en: 'A limited bundle automatically locks member stock for the sets it still has to sell. Digital items have no stock, so they aren’t locked.', zh: '限量時，系統會自動替這個組合包鎖定還沒賣出的套數用到的成員庫存；數位商品沒有庫存，不鎖。' },   /* D480（2026-10-23）：原「上限只限制最多賣幾組，不會鎖定庫存」 */
-    'cb.cap.label':             { en: 'Sales cap', zh: '販售上限' },
-    /* D480（2026-10-23）：組合包限量就自動鎖定成員庫存（鎖定＝限量 − 已售，跟著限量走） */
-    'cb.cap.short':             { en: 'Members can only lock {max} sets — {k} short (limited by {who})', zh: '成員庫存只夠鎖 {max} 套，還差 {k} 套（受「{who}」限制）' },
-    'cb.lock.auto':             { en: 'Locked automatically, follows the sales cap', zh: '限量時自動鎖定，數量跟著販售上限' },
-    'cb.lock.auto.blocked':     { en: 'Members can’t cover the cap — lower the sales cap', zh: '成員庫存不夠，請調低販售上限' },
-    'bd.lock.auto.blocked':     { en: 'A cap of {cap} sets can’t be saved — the lock stays at {n} sets until you fix the cap.', zh: '限量 {cap} 套無法儲存，鎖定維持 {n} 套；請先修正販售上限。' },
-    'cb.lock.auto.empty':       { en: 'Fill in the sales cap first', zh: '請先填販售上限' },
-    'bd.lock.auto':             { en: 'Limited to {cap} sets, {s} sold — {n} sets locked automatically. The lock follows the cap: change the cap under Edit bundle, or switch to unlimited to set your own.', zh: '限量 {cap} 套、已售 {s} 套：已自動鎖定 {n} 套。鎖定跟著限量走：要調整請按「編輯組合」改限量，或改回不限量後自己設。' },
-    'bd.cap.short':             { en: 'Members can only cover a cap of {room} sets — {k} short (limited by {who})', zh: '成員庫存最多只夠限量 {room} 套，還差 {k} 套（受「{who}」限制）' },
+    'cb.lock.short':            { en: 'Members can only lock {max} sets — {k} short (limited by {who})', zh: '成員庫存只夠鎖 {max} 套，還差 {k} 套（受「{who}」限制）' },
     'bd.lock.digital':          { en: 'Digital — not locked', zh: '數位商品，不鎖定' },
     'st.aria':                 { en: 'Jump to a section',              zh: '跳到區段' },   /* section-tabs 分節分頁的 nav 名稱（js/section-tabs.js 消費頁共用） */
     'cpp.bd.sp.tix':           { en: 'Tickets',                        zh: '票券' },
@@ -7312,9 +7300,7 @@
     'cpp.bd.sp.save.from':     { en: 'Fans save from {amt} ({pct}%)',  zh: '粉絲省 {amt} 起（{pct}%）' },
     'cpp.bd.sp.save.zero':     { en: '0% off — selling price = list price', zh: '折扣 0%，售價＝原價' },
     'cpp.bd.sp.lock':          { en: 'Locked sets',                    zh: '鎖定套數' },
-    'cpp.bd.sp.lock.hint':     { en: 'Blank = shares what’s left with single sales', zh: '空白＝與單賣共用剩餘' },
     'cpp.bd.sp.lock.none':     { en: 'Add a member first — nothing to lock yet', zh: '加入成員後才有可鎖定的對象' },
-    'cpp.bd.sp.lock.over':     { en: 'Over the ceiling of {n} sets (limited by {who})', zh: '超過可售上限 {n} 組（受「{who}」限制）' },
     'cpp.bd.sp.who.tix':       { en: 'tickets',                        zh: '票券' },
     'cpp.bd.sp.unit.group':    { en: 'sets',                           zh: '組' },
     'cpp.bd.sp.sets':          { en: 'Sellable sets',                  zh: '可售套數' },
@@ -7322,12 +7308,9 @@
        讀數與 hint 兩層；「上限」這個事實全站只在這裡講一次（鎖定套數與限量不再各講一次）。 */
     'cpp.bd.sp.sets.val':      { en: 'Up to {n} sets',                 zh: '最多 {n} 組' },
     'cpp.bd.sp.sets.why.by':   { en: 'Limited by {who}',               zh: '受「{who}」限制' },
-    'cpp.bd.sp.sets.why.cap':  { en: 'Limited by the cap',             zh: '受限量上限限制' },
     'cpp.bd.sp.sets.why.lock': { en: '{lock} locked',                  zh: '鎖定 {lock} 組' },
-    'cpp.bd.sp.sets.capnote':  { en: ', capped at {cap}',              zh: '，限量壓到 {cap}' },
     'cpp.bd.sp.sets.by.tix':   { en: 'ticket supply',                  zh: '票券剩餘' },
     'cpp.bd.sp.sets.by.item':  { en: '{name} stock',                   zh: '{name}庫存' },
-    'cpp.bd.sp.limit':         { en: 'Limit',                          zh: '限量' },
     'cpp.bd.sp.limit.lim.sub': { en: 'Set a smaller cap of your own',  zh: '另設一個更小的上限' },
     'cpp.bd.sp.cap.hint':      { en: 'Sells out on its own.',          zh: '賣完自動售罄。' },
     'cpp.bd.sp.cap.over':      { en: 'Over the {n} sets members can supply — it has to be smaller.', zh: '超過成員能供應的 {n} 組，只能填得比它小。' },
@@ -7478,7 +7461,6 @@
     'cpp.bd.sp.why.tix':       { en: 'Check at least 1 ticket',        zh: '至少勾選 1 種門票' },
     'cpp.bd.sp.why.members':   { en: 'Add at least 1 member',          zh: '至少加入 1 個成員' },
     'cpp.bd.sp.why.lock':      { en: 'Locked sets exceed the ceiling', zh: '鎖定套數超過可售上限' },
-    'cpp.bd.sp.why.cap':       { en: 'Cap exceeds what members can supply', zh: '限量上限超過成員能供應的套數' },
     'cpp.bd.qty.up':        { en: 'Add one',                          zh: '加一張' },
     'cpp.bd.qty.down':      { en: 'Remove one',                       zh: '減一張' },
     /* 收合列與每場預覽：只勾一種「VIP × 2」；多種「VIP／搖滾區 任選 × 2」（2026-09-21 D296） */
@@ -9784,7 +9766,7 @@
     'project-detail.showcase.trailer-drop':{en: 'Drop an MP4 or MOV',zh: '拖放 MP4 或 MOV'},
     'project-detail.showcase.trailer-hint':{en: 'Up to 2 GB · pending',zh: '上限 2 GB · 待補'},
     'project-detail.schedule.title':{en: 'Schedule',zh: '項目時間'},
-    'project-detail.schedule.autonote':{en: 'On the co-creation deadline the project advances on its own — reaching the goal turns it Funded, missing it turns it Failed with an automatic full refund when the switch below is on. Only cancelling is a manual decision.',zh: '到共創截止時，項目會自動轉換——達標轉「已達標」，未達標轉「失敗」並在下方開關開啟時自動全額退款。只有「取消」需要人主動決定。'},
+    'project-detail.schedule.autonote':{en: 'On the co-creation deadline the project advances on its own — reaching the goal turns it Funded, missing it turns it Failed and every backer is refunded in full. Only cancelling is a manual decision.',zh: '到共創截止時，項目會自動轉換——達標轉「已達標」，未達標轉「失敗」，每位支持者全額退款。只有「取消」需要人主動決定。'},
     'project-detail.rev.title':{en: 'Revenue at a glance',zh: '收益概況'},
     'project-detail.rev.link':{en: 'View revenue →',zh: '查看項目收益 →'},
     'project-detail.rev.note':{en: 'Payout schedule, profit share and fees live in the Revenue tab. Figures reference Earnings.',zh: '撥款分期、分潤與費用明細都在「項目收益」分頁。數字引用收入管理。'},
@@ -9863,8 +9845,6 @@
     'project-detail.tl.deadline':{en: 'Co-creation deadline',zh: '共創截止'},
     /* 2026-08-19 起無消費者（A8）——棄用，留檔備查 */
     'project-detail.tl.deadline-val':{en: 'Jul 06, 2026 · 21 days left',zh: '2026/07/06 · 剩 21 天'},
-    'project-detail.refund.label':{en: 'Auto full refund if goal missed',zh: '未達標時自動全額退款'},
-    'project-detail.refund.hint':{en: 'Co-creation-only · refunds follow §7.3.',zh: '僅共創型 · 退款依 §7.3 口徑。'},
     'project-detail.collab.title':{en: 'Collaborators',zh: '合作者'},
     'project-detail.collab.add':{en: '+ Add',zh: '＋ 新增'},
     'project-detail.collab.col.name':{en: 'Collaborator',zh: '合作者'},
@@ -9879,7 +9859,7 @@
     'project-detail.collab.status.pending':{en: 'Pending confirmation',zh: '待確認'},
     'project-detail.collab.note':{en: 'Split amounts reference Earnings & Project Net Income — not recomputed here.',zh: '分潤金額引用收入管理與項目淨利，本頁不重算。'},
     'project-detail.ip.title':{en: 'IP Rental',zh: 'IP Rental'},
-    'project-detail.ip.link':{en: 'Go to My IP links',zh: '前往我的 IP 連結'},
+    'project-detail.ip.link':{en: 'Go to IP Assets links',zh: '前往IP 資產 連結'},
     'project-detail.updates.title':{en: 'Published updates',zh: '發布更新'},
     'project-detail.updates.col.content':{en: 'Update',zh: '更新內容'},
     'project-detail.updates.col.audience':{en: 'Audience',zh: '受眾'},
@@ -10754,7 +10734,7 @@
     'ri.note.rental': { en: 'This IP will be listed for rental once registered. Marketplace visibility stays OFF until you turn it on.', zh: '這個 IP 登錄後即會上架供租用。市集曝光在你開啟前維持關閉。' },
     'ri.qc.ready': { en: 'All set — ready to register', zh: '一切就緒，可以登錄' },
     'ri.qc.left': { en: '{n} required items left', zh: '還有 {n} 個必填項目' },
-    'ri.saveexit-alert': { en: 'Draft saved. You can resume from My IP.', zh: '草稿已儲存。你可以從「我的 IP」繼續。' },
+    'ri.saveexit-alert': { en: 'Draft saved. You can resume from IP Assets.', zh: '草稿已儲存。你可以從「IP 資產」繼續。' },
 
     /* Event detail & operations (5.1.6 F5) */
     'event-detail.crumb.events': { en: 'Events', zh: '活動' },
@@ -11050,7 +11030,6 @@
     'ed.bd.sub-legacy':   { en: 'Tickets bundled with products. They draw from the same ticket pool — selling one takes a ticket from the tier it contains.', zh: '票與商品綁在一起賣的組合包，跟單賣的票共用同一個數量池——賣掉一組就從它含的那張票扣一張。' },
     'ed.bd.contains':     { en: 'Contains',         zh: '內含' },
     'ed.bd.soldn':        { en: '{n} sold',         zh: '已售 {n} 組' },
-    'ed.bd.cap':          { en: 'Cap {n}',          zh: '上限 {n} 組' },
     'ed.bd.edit-tbd':     { en: 'Bundles are set up in the create flow; editing here lands with the upstream spec (BDL-001).', zh: '組合包在建立流程設定；這裡的編輯能力等上游規格定案後補（BDL-001）。' },
     /* 2026-08-11 詳情頁重新設計：分頁對齊建立流程（場次／發布設定獨立成頁）、票務彈窗 */
     'event-detail.tab.dates':   { en: 'Date & venue',     zh: '場次' },
@@ -11145,7 +11124,7 @@
     'ed.stockonly.setup.title': { en: 'This event is listed — only publish settings can change on this page', zh: '活動上架中，這一頁只能改發布設定' },
     'ed.stockonly.setup.body': { en: "Publish settings that aren't locked can still change — for example the sales end, the scheduled unlist time and visibility. Event content, dates and venue need the event unlisted first; after you save, relist it yourself.", zh: '發布設定裡沒有鎖住的欄位照常可改，例如停售時間、定時下架時間與顯示設定。活動內容、場次與地點要先下架才能修改；改完儲存後，再自行重新上架。' },
     'ed.tab.locked': { en: 'You’re editing — save or discard your changes before switching tabs.', zh: '編輯中不能切換分頁，請先儲存或捨棄變更。' },
-    'ed.stockonly.body': { en: "You can change ticket quantities and each bundle's locked sets and sales cap (in the bundle's page). A ticket's quantity can't go below what's sold, plus what's locked for single sales and bundles, plus what's reserved in unlocked stock. To edit anything else, unlist the event first. After you save, relist it yourself.", zh: '上架中可以直接改門票張數，以及組合包的鎖定套數與販售上限（在組合商品細節頁）。門票張數不能少於已售、鎖給單售與各組合包鎖定的張數，再加上未鎖定裡保留中的張數。其他資料要先下架才能修改；改完儲存後，再自行重新上架。' },
+    'ed.stockonly.body': { en: "You can change ticket quantities and each bundle's locked sets (in the bundle's page). A ticket's quantity can't go below what's sold, plus what's locked for single sales and bundles, plus what's reserved in unlocked stock. To edit anything else, unlist the event first. After you save, relist it yourself.", zh: '上架中可以直接改門票張數，以及組合包的鎖定套數（在組合商品細節頁）。門票張數不能少於已售、鎖給單售與各組合包鎖定的張數，再加上未鎖定裡保留中的張數。其他資料要先下架才能修改；改完儲存後，再自行重新上架。' },
     'sd.confirm.title.some': { en: 'Sync to {n} of {m} dates?', zh: '要同步到 {m} 場中的 {n} 場嗎？' },
     'sd.confirm.title.none': { en: 'No dates can be synced yet', zh: '目前沒有可以同步的場次' },
     'sd.confirm.body.listed': { en: 'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.', zh: '下面 {n} 場上架中，不會套用這次變更；要先下架這些場次才能同步，同步後再自行重新上架。' },
@@ -11155,12 +11134,10 @@
     'ed.notif.listed.title': { en: "This event is listed — notification settings can't change", zh: '活動上架中，通知設定不能修改' },   // D455
     'ed.notif.listed.body': { en: 'To change them, unlist the event first. After you save, relist it yourself.', zh: '要修改請先下架活動；改完儲存後，再自行重新上架。' },
     'event-detail.relist.dirty': { en: 'Save or discard your changes first, then relist the event.', zh: '請先儲存或捨棄變更，再重新上架。' },
-    'bd.stockonly.title': { en: 'This bundle is listed — only locked sets, sales cap and listing and sale times can change', zh: '組合包上架中，只能改鎖定套數、販售上限與上架、開賣時間' },
-    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab. Under Edit bundle you can raise or lower the sales cap and switch between limited and unlimited (never below the sets sold plus reserved; raising it needs enough member stock to lock), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改；按「編輯組合」可調高或調低販售上限、切換限量與不限量（不得低於已售加保留中的套數，調高要成員還鎖得到），也能改上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
+    'bd.stockonly.title': { en: 'This bundle is listed — only stock settings and listing and sale times can change', zh: '組合包上架中，只能改庫存設定與上架、開賣時間' },
+    'bd.stockonly.body': { en: 'Change locked sets in the Stock tab: they can’t go below the sets reserved, and raising them needs enough member stock. Under Edit bundle you can change stock settings and listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改：不得低於保留中的套數，調高要成員還鎖得到。按「編輯組合」可改庫存設定與上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
     'bd.tix.min1': { en: 'Keep at least one ticket.', zh: '至少要留一種門票。' },
     'bd.loc.listed': { en: 'This bundle is listed — its translations and prices are view-only until you unlist it.', zh: '組合包上架中，翻譯與價格只能檢視，要先下架這個組合包才能修改。' },   // D455
-    'bd.cap.under': { en: 'Can’t go below the {n} sets already sold', zh: '不得低於已售出的 {n} 套' },
-    'bd.cap.under.why': { en: 'Sales cap can’t be lower than the sets already sold', zh: '販售上限不得低於已售套數' },
     'bd.stockonly.go': { en: 'Unlist bundle', zh: '下架組合包' },
     'event-detail.att.undo': { en: 'Mark not arrived', zh: '改回未報到' },
     'event-detail.att.undo.title': { en: 'Mark as not arrived?', zh: '要改回未報到嗎？' },
@@ -12348,7 +12325,7 @@
     /* 2026-07-27 使用者裁示：這個收益類型改名「我的 IP」（原「授權收益」）。
        用字與側欄 nav.my-ip 完全一致，同一個概念在站上只有一種說法。
        內部代碼仍是 licence（data-fin-type／--chart-5 都不動，只換顯示名）。 */
-    'fin.type.licence':       { en: 'My IP', zh: '我的 IP' },
+    'fin.type.licence':       { en: 'IP Assets', zh: 'IP 資產' },
     'fin.type.bonus':         { en: 'Bonus', zh: '獎金' },
     'fin.type.party':         { en: 'Co-creation party', zh: '共創派對收益' },
     'fin.type.music':         { en: 'Music royalties', zh: '音樂版稅收益' },
@@ -12399,7 +12376,7 @@
     'fin.empty.text.ott':       { en: "OTT royalties are your share of a backed project's OTT royalty income by equity stake once it is released.", zh: 'OTT版稅收益是您支持的計畫上架後，依您的股份佔比自 OTT 版稅收入分得的收益。' },
     'fin.empty.text.commission':{ en: 'Tastemaker commission is spending driven by your reviews, returned at your personal commission rate.', zh: '品味推薦人佣金是您的推薦帶動的消費，依您的個人佣金比例回饋的收益。' },
     'fin.empty.text.advance':   { en: 'Tastemaker advance is money the platform pays tastemakers up front, offset against later commission.', zh: '品味推薦人預付金是平台預先支付給品味推薦人的合作款項，於後續佣金中折抵。' },
-    'fin.empty.text.licence':   { en: 'My IP income comes from licensing and derivative use of your original IP; it is shared only after net profit is made.', zh: '我的 IP 收益來自您的原創 IP 於平台的授權與衍生應用，實際產生淨利後才會開始分成。' },
+    'fin.empty.text.licence':   { en: 'IP Assets income comes from licensing and derivative use of your original IP; it is shared only after net profit is made.', zh: 'IP 資產 收益來自您的原創 IP 於平台的授權與衍生應用，實際產生淨利後才會開始分成。' },
     'fin.empty.text.bonus':     { en: 'Bonuses are reward money from platform campaigns and milestones, e.g. contest prizes and promotion incentives.', zh: '獎金是平台活動與里程碑發放的獎勵金，例如創作競賽獎金與推廣獎勵。' },
     'fin.empty.text.party':     { en: 'Co-creation party income is your profit share from parties (screenings, meet-ups and other in-person events) you host or join.', zh: '共創派對收益是您發起或參與的共創派對（放映、見面會等實體活動）產生的分潤收益。' },
     /* 2026-07-27 新增：music／goods／ticket 空狀態文案（applyEmptyCopy() 以 'fin.empty.text.' + type 取鍵）*/
@@ -12693,8 +12670,8 @@
     'ed.tm.zero.state':      { en: 'In stock: {n}', zh: '目前庫存：{n}' },
     'ed.tm.zero.sub':        { en: 'Takes effect right away, no need to save. The single-sale lock shrinks to what’s reserved, and the quantity becomes sold + bundle locks + reserved; raise it to sell again.',
                                zh: '按下立即生效，不必儲存。鎖給單售縮成只剩保留中的量，張數調成已售＋各組合包鎖定＋保留中；要恢復販售就把張數調高。' },
-    'ed.bd.zero.done':       { en: 'Stock is already 0 — raise the total in the bundle page to sell again', zh: '庫存已經是 0，要恢復販售請到組合商品細節頁調高總量' },
-    'ed.bd.zero.toast':      { en: 'Stock of {name} set to 0 — raise the total in the bundle page to sell again', zh: '「{name}」庫存已設為 0，到組合商品細節頁調高總量即可恢復販售' },
+    'ed.bd.zero.done':       { en: 'Stock is already 0 — raise the locked sets in the bundle page, or turn the lock off, to sell again', zh: '庫存已經是 0，要恢復販售請到組合商品細節頁調高鎖定套數，或關閉鎖定庫存' },
+    'ed.bd.zero.toast':      { en: 'Stock of {name} set to 0 — raise the locked sets in the bundle page, or turn the lock off, to sell again', zh: '「{name}」庫存已設為 0，到組合商品細節頁調高鎖定套數或關閉鎖定庫存，即可恢復販售' },
     'ed.bd.vis.ro':          { en: 'This event has ended or is archived — bundles here are view-only.', zh: '活動已結束或已封存，這裡的組合包只能檢視。' },
     'ed.bd.hidden.toast':    { en: 'Hid {name} — it’s off the shop and event page now', zh: '已隱藏「{name}」，商店與活動頁不再列出' },
     'ed.bd.shown.toast':     { en: 'Showing {name} again', zh: '「{name}」已重新顯示' },

@@ -1934,7 +1934,7 @@
       if (row.dataset.eventBundle) { const em = eventBundleModel(row); if (em) return em; }
       if (S && row.dataset.type === 'bundle' && row.dataset.bundleId) {
         const b = S.getBundle(row.dataset.bundleId);
-        if (b) return { entity: b, qty: S.bundleQtyOf(b), low: b.lowThreshold, cap: b.cap, free: null, store: true };
+        if (b) return { entity: b, qty: S.bundleQtyOf(b), low: b.lowThreshold, cap: null, free: null, store: true };
       }
       if (S && isAuctionRow(row) && row.dataset.auctionId && S.getAuction) {
         const a = S.getAuction(row.dataset.auctionId);
@@ -2560,8 +2560,9 @@
           return sum + Math.floor(left / Math.max(1, tk.qty));
         }, 0);
       }
-      if (b.cap != null) qty = Math.min(qty, Math.max(0, Number(b.cap) - (Number(b.sold) || 0)));
-      return { entity: entity, qty: qty, low: 0, cap: b.cap == null ? null : b.cap, free: null, store: true, eventBundle: true };
+      /* D513：組合包販售上限退場，鎖定庫存開著時可售＝鎖定 − 保留（EV.bundleLeft） */
+      if (window.ztorEvents.bundleLockOf(b) !== null) qty = window.ztorEvents.bundleLeft(ev, b);
+      return { entity: entity, qty: qty, low: 0, cap: null, free: null, store: true, eventBundle: true };
     }
     function injectEventBundles() {
       const EV = window.ztorEvents; if (!EV || !EV.list) return;

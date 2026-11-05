@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>售票與名單 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -169,7 +169,7 @@ table.map td:nth-child(2){width:22%}
   <div class="dg-node end" style="grid-row:1;grid-column:5">售票紀錄<small>篩選、匯出，點一列進訂單詳情</small></div>
   <div class="dg-node end" style="grid-row:2;grid-column:5">活動名單<small>篩選、匯出、開啟掃描器、改回未報到</small></div>
   <div class="dg-node end" style="grid-row:3;grid-column:5">通知<small>按「編輯活動」，切開關，再儲存</small></div>
-  <div class="dg-node end" style="grid-row:4;grid-column:5">撤銷紀錄<small>只能查看，撤銷由 Admin 執行</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:5">撤銷紀錄<small>只能查看，撤銷只有 Admin 能按</small></div>
   <div class="dg-node end" style="grid-row:5;grid-column:5">成本與收入摘要<small>只能查看，可前往收入管理</small></div>
 </div>
 </div>
@@ -181,11 +181,12 @@ table.map td:nth-child(2){width:22%}
       <li>售票紀錄：先用狀態與訂單日期篩出要對的訂單，再匯出，或點一列打開訂單詳情，見<a href="#sales-tx">售票紀錄</a></li>
       <li>活動名單：查誰買了票、拿到哪一張票券，見<a href="#sales-roster">活動名單</a></li>
       <li>通知：先按「編輯活動」，切換三個通知開關，按「儲存」才生效，見<a href="#sales-notif">通知</a></li>
-      <li>撤銷紀錄：看哪些票被撤銷，撤銷由 Admin 執行，見<a href="#sales-void">撤銷紀錄</a></li>
+      <li>撤銷紀錄：看哪些票被撤銷，撤銷只有 Admin 能按，見<a href="#sales-void">撤銷紀錄</a></li>
       <li>成本與收入摘要：看收入事件與結算狀態，要看最終數字就前往收入管理，見<a href="#sales-finance">成本與收入摘要</a></li>
     </ul>
   </li>
 </ol>
+<p class="note">依據：5.1.6.3 §2.7、§2.8、§2.10、§2.11、第 4 段「頁面狀態」。</p>
 
 <h2 id="sales-fields"><span class="n"></span>功能與欄位</h2>
 <p>子導覽的五個區塊各一節：<a href="#sales-tx">售票紀錄</a>對帳每一筆訂單，<a href="#sales-roster">活動名單</a>查誰會來，<a href="#sales-notif">通知</a>管三種通知的開關與寄送結果，<a href="#sales-void">撤銷紀錄</a>列出被撤銷的票，<a href="#sales-finance">成本與收入摘要</a>對照收入事件與結算。各區塊在各狀態怎麼顯示，見<a href="#sales-state">各子區塊在各狀態的顯示</a>。</p>
@@ -195,8 +196,8 @@ table.map td:nth-child(2){width:22%}
 <ul class="plain">
   <li>直接買門票的訂單</li>
   <li>買了含這場活動門票的組合包的訂單</li>
-  <li>不列付款畫面倒數到期的已過期訂單，已過期的訂單只在電子商店的<a href="orders.html#orders-where">訂單列表</a>看得到</li>
 </ul>
+<p>付款畫面倒數到期的已過期訂單不列在這裡，只在電子商店的<a href="orders.html#orders-where">訂單列表</a>看得到。</p>
 <p>兩種訂單都同時出現在電子商店的<a href="orders.html">訂單列表</a>，是同一筆訂單的兩個入口。上方的三格摘要見下表；篩選、匯出與看訂單詳情的操作見<a href="#sales-tx-ops">篩選、匯出與訂單詳情</a>；匯出的檔案有哪些欄位，見<a href="#sales-tx-export">交易明細匯出的檔案內容</a>；活動收入與門票收入怎麼加總，見<a href="#sales-tx-sum">活動收入與門票收入</a>。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">摘要</th><th>內容</th></tr></thead>
@@ -222,11 +223,28 @@ table.map td:nth-child(2){width:22%}
     <tr><td>品項</td><td>門票訂單顯示所購票種名稱<br>組合包訂單顯示組合包名稱，加「組合包」標籤</td></tr>
     <tr><td>數量</td><td>門票訂單是張數<br>組合包訂單是組數</td></tr>
     <tr><td>毛額</td><td>門票訂單是票款總額<br>組合包訂單是該組合包品項的實付金額，整組計入，含組合包裡的商品</td></tr>
-    <tr><td>平台費</td><td>該筆交易成交當時套用的平台費<br>費率由 Admin 設定，一經發版不回溯，這裡不重算</td></tr>
+    <tr><td>平台費</td><td>該筆交易成交當時套用的平台費<br>費率由 Admin 在<a href="admin-fees.html">平台費率設定</a>設定，一經發版不回溯，這裡不重算</td></tr>
     <tr><td>淨額</td><td>毛額扣平台費與支付費後的金額</td></tr>
     <tr><td>支付方式</td><td>付款方式，例如信用卡、Apple Pay、LINE Pay</td></tr>
     <tr><td>付款時間</td><td>付款完成的時間</td></tr>
     <tr><td>狀態</td><td>已付款或已取消</td></tr>
+  </tbody>
+</table></div>
+<p>售票紀錄依資料與訂單狀態換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">摘要與清單</td></tr>
+    <tr><td>有訂單</td><td>篩選結果至少一筆</td><td>毛額、淨額、已取消筆數照篩選結果加總</td></tr>
+    <tr><td>篩選後沒有訂單</td><td>全部、已付款、已取消或日期區間查不到</td><td>毛額、淨額、已取消筆數與清單的樣子<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>沒有訂單</td><td>活動還沒有任何訂單，例如已排程</td><td>顯示空狀態；空狀態的內容<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">每一列</td></tr>
+    <tr><td>門票訂單</td><td>直接買門票</td><td>品項是票種名稱，數量是張數</td></tr>
+    <tr><td>組合包訂單</td><td>買了含這場活動門票的組合包</td><td>品項是組合包名稱並加「組合包」標籤，數量是組數；不提供逐張撤銷，改連到訂單詳情</td></tr>
+    <tr><td>免費訂單</td><td>金額是 0</td><td>照常列出，付款方式與付款時間顯示「—」</td></tr>
+    <tr><td>已過期的訂單</td><td>付款畫面倒數到期</td><td>不列在售票紀錄，只在電子商店的訂單列表看得到</td></tr>
+    <tr><td>已付款</td><td>訂單付款完成</td><td>狀態顯示已付款</td></tr>
+    <tr><td>已取消</td><td>訂單被撤銷</td><td>狀態顯示已取消</td></tr>
   </tbody>
 </table></div>
 
@@ -236,8 +254,8 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>篩選：全部、已付款、已取消</td><td>—</td><td>三個子集各自帶筆數<br>一次只選一個，不疊加</td></tr>
     <tr><td>訂單日期（起）、訂單日期（訖）</td><td>選填<br>可以只填一邊</td><td>依訂單日期篩選<br>跟上面的子集篩選同時成立，取交集</td></tr>
-    <tr><td>匯出交易明細</td><td>售票中<br>進行中<br>已結束</td><td>匯出這場活動的交易明細，照目前的篩選結果匯出<br>檔案內容見<a href="#sales-tx-export">交易明細匯出的檔案內容</a><br>按下後出現「匯出中」提示，完成時變成匯出完成並開始下載，同電子商店訂單列表的<a href="orders.html#orders-filter">匯出</a></td></tr>
-    <tr><td>匯出紀錄</td><td>—</td><td>每次匯出留一筆紀錄：誰匯出、何時、篩選條件、筆數<br>創作者與 Admin 都看得到</td></tr>
+    <tr><td>匯出交易明細</td><td>—</td><td>匯出這場活動的交易明細，照目前的篩選結果匯出<br>檔案內容見<a href="#sales-tx-export">交易明細匯出的檔案內容</a><br>按下後出現「匯出中」提示，完成時變成匯出完成並開始下載，同電子商店訂單列表的<a href="orders.html#orders-filter">匯出</a></td></tr>
+    <tr><td>匯出紀錄</td><td>—</td><td>每次匯出留一筆紀錄：誰匯出、何時、篩選條件、筆數<br>創作者看得到</td></tr>
     <tr><td>打開訂單詳情</td><td>每一列都有</td><td>開啟電子商店的<a href="order-detail.html">訂單詳情</a>，看<a href="order-detail.html#fields-payment">付款資訊</a>與<a href="order-detail.html#fields-tickets">門票資料</a><br>直接買門票的訂單與電子商店共用同一個訂單詳情頁<br>組合包訂單的撤銷也在訂單詳情做，這裡的組合包訂單列不提供逐張撤銷，見<a href="order-detail.html#void-where">門票與組合包在哪裡撤銷</a></td></tr>
   </tbody>
 </table></div>
@@ -247,7 +265,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>檔案格式</td><td>—</td><td>CSV（用逗號分欄的純文字檔）<br>編碼是 UTF-8 加 BOM，Excel 直接打開，中文不會變亂碼</td></tr>
+    <tr><td>檔案格式</td><td>—</td><td>CSV（用逗號分欄的純文字檔）<br>編碼是 UTF-8 加 BOM（位元組順序標記）</td></tr>
     <tr><td>匯出範圍</td><td>—</td><td>照目前的篩選結果：訂單日期區間，加上已付款或已取消的子集</td></tr>
     <tr><td>檔名</td><td>—</td><td>「交易明細_活動名稱_起訖日期.csv」</td></tr>
   </tbody>
@@ -294,13 +312,31 @@ table.map td:nth-child(2){width:22%}
     <tr><td>報到狀態</td><td>已掃描或未掃描徽章<br>已掃描的票若掃描次數大於 1，徽章旁標出次數，重複掃描只是紀錄<br>只在進行中與已結束出現</td></tr>
   </tbody>
 </table></div>
+<p>活動名單依活動階段與票的狀態換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>已排程</td><td>活動在已排程階段</td><td>顯示空狀態；空狀態的內容<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>售票中</td><td>活動在售票中</td><td>看得到名單；沒有報到欄、掃描圖例與掃描器</td></tr>
+    <tr><td>進行中</td><td>活動進行中</td><td>即時名單；有報到欄、掃描圖例與掃描器，可依全部、已到場、未到場篩選</td></tr>
+    <tr><td>已結束</td><td>活動已結束</td><td>看得到名單；有報到欄、掃描圖例與掃描器</td></tr>
+    <tr><td>已掃描</td><td>票已被有效掃描</td><td>報到欄顯示已掃描徽章</td></tr>
+    <tr><td>重複掃描</td><td>已掃描的票掃描次數大於 1</td><td>徽章旁標出次數；圖例的已掃描格附「含重複掃描 N 次」；只是紀錄</td></tr>
+    <tr><td>未掃描</td><td>票還沒被掃描</td><td>報到欄顯示未掃描徽章</td></tr>
+    <tr><td>無法辨識的 QR</td><td>掃到的 QR 對不上任何一張票</td><td>持票人顯示「未辨識 QR」；不進掃描圖例</td></tr>
+    <tr><td>經組合包拿到門票</td><td>買家買的是含門票的組合包</td><td>票種旁加「組合包」標籤</td></tr>
+    <tr><td>獨立票</td><td>持有獨立票</td><td>票種欄顯示獨立票的票名，加「獨立票」標籤</td></tr>
+    <tr><td>bookyay 匯入的活動</td><td>門票由 bookyay 掃票</td><td>報到欄改成來自 bookyay 的唯讀已入場與未入場；不出現開啟掃描器與改回未報到</td></tr>
+    <tr><td>共看派對</td><td>活動是共看派對</td><td>名單不放報到欄，也沒有掃描器</td></tr>
+  </tbody>
+</table></div>
 
 <h4 id="sales-roster-ops">名單的操作</h4>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>篩選：全部、已到場、未到場</td><td>進行中</td><td>即時名單依報到狀態篩選<br>已到場就是已掃描，未到場就是未掃描</td></tr>
-    <tr><td>匯出名單</td><td>售票中<br>進行中<br>已結束</td><td>匯出參加者名單</td></tr>
+    <tr><td>匯出名單</td><td>—</td><td>匯出參加者名單</td></tr>
     <tr><td>開啟掃描器</td><td>只在進行中與已結束<br>bookyay 匯入的活動不掃門票，不出現</td><td>開啟手機掃描器核銷門票<br>掃描器可離線運作約 4 小時，重連後同步<br>同一張票掃兩次，以最早的掃描為準</td></tr>
     <tr><td>改回未報到</td><td>進行中與已結束<br>bookyay 匯入的活動不提供</td><td>誤掃時，創作者把已報到的票改回未報到，只用於更正</td></tr>
   </tbody>
@@ -321,44 +357,75 @@ table.map td:nth-child(2){width:22%}
     <tr><td>購票成功<br>活動前提醒<br>活動變更通知</td><td>三個各自的開關<br>預設開啟<br>要先進編輯模式才能切換<br>活動發布後上架中，要先下架才能切換，見活動詳情的<a href="event-detail.html#edit-published">發布後能改什麼</a></td><td>關掉就不寄這一種通知<br>沒進編輯模式時只顯示目前開或關<br>各種通知何時寄出、內容是什麼，不在這裡定義</td></tr>
   </tbody>
 </table></div>
+<p>通知開關依模式與階段換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">通知開關</td></tr>
+    <tr><td>檢視模式</td><td>沒按「編輯活動」</td><td>只顯示目前開或關</td></tr>
+    <tr><td>編輯模式</td><td>已按「編輯活動」，活動已下架</td><td>三個開關可以切換，預設開啟</td></tr>
+    <tr><td>上架中</td><td>活動上架中</td><td>開關不能切換，要先下架</td></tr>
+    <tr><td>已結束、已封存</td><td>活動已結束或已封存</td><td>開關與寄送紀錄照樣顯示，唯讀</td></tr>
+    <tr><td>有改動還沒儲存</td><td>切換過開關，還沒按「儲存」</td><td>算進「儲存 N 項變更」；開關要不要標示為已修改<span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 
 <h4 id="sales-notif-log">寄送紀錄</h4>
-<p>寄送紀錄是三項通知各一列，每列帶狀態徽章與說明，只能看，不受編輯模式影響。</p>
+<p>寄送紀錄是三項通知各一列，每列帶狀態徽章與說明，只能看，不受編輯模式影響。三項通知的各狀態如下。</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:22%">通知</th><th>顯示什麼</th></tr></thead>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
   <tbody>
-    <tr><td>購票成功</td><td>已寄出的封數，每筆已付款訂單一封<br>還沒有銷售時，明說尚未寄出</td></tr>
-    <tr><td>活動前提醒</td><td>還沒寄出時，顯示預定寄出時間：開演前 24 小時，依該場次日期<br>已結束時，顯示已寄出<br>活動沒有日期時，顯示「要先有日期才能排定」</td></tr>
-    <tr><td>活動變更通知</td><td>開賣後沒有發生高影響變更時，顯示未寄出</td></tr>
+    <tr class="grp"><td colspan="3">購票成功</td></tr>
+    <tr><td>已寄出</td><td>有已付款訂單</td><td>顯示已寄出的封數，每筆已付款訂單一封</td></tr>
+    <tr><td>尚未寄出</td><td>還沒有銷售</td><td>明說尚未寄出</td></tr>
+    <tr class="grp"><td colspan="3">活動前提醒</td></tr>
+    <tr><td>還沒寄出</td><td>活動有日期，還沒到開演前 24 小時</td><td>顯示預定寄出時間：開演前 24 小時，依該場次日期</td></tr>
+    <tr><td>已寄出</td><td>活動已結束</td><td>顯示已寄出</td></tr>
+    <tr><td>沒有日期</td><td>活動沒有日期</td><td>顯示「要先有日期才能排定」</td></tr>
+    <tr class="grp"><td colspan="3">活動變更通知</td></tr>
+    <tr><td>未寄出</td><td>開賣後沒有發生高影響變更</td><td>顯示未寄出</td></tr>
+    <tr><td>已寄出</td><td>開賣後發生高影響變更</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 
 <h3 id="sales-void">撤銷紀錄</h3>
-<p>撤銷紀錄列出這場活動被撤銷的票券，回答「哪些票被撤銷了」；平台不提供退款動作，這裡不呈現退款金流。規格把撤銷紀錄併在交易明細這一組，畫面上是子導覽的獨立一格。撤銷後該票的 QR 立即失效；撤銷不寄 email 給持票人，撤銷的事實只記在這裡給 Admin 查。</p>
+<p>撤銷紀錄列出這場活動被撤銷的票券，回答「哪些票被撤銷了」；平台不提供退款動作，這裡不呈現退款金流。規格把撤銷紀錄併在交易明細這一組，畫面上是子導覽的獨立一格。撤銷後該票的 QR 立即失效；撤銷不寄 email 給持票人，撤銷的事實只記在這裡。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
   <tbody>
     <tr><td>票券編號</td><td>票券的識別碼，供核對與追蹤</td></tr>
     <tr><td>原持票人</td><td>撤銷前的持票人姓名</td></tr>
     <tr><td>撤銷時間</td><td>撤銷動作發生的時間</td></tr>
-    <tr><td>執行的 Admin</td><td>執行撤銷的 Admin 帳號</td></tr>
+    <tr><td>撤銷者</td><td>執行撤銷的帳號（只有 Admin 能撤銷）</td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>逐張撤銷、整場撤銷</td><td>只有 Admin 能按，創作者看得到入口但不能按<br>bookyay 匯入的活動停用，直接購買的門票改在 bookyay 後台撤銷</td><td>撤銷後該票的 QR 立即失效<br>撤銷不寄 email 給持票人，逐張與整場撤銷都一樣<br>獨立票與票種門票相同：可以逐張撤銷，整場撤銷時一併撤銷，撤銷後同樣列在撤銷紀錄<br>已報到的票不能撤銷；已結束活動裡沒報到的票仍能撤銷<br>已結束與已封存的活動，Admin 仍可撤銷<br>創作者需要撤銷時，在平台外聯繫 Admin，產品內沒有申請畫面<br>需要退款時，Admin 先在 Stripe 後台退款，再撤銷；撤銷動作本身不呼叫金流</td></tr>
+    <tr><td><span class="tag adm">Admin</span> 逐張撤銷</td><td>只有 Admin 能按，創作者看得到入口但不能按<br>bookyay 匯入的活動停用，直接購買的門票改在 bookyay 後台撤銷</td><td>撤銷後該票的 QR 立即失效<br>撤銷不寄 email 給持票人<br>獨立票與票種門票相同：可以逐張撤銷，撤銷後同樣列在撤銷紀錄<br>辦不成活動用下架，已售的票不自動處理；需要退票時逐張撤銷，沒有批次撤銷，也不通知全部持票人<br>已報到的票不能撤銷；已結束活動裡沒報到的票仍能撤銷<br>已結束與已封存的活動照樣可撤銷<br>創作者需要撤銷時，在平台外聯繫 Admin，產品內沒有申請畫面<br>需要退款時，只有 Admin 能在 Stripe 後台退款，退款完成後才撤銷；撤銷動作本身不呼叫金流</td></tr>
+  </tbody>
+</table></div>
+<p>撤銷紀錄依有沒有撤銷與活動來源換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>有撤銷</td><td>這場活動至少有一張票被撤銷</td><td>列出票券編號、原持票人、撤銷時間、撤銷者</td></tr>
+    <tr><td>尚無撤銷</td><td>還沒有票被撤銷</td><td>顯示空狀態說明</td></tr>
+    <tr><td>創作者看到的撤銷鈕</td><td>創作者介面</td><td>看得到逐張撤銷的入口，不能按</td></tr>
+    <tr><td>已報到的票</td><td>票已報到</td><td>不能撤銷</td></tr>
+    <tr><td>bookyay 匯入的活動</td><td>直接購買的門票</td><td>撤銷鈕全部停用，說明「撤銷在 bookyay 後台處理」；紀錄列出 bookyay 同步來的已撤銷票券，唯讀</td></tr>
+    <tr><td>共看派對</td><td>活動是共看派對</td><td>沒有撤銷紀錄</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>撤銷票券時，該票用掉的優惠碼次數歸還，因撤銷跌破門檻的平台滿額折抵追回，規則見電子商店<a href="order-detail.html#void-after">撤銷之後</a></li>
-  <li>bookyay 匯入的活動，直接購買的門票由 Admin 在 bookyay 後台撤銷，結果同步回 ztor、唯讀</li>
+  <li><span class="tag adm">Admin</span> bookyay 匯入的活動，直接購買的門票：只有 Admin 能按，在 bookyay 後台撤銷，結果同步回 ztor、唯讀</li>
   <li>bookyay 匯入的活動，ztor 的撤銷功能保留在畫面上但全部停用，並說明「撤銷在 bookyay 後台處理」</li>
-  <li>組合包裡的門票（自建或 bookyay 匯入的活動都一樣），在 ztor 的訂單詳情撤銷整個組合包，裡面的門票一起失效，同樣列在撤銷紀錄；bookyay 門票的作廢見<a href="order-detail.html#void-after">撤銷之後</a></li>
-  <li>bookyay 匯入的活動，退款仍由 Admin 在金流後台處理</li>
+  <li>組合包裡的門票（自建或 bookyay 匯入的活動都一樣），在 ztor 的訂單詳情撤銷整個組合包，裡面的門票一起失效，同樣列在撤銷紀錄</li>
+  <li>組合包裡有 bookyay 門票時，ztor 撤銷的同時到 bookyay 撤銷那幾張票，全部成功才算撤銷，任何一張沒撤成功整筆都不撤；組合包裡有任何商品已領取或門票已入場時不能撤銷，見<a href="order-detail.html#void-after">撤銷之後</a></li>
+  <li><span class="tag adm">Admin</span> bookyay 匯入的活動，退款：只有 Admin 能按，在金流後台處理</li>
   <li>共看派對沒有撤銷紀錄</li>
-  <li>尚無票券被撤銷時，顯示空狀態說明</li>
-</ul>
+  </ul>
 
 <h3 id="sales-finance">成本與收入摘要</h3>
 <p>成本與收入摘要把收入事件逐筆列出並附結算狀態，讓創作者對照售票紀錄的數字；加總口徑見<a href="#sales-tx-sum">活動收入與門票收入</a>。</p>
@@ -385,7 +452,18 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>前往收入管理<br>前往項目淨利</td><td>售票中<br>進行中<br>已結束</td><td>只有已結算的收入計入可提領金額與可分配淨利，待結算的不計入</td></tr>
+    <tr><td>前往收入管理<br>前往項目淨利</td><td>—</td><td>只有已結算的收入計入可提領金額與可分配淨利，待結算的不計入</td></tr>
+  </tbody>
+</table></div>
+<p>成本與收入摘要依結算狀態換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">結算狀態</td></tr>
+    <tr><td>已結算</td><td>收入事件已結算</td><td>顯示已結算（Settled）；計入可提領金額與可分配淨利</td></tr>
+    <tr><td>待結算</td><td>收入事件還沒結算</td><td>顯示待結算（Accrued）；不計入可提領金額與可分配淨利</td></tr>
+    <tr><td>招待票</td><td>招待票的收入事件</td><td>顯示招待票（Comp），僅供審計</td></tr>
+    <tr><td>沒有收入事件</td><td>活動還沒有任何收入事件，例如已排程</td><td>顯示空狀態；空狀態的內容<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.6.3 §2.7、§2.8、§2.9.2、§2.10、§2.10.1、§2.11；5.1.6.2 F17；D253、D282、D361、D375、D392、D399、D407、D408、D409、D410、D411、D413、D431、D434。</p>
@@ -400,13 +478,13 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>售票紀錄</td><td>空狀態</td><td>看得到</td><td>看得到</td><td>看得到</td></tr>
     <tr><td>活動名單</td><td>空狀態</td><td>看得到名單<br>沒有報到欄與掃描器</td><td>即時名單<br>有報到欄與掃描器</td><td>看得到名單<br>有報到欄與掃描器</td></tr>
-    <tr><td>通知開關</td><td>看得到<br>進編輯模式可改</td><td>看得到<br>進編輯模式可改</td><td>看得到<br>進編輯模式可改</td><td>看得到</td></tr>
+    <tr><td>通知開關</td><td>看得到<br>進編輯模式可改；活動上架中要先下架</td><td>看得到<br>進編輯模式可改；活動上架中要先下架</td><td>看得到<br>進編輯模式可改；活動上架中要先下架</td><td>看得到</td></tr>
     <tr><td>寄送紀錄</td><td>看得到</td><td>看得到</td><td>看得到</td><td>看得到</td></tr>
-    <tr><td>撤銷紀錄</td><td>空狀態</td><td>看得到<br>Admin 可撤銷</td><td>看得到<br>Admin 可撤銷</td><td>看得到<br>Admin 仍可撤銷</td></tr>
+    <tr><td>撤銷紀錄</td><td>空狀態</td><td>看得到<br><span class="tag adm">Admin</span> 撤銷只有 Admin 能按</td><td>看得到<br><span class="tag adm">Admin</span> 撤銷只有 Admin 能按</td><td>看得到<br><span class="tag adm">Admin</span> 撤銷只有 Admin 能按</td></tr>
     <tr><td>成本與收入摘要</td><td>空狀態</td><td>看得到</td><td>看得到</td><td>看得到</td></tr>
   </tbody>
 </table></div>
-<p>已封存的活動不是階段：各子區塊照活動原本的階段顯示，整頁唯讀，通知開關也不能改；Admin 撤銷票券不受影響，見活動詳情的<a href="event-detail.html#edit-readonly">已結束與已封存</a>。</p>
+<p>已封存的活動不是階段：各子區塊照活動原本的階段顯示，整頁唯讀，通知開關也不能改；撤銷票券（只有 Admin 能按）不受影響，見活動詳情的<a href="event-detail.html#edit-readonly">已結束與已封存</a>。</p>
 
 <h3 id="sales-edit-scope">哪些操作要先進編輯模式</h3>
 <p>通知開關以外的操作按下就生效，清單見活動詳情的<a href="event-detail.html#edit-scope">要先進編輯模式的操作</a>。</p>
@@ -417,10 +495,8 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v71；§2.5 掃碼連結存取對照 v93；§2.7 對照 v76；§2.7、§2.9.2、§2.10 對照 v79）§2.3、§2.7、§2.8、§2.9.2、§2.10、§2.10.1、§2.11、§3、§4</li>
-    <li>規格：<code>5.1.6.2-編輯活動.md</code>（v3.57；F17 對照 v3.66；§3、F17 對照 v3.76）F17</li>
-    <li>規格：<code>5.1.5.3-訂單管理.md</code>（v1.18）F2 匯出、F3 範圍</li>
-    <li>決策：D253、D282、D361、D375、D392、D399、D407、D408、D409、D410、D411、D413、D414、D416、D418、D423、D424、D425、D431、D434、D435、D453、D455、D457</li>
+    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v111）§2.3、§2.7、§2.8、§2.9.2、§2.10、§2.10.1、§2.11、§3、§4；<code>5.1.6.2-編輯活動.md</code>（v3.94）F17；<code>5.1.5.3-訂單管理.md</code>（v1.22）F2 匯出、F3 範圍</li>
+    <li>決策：D253、D282、D361、D375、D392、D399、D407、D408、D409、D410、D411、D413、D414、D416、D418、D423、D424、D425、D431、D434、D435、D446、D453、D455、D457、D510、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -429,12 +505,15 @@ table.map td:nth-child(2){width:22%}
     <li>寄送紀錄要不要列出逐封的寄送明細（收件人、時間、是否開信）與重寄的路徑，目前只顯示彙總結果</li>
     <li>已封存的活動，撤銷紀錄要不要額外顯示撤銷進度</li>
     <li>進行中的活動被封存時，現場掃碼報到與報到更正是否照常</li>
-    <li>辦不成活動時，已售出票券與訂單的退款、通知與撤銷怎麼處理（目前先留著不動，也不自動通知持票人）</li>
-    <li>撤銷紀錄是否加一欄撤銷原因（有填才顯示、給 Admin 查）；規格目前推定比照訂單撤銷，選填、可留空</li>
-    <li>通知開關有尚未儲存的改動時，要不要標示為已修改（規格為推導）</li>
+    <li>撤銷紀錄是否加一欄撤銷原因（有填才顯示）；規格目前推定比照訂單撤銷，選填、可留空（推導）</li>
+    <li>通知開關有尚未儲存的改動時，要不要標示為已修改（推導）</li>
+    <li>撤銷沖銷的金額口徑：沖銷是否連同平台費與支付費退給創作者、平台外實際退款金額與沖銷金額怎麼對帳、跨幣別用哪個匯率</li>
     <li>售票紀錄、活動名單、撤銷紀錄與成本與收入摘要在載入中、載入失敗與沒有權限時的畫面，規格只寫照全站共用狀態規則</li>
+    <li>各子區塊在沒有資料時（已排程的空狀態、尚無撤銷以外）的畫面內容，規格只寫顯示空狀態</li>
+    <li>售票紀錄篩選後查不到訂單時，摘要三格與清單的樣子，規格沒寫</li>
+    <li>活動變更通知寄出之後，寄送紀錄怎麼顯示，規格沒寫</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D457 活動取消通知退場，通知設定只剩三個開關；表格拿掉已取消階段，已封存照原階段顯示、整頁唯讀；對照 5.1.6.3 v96）；2026-10-20（D455 活動發布後上架中，通知開關要先下架才能切換定案；對照 5.1.6.2 v3.76、5.1.6.3 v95）；2026-10-19（D453 bookyay 匯入活動的掃碼連結改三部分，新增組合包取貨掃碼器網址；對照 5.1.6.3 v93）；2026-10-16（D431 撤銷不寄信；D434 組合包裡的門票在訂單詳情撤銷；D435 通知開關的下架規則列入尚待確認）；2026-10-16（D425 售票紀錄不列已過期訂單定案）；2026-10-15（D424 匯出中提示與匯出紀錄）；2026-10-15（D423 售票紀錄摘要改為毛額、淨額、已取消筆數三格，平台費與支付費移出摘要；D418 淨額改扣平台費與支付費、匯出加買家名稱；其餘至 D416）</p>
+  <p class="k">最近同步：2026-11-05（D513 撤銷只留逐張、沖銷口徑核准；對照 5.1.6.3 v111、5.1.6.2 v3.94）</p>
 </details>
 </div>
 </body>

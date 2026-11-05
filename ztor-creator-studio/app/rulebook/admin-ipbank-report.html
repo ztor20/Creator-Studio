@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IP Bank Reporting — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -202,7 +202,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>影片（Film）</td><td>單選</td><td>一次看一部影片<br>選定後統計摘要與分潤列表跟著更新</td></tr>
     <tr><td>起始日期（Start date）</td><td>—</td><td>報表期間的起點<br>選定後統計摘要與分潤列表跟著更新</td></tr>
     <tr><td>結束日期（End date）</td><td>—</td><td>報表期間的終點<br>選定後統計摘要與分潤列表跟著更新</td></tr>
-    <tr><td>資料性質說明</td><td>—</td><td>標明數字是衍生數字，目前為示意</td></tr>
+    <tr><td>資料性質說明</td><td>—</td><td>畫面上標明資料性質，內容見<a href="#report-intro">概述</a></td></tr>
   </tbody>
 </table></div>
 
@@ -214,7 +214,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>影片淨收入（Film net revenue）</td><td>這部影片在選定期間的報表基準收入；正式定義見頁尾尚待確認</td></tr>
     <tr><td>已分配給權利人（Allocated to owners）</td><td>分潤列表各權利人應計金額的加總</td></tr>
     <tr><td>平台剩餘（Platform remainder）</td><td>分潤列表平台列的比例與金額</td></tr>
-    <tr><td>更新節奏（Refresh cadence）</td><td>顯示資料多久更新一次；實際節奏見頁尾尚待確認</td></tr>
+    <tr><td>更新節奏（Refresh cadence）</td><td>顯示資料更新資訊；實際節奏見頁尾尚待確認</td></tr>
   </tbody>
 </table></div>
 
@@ -230,6 +230,23 @@ table.map td:nth-child(2){width:22%}
     <tr><td>應計金額（Owed）</td><td>這位權利人在這部影片應得的金額</td></tr>
     <tr><td>已提款（Withdrawn）</td><td>這位權利人在這部影片已經提走的金額</td></tr>
     <tr><td>可用金額（Available）</td><td>這位權利人在這部影片還能提的金額</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="report-states">摘要與列表的各種樣子</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">整份報表</td></tr>
+    <tr><td>可讀取</td><td>選定影片，而且有 IP 權利分配</td><td>顯示統計摘要與分潤列表</td></tr>
+    <tr><td>沒有分配資料</td><td>選定的影片沒有任何 IP 權利分配</td><td>見<a href="#report-empty">沒有資料時</a></td></tr>
+    <tr><td>選定期間沒有任何收入</td><td>影片淨收入為 0</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>還沒選影片或日期</td><td>剛進頁，或沒選日期</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">分潤列表</td></tr>
+    <tr><td>權利人還在已邀請</td><td>權利人還沒認領帳號</td><td>應計金額照常累積；已提款不顯示數值；可用金額顯示「locked until claim」，見<a href="#report-calc">分潤金額怎麼算</a></td></tr>
+    <tr><td>剩餘比例為 0</td><td>權利人的比例合計剛好 100%</td><td><span class="tag wait">尚待確認</span>平台列怎麼顯示</td></tr>
+    <tr class="grp"><td colspan="3">更新節奏</td></tr>
+    <tr><td>顯示更新資訊</td><td>—</td><td>顯示資料更新資訊；實際節奏<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 
@@ -272,7 +289,7 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.0.2-IP-Bank-Reporting.md</code>（最後更新 2026-10-02）頁面定位、F1～F4、頁面狀態、使用情境；<code>0-設計規格書.md</code> §7.2、§7.3、§7.6、§8.15</li>
+    <li>規格：<code>5.1.0.2-IP-Bank-Reporting.md</code>（最後更新 2026-10-02）頁面定位、F1～F4、頁面狀態、使用情境；<code>0-設計規格書.md</code>（v5.39）§7.2、§7.3、§7.6、§8.15</li>
     <li>決策：D004、D129、D130、D233、D273、D347</li>
   </ul>
   <p class="k">尚待確認</p>
@@ -283,9 +300,10 @@ table.map td:nth-child(2){width:22%}
     <li>報表數字什麼時候從示意改成正式對帳資料</li>
     <li>進頁時預設選哪部影片、哪段期間，以及沒選日期時看的是哪段資料</li>
     <li>調整或移除分潤比例後，已產生的應計金額與已提款要不要回溯重算</li>
+    <li>選定期間影片淨收入為 0、權利人比例合計剛好 100% 時平台列的顯示</li>
     <li>報表載入中、載入失敗時畫面怎麼顯示</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（首次撰寫，對照 5.1.0.2、主規格 §7.3、§8.15，至 D347）</p>
+  <p class="k">最近同步：2026-11-05（V30 逐條對照：5.1.0.2 最後更新 2026-10-02、主規格 v5.39；更新節奏改回規格原話「更新資訊」）</p>
 </details>
 </div>
 </body>

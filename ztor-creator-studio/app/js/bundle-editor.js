@@ -70,7 +70,7 @@
        與封面）在這個版型退場，名稱改由內容自動建議、使用者改過就不再覆蓋（`nameTouched`）。
      · 新增狀態欄位 `lockSets`（鎖定套數，D266）與 `sold`（已售出組數；> 0 時票種、張數、商品
        鎖定，只剩折扣、鎖定套數、上限可改——D292 裁決七）。資料形狀其餘不變：`tickets`＝
-       `{ tierIds, qty }`、`items`、`perks`、`discount`、`avail`／`cap`；`commit()` 與每場各一組
+       `{ tierIds, qty }`、`items`、`perks`、`discount`；`commit()` 與每場各一組
        展開照舊。
      · 商品成員帶 `options`／`variants`（從 ZTOR_PRODUCTS 讀）：多規格商品的原價是區間
        「從 $X 起」（各規格價取最小），粉絲端預覽卡長出尺寸／顏色 chip；單一規格固定。
@@ -369,6 +369,13 @@
         if (!SHARES) {
           b.slots = 0;
           if (b.avail !== 'limited') b.avail = 'unlimited';
+        }
+        /* D513（2026-11-05）：活動組合包的販售上限退場（項目方案的不動）。舊草稿帶了限量＝轉成鎖定庫存開啟，鎖定＝原限量 − 已售 */
+        if (SPLIT) {
+          if (b.avail === 'limited' && num(b.cap) > 0 && (b.lockSets === '' || b.lockSets == null)) {
+            b.lockSets = String(Math.max(0, num(b.cap) - (num(b.sold) || 0))); b.lockAsk = 'yes';
+          }
+          b.avail = AVAIL_OPEN; b.cap = '';
         }
         /* 分段版的折扣是開關制（discountOn），舊種子只有 discount 數字——帶了折扣卻
            不開開關的話，discountOf() 會回 0，種子的折扣就靜默蒸發（2026-09-01 通用化時補）。 */
@@ -1143,7 +1150,6 @@
     function gateWhyText(b) {
       if (!hasContent(b)) return T(getTickets && kindRows().length ? 'cpp.bd.sp.why.tix' : 'cpp.bd.sp.why.members');
       if (lockOver(b)) return T('cpp.bd.sp.why.lock');
-      if (capOver(b)) return T('cpp.bd.sp.why.cap');
       if (saleBad(b)) return T('cpp.bd.sp.why.sale');
       if (allocOver(b)) return T('cpp.bd.sp.why.alloc');
       if (vAllocBad(b)) return T('cpp.bd.sp.why.valloc');
@@ -1654,46 +1660,23 @@
     /* 「受誰限制」那個誰的顯示字：票券寫「票券」、商品寫商品名。 */
     function whoText(who) { return who === 'tix' ? T('cpp.bd.sp.who.tix') : String(who || ''); }
     /* ── 鎖定套數與可售套數（SPLIT，D266／D296 決定四）────────────────────────
-       lockN        創作者填的鎖定套數（空白／0＝不鎖定）
+       lockN        鎖定套數（數字；不鎖定也回 0，判斷開關看 lockAskOn）
        lockOver     鎖定套數超過成員硬頂
-       setsBeforeCap 鎖定有效＝鎖定套數；否則＝成員硬頂（沒有量的成員不參與 → null）
-       sellableSets  再與限量上限取最小 */
+       sellableSets 鎖定庫存開著＝鎖定套數（可以是 0，D513）；否則＝成員硬頂（沒有量的成員不參與 → null） */
     function lockN(b) { var n = num(b.lockSets); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; }
-    /* D480（2026-10-23，主規格 §7.14「組合包：限量與鎖定」）：限量時鎖定＝限量 − 已售，跟著限量走、不另外設；
-       超過成員還能鎖的套數就不寫進鎖定（capOver 標紅擋下、capHintSplit 寫缺幾套）。改回不限量時鎖定歸 0（avail 切換處）。 */
-    function limitLeft(b) { var c = capN(b); return c ? Math.max(0, c - (num(b.sold) || 0)) : 0; }
-    function limitSync(b) {
-      if (!SPLIT || b.avail !== 'limited') return;
-      var left = limitLeft(b), m = memberCapMax(b);
-      b.lockAsk = 'yes';
-      b.lockSets = (left > 0 && (m === Infinity || left <= m)) ? String(left) : '';
-    }
-    function limitAutoText(b) {
-      var c = capN(b);
-      if (!c) return T('cb.lock.auto.empty');
-      if (!lockN(b) && limitLeft(b) > 0) return T('cb.lock.auto.blocked').replace('{cap}', c.toLocaleString('en-US'));
-      return T('cb.lock.auto').replace('{cap}', c.toLocaleString('en-US')).replace('{n}', lockN(b).toLocaleString('en-US'));
-    }
     function lockOver(b) {
       if (!SPLIT) return false;
       var m = memberCapMax(b);
       return !!(lockN(b) && m !== Infinity && lockN(b) > m);
     }
-    function setsBeforeCap(b) {
-      var m = memberCapMax(b);
-      if (lockN(b) && !lockOver(b)) return lockN(b);
-      return m === Infinity ? null : m;
-    }
-    function capN(b) { var c = num(b.cap); return b.avail === 'limited' && Number.isFinite(c) && c > 0 ? Math.floor(c) : 0; }
     function sellableSets(b) {
-      var s = setsBeforeCap(b);
-      if (s === null) return capN(b) || null;
-      return capN(b) ? Math.min(s, capN(b)) : s;
+      if (lockAskOn(b) && !lockOver(b)) return lockN(b);
+      var m = memberCapMax(b);
+      return m === Infinity ? null : m;
     }
     function capOver(b) {
       if (b.avail !== 'limited') return false;
-      /* D480：SPLIT 的限量會自動鎖定，上限看「限量 − 已售」能不能鎖得到（成員還能鎖的套數） */
-      var c = SPLIT ? limitLeft(b) : num(b.cap), m = memberCapMax(b);
+      var c = num(b.cap), m = memberCapMax(b);
       if (m === null) m = Infinity;
       return Number.isFinite(c) && c > 0 && m !== Infinity && c > m;
     }
@@ -2041,7 +2024,7 @@
     /* ── ③ 販售設定：價格（price-ladder）／數量（form-tally＋form-ask）（2026-10-12 改版，D402／UI-CHANGES 一百八十八）──
        照建立組合包 create-bundle.html 的「價格」「數量」兩張分卡。墓碑：原「定價與庫存」一張分卡裡的 .calc-list 算式、
        組合折扣 control-group、限時折扣 control-group、可售套數大讀數、.lockset__sets 鎖定列、限量 segmented。
-       資料欄位（discount／discountOn／saleOn／sale／stack／lockSets／alloc／avail／cap）與事件 hook 全部沿用，存檔形狀不變。 */
+       資料欄位（discount／discountOn／saleOn／sale／stack／lockSets／alloc）與事件 hook 全部沿用；D513 起 avail／cap 不再用於 SPLIT，新增 preorder／limitedTag。 */
     /* 價格區間〔推導，D402〕：最高價＝允許門票最貴 × 每組張數＋多規格商品最貴規格 × 每組用量（活動變體固定 1 件），再套同一組折扣。 */
     function listMax(b) {
       return (setLines(b).length ? tixMaxPrice(b) * tixQty(b) : 0) +
@@ -2090,12 +2073,12 @@
     }
     /* 鎖定套數的 hint 只回答「留空會怎樣」；超過上限是錯誤態，把數字說清楚。 */
     function lockHintText(b) {
-      if (SPLIT && b.avail === 'limited') return '';   /* D480：限量時說明在 data-bd-lock-auto */
       var c = memberCapWho(b);
       if (c.n === Infinity) return T('cpp.bd.sp.lock.none');
-      if (!lockOver(b)) return T('cpp.bd.sp.lock.hint');
-      return T('cpp.bd.sp.lock.over')
-        .replace('{n}', c.n.toLocaleString('en-US')).replace('{who}', whoText(c.who));
+      if (!lockOver(b)) return T('cb.lock.max').replace('{n}', c.n.toLocaleString('en-US'));
+      /* D513：超過成員還能鎖的量＝擋下並寫出缺幾套、受誰限制 */
+      return T('cb.lock.short').replace('{max}', c.n.toLocaleString('en-US'))
+        .replace('{k}', (lockN(b) - c.n).toLocaleString('en-US')).replace('{who}', whoText(c.who));
     }
     /* 「最多可賣 N 組」：標題列右側讀數（form-tally）只放數字；「受誰限制」寫在標題下一行 hint。 */
     function setsNumText(b) {
@@ -2105,21 +2088,10 @@
     function setsWhyText(b) {
       var s = sellableSets(b), c = memberCapWho(b);
       if (s === null) return '';
-      if (lockN(b) && !lockOver(b)) {
-        var t = T('cpp.bd.sp.sets.why.lock').replace('{lock}', lockN(b).toLocaleString('en-US'));
-        return capN(b) && capN(b) < lockN(b) ? t + T('cpp.bd.sp.sets.capnote').replace('{cap}', capN(b).toLocaleString('en-US')) : t;
-      }
-      if (capN(b) && (c.n === Infinity || capN(b) < c.n)) return T('cpp.bd.sp.sets.why.cap');
+      if (lockAskOn(b) && !lockOver(b)) return T('cpp.bd.sp.sets.why.lock').replace('{lock}', lockN(b).toLocaleString('en-US'));
       if (c.n === Infinity) return '';
       return T('cpp.bd.sp.sets.why.by')
         .replace('{who}', c.who === 'tix' ? T('cpp.bd.sp.sets.by.tix') : T('cpp.bd.sp.sets.by.item').replace('{name}', String(c.who)));
-    }
-    function capHintSplit(b) {
-      if (capOver(b)) {
-        var cw = memberCapWho(b);
-        return T('cb.cap.short').replace('{max}', cw.n.toLocaleString('en-US')).replace('{k}', (limitLeft(b) - cw.n).toLocaleString('en-US')).replace('{who}', whoText(cw.who));
-      }
-      return '';   /* 墓碑 2026-10-27：「賣完自動售罄。」一句退場（cpp.bd.sp.cap.hint），只在超過成員供應時才有提示 */
     }
     function saleWhen(v) { return String(v || '').replace(/-/g, '/').replace('T', ' ') || '—'; }
     /* 逐票種分配（5.1.5.4 §4 F4，D296）：鎖了套數、又允許兩種以上票種才出現；合計 ≤ 鎖定套數。 */
@@ -2237,56 +2209,39 @@
         '<div data-bd-codes-host></div>' +
       '</section>';
     }
-    /* 鎖定問句的選擇（UI 狀態 b.lockAsk：'yes'／'no'；沒選過時由鎖定套數推回）。選「不鎖定」會清掉鎖定套數與逐票種分配。 */
-    function lockAskOn(b) { return b.lockAsk === 'yes' || (b.lockAsk !== 'no' && lockN(b) > 0); }
-    function askCard(attr, val, on, key, disabled) {
-      return '<button type="button" class="segmented__btn' + (on ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' + on + '" ' + attr + '="' + val + '"' +
-        (disabled ? ' disabled' : '') + '><span class="radio-card__text"><span class="radio-card__title">' + esc(T(key)) + '</span></span></button>';
+    /* 鎖定庫存開關（UI 狀態 b.lockAsk：'yes'／'no'；沒切過時由鎖定套數推回，0 也算開著，D513）。關閉會清掉鎖定套數與逐票種分配。 */
+    function lockAskOn(b) { return b.lockAsk === 'yes' || (b.lockAsk !== 'no' && b.lockSets !== '' && b.lockSets != null); }
+    /* 庫存設定的一列開關（同建立組合包 create-bundle.html 的 .control-row；data-bd-sw＝preorder／limitedTag／lock） */
+    function stockSwHTML(k, titleKey, subKey, on, off) {
+      return '<div class="control-row"><div>' +
+          '<div class="control-row__main">' + esc(T(titleKey)) + '</div>' +
+          '<div class="control-row__sub">' + esc(T(subKey)) + '</div></div>' +
+        '<div class="switch' + (on ? ' switch--on' : '') + (off ? ' switch--disabled' : '') + '" role="switch" aria-checked="' + on + '"' +
+          (off ? ' aria-disabled="true"' : ' tabindex="0"') + ' aria-label="' + esc(T(titleKey)) + '" data-bd-sw="' + k + '"></div>' +
+      '</div>';
     }
     function secQtySplitHTML(b) {
-      limitSync(b);   /* D480 */
       var lockable = memberCapWho(b).n !== Infinity, lockOn = lockAskOn(b);
-      var limited = b.avail === 'limited';
+      var rule = '<div class="lctl__rule lctl__rule--flush"></div>';
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="qty">' +
         '<div class="bd-sec__head form-section__head--actions">' +
-          '<h3 class="bd-sec__title">' + esc(T('cb.sec.qty')) + '</h3>' +
+          '<h3 class="bd-sec__title">' + esc(T('cp.stock.title.cfg')) + '</h3>' +
           '<div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k">' + esc(T('cb.qty.max')) + '</span>' +
             '<span class="form-tally__v"><span data-bd-sets>' + esc(setsNumText(b)) + '</span><small>' + esc(T('cpp.bd.sp.unit.group')) + '</small></span></span></div>' +
         '</div>' +
         '<div class="field__hint" data-bd-sets-why>' + esc(setsWhyText(b)) + '</div>' +
-        /* 販售上限（F4）：不限量／限量；上限不得大於成員能供應的組數（D292）。D480：限量會自動鎖定，移到鎖定之前 */
-        '<div class="form-ask">' +
-          '<div class="form-ask__t">' + esc(T('cb.cap.q')) + '</div>' +
-          '<div class="form-ask__s">' + esc(T('cb.cap.s')) + '</div>' +
-          '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cpp.bd.sp.limit')) + '">' +
-            askCard('data-bd-avail', AVAIL_OPEN, !limited, 'cpp.bd.qty.unlim') +
-            askCard('data-bd-avail', 'limited', limited, 'cpp.bd.avail.limited') +
-          '</div>' +
-          '<div class="form-ask__body"' + (limited ? '' : ' hidden') + '>' +
-            '<div class="form-ask__row">' +
-              '<span class="form-ask__row-k">' + esc(T('cb.cap.label')) + '</span>' +
-              stepperHTML('data-bd-f="cap" aria-label="' + esc(T('cb.cap.label')) + '"' + (capOver(b) ? ' aria-invalid="true"' : ''), b.cap, T('cpp.bd.sp.unit.group'), 1, null, 'bd-disc') +
-            '</div>' +
-            '<div class="field__hint' + (capOver(b) ? ' fc-hint--over' : '') + '" data-bd-capmax' + (capHintSplit(b) ? '' : ' hidden') + '>' + esc(capHintSplit(b)) + '</div>' +
-          '</div>' +
-        '</div>' +
-        /* 鎖定（D266）：要不要先把庫存鎖給這一組；成員沒有限量時不能鎖（lockHintText 說原因）。
-           2026-10-27：限量時鎖定自動跟著上限走，問句與兩段說明退場，只剩「鎖定組數」一列＋一句短說明。 */
-        '<div class="form-ask">' +
-          (limited ? '' : '<div class="form-ask__t">' + esc(T('cb.lock.q')) + '</div>' +
-            '<div class="form-ask__s">' + esc(T('cb.lock.s')) + '</div>' +
-            '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cb.lock.q')) + '">' +
-              askCard('data-bd-lock', 'no', !lockOn, 'cb.lock.no', false) +
-              askCard('data-bd-lock', 'yes', lockOn, 'cb.lock.yes', !lockable) +
-            '</div>') +
-          (!lockable && !lockOn && !limited ? '<div class="field__hint">' + esc(T('cpp.bd.sp.lock.none')) + '</div>' : '') +
-          '<div class="form-ask__body"' + (lockOn ? '' : ' hidden') + '>' +
+        /* D513（2026-11-05，同建立組合包三個開關，D496）：不限量（賣完轉預購）與限量標籤互斥；鎖定庫存開著時可售＝鎖定組數（可以是 0）。
+           墓碑：form-ask「要另設販售上限嗎？」二選一與販售上限列、「要鎖定庫存嗎」二選一。成員沒有限量時不能鎖（lockHintText 說原因）。 */
+        '<div class="control-group">' +
+          stockSwHTML('preorder', 'cp.unl.title', 'cb.unl.sub', !!b.preorder, !!b.limitedTag) + rule +
+          stockSwHTML('limitedTag', 'cp.tag.title', 'cb.tag.sub', !!b.limitedTag, !!b.preorder) + rule +
+          stockSwHTML('lock', 'cp.lock.title', 'cb.lock.sub', lockOn, !lockable && !lockOn) +
+          (!lockable && !lockOn ? '<div class="field__hint">' + esc(T('cpp.bd.sp.lock.none')) + '</div>' : '') +
+          '<div class="form-ask__body control-group__body"' + (lockOn ? '' : ' hidden') + '>' +
             '<div class="form-ask__row">' +
               '<span class="lockset__sets-titles"><span class="form-ask__row-k">' + esc(T('cb.lock.sets')) + '</span>' +
-                '<span class="lockset__sets-hint' + (lockOver(b) ? ' is-over' : '') + '" data-bd-lock-hint>' + esc(lockHintText(b)) + '</span>' +
-                /* D480：限量時鎖定唯讀，說明就放在「鎖定組數」標籤底下（限量自動鎖定／先填上限／成員撐不起）；2026-10-27 由整列下方獨立一行移到標籤下 */
-                '<span class="lockset__sets-hint" data-bd-lock-auto' + (limited ? '' : ' hidden') + '>' + (limited ? esc(limitAutoText(b)) : '') + '</span></span>' +
-              stepperHTML('data-bd-f="lockSets" aria-label="' + esc(T('cb.lock.sets')) + '"', b.lockSets, T('cpp.bd.sp.unit.group'), 0, null, 'bd-disc', !lockable || limited) +
+                '<span class="lockset__sets-hint' + (lockOver(b) ? ' is-over' : '') + '" data-bd-lock-hint>' + esc(lockHintText(b)) + '</span></span>' +
+              stepperHTML('data-bd-f="lockSets" aria-label="' + esc(T('cb.lock.sets')) + '"', b.lockSets, T('cpp.bd.sp.unit.group'), 0, null, 'bd-disc', !lockable) +
             '</div>' +
             '<div data-bd-alloc-box>' + allocHTML(b) + '</div>' +
             '<div data-bd-valloc-box data-key=""></div>' +
@@ -2683,11 +2638,6 @@
       set('[data-bd-save]', saveText(b));
       var lh = card.querySelector('[data-bd-lock-hint]');
       if (lh) { lh.textContent = lockHintText(b); lh.classList.toggle('is-over', lockOver(b)); }
-      /* D480：限量時鎖定跟著限量——就地更新唯讀的鎖定套數與那一句說明 */
-      if (b.avail === 'limited') {
-        var la = card.querySelector('[data-bd-lock-auto]'); if (la) la.textContent = limitAutoText(b);
-        var ls = card.querySelector('[data-bd-f="lockSets"]'); if (ls && document.activeElement !== ls) ls.value = b.lockSets;
-      }
       set('[data-bd-sets]', setsNumText(b));
       /* 2026-10-12 改版（UI-CHANGES 一百八十八）：價格階梯的原價合計、各列區間小字、限時折扣期間價就地同步 */
       var lpS = listPrice(b), lmS = listMax(b), fpS = finalPrice(b), fmS = finalMax(b), spS = salePct(b), hasS = hasContent(b);
@@ -2700,10 +2650,6 @@
       var durEl = card.querySelector('[data-bd-total-during]');
       if (durEl) { durEl.hidden = !(hasS && spS); durEl.textContent = hasS && spS ? T('cb.pl.total.during').replace('{p}', moneyFrom(b, fpS * (1 - spS / 100))) : ''; }
       set('[data-bd-sets-why]', setsWhyText(b));
-      var cm = card.querySelector('[data-bd-capmax]');
-      if (cm) { cm.textContent = capHintSplit(b); cm.hidden = !cm.textContent; cm.classList.toggle('fc-hint--over', capOver(b)); }
-      var capEl = card.querySelector('[data-bd-f="cap"]');
-      if (capEl) { if (capOver(b)) capEl.setAttribute('aria-invalid', 'true'); else capEl.removeAttribute('aria-invalid'); }
       /* 語意句現在是張數欄底下的 hint（方案 A），表尾已退場，不再各自更新一次。 */
       set('[data-bd-sem]', semanticText(b));
       /* 「不足 n 張」小字依張數而變：整張票券表就地換掉（勾選框不是文字欄，換掉不丟游標；表內有焦點時不動）。 */
@@ -2760,8 +2706,8 @@
       if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(card);
     }
     /* 取消＝還原打開時的快照（SPLIT）。快照只收這一組的資料欄位，不收 fresh／collapsed 這類 UI 狀態。 */
-    /* lockAsk（2026-10-12 改版）：數量卡「要鎖定庫存嗎」的選擇，取消時一起還原 */
-    var SNAP_KEYS = ['name', 'desc', 'discount', 'discountOn', 'avail', 'cap', 'lockSets', 'lockAsk', 'perks', 'scope', 'cover', 'nameTouched',
+    /* lockAsk（2026-10-12 改版）：庫存設定「鎖定庫存」開關，取消時一起還原；preorder／limitedTag 同（D513） */
+    var SNAP_KEYS = ['name', 'desc', 'discount', 'discountOn', 'avail', 'cap', 'lockSets', 'lockAsk', 'preorder', 'limitedTag', 'perks', 'scope', 'cover', 'nameTouched',
                      'shown', 'saleOn', 'stack', 'codes'];
     /* D342：物件型欄位整份深拷貝（取消要還原到打開那一刻，不能跟著工作中的物件一起變） */
     var SNAP_DEEP = ['sale', 'media', 'films', 'alloc', 'itemAlloc', 'sched', 'rules', 'limits', 'conds', 'codesNew'];   /* conds：D463 購買條件（最終版） */   /* limits：2026-10-12 限購改接（UI-CHANGES 一百八十八） */
@@ -3609,7 +3555,7 @@
         var f = e.target.dataset.bdF;
         var wasAvail = b.avail;
         b[f] = e.target.value;
-        if (f === 'cap') limitSync(b);   /* D480：限量改了，鎖定跟著改 */
+        if (SPLIT && f === 'lockSets' && e.target.value === '') b.lockSets = '0';   /* D513：開關開著時空白視同 0，不是不鎖定 */
         /* SPLIT：名稱由內容自動建議，使用者打了字就不再覆蓋；清空回到自動。 */
         if (SPLIT && f === 'name') b.nameTouched = !!String(e.target.value).trim();
         /* 2026-07-28（使用者裁示）：填了名額不再自動切 Limited。份數由池子算出來，
@@ -3651,7 +3597,7 @@
     /* 開關（div role=switch）的鍵盤操作：Space／Enter 等同點擊（D342 新增的四顆＋組合折扣） */
     list.addEventListener('keydown', function (e) {
       if (e.key !== ' ' && e.key !== 'Enter') return;
-      var sw = e.target.closest && e.target.closest('[data-bd-sale-toggle],[data-bd-stack-toggle],[data-bd-shown-toggle],[data-tb-rules-follow],[data-bd-disc-toggle]');
+      var sw = e.target.closest && e.target.closest('[data-bd-sale-toggle],[data-bd-stack-toggle],[data-bd-shown-toggle],[data-tb-rules-follow],[data-bd-disc-toggle],[data-bd-sw]');
       if (!sw) return;
       e.preventDefault(); sw.click();
     });
@@ -3830,14 +3776,18 @@
           var cp = card.querySelector('[data-bd-calc-panel]'); if (cp) cp.hidden = !CALCOPEN[b.id];
           return;
         }
-        var lk = e.target.closest('[data-bd-lock]');
-        if (lk) {
-          if (lk.disabled) return;
-          b.lockAsk = lk.getAttribute('data-bd-lock');
-          if (b.lockAsk === 'no') { b.lockSets = ''; b.alloc = {}; b.itemAlloc = {}; }
-          if (b.lockAsk === 'yes' && !lockN(b)) {   /* 2026-10-27：選鎖定時鎖定組數預帶示意值（100，不超過成員撐得起的套數） */
-            var mx2 = memberCapMax(b);
-            if (mx2 !== Infinity && mx2 >= 1) b.lockSets = String(Math.min(100, mx2));
+        var sw = e.target.closest('[data-bd-sw]');
+        if (sw) {
+          if (sw.getAttribute('aria-disabled') === 'true') return;
+          var swK = sw.getAttribute('data-bd-sw');
+          if (swK !== 'lock') b[swK] = !b[swK];
+          else {
+            b.lockAsk = lockAskOn(b) ? 'no' : 'yes';
+            if (b.lockAsk === 'no') { b.lockSets = ''; b.alloc = {}; b.itemAlloc = {}; }
+            else {   /* 2026-10-27：開啟時鎖定組數預帶示意值（100，不超過成員撐得起的套數） */
+              var mx2 = memberCapMax(b);
+              b.lockSets = String(mx2 === Infinity ? 100 : Math.min(100, mx2));
+            }
           }
           render({ blur: true }); onChange(BUNDLES);
           return;
@@ -3943,14 +3893,7 @@
       var avail = e.target.closest('[data-bd-avail]');
       if (avail) {
         if (avail.disabled) return;
-        /* D480 決定 3：改回不限量＝鎖定全部退回共用庫存，之後可以自己另設 */
-        if (SPLIT && b.avail === 'limited' && avail.dataset.bdAvail !== 'limited') { b.lockSets = ''; b.lockAsk = 'no'; b.alloc = {}; b.itemAlloc = {}; }
         b.avail = avail.dataset.bdAvail;
-        /* 2026-10-27：切到限量時販售上限預帶示意值（100，不超過成員撐得起的套數）；鎖定組數跟著上限走（limitSync） */
-        if (SPLIT && b.avail === 'limited' && !capN(b) && (b.cap === '' || b.cap == null)) {
-          var mx = memberCapMax(b);
-          if (mx === Infinity) b.cap = '100'; else if (mx >= 1) b.cap = String(Math.min(100, mx));
-        }
         render({ blur: true });
         return;
       }
@@ -4042,9 +3985,7 @@
         copy.cover = b.cover;
         copy.discount = b.discount;
         copy.discountOn = b.discountOn;
-        copy.avail = b.avail;
-        copy.cap = b.cap;
-        copy.lockSets = b.lockSets;
+        copy.lockSets = b.lockSets; copy.lockAsk = b.lockAsk; copy.preorder = b.preorder; copy.limitedTag = b.limitedTag;
         copy.nameTouched = true;
         /* D342：第 6 步補齊的欄位每一組都沿用（逐票種分配以票種為鍵，跨場通用） */
         copy.shown = b.shown; copy.saleOn = b.saleOn; copy.stack = b.stack; copy.codes = (b.codes || []).slice();
@@ -4157,7 +4098,7 @@
       ticketCount: ticketCount,   /* 活動變體：這一組每套含幾張票（＝整組張數 n；沒勾票種＝0） */
       tierCount: tierCount,       /* 活動變體：允許票種有幾種 */
       ticketLine: tixLineText,    /* 活動變體：「VIP／搖滾區 任選 × n」一句（Review／右軌共用） */
-      sellableSets: sellableSets, /* SPLIT：可售套數（鎖定／成員硬頂／限量上限取小；沒有量可算＝null） */
+      sellableSets: sellableSets, /* SPLIT：可售套數（鎖定庫存開著＝鎖定套數；否則成員硬頂；沒有量可算＝null） */
       timeIssues: tbErrCount,     /* SPLIT（D342）：這一組的時間層級與購買條件錯誤數（頁面發布前彙整用） */
       suggestName: suggestName,
       listPrice: listPrice,

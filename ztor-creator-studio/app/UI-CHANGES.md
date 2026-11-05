@@ -15,6 +15,52 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-05（四百六十六）· 組合包販售上限退場、庫存設為 0 改用鎖定庫存；未達標一律全額退款（C 撤除；D513）
+
+**標籤**：release2.3
+
+D513 決定 3、5 與〔推導〕1～6：組合包的販售上限（限量、Total Quantity）整個拿掉，項目方案的販售上限是另一件事、不動；「未達標時自動全額退款」開關退場。使用者裁決不進 release2.2。
+
+- 組合包庫存：`create-bundle.html` 收起來的舊控制項（販售上限二選一、鎖定二選一）連 markup 與 JS 移除；建立活動組合包（`js/bundle-editor.js` `layout:'split'`）與組合商品細節頁改成同一組三個開關（開啟不限量、開啟限量標籤、鎖定庫存）。
+- 鎖定套數語意：鎖定庫存開著＝可售＝鎖定套數 − 保留，套數可以是 0；開關關閉才是不鎖定。`ListingState.bundleLockSets`、`ztorEvents.bundleLockOf`／`bundleLeft` 都改這個讀法；下限＝被保留的套數；超過成員還能鎖的量時擋下並寫缺幾套（`cb.lock.short`）。
+- 組合商品細節頁：組合設定的「數量」卡改「庫存設定」三開關；組合庫存分頁 KPI 只留可售套數、鎖定套數兩塊，問句二選一改開關；上架中說明（`bd.stockonly.*`、`ed.stockonly.body`、`bd.members.locked`）拿掉販售上限。鎖定與兩個開關寫回活動資料。
+- 活動詳情一鍵「庫存設為 0」：開啟鎖定庫存、鎖定收到被保留的套數（`ztorEvents.bundleZeroLock`，取代 `bundleZeroCap`），可售 0；恢復＝細節頁調高鎖定或關閉鎖定。組合包卡與列表拿掉「已售 / 上限」，鎖定時顯示剩幾組。
+- 示範資料：組合包的 `cap` 全部移除，原限量沒鎖定的補 `lockSets`＝原限量 − 已售；本機覆寫裡的舊 `cap` 讀進來時同樣轉換（`bundleCapRetire`）。
+- 退款：`project-detail.html` 排程卡與編輯彈窗的開關移除，排程說明改成未達標轉失敗、每位支持者全額退款。
+- i18n 移除 `cb.cap.*`、`cb.lock.auto*`、`bd.lock.auto*`、`bd.cap.*`、`cb.lock.q／s／no／yes`、`cb.total*`、`cb.sec.qty`、`cb.why.cap`、`cb.qc.cap`、`cpp.bd.sp.lock.hint／over`、`cpp.bd.sp.sets.capnote`、`cpp.bd.sp.sets.why.cap`、`cpp.bd.sp.limit`、`cpp.bd.sp.why.cap`、`ed.bd.cap`、`project-detail.refund.*`；`cb.cap.short` 改名 `cb.lock.short`。
+- 文件：`design-system.html`、`design-components.html` 的販售上限 demo 拿掉；功能表 S45 改 ⚫ 退場；ASSUMPTIONS UIA-333。未動：`create-event-legacy.html`（對照用備份頁，S77 ⚪）。
+
+---
+
+## 2026-11-05（四百六十五）· 建立商品尺寸指南加開關，開啟後選預設或專屬（B 反饋導入；D512）
+
+**標籤**：release2.3、release2.4
+
+使用者反饋：「要有一個開關去開啟是否使用尺寸指南。開啟後可以選擇使用預設或是專屬尺寸指南（release2.4 中不需要有這個功能）」。
+
+- 尺寸指南改成開關列，預設關閉；關閉時右欄預覽也沒有尺寸指南入口。
+- 開啟後：「預設尺寸指南／專屬尺寸指南」二選一（`data-feat="full"`，只在最終版）。release2.3、2.4 沒有這個選擇，開啟後直接顯示商店的預設尺寸指南。
+- 專屬且還沒建立時顯示「還沒有專屬尺寸指南」與「建立」；建好後可編輯、移除，移除回到預設。原「改用專屬指南」按鈕退場。
+- 新 i18n：`cp.sg.on.sub`、`cp.sg.mode.default`、`cp.sg.mode.own`、`cp.sg.own.empty`、`cp.sg.own.create`。
+- 未動：商品細節頁的尺寸指南（D512 待確認）。
+
+---
+
+## 2026-11-05（四百六十四）· D510 原型同步：Admin 未選創作者狀態、返回鈕與頂欄名稱、「我的 IP」改稱 IP 資產（D 類 · 稽核 A15～A18）
+
+**標籤**：release2.3
+
+兩介面稽核（`note/規則手冊盤點-2026-11-04/兩介面架構稽核.md`）A15～A18 四項小修，對齊規格與 D510 正名；只改顯示文字與一個空狀態，不動版型與元件。
+
+- A15：Admin 身分但名冊裡沒有目前代管對象時，創作者介面頁面主內容換成空狀態「請先從 Creator 管理選取」＋前往 Creator 管理的按鈕（重用 `.empty-card`，與 Admin 門禁同一套機制，`js/sidebar.js` `needsCreatorPick`）。示範資料的 persona 一律在名冊上，這個狀態只在名冊被清空時出現，屬防呆。
+- A16：返回鈕「返回 Creator 名冊」改「返回 Creator 管理」，短名「Creator 名冊」改「Creator 管理」；英文改 Back to Creator Management／Creator Management。
+- A17：Admin 頁頂欄標示由「Creator 管理」統一為 Admin Creator Studio（與側欄一致）。
+- A18：側欄子項與頁面「我的 IP」全站顯示文字改「IP 資產」（英文 IP Assets）；檔名 `my-ip.html` 與 i18n 鍵名不動。為避免「IP 資產 / IP 資產」疊字，上層群組 IP Bank 中文改顯示 IP Bank（與規格「Artist IP Bank」一致）。
+- 同步 D510／D511：名冊的「前往工作區」中文改「前往創作者介面」（`js/i18n.js` `cd.enter`；英文維持 Enter workspace，規格同名 Enter Workspace）。
+- 影響已凍結的 release2.2：A16、A18 的字串也出現在 release2.2（E-Shop 交付版）；這一輪只標 release2.3，是否同步進 release2.2 待使用者決定。
+
+---
+
 ## 2026-11-03（四百六十三）· 活躍粉絲卡可點，開彈窗看粉絲組成（B 反饋 · 新功能 S133 · fans-crm）
 
 **標籤**：release2.4

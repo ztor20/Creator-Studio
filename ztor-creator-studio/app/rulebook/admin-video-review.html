@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>影片上架審核 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -241,9 +241,26 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 <ul class="plain">
   <li>預設排序：待審核與審核中排在已審完的前面；同一狀態裡，送出時間由舊到新，等最久的排最前</li>
-  <li>完全沒有送審作品時，顯示空狀態與說明</li>
-  <li>只剩已審完的作品時仍然列出，供事後查閱</li>
 </ul>
+
+<h4 id="queue-states">清單的各種樣子</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">整份清單</td></tr>
+    <tr><td>有待處理</td><td>有待審核或審核中的作品</td><td>清單為主要內容，等最久的排最前</td></tr>
+    <tr><td>沒有送審作品</td><td>平台目前沒有任何送審作品（含第一次進來）</td><td>顯示空狀態與說明，清單退位</td></tr>
+    <tr><td>只剩已審完的作品</td><td>沒有待審核或審核中的作品</td><td>仍然列出，供事後查閱，內容唯讀，不提供審核動作</td></tr>
+    <tr><td>篩選或搜尋沒有結果</td><td>條件沒有命中</td><td>顯示查無符合，並提供清除入口</td></tr>
+    <tr><td>非 Admin 進入</td><td>沒有 Admin 身分</td><td>顯示無權限狀態，不提供檢視與審核動作，見<a href="#access">誰能審核與操作紀錄</a></td></tr>
+    <tr class="grp"><td colspan="3">每一列</td></tr>
+    <tr><td>等待時間</td><td>從送出時間起算</td><td>顯示等待長度；要不要設逾時提醒<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>審核者空白</td><td>還沒有人接手</td><td>審核者欄是空的</td></tr>
+    <tr><td>第一次送出</td><td>送出次數為 1</td><td>顯示送出次數</td></tr>
+    <tr><td>退件重送</td><td>送出次數大於 1</td><td>送出次數加一，看得出是重送件</td></tr>
+    <tr><td>作品標題有多種語言</td><td>創作者填了多組語言</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.0.4 F2、頁面狀態；D182。</p>
 
 <h2 id="submission"><span class="n"></span>送審內容</h2>
@@ -291,12 +308,24 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 <p class="note">依據：5.1.0.4 F4、頁面狀態；D179、D192。</p>
 
+<h3 id="action-states">各狀態能做什麼</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>待審核</td><td>創作者已送出，還沒人接手</td><td>提供「接手審核」</td></tr>
+    <tr><td>審核中</td><td>審核者已接手</td><td>提供「審核通過」「審核不通過」；是否一定要先接手才能通過或不通過<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>審核通過</td><td>Admin 已通過</td><td>只能檢視，不再提供通過與不通過；結果不能原地撤回</td></tr>
+    <tr><td>審核不通過</td><td>Admin 已退件</td><td>只能檢視，並顯示退件理由；創作者修改重送後回到待審核</td></tr>
+    <tr><td>同一件多位審核者</td><td>兩位以上同時接手</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
+
 <h2 id="status"><span class="n"></span>作品審核的狀態</h2>
 <p>一件送審作品走過草稿、待審核、審核中，最後是審核通過或審核不通過；五種狀態的意思見項目規則的<a href="project-rules.html#review">作品審核</a>。這頁只有 Admin 這一側的規則：</p>
 <ul class="plain">
   <li>草稿不進這頁的清單，送出後才以待審核出現</li>
   <li>接手審核讓待審核轉為審核中，通過或不通過見<a href="#actions">審核動作</a></li>
-  <li>審核通過是終態，這頁不再提供通過與不通過</li>
+  <li>審核通過是最後結果，這頁不再提供通過與不通過</li>
 </ul>
 <p class="note">依據：5.1.0.4 F2「資料邊界」、F4、F5「作品審核狀態流」（審核通過：終態）；主規格 §7.2 作品審核；D179。</p>
 
@@ -335,12 +364,12 @@ table.map td:nth-child(2){width:22%}
 <h2 id="access"><span class="n"></span>誰能審核與操作紀錄</h2>
 <p>只有 Admin 能審核，創作者不能審自己的作品，每一次審核都留紀錄。</p>
 <ul class="plain">
-  <li>只有 Admin 能進入這頁與執行審核動作；創作者工作區沒有這頁</li>
+  <li>只有 Admin 能進入這頁與執行審核動作；創作者介面沒有這頁</li>
   <li>沒有權限時，顯示無權限狀態並說明需要什麼身分，不只是把入口藏起來</li>
   <li>Admin 代為操作某位創作者時，做的是創作者那一側的事</li>
   <li>審核一律回到這頁以 Admin 身分執行，不能用代操身分把自己送的件審過</li>
   <li>每一次接手、通過與不通過，都記錄執行者、時間、對象作品與退件理由；只增不改，更正以新的一筆表示</li>
-  <li>審核紀錄與代為操作的紀錄看得出差別，見<a href="admin-creators.html#workspace">代為操作創作者的工作區</a></li>
+  <li>審核紀錄與代為操作的紀錄看得出差別，見<a href="admin-creators.html#workspace">代為操作創作者介面</a></li>
 </ul>
 <p class="note">依據：5.1.0.4 F1、F6、頁面狀態；主規格 §4.1；D179。</p>
 
@@ -348,7 +377,7 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.0.4-影片上架審核.md</code>（v1.8）、<code>5.1.2.2.1-作品上架流程.md</code>、<code>5.1.2.2-專案詳情.md</code> §2.2.9、<code>0-設計規格書.md §4.1／§7.2</code></li>
+    <li>規格：<code>5.1.0.4-影片上架審核.md</code>（v1.8）、<code>5.1.2.2.1-作品上架流程.md</code>、<code>5.1.2.2-專案詳情.md</code> §2.2.9、<code>0-設計規格書.md</code>（v5.39）§4.1、§7.2</li>
     <li>決策：D178、D179、D182、D192、D193、D203、D204、D233、D273、D347、D391、D455</li>
   </ul>
   <p class="k">尚待確認</p>
@@ -369,7 +398,7 @@ table.map td:nth-child(2){width:22%}
     <li>操作紀錄在哪裡查看、能不能篩選</li>
     <li>清單載入中、載入失敗時怎麼顯示</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D455：創作者端的審核結果一律顯示在進度摘要與時間軸的上架階段；對照 5.1.0.4 v1.8）；2026-10-19（新頁，對照 5.1.0.4 v1.7）</p>
+  <p class="k">最近同步：2026-11-05（D455 逐條對照；對照 5.1.0.4 v1.8、主規格 v5.39）</p>
 </details>
 </div>
 </body>

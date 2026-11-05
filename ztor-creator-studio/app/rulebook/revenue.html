@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>收入管理 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -90,7 +90,7 @@ tr:last-child td{border-bottom:0}
 <h2 id="rev-intro" class="no-num">概述</h2>
 <ul class="plain">
   <li>收入管理只呈現收入的結果，商品、活動、IP、項目與粉絲本身的操作在各自的頁面完成</li>
-  <li>收入管理是全站收入數字的唯一出處，儀表板與項目都引用這裡，不另外重算</li>
+  <li>儀表板、項目與其他頁的收入數字引用這裡的口徑，不另外重算</li>
   <li>頁面分五個分頁，財務摘要卡在每個分頁都一樣，見<a href="#rev-header">頁首與財務摘要</a></li>
 </ul>
 
@@ -161,6 +161,24 @@ tr:last-child td{border-bottom:0}
   <li>提款申請中、已付款這類提款進度不放在摘要卡，放在<a href="#rev-history">提款紀錄</a></li>
   <li>卡片包含手動補登的資料時，要標示出來，見<a href="revenue-manual.html">手動補登收入</a></li>
 </ul>
+<p>四張卡依條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">四張卡整體</td></tr>
+    <tr><td>還沒有收入</td><td>帳號尚未產生任何收入</td><td>改成空狀態與引導，不顯示 0 元，見<a href="#rev-empty">還沒有收入時</a></td></tr>
+    <tr><td>有收入</td><td>帳號已產生過收入</td><td>正常顯示四張卡</td></tr>
+    <tr class="grp"><td colspan="3">淨利</td></tr>
+    <tr><td>淨利是負值</td><td>本期間扣項與分潤超過毛利</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">待結算</td></tr>
+    <tr><td>有待結算</td><td>有已產生、尚不能提領的收入</td><td>顯示金額、幣別、資料期間與解鎖時間</td></tr>
+    <tr class="grp"><td colspan="3">可提領</td></tr>
+    <tr><td>有可提領</td><td>有已結算的收入</td><td>顯示金額、幣別、資料期間與申請提款入口</td></tr>
+    <tr><td>可提領是 0</td><td>已有收入，但目前沒有可提領的金額</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">含手動補登</td></tr>
+    <tr><td>統計含手動補登</td><td>卡片數字納入了手動補登的收入</td><td>標示含手動補登資料</td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="rev-tabs">分頁</h3>
 <div class="tablewrap"><table>
@@ -190,8 +208,23 @@ tr:last-child td{border-bottom:0}
 </table></div>
 <ul class="plain">
   <li>撤銷沖銷、提款、扣款、手續費與爭議調整不算進收入趨勢，在交易明細看</li>
-  <li>資料不足時保留圖表位置，說明缺少收入資料、期間太短或外部同步還沒完成，不畫成 0</li>
 </ul>
+<p>收入趨勢依資料條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">資料點的資料狀態</td></tr>
+    <tr><td>正常</td><td>資料完整</td><td>顯示期間、金額、跟前一期比的變化</td></tr>
+    <tr><td>資料不足</td><td>缺少收入資料、期間太短，或外部同步還沒完成</td><td>保留圖表位置並說明原因，不畫成 0</td></tr>
+    <tr><td>同步延遲</td><td>外部資料還沒同步完</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>含手動補登</td><td>該期含手動補登的收入</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">跟前一期比的變化</td></tr>
+    <tr><td>上升、下降、持平</td><td>本期與前一期比較</td><td>顯示變化幅度或百分比；各自怎麼標示 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>前一期是 0</td><td>前一期沒有收入</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">整區</td></tr>
+    <tr><td>還沒有收入</td><td>帳號尚未產生任何收入</td><td>說明收入產生後會出現在這裡，見<a href="#rev-empty">還沒有收入時</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="rev-source">收入來源</h3>
 <p>收入來源讓創作者看出收入主要來自商品、活動、IP、授權、項目支持或分潤的哪一種。來源就是收入事件的 10 類，定義見<a href="common-finance.html">財務術語與收入事件</a>。</p>
@@ -204,10 +237,17 @@ tr:last-child td{border-bottom:0}
   </tbody>
 </table></div>
 <ul class="plain">
-  <li>貼文帶貨收益跟項目支持、串流・版稅是三筆不同的錢，分開計算，不合併也不互相抵</li>
-  <li>貼文帶貨收益這裡只看金額，瀏覽、互動與租借次數在<a href="fans-analytics.html">粉絲分析</a>；兩邊互相有入口</li>
-  <li>一筆貼文帶貨收益要追得到帶出它的貼文與被租借的內容</li>
+  <li>貼文帶貨收益只看金額，瀏覽、互動與租借次數在<a href="fans-analytics.html">粉絲分析</a>，兩邊互相有入口；其餘規則見<a href="common-finance.html#cat-income">收入事件的 10 類</a></li>
 </ul>
+<p>收入來源依條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>來源很多</td><td>空間不夠放</td><td>只列金額最高的前四項，其餘合併成其他</td></tr>
+    <tr><td>某個分類還沒有資料</td><td>貼文帶貨收益與 Fanvestor 分潤在有第一筆資料前</td><td><a href="#rev-tx-filter">交易明細的收入分類篩選</a>不提供對應的篩選項</td></tr>
+    <tr><td>目前期間沒有可分類的收入</td><td>—</td><td>說明目前期間沒有可分類收入，不用範例或假資料填圖表</td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="rev-recent">近期交易</h3>
 <p>近期交易讓創作者在收入總覽快速確認最近的收入、提款、扣款或版稅，不用先進完整的交易明細。依最近發生或更新的時間排序。</p>
@@ -217,40 +257,53 @@ tr:last-child td{border-bottom:0}
     <tr><td>日期</td><td>—</td><td>月日，例如 06/08</td></tr>
     <tr><td>交易項目</td><td>—</td><td>名稱與分類，例如「限量黑膠組合包銷售（商品銷售）」</td></tr>
     <tr><td>金額與幣別</td><td>—</td><td>收入是正值<br>提款、扣款與費用調整是負值或扣減</td></tr>
-    <tr><td>交易狀態</td><td>—</td><td>見<a href="#rev-tx-cols">交易明細表</a>的狀態列</td></tr>
+    <tr><td>交易狀態</td><td>—</td><td>見<a href="common-status.html#revenue">收入與提款的狀態</a></td></tr>
     <tr><td>查看全部（View All Transactions）</td><td>—</td><td>進<a href="#rev-transactions">交易明細</a></td></tr>
   </tbody>
 </table></div>
+<p>尚無交易時，說明目前沒有交易紀錄，並保留前往交易明細或手動補登的入口。</p>
 <p class="note">依據：5.1.8 F4、F5、F6；主規格 §7.3；D181、D250、D253、D325。</p>
 
 <h2 id="rev-transactions"><span class="n"></span>交易明細</h2>
 <p>交易明細是查帳、對帳與匯出的地方，列出完整的交易與每一筆的扣項。收入事件與帳務異動兩族放在同一張表、依時間排序，讓創作者在一條時間軸上看這段期間進了什麼、出了什麼；兩族的定義見<a href="common-finance.html">財務術語與收入事件</a>。每一欄怎麼顯示見<a href="#rev-tx-cols">交易明細表</a>；怎麼找見<a href="#rev-tx-filter">篩選與匯出</a>；點開一筆看什麼見<a href="#rev-tx-expand">展開一筆</a>。</p>
 
 <h3 id="rev-tx-cols">交易明細表</h3>
-<p>欄位依交易的族別切換，不適用的欄位留白，不填 0；填 0 會被讀成「這筆真的扣了 0 元」。Admin 撤銷後交易明細怎麼呈現，見尚待確認。</p>
+<p>欄位依交易的族別切換，不適用的欄位留白，不填 0；填 0 會被讀成「這筆真的扣了 0 元」。各欄依三類交易顯示如下：</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:14%">欄位</th><th style="width:30%">收入事件</th><th style="width:26%">提款</th><th>扣款</th></tr></thead>
+  <thead><tr><th style="width:14%">欄位</th><th style="width:30%">收入事件</th><th style="width:24%">提款</th><th>撤銷沖銷與扣款</th></tr></thead>
   <tbody>
     <tr><td>日期</td><td>入帳日</td><td>申請日或入帳日</td><td>發生日</td></tr>
-    <tr><td>交易項目</td><td>名稱與分類</td><td>收款銀行與遮蔽帳號</td><td>名稱</td></tr>
+    <tr><td>交易項目</td><td>名稱與分類</td><td>收款銀行與遮蔽帳號</td><td>名稱；撤銷沖銷另附被沖銷的原交易連結</td></tr>
     <tr><td>金額與匯率</td><td>原幣、換算後金額與匯率，例如 USD 120.00 → TWD 3,744（31.20）<br>同幣別只顯示金額</td><td>提款金額</td><td>負值</td></tr>
-    <tr><td>狀態</td><td>待結算<br>可提領<br>Paid<br>Disputed</td><td>Payout Requested<br>Paid<br>Failed</td><td>已扣款</td></tr>
+    <tr><td>狀態</td><td>待結算<br>可提領<br>已付款（Paid）<br>爭議中（Disputed）</td><td>提款申請中（Payout Requested）<br>已付款（Paid）<br>提款失敗（Failed）</td><td>已取消<br>已扣款</td></tr>
     <tr><td>逐筆扣項</td><td>平台費、支付費</td><td>留白</td><td>留白</td></tr>
     <tr><td>該筆淨額</td><td>收入扣掉逐筆扣項</td><td>實際入帳金額</td><td>負值</td></tr>
-    <tr><td>費率版本</td><td>展開後顯示</td><td>留白</td><td>—</td></tr>
-    <tr><td>事件編號</td><td>展開後顯示，可複製</td><td>提款批次編號</td><td>—</td></tr>
+    <tr><td>費率版本</td><td>展開後顯示</td><td>留白</td><td>沿用原交易的版本</td></tr>
+    <tr><td>事件編號</td><td>展開後顯示，可複製</td><td>提款批次編號</td><td>沖銷單號與原事件編號</td></tr>
     <tr><td>資料來源</td><td>平台驗證<br>外部同步<br>手動補登</td><td>平台</td><td>平台或客服</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
-  <li>兩族的狀態用不同色票：收入的 Paid 跟提款的 Paid 是不同的事；狀態用詞見<a href="common-status.html">狀態語言</a></li>
-  <li>爭議中（Disputed）的列標示凍結，爭議期間從可提領扣除</li>
-  <li>待結算的列在狀態後面接預計可提領的日期，例如「11/30 可提領」；手動補登的待結算列改接「不計入可提領」，因為它永遠不會轉成可提領</li>
+  <li>兩族的狀態用不同色票：收入的已付款跟提款的已付款是不同的事；各狀態什麼時候出現，見<a href="common-status.html#revenue">收入與提款的狀態</a></li>
   <li>帳務異動列是負值，視覺份量比收入列低</li>
-  <li>手動補登是資料來源，不是分類，任何一種收入分類都可能來自手動補登</li>
   <li>毛利、直接成本、合作者分潤與淨利屬項目層級，逐筆交易不顯示，看<a href="#rev-project">單一項目收益拆解</a></li>
   <li>可以追到項目的交易列，有進單一項目收益拆解的入口</li>
 </ul>
+<p>列的樣子依狀態與資料來源而不同，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">收入列</td></tr>
+    <tr><td>待結算</td><td>收入已產生、尚不能提領</td><td>狀態後面接預計可提領的日期，例如「11/30 可提領」（日期屬示意，見頁尾）</td></tr>
+    <tr><td>手動補登的待結算</td><td>資料來源是手動補登</td><td>狀態後面改接「不計入可提領」，因為它永遠不會轉成可提領</td></tr>
+    <tr><td>爭議中</td><td>爭議調查期間</td><td>標示凍結，金額從可提領扣除</td></tr>
+    <tr class="grp"><td colspan="3">撤銷沖銷與扣款列</td></tr>
+    <tr><td>已取消、已扣款</td><td>撤銷沖銷（Admin 撤銷當下自動產生）與扣款</td><td>金額是負值；欄位不適用的留白</td></tr>
+    <tr class="grp"><td colspan="3">整張表</td></tr>
+    <tr><td>排序</td><td>—</td><td>收入事件與帳務異動兩族同表，依時間排序；是否另有排序、分頁與每頁幾筆 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>尚無交易</td><td>帳號沒有任何交易</td><td>說明收入產生後會出現在這裡，保留手動補登入口，見<a href="#rev-empty">還沒有收入時</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="rev-tx-filter">篩選與匯出</h3>
 <div class="tablewrap"><table class="fields">
@@ -258,20 +311,22 @@ tr:last-child td{border-bottom:0}
   <tbody>
     <tr><td>只看收入、只看金流異動</td><td>—</td><td>切換只顯示其中一族</td></tr>
     <tr><td>收入分類</td><td>—</td><td>排在第一排<br>收入事件的分類；還沒有資料的分類不出現</td></tr>
-    <tr><td>狀態與資料來源</td><td>多選</td><td>排在第二排<br>待結算<br>可提領<br>爭議中<br>手動補登</td></tr>
+    <tr><td>狀態與資料來源</td><td>多選</td><td>排在第二排<br>待結算<br>可提領<br>已取消<br>爭議中<br>手動補登</td></tr>
     <tr><td>期間、幣別</td><td>—</td><td>—</td></tr>
     <tr><td>匯出</td><td>—</td><td>匯出目前篩選的交易</td></tr>
     <tr><td>手動補登收入</td><td>—</td><td>開啟補登視窗，見<a href="revenue-manual.html">手動補登收入</a></td></tr>
   </tbody>
 </table></div>
+<p>篩選或搜尋查不到任何交易時的畫面 <span class="tag wait">尚待確認</span></p>
 
 <h3 id="rev-tx-expand">展開一筆</h3>
-<p>每一筆都能展開，內容依交易種類不同；Admin 撤銷後的沖銷紀錄怎麼展開，見尚待確認。</p>
+<p>每一筆都能展開，內容依交易種類不同。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">交易</th><th>展開後看到</th></tr></thead>
   <tbody>
     <tr><td>收入事件</td><td>這一筆自己的收入去向：計算基準、費率與逐項扣項<br>費率版本：售出當時凍結的費率<br>事件編號</td></tr>
     <tr><td>提款</td><td>這批提款含哪些收入事件<br>收款銀行<br>送出與入帳時間<br>失敗原因</td></tr>
+    <tr><td>撤銷沖銷與扣款</td><td>被沖銷的原交易（可跳轉）<br>撤銷沖銷由哪一層吸收：沖銷準備金、當期可分配淨利或結轉赤字，見<a href="common-finance.html#void-reserve">撤銷沖銷與爭議</a></td></tr>
     <tr><td>手動補登</td><td>來源說明<br>附件<br>為什麼不計入可提領</td></tr>
   </tbody>
 </table></div>
@@ -281,28 +336,34 @@ tr:last-child td{border-bottom:0}
 <p>項目收益分頁看錢怎麼從總收入一路扣到淨利：本期間全部收入的去向見<a href="#rev-waterfall">收入去向</a>；單一項目的收益見<a href="#rev-project">單一項目收益拆解</a>。</p>
 
 <h3 id="rev-waterfall">收入去向</h3>
-<p>收入去向（Where the money goes）讓創作者看懂本期間總收入怎麼一路被扣到可分配淨利、再分配出去，也是對帳與解釋爭議的畫面。分頁上先顯示一行摘要，按「查看完整拆解」才開完整內容。</p>
-<ul class="plain">
-  <li>依頁首篩選的期間，涵蓋全部收入來源</li>
-  <li>每一階的順序、算法與可分配淨利怎麼分配，見<a href="common-finance.html#ladder">財務術語與收入事件</a>，這裡不另算</li>
-  <li>每一階可以顯示計算基準、費率與這一階含幾筆收入事件；費率以那段期間各收入事件的費率版本為準</li>
-</ul>
-
-<h3 id="rev-project">單一項目收益拆解</h3>
-<p>單一項目收益拆解讓創作者看一個項目的收入、成本、扣項、分潤與淨利，對照預期與實際入帳。分頁上是「我的項目」表格，一列一個項目，顯示項目名、類型與項目淨收入；點一列開啟這個項目的收益拆解。</p>
+<p>收入去向（Where the money goes）讓創作者看懂本期間總收入怎麼一路被扣到可分配淨利、再分配出去，也是對帳與解釋爭議的畫面。涵蓋頁首篩選期間內的全部收入來源；每一階的順序、算法與可分配淨利怎麼分配，見<a href="common-finance.html#ladder">財務術語與收入事件</a>，這裡不另算。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>從哪裡進來</td><td>—</td><td>項目收益分頁的「我的項目」表格<br><a href="project-detail.html">項目詳情</a><br>交易明細的項目交易列<br>收入來源的項目支持</td></tr>
+    <tr><td>本期間的收入去向</td><td>—</td><td>依頁首篩選的期間，從總收入一路列到可分配淨利與分配</td></tr>
+    <tr><td>每一階的細節</td><td>—</td><td>計算基準、費率與這一階含幾筆收入事件<br>費率以那段期間各收入事件的費率版本為準</td></tr>
+  </tbody>
+</table></div>
+<p>尚無可結算的收入時，說明本期間尚無可結算收入，不畫成 0，見<a href="#rev-empty">還沒有收入時</a>。</p>
+
+<h3 id="rev-project">單一項目收益拆解</h3>
+<p>單一項目收益拆解讓創作者看一個項目的收入、成本、扣項、分潤與淨利，對照預期與實際入帳。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>我的項目表格</td><td>—</td><td>一列一個項目<br>點一列，開啟這個項目的收益拆解<br>是否可以排序 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>其他入口</td><td>—</td><td>項目收益分頁的「我的項目」表格<br><a href="project-detail.html">項目詳情</a><br>交易明細的項目交易列<br>收入來源的項目支持</td></tr>
     <tr><td>收益階梯</td><td>—</td><td>總收入 → 直接成本 → 毛利 → 扣項與分潤 → 淨利；算法見<a href="common-finance.html">財務術語與收入事件</a></td></tr>
     <tr><td>來源追溯</td><td>—</td><td>每一筆收入或扣項都追得到對應的交易、商品、活動、IP 授權或支持方案</td></tr>
     <tr><td>回項目、看交易、匯出</td><td>—</td><td>回項目詳情、看交易明細或匯出這個項目的收益資料</td></tr>
   </tbody>
 </table></div>
+<p>尚無可結算的收入時，說明有結算收入後才會出現項目收益階梯，見<a href="#rev-empty">還沒有收入時</a>。</p>
 <p class="note">依據：5.1.8 F11、F12、頁面佈局；主規格 §5.2.2、§7.3、§7.6；D041。</p>
 
 <h2 id="rev-payouts"><span class="n"></span>提款管理</h2>
 <p>提款管理分頁看可提領金額、提款紀錄與進度，並從這裡申請提款：選銀行見<a href="#rev-banks">提款銀行</a>；可分配淨利見<a href="#rev-pool">可分配淨利與沖銷準備金</a>；過去的提款見<a href="#rev-history">提款紀錄</a>。</p>
+<p>Admin 代管時不能申請提款，Admin 代管時不能更改收款帳戶，見<a href="admin-actions.html#limits">Admin 代管不能做的事</a>；提款與收款帳戶由創作者本人處理。</p>
 
 <h3 id="rev-banks">提款銀行</h3>
 <p>創作者在這裡選這次要匯入的銀行，再開申請提款。畫面依有沒有提款銀行分兩種：</p>
@@ -316,14 +377,29 @@ tr:last-child td{border-bottom:0}
     <tr><td>提款前要知道的事</td><td>—</td><td>費用<br>匯率<br>預估到帳時間<br>最低提款金額<br>自動提款規則</td></tr>
   </tbody>
 </table></div>
-<p>什麼情況下申請提款不能送出，見<a href="revenue-withdraw.html#wd-main">申請提款主畫面</a>。</p>
+<p>什麼情況下申請提款不能送出，見<a href="revenue-withdraw.html#wd-main">申請提款主畫面</a>。申請提款區塊與可分配淨利依條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">申請提款區塊</td></tr>
+    <tr><td>已新增提款銀行</td><td>至少一家提款銀行</td><td>銀行卡片列，最後一張固定是「新增新的銀行」</td></tr>
+    <tr><td>沒有提款銀行</td><td>還沒新增任何提款銀行</td><td>不顯示空列表，只出現「新增提款銀行」卡片與原因提示</td></tr>
+    <tr><td>銀行卡：可用、預設</td><td>帳戶可用</td><td>可以選來提款</td></tr>
+    <tr><td>銀行卡：驗證中、不可用</td><td>帳戶尚未驗證完成或不可用</td><td>不能選，也不能送出提款</td></tr>
+    <tr><td>身分驗證沒通過或碰到合規上限</td><td>—</td><td>申請提款不能送出並顯示原因</td></tr>
+    <tr class="grp"><td colspan="3">可分配淨利</td></tr>
+    <tr><td>為負</td><td>本期可分配淨利小於 0</td><td>改成警示並暫停分配，說明虧損往後結轉、已撥出的款不追回</td></tr>
+    <tr class="grp"><td colspan="3">整個分頁</td></tr>
+    <tr><td>還沒有收入</td><td>帳號尚未產生收入</td><td>說明有可提領餘額後可在這裡申請，仍可先新增提款銀行，見<a href="#rev-empty">還沒有收入時</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="rev-pool">可分配淨利與沖銷準備金</h3>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:26%">項目</th><th>顯示什麼</th></tr></thead>
   <tbody>
     <tr><td>可分配淨利（畫面上的 Distributable profit）</td><td>本期可分配的淨利，是收入去向的最後一段<br>為負時改成警示並暫停分配，說明虧損往後結轉、已撥出的款不追回</td></tr>
-    <tr><td>沖銷準備金（Void Reserve）</td><td>比例目前為 0%，不預扣；定義見<a href="common-finance.html#void-reserve">沖銷準備金</a></td></tr>
+    <tr><td>沖銷準備金（Void Reserve）</td><td>預扣來緩衝撤銷沖銷的金額，吸收順序見<a href="common-finance.html#void-reserve">撤銷沖銷與爭議</a>；預扣比例尚待確認</td></tr>
   </tbody>
 </table></div>
 
@@ -335,8 +411,8 @@ tr:last-child td{border-bottom:0}
     <tr><td>日期篩選</td><td>—</td><td>例如近 12 個月、自訂區間</td></tr>
     <tr><td>提款方式與帳戶</td><td>—</td><td>例如 Bank transfer · •••3417</td></tr>
     <tr><td>日期與進度</td><td>—</td><td>例如申請日與預估到帳日、實際到帳日與手續費、被銀行退回並建議重試</td></tr>
-    <tr><td>提款狀態與金額</td><td>—</td><td>Payout Requested<br>Paid<br>Failed</td></tr>
-    <tr><td>失敗時的處理</td><td>只有 Failed</td><td>查看原因<br>更新付款資訊<br>重新申請</td></tr>
+    <tr><td>提款狀態與金額</td><td>—</td><td>提款申請中（Payout Requested）<br>已付款（Paid）<br>提款失敗（Failed）<br>各狀態見<a href="common-status.html#revenue">收入與提款的狀態</a></td></tr>
+    <tr><td>失敗時的處理</td><td>只有提款失敗</td><td>查看原因<br>更新付款資訊<br>重新申請</td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.8 F8；5.1.8.1 §2；主規格 §7.2、§7.3、§7.6；D041、D253。</p>
@@ -350,7 +426,7 @@ tr:last-child td{border-bottom:0}
     <tr><td>年份</td><td>—</td><td>可用的年份與全部年度</td></tr>
     <tr><td>季度</td><td>—</td><td>全部季度或指定季度</td></tr>
     <tr><td>文件清單</td><td>—</td><td>依年份分組，例如「2025 年文件」<br>右上顯示幣別與稅務識別資訊摘要</td></tr>
-    <tr><td>每份文件</td><td>—</td><td>文件名稱，例如 1099-NEC<br>文件資訊：稅務年度、格式、大小<br>可下載時顯示 Download；還沒產生時顯示 Not yet 與可用時間</td></tr>
+    <tr><td>每份文件</td><td>—</td><td>文件名稱，例如 1099-NEC<br>文件資訊：稅務年度、格式、大小<br>可下載時顯示下載（Download）；還沒產生時顯示尚未產生（Not yet）與可用時間</td></tr>
   </tbody>
 </table></div>
 <h3 id="rev-tax-regions">支援的地區</h3>
@@ -367,6 +443,15 @@ tr:last-child td{border-bottom:0}
   </tbody>
 </table></div>
 <p>所在地區還不支援時，提示仍可下載年度收入摘要作為當地報稅的起點，並提供客服入口。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>可下載</td><td>文件已產生</td><td>顯示下載（Download）</td></tr>
+    <tr><td>尚未產生</td><td>文件還沒產生</td><td>顯示尚未產生（Not yet），並寫出原因或可用時間，例如「Available after Jan 15, 2026」</td></tr>
+    <tr><td>所在地區不支援</td><td>創作者所在地尚未支援自動產出稅務文件</td><td>提示仍可下載年度收入摘要，並提供客服入口</td></tr>
+    <tr><td>尚無稅務文件</td><td>帳號尚無收入</td><td>文件清單顯示空狀態並說明收入產生後會出現對應文件；支援地區照常顯示</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.8 F9。</p>
 
 <h2 id="rev-empty"><span class="n"></span>還沒有收入時</h2>
@@ -389,20 +474,24 @@ tr:last-child td{border-bottom:0}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.8-收入管理.md</code>（最後更新 2026-09-24）F1～F12、頁面佈局、頁面狀態、情境；<code>5.1.8.1-申請提款流程.md</code> §2；<code>0-設計規格書.md</code> §5.2.2、§7.2、§7.3、§7.6</li>
-    <li>決策：D041、D181、D250、D253、D316、D325、D452</li>
+    <li>規格：<code>5.1.8-收入管理.md</code>（最後更新 2026-11-05）F1～F12、頁面佈局、頁面狀態、情境；<code>5.1.8.1-申請提款流程.md</code>（2026-11-05）§2；<code>0-設計規格書.md</code>（v5.41）§5.2.2、§7.2、§7.3、§7.6</li>
+    <li>決策：D041、D181、D250、D253、D316、D325、D452、D510、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>結算週期（T+N 日、月結或其他）：待結算卡的解鎖時間與交易明細「幾月幾日可提領」的日期目前只是示意</li>
-    <li>Admin 撤銷後是否自動產生沖銷分錄與其呈現（§7.6 提案未核准，D452 留待裁決）</li>
-    <li>要不要預扣沖銷準備金</li>
+    <li>撤銷沖銷的金額口徑：沖銷是否連同平台費與支付費退給創作者、平台外實際退款金額與沖銷金額怎麼對帳、跨幣別用哪個匯率</li>
+    <li>要不要預扣沖銷準備金（目前預扣比例是 0%，是 v1 的暫定設定）</li>
+    <li>淨利是負值、可提領是 0、收入趨勢上升下降持平或前一期是 0，以及交易明細篩選查不到時的畫面</li>
+    <li>收入趨勢資料點的「同步延遲」「含手動補登」兩種資料狀態的畫面</li>
+    <li>交易明細是否另有排序、分頁，以及每頁幾筆；我的項目表格是否可排序</li>
+    <li>項目收益分頁怎麼進入收入去向（規格的呈現參考是一行摘要加「查看完整拆解」彈窗），以及我的項目表格每列顯示哪些資料（呈現參考是項目名、類型、項目淨收入）</li>
     <li>貼文帶貨收益的分潤比例、結算週期、跟平台費率的關係、內容租借的定價權，以及內容租借本身的定義</li>
     <li>同一筆租借經過多則貼文時，貼文帶貨收益算給哪一則</li>
     <li>自動提款規則與最低提款金額的內容</li>
     <li>各分頁載入中與載入失敗的畫面</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（新頁，對照 5.1.8 最後更新 2026-09-24、D452）</p>
+  <p class="k">最近同步：2026-11-05（D513 規格只寫最終版，撤銷沖銷分錄定案；對照規格 v5.41）</p>
 </details>
 </div>
 </body>

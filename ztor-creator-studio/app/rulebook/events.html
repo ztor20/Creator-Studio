@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>活動總覽 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -183,6 +183,7 @@ table.map td:nth-child(2){width:22%}
     </ul>
   </li>
 </ol>
+<p class="note">依據：5.1.6 F1、F2、F3、F6。</p>
 
 <h2 id="list"><span class="n"></span>活動清單</h2>
 <p>活動清單讓創作者掃視所有活動的時間、場地、票券與狀態，並點進單一活動管理。每一列有哪些欄位與操作，見<a href="#清單">清單</a>；頁首的數字怎麼算，見<a href="#統計">統計</a>；從哪裡開始建一場新活動，見<a href="#list-create">建立活動</a>；還沒有活動時顯示什麼，見<a href="#沒有資料時">沒有資料時</a>。</p>
@@ -202,15 +203,41 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">縮圖與場地</td></tr>
+    <tr><td>有縮圖</td><td>活動有主視覺</td><td>顯示主視覺</td></tr>
+    <tr><td>沒有縮圖</td><td>沒上傳主視覺</td><td>顯示預設圖</td></tr>
+    <tr><td>實體活動</td><td>有場地</td><td>顯示場地名稱</td></tr>
+    <tr><td>線上活動</td><td>沒有實體場地</td><td>改標平台</td></tr>
+    <tr class="grp"><td colspan="3">活動欄</td></tr>
+    <tr><td>系列活動</td><td>活動是系列的一場</td><td>名稱旁附系列序，例如「系列 1/3」</td></tr>
+    <tr><td>一般活動</td><td>不是系列</td><td>不附系列序</td></tr>
+    <tr class="grp"><td colspan="3">票券欄</td></tr>
+    <tr><td>有售出</td><td>已售少於總數</td><td>「已售／總數」加銷售進度條</td></tr>
+    <tr><td>賣完</td><td>已售等於總數</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>總數是 0</td><td>活動沒有任何門票</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">收入欄</td></tr>
+    <tr><td>有收入</td><td>活動有收入</td><td>顯示收入，口徑同收入管理</td></tr>
+    <tr><td>收入是 0</td><td>還沒有收入</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">狀態欄的徽章</td></tr>
+    <tr><td>階段徽章</td><td>每場活動一個</td><td>草稿、已排程、售票中、進行中、已結束其中之一</td></tr>
+    <tr><td>加「已下架」</td><td>活動已下架</td><td>留在原本的階段，另加已下架徽章；草稿沒有下架</td></tr>
+    <tr><td>加「完售」</td><td>所有門票與票務商品都賣完</td><td>留在原本的階段，另加完售徽章</td></tr>
+    <tr><td>已封存</td><td>活動已封存</td><td>只顯示「已封存」徽章，優先於其他所有徽章</td></tr>
+  </tbody>
+</table></div>
+
 <h4 id="list-actions">列操作</h4>
 <p>每一列依活動的階段提供不同的操作；發布過的活動不能刪除，也沒有取消，要歸檔就先下架、再封存，見<a href="event-rules.html#archive">封存與解除封存</a>。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>編輯</td><td>草稿<br>已排程<br>售票中<br>進行中<br>已結束與已封存不提供，活動整頁唯讀</td><td>草稿：回到建立活動流程<br>發布過的活動：開啟活動詳情頁並直接進入編輯模式，見<a href="event-detail.html#edit">編輯活動</a>；活動上架中時只有門票張數，以及上架、下架、開賣、停售的時間能直接改，其他要先下架，見<a href="event-detail.html#edit-published">發布後能改什麼</a></td></tr>
-    <tr><td>複製</td><td>每一列都有</td><td>複製這場活動；複製出來的內容見頁尾尚待確認</td></tr>
-    <tr><td>刪除</td><td>只有草稿<br>要確認</td><td>草稿系列：刪除母列，整個系列連同底下的場次一起刪除；子場也可以單獨刪除<br>含這場草稿門票的組合包一起刪除，確認時列出名稱，見<a href="event-rules.html#cascade-draft">刪除草稿時</a><br>bookyay 匯入、已對應但還沒發布的活動，刪除後回到 Admin 的待對應創作者，由 Admin 重新對應，見<a href="admin-events.html#admin">bookyay 活動的對應與補完</a></td></tr>
-    <tr><td>封存</td><td>只有已下架的活動，已結束的活動也要先下架<br>創作者與 Admin 都能按</td><td>確認內容與封存後的結果，見<a href="event-rules.html#archive">封存與解除封存</a><br>草稿列不提供封存<br>bookyay 匯入的活動也能封存，不通知 bookyay</td></tr>
+    <tr><td>編輯</td><td>草稿<br>已排程<br>售票中<br>進行中<br>已結束與已封存不提供，活動整頁唯讀</td><td>草稿：回到建立活動流程<br>發布過的活動：開啟活動詳情頁並直接進入編輯模式，見<a href="event-detail.html#edit">編輯活動</a>；活動上架中時只有庫存能直接改，其他資料要先下架才能改，見<a href="event-detail.html#edit-published">發布後能改什麼</a></td></tr>
+    <tr><td>複製</td><td>已封存的列不提供，只提供解除封存</td><td>複製這場活動；複製出來的內容見頁尾尚待確認</td></tr>
+    <tr><td>刪除</td><td>只有草稿<br>要確認</td><td>草稿系列：刪除母列，整個系列連同底下的場次一起刪除；子場也可以單獨刪除<br>含這場草稿門票的組合包一起刪除，確認時列出名稱，見<a href="event-rules.html#cascade-draft">刪除草稿時</a><br>bookyay 匯入、已對應但還沒發布的活動，刪除後回到待對應創作者，由 Admin 在<a href="admin-events.html#assign">活動與創作者的對應</a>重新對應</td></tr>
+    <tr><td>封存</td><td>只有已下架的活動，已結束的活動也要先下架</td><td>確認內容與封存後的結果，見<a href="event-rules.html#archive">封存與解除封存</a><br>草稿列不提供封存</td></tr>
     <tr><td>解除封存</td><td>只有已封存的列</td><td>已封存的列只提供這一項<br>解除後回到已下架，不自動上架</td></tr>
     <tr><td>現場報到台</td><td>只有進行中</td><td>直接開啟這場活動詳情頁的現場報到台，見活動詳情總覽的<a href="event-detail-overview.html#desk">現場報到台</a><br>bookyay 匯入的活動照常可用，掃碼連結的三部分見<a href="event-detail-overview.html#scan-links">掃碼連結</a></td></tr>
   </tbody>
@@ -236,6 +263,19 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">篩選與搜尋的結果</td></tr>
+    <tr><td>有命中</td><td>篩選與搜尋的交集有活動</td><td>列出命中的活動，即時更新列數</td></tr>
+    <tr><td>沒有命中</td><td>帳號有活動，但篩選與搜尋沒有命中</td><td>顯示搜尋無結果，並提供清除入口；文案<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>清除搜尋</td><td>按清除</td><td>清空搜尋框，還原清單；控制項型式<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">分頁計數</td></tr>
+    <tr><td>生命週期的筆數</td><td>隨時</td><td>只看階段本身，不受類型篩選影響</td></tr>
+    <tr><td>活動類型的筆數</td><td>隨時</td><td>隨目前選的生命週期重算</td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="統計">統計</h3>
 <p>四個指標讓創作者一眼掌握活動營運的總量與趨勢。</p>
 <ul class="plain">
@@ -244,6 +284,26 @@ table.map td:nth-child(2){width:22%}
   <li>總收入：附年增率，口徑同 Earnings</li>
   <li>平均出席：來自報到資料</li>
 </ul>
+
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">活動總數</td></tr>
+    <tr><td>比去年多</td><td>累計活動數高於去年</td><td>附與去年比較，例如「較去年 +3」（舉例，數字為假設）</td></tr>
+    <tr><td>比去年少、持平、去年沒有資料</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">已售票數</td></tr>
+    <tr><td>比去年多</td><td>累計售出票數高於去年</td><td>附年增率，例如「年增 +18%」（舉例，數字為假設）</td></tr>
+    <tr><td>比去年少、持平、去年沒有資料、去年是 0</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">總收入</td></tr>
+    <tr><td>比去年多</td><td>總收入高於去年</td><td>附年增率，口徑同收入管理</td></tr>
+    <tr><td>比去年少、持平、去年沒有資料、去年是 0</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">平均出席</td></tr>
+    <tr><td>有報到資料</td><td>活動有掃碼報到紀錄</td><td>顯示平均出席</td></tr>
+    <tr><td>沒有報到資料</td><td>活動沒有 ztor 的報到資料</td><td>算不算進分母，以及全部都沒有時怎麼顯示<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">整組統計</td></tr>
+    <tr><td>帳號還沒有活動</td><td>沒建立過任何活動</td><td>四個指標不出現，見<a href="#沒有資料時">沒有資料時</a></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="list-create">建立活動</h3>
 <p>創作者從這裡開始建一場新活動。</p>
@@ -269,18 +329,21 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6-活動.md</code>（最後更新 2026-10-12）F1、F2、F3、F6、頁面狀態（資料）；<code>5.1.6.3-活動詳情.md</code>（v58；§2.5 掃碼連結存取對照 v93）§2.5；<code>0-設計規格書.md</code>（v4.49）§6</li>
-    <li>決策：D169、D188、D189、D281、D294、D300、D331、D340、D352、D361、D374、D375、D390、D394、D401、D435、D438、D453、D457</li>
+    <li>規格：<code>5.1.6-活動.md</code>（2026-11-05）F1、F2、F3、F6、頁面狀態（資料）；<code>5.1.6.3-活動詳情.md</code>（v110）§2.5；<code>0-設計規格書.md</code>（v5.40）§6</li>
+    <li>決策：D169、D188、D189、D281、D294、D300、D331、D340、D352、D361、D374、D375、D390、D394、D401、D435、D438、D453、D457、D511</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>搜尋要不要統一繁簡與全形半形、支不支援多個關鍵字</li>
     <li>複製一場活動時複製哪些內容，複製出來的活動是不是草稿</li>
+    <li>活動清單的票券欄在總數是 0、已售滿，收入欄在收入是 0 時怎麼顯示</li>
+    <li>bookyay 匯入的活動能不能封存、封存時通不通知 bookyay（規格標〔推導〕：同樣可手動封存與解除封存，不通知 bookyay）</li>
+    <li>統計的四個指標在比去年少、持平、去年沒有資料或去年是 0、沒有報到資料時怎麼顯示</li>
     <li>搜尋沒有結果時的文案，以及清除搜尋的控制項長什麼樣</li>
     <li>頁面最上方的活動提醒橫幅（例如活動即將開始的提醒）什麼時候出現、各階段的文案</li>
     <li>活動規則相關的待確認列在<a href="event-rules.html">活動規則</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D457 活動清單的列操作拿掉取消活動、新增封存與解除封存；生命週期篩選拿掉已取消、新增已封存；對照 5.1.6 F1、F3）；2026-10-19（D453 bookyay 匯入活動的掃碼連結改三部分，新增組合包取貨掃碼器網址；對照 5.1.6.3 v93）；2026-10-19（D444 活動要停賣改用提前停售時間或下架，完售規則不變；對照主規格 §7.14）；2026-10-16（D438 活動上架中時，上架、下架、開賣、停售的時間也能直接改，對照 5.1.6.2 v3.70、主規格 v4.74）；2026-10-16（D435 發布過的活動上架中只有門票張數能直接改）；2026-10-12（至 D401）</p>
+  <p class="k">最近同步：2026-11-05（D511 活動清單不再有「不限名額」、已封存的列不提供複製；對照 5.1.6 2026-11-05、5.1.6.3 v110）</p>
 </details>
 </div>
 <script>

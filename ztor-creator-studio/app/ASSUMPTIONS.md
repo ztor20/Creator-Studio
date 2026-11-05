@@ -1,5 +1,30 @@
 > **2026-10-27 序號改名（D484）**：本檔 2026-10-27 以前的條目保留當時寫法。換算：release2.3＝現 release2.2（E-Shop）、release2.4＝現 release2.3（活動）、release2.5＝現 release2.4（粉絲管理＋媒體庫）。
 
+## UIA-333 · D513 組合包販售上限退場、庫存設為 0 改用鎖定庫存的呈現假設（2026-11-05；UI-CHANGES 四百六十六）— 呈現假設 ＋ 產品缺口
+
+`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js`、`event-detail.html`、`e-shop.html`、`js/listing-state.js`、`js/events-store.js`、`js/products-store.js`。D513 的〔推導〕1～6 待使用者覆核。本則取代 UIA-275 第 1 項與 UIA-301 裡販售上限的部分。
+
+### 呈現假設
+
+1. **細節頁鎖定庫存有兩顆開關、同一個值**〔呈現假設〕：組合設定「庫存設定」卡三開關與建立流程一致；組合庫存分頁保留鎖定組數與成員分配（5.1.5.9 §3 第 4 項），那裡也有一顆鎖定庫存開關，恢復販售時不用換分頁。各自只在「編輯組合」「編輯」後可切。
+2. **開啟不限量、開啟限量標籤在上架中可改**〔呈現假設〕：跟鎖定同一張卡，那張卡上架中本來就放行；D513 沒有講這兩個開關算不算庫存，待確認。
+3. **開啟鎖定庫存時預帶 100 組**〔呈現假設〕：沿用 2026-10-27 的示意值，不超過成員撐得起的量、不低於保留。
+4. **開關開著時鎖定組數空白視同 0**〔呈現假設〕：D513 寫鎖定套數可以是 0，開關關閉才是不鎖定，所以空白不再代表不鎖定。
+5. **組合庫存分頁 KPI 兩塊**〔呈現假設〕：規格原寫三個數字，「組合上限」隨販售上限退場。
+6. **活動組合包卡的銷售區**〔呈現假設〕：不再顯示「已售 / 上限」；鎖定庫存開著時顯示剩幾組，進度條分母＝已售＋鎖定。沒鎖定時只顯示已售。
+7. **商品側把鎖定 0 視同未鎖定**〔呈現假設〕：成員商品的鎖定格讀到 0 時顯示未鎖定，組合包側才分得出「鎖定 0」與「不鎖定」。
+
+### 產品缺口
+
+1. 成員全是不限量或數位商品時，組合包沒有可鎖的量：開關可開、鎖定組數上限不受成員限制，提示沿用「加入成員後才有可鎖定的對象」，文案與實際情況不符，待規格補。
+2. `create-event-legacy.html`（對照用備份頁，S77 ⚪，`events.html` 建立鈕下拉第二項可進）的舊組合包編輯器仍有限量欄，本輪未動，要不要一併拿掉待使用者決定。
+
+### 驗證方式
+
+Playwright（default persona，1440×1000，最終版）：`bundle-detail`、`create-bundle`、`event-detail`、`create-event` 第 6 步彈窗、`project-detail`、`create-project` 方案段。
+
+---
+
 ## UIA-332 · 粉絲示範母體與平台忠誠點數設定連動的呈現假設與產品缺口（2026-11-02；UI-CHANGES 四百六十）— 呈現假設 ＋ 產品缺口
 
 `js/loyalty-settings.js`、`js/fans-roster.js`、`js/tier-population.js`、`js/i18n.js`、`admin-platform-loyalty.html`、`fans-crm.html`、`fan-detail.html`、`media-vault.html`、`media-vault-popup.html`、`e-shop.html`、`fans-guide.html`、`tier-settings.html`

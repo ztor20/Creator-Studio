@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>平台費率設定 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -169,7 +169,7 @@ table.map td:nth-child(2){width:22%}
   <li>這頁是平台費率唯一的設定處，只有 Admin 能進入與修改，沒有權限時顯示無權限狀態</li>
   <li>創作者在商品細節、訂單與收入頁只看得到套用後的費率，不能改</li>
   <li>平台費分兩層：全平台的預設值，以及對個別創作者的覆寫</li>
-  <li>每次儲存都產生一個新的費率版本，只對之後的交易生效，見<a href="#versioning">改費率只對之後生效</a></li>
+  <li>改了費率只對之後的交易生效，見<a href="#versioning">改費率只對之後生效</a></li>
 </ul>
 
 <h2 id="flow"><span class="n"></span>操作流程</h2>
@@ -199,8 +199,8 @@ table.map td:nth-child(2){width:22%}
     </ul>
   </li>
   <li>改預設費率，欄位見<a href="#defaults">平台費與支付費的預設值</a></li>
-  <li>儲存，產生一個新的費率版本</li>
-  <li>新費率只對生效時間之後的交易生效，既有交易不變</li>
+  <li>儲存，見<a href="#save">儲存與版本歷史</a></li>
+  <li>新費率生效，見<a href="#versioning">改費率只對之後生效</a></li>
 </ol>
 <p class="note">依據：5.1.0.3 F2、F3、F4、情境；D041、D141。</p>
 
@@ -239,7 +239,7 @@ table.map td:nth-child(2){width:22%}
 </ul>
 
 <h3 id="payment-fee">支付費</h3>
-<p>支付費是金流商的手續費，跟平台費是兩筆不同的扣項，不分維度。</p>
+<p>支付費是金流商的手續費，跟平台費是兩筆不同的扣項，不分維度。每個金流商是否各設一組百分比與固定額，尚待確認，見頁尾。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
@@ -264,18 +264,42 @@ table.map td:nth-child(2){width:22%}
   </tbody>
 </table></div>
 
+<div class="dg" role="img" aria-label="費率繼承示意圖，數字為假設：全平台預設每種交易類型一個費率；某位創作者沒覆寫的交易類型沿用預設，預設改了跟著變；覆寫過的交易類型自己一個值，預設改了也不變">
+<div class="dg-inh">
+  <div class="dg-node">全平台預設（General）<small>每種交易類型一個平台費率</small></div>
+  <div class="dg-inh__kids">
+    <div class="dg-inh__kid"><span class="dg-inh__rel">沒覆寫：沿用預設</span><div class="dg-node">某位創作者的直售·實體商品<small>預設 15% → 預設改成 16%，這位創作者跟著變成 16%</small></div></div>
+    <div class="dg-inh__kid own"><span class="dg-inh__rel">已覆寫：自己一個值</span><div class="dg-node">同一位創作者的拍賣商品<small>覆寫成 8%，預設之後怎麼改都不影響</small></div></div>
+  </div>
+</div>
+</div>
+<p class="dg-cap">示意圖（數字皆為假設）：實線是沒覆寫、沿用預設的交易類型，虛線是 Admin 覆寫過、自己一個值的交易類型；清除覆寫就回到實線。</p>
+
 <h3 id="override-list">覆寫清單</h3>
 <ul class="plain">
   <li>列出目前哪些創作者設過覆寫、各自覆寫了哪些交易類型，供稽核與對帳</li>
 </ul>
+
+<h4 id="override-states">覆寫的各種樣子</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>還沒選創作者</td><td>設定模式是覆寫，尚未選創作者</td><td>不顯示可覆寫的費率</td></tr>
+    <tr><td>沿用預設</td><td>這位創作者沒有覆寫這種交易類型</td><td>顯示沿用預設，並標出沿用的值</td></tr>
+    <tr><td>已覆寫</td><td>Admin 覆寫過這種交易類型</td><td>顯示覆寫值，跟預設值分得出來；可以清除覆寫</td></tr>
+    <tr><td>沒有任何創作者覆寫</td><td>覆寫清單是空的</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>沒有版本歷史</td><td>還沒有儲存過任何費率</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>非 Admin 進入</td><td>沒有 Admin 身分</td><td>顯示無權限狀態，不提供編輯</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.0.3 F3；D141、D315。</p>
 
 <h2 id="save"><span class="n"></span>儲存與版本歷史</h2>
-<p>預設與覆寫的修改都在這裡存成新版本，歷來的版本都查得到。</p>
+<p>預設與覆寫的修改都在這裡存成新版本，歷來的版本都查得到；時間軸圖見<a href="#versioning">改費率只對之後生效</a>。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>儲存</td><td>—</td><td>把當時的設定凍結成一個新的費率版本，見<a href="#versioning">改費率只對之後生效</a></td></tr>
+    <tr><td>儲存</td><td>—</td><td>儲存預設或覆寫的修改，產生一個新的費率版本，見<a href="#versioning">改費率只對之後生效</a></td></tr>
     <tr><td>生效時間（Effective From）</td><td>—</td><td>新費率只對這個時間之後的交易生效<br>怎麼設定見頁尾尚待確認</td></tr>
     <tr><td>版本歷史（Version History）</td><td>—</td><td>列出歷來的費率版本與各自的生效區間<br>覆寫產生的版本看得出是哪位創作者、改了哪些交易類型</td></tr>
   </tbody>
@@ -298,6 +322,15 @@ table.map td:nth-child(2){width:22%}
 </ul>
 
 <h3 id="versioning">改費率只對之後生效</h3>
+<div class="dg" role="img" aria-label="費率版本時間軸，數字與時間點為假設：舊版本在生效時間之前，新版本從生效時間起；生效時間之前成交的交易沿用舊版本，之後成交的交易套用新版本">
+<div class="dg-tl">
+  <div class="dg-tl__marks"><i style="left:55%"></i></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">費率版本<span>每次儲存一個</span></div><div class="dg-tl__track"><span class="dg-tl__bar off" style="left:0;width:55%"><i>舊版本</i></span><span class="dg-tl__bar ok" style="left:55%;width:45%"><i>新版本</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">交易<span>成交當下記下版本</span></div><div class="dg-tl__track"><span class="dg-tl__bar wait" style="left:0;width:55%"><i>記下舊版本，日後不改寫</i></span><span class="dg-tl__bar ok" style="left:55%;width:45%"><i>記下新版本</i></span></div></div>
+  <div class="dg-tl__row axis"><div class="dg-tl__k"></div><div class="dg-tl__axis"><span class="l" style="left:0">過去</span><span class="key" style="left:55%">新版本生效時間</span><span class="r" style="left:100%">之後</span></div></div>
+</div>
+</div>
+<p class="dg-cap">時間軸圖（時間點為假設）：時間由左到右。新版本生效時間之前成交的交易，一律沿用當時記下的舊版本；生效時間之後成交的交易，記下新版本。</p>
 <ul class="plain">
   <li>每次儲存（不論預設或覆寫）都凍結成一個不能修改的費率版本</li>
   <li>新費率只對生效時間之後產生的收入生效</li>
@@ -310,7 +343,7 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.0.3-平台費率設定.md</code>（v1.11）、<code>0-設計規格書.md §4.1／§7.3／§7.6／§7.15</code></li>
+    <li>規格：<code>5.1.0.3-平台費率設定.md</code>（v1.11）、<code>0-設計規格書.md</code>（v5.39）§4.1、§7.3、§7.6、§7.15</li>
     <li>決策：D041、D085、D139、D141、D169、D253、D274、D278、D315、D316、D391、D455</li>
   </ul>
   <p class="k">尚待確認</p>
@@ -324,9 +357,10 @@ table.map td:nth-child(2){width:22%}
     <li>支付費是否逐金流商各設一組百分比與固定額（原型示意 Atom、Stripe 兩家），資料怎麼記</li>
     <li>一筆交易記下費率時，怎麼記實際套用的金流商</li>
     <li>生效時間怎麼設定（立即生效或指定日期）</li>
+    <li>沒有任何創作者設過覆寫、還沒有版本歷史時的畫面</li>
     <li>頁面載入中、儲存失敗時怎麼顯示</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D455：拍賣平台費不寫死數字，照本頁電子商店維度的費率；尚待確認的正式費率拿掉示意數字；對照主規格 v4.95 §7.6）；2026-10-19（新頁，對照 5.1.0.3 v1.11）</p>
+  <p class="k">最近同步：2026-11-05（逐條對照 5.1.0.3 v1.11、主規格 v5.39，支付費補待確認標示）</p>
 </details>
 </div>
 </body>

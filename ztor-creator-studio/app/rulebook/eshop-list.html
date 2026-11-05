@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商品清單 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -212,7 +212,8 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>搜尋</td><td>—</td><td>依名稱搜尋目前類型的清單<br>沒有命中時顯示「查無符合的商品」，並提供清除搜尋與篩選的入口</td></tr>
+    <tr><td>搜尋</td><td>—</td><td>依名稱搜尋目前類型的清單<br>沒有命中時顯示「查無符合的商品」，見<a href="#loading-empty">沒有資料時</a></td></tr>
+    <tr><td>清除搜尋與篩選</td><td>搜尋或篩選沒有命中時</td><td>回到完整清單</td></tr>
     <tr><td>狀態篩選</td><td>—</td><td>選項依目前的類型切換，三類各自不同，見下表<br>每個選項附這個狀態在目前類型下的數量，例如「全部 24」「販售中 12」<br>切換類型時數量重算；數量只輔助辨識，不改狀態的定義<br>已封存的項目只在「已封存」選項下出現，不算進「全部」</td></tr>
   </tbody>
 </table></div>
@@ -221,12 +222,20 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>商品</td><td>全部（All）<br>販售中（Live）<br>即將開賣（Coming Soon）<br>販售結束（Ended）<br>急需補貨（Low Stock）<br>售罄（Sold Out）<br>已隱藏（Hidden）<br>已下架（Unlisted）<br>未完成（Draft）<br>已封存（Archived）</td></tr>
     <tr><td>組合包</td><td>全部<br>販售中<br>即將開賣<br>販售結束<br>售罄<br>已隱藏<br>已下架<br>未完成<br>已封存</td></tr>
-    <tr><td>拍賣</td><td>全部<br>競標中（Live）<br>密封競標（Sealed）<br>未開始（Upcoming）<br>完售（Sold）：結標時有出價<br>流標（Unsold）：結標時沒有出價，或有出價但最高出價沒達保留價<br>已隱藏<br>已下架<br>未完成<br>已封存</td></tr>
+    <tr><td>拍賣</td><td>全部<br>競標中（Live）<br>密封終局（Sealed）<br>未開始（Upcoming）<br>完售（Sold）：結標時最高出價達到保留價，沒設保留價時有出價即可<br>流標（Unsold）：結標時沒有出價，或有出價但最高出價沒達保留價<br>已隱藏<br>已下架<br>未完成<br>已封存</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>選項有數量</td><td>目前類型下有符合的項目</td><td>選項後附數量，例如「販售中 12」</td></tr>
+    <tr><td>選項的數量是 0</td><td>目前類型下沒有符合的項目</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>搜尋時的數量</td><td>輸入關鍵字後</td><td>數量是否跟著搜尋變動<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>各狀態由上架、顯示、開賣三個開關與庫存推導，定義見<a href="eshop-sales.html#states">開關組合出的狀態</a>；拍賣的狀態見<a href="eshop-sales.html#auction-states">拍賣的狀態</a></li>
-  <li>密封競標是一種競標模式、不是狀態，它跟三個開關的關係見頁尾尚待確認</li>
+  <li>密封終局是一種競標模式、不是狀態；密封終局與三個開關的關係，見頁尾尚待確認</li>
 </ul>
 
 <h3 id="toolbar-create">建立</h3>
@@ -244,7 +253,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>預覽商店（See as fan）</td><td>預設關閉</td><td>按下開啟商店預覽，看完可以隨時關閉，不離開電子商店<br>跟商店設定、商品細節頁的粉絲視角是同一個，跟粉絲端同源</td></tr>
+    <tr><td>預覽商店（See as fan）</td><td>預設關閉</td><td>按下開啟商店預覽，看完可以隨時關閉，不離開電子商店<br>跟商店設定的粉絲視角是同一個，跟粉絲端同源</td></tr>
     <tr><td>預覽的內容</td><td>開啟時</td><td>只列上架且顯示的項目，照<a href="#order">陳列順序</a>排，已釘選的排最前，不帶精選標記<br>隱藏與下架的項目都不出現</td></tr>
     <tr><td>沒有上架的商品時</td><td>開啟時</td><td>顯示空店面，並引導去上架或建立商品</td></tr>
   </tbody>
@@ -276,6 +285,33 @@ table.map td:nth-child(2){width:22%}
     <tr><td>顯示開關</td><td>獨立一欄的開關，見下方<a href="#products-actions">列操作</a></td></tr>
   </tbody>
 </table></div>
+<p>狀態徽章與庫存欄會依條件換樣子，各狀態如下；開關組合的定義見<a href="eshop-sales.html#states">開關組合出的狀態</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">狀態徽章</td></tr>
+    <tr><td>販售中</td><td>上架、顯示、開賣</td><td>徽章寫「販售中」</td></tr>
+    <tr><td>即將開賣</td><td>上架、顯示、未開賣，而且開賣時間在未來，或沒有開賣時間</td><td>徽章寫「即將開賣」；有開賣時間時附日期，沒有時不附</td></tr>
+    <tr><td>販售結束</td><td>上架、顯示、未開賣，而且停售時間已過</td><td>徽章寫「販售結束」</td></tr>
+    <tr><td>已隱藏</td><td>上架、隱藏</td><td>徽章寫「已隱藏」</td></tr>
+    <tr><td>已下架</td><td>下架</td><td>徽章寫「已下架」；顯示開關停用</td></tr>
+    <tr><td>未完成</td><td>草稿，必填欄還沒填完</td><td>徽章寫「未完成」，各欄用占位顯示，見<a href="#loading-draft">未完成的列</a></td></tr>
+    <tr><td>已封存</td><td>封存</td><td>徽章寫「已封存」，優先於其他所有徽章</td></tr>
+    <tr><td>售罄</td><td>可售量歸零</td><td>徽章寫「售罄」，不跟「急需補貨」同時出現</td></tr>
+    <tr><td>急需補貨</td><td>可售量低於低庫存門檻</td><td>徽章寫「急需補貨」，列上出現「補貨」</td></tr>
+    <tr><td>同時符合好幾個徽章</td><td>例如已隱藏又售罄，已封存以外的組合</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">價格欄</td></tr>
+    <tr><td>單一價格</td><td>單一選項的商品</td><td>顯示商品價格</td></tr>
+    <tr><td>多選項價格</td><td>多選項的商品</td><td>顯示價格區間，例如最低到最高；寫法<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">庫存欄</td></tr>
+    <tr><td>一般</td><td>有單售可售量</td><td>顯示單售這條販售管道的可售量</td></tr>
+    <tr><td>所有販售管道都設了鎖定，而且有未鎖定量</td><td>單售與各組合包都鎖定，仍有庫存沒被任何一條管道鎖走</td><td>庫存旁加註「（N 件未鎖定）」</td></tr>
+    <tr><td>所有販售管道都設了鎖定，未鎖定量是 0</td><td>所有庫存都已鎖定</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>限量商品</td><td>商品設為限量</td><td>是否顯示上限進度，例如「12/50」<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>多選項商品</td><td>多選項的商品</td><td>各選項組合的合計怎麼顯示<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>未完成</td><td>草稿，庫存還沒定</td><td>顯示「—」</td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="products-actions">列操作</h3>
 <p>商品的列操作依狀態出現；下架、封存、解除封存與上架一次只出現該狀態允許的那幾個，規則的家見<a href="eshop-sales.html#archive">下架、封存與刪除</a>。</p>
@@ -286,10 +322,10 @@ table.map td:nth-child(2){width:22%}
     <tr><td>補貨（Restock）</td><td>急需補貨或售罄的實體商品</td><td>進<a href="eshop-restock.html">補貨</a></td></tr>
     <tr><td>顯示開關（Show in shop）</td><td>—<br>已下架的列停用，含排定上架還沒到與定時下架已過，提示「要先上架才能調整顯示」</td><td>切換這件商品在商店陳列或隱藏<br>點了先跳確認彈窗，標題帶品名，確認才切換，取消就維持原狀<br>彈窗內文寫切換的後果：<br>隱藏：粉絲在商店找不到<br>隱藏：持非公開連結仍可買<br>隱藏：含這件商品的組合包照賣<br>顯示：回到商店陳列，非公開連結撤銷<br>隱藏不等於下架：隱藏的商品仍可經非公開連結購買，也仍可被組合包帶著賣<br>上架與開賣不在清單改，在商品細節頁的<a href="eshop-product-settings.html#switches">上架、顯示與開賣</a></td></tr>
     <tr><td>下架（Unlist）</td><td>上架中<br>要確認</td><td>還在上架中的組合包會一起下架，確認時列出，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
-    <tr><td>上架</td><td>已下架，含定時下架已過、排定上架還沒到</td><td>跟細節頁頁首的「上架」是同一個動作，狀態連動<br>按「上架」時檢查下架時保存的開賣、停售、定時下架時間：有已過的就擋下並提示先去改，都沒過就直接上架並恢復排程，不用確認，見電子商店販售流程的<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
+    <tr><td>上架</td><td>已下架，含定時下架已過、排定上架還沒到</td><td>跟細節頁頁首的「上架」是同一個動作，狀態連動<br>上架時先檢查下架時保存的時間，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
     <tr><td>封存（Archive）</td><td>已下架</td><td>只看已下架，不檢查組合包，見<a href="eshop-sales.html#archive-archive">封存販售管道</a></td></tr>
     <tr><td>解除封存（Unarchive）</td><td>已封存，是這一列唯一的主要動作</td><td>回到已下架，不直接回到上架</td></tr>
-    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>要確認</td><td>零成交的刪除不可復原，被組合包成員擋下等規則見<a href="eshop-sales.html#archive-delete">刪除販售管道</a></td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>要確認</td><td>不可復原；擋下的情形見<a href="eshop-sales.html#archive-delete">刪除販售管道</a></td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.5 F4 商品（Products）；主規格 §7.2、§7.10、§7.14；D093、D241、D263、D265、D284、D288、D290、D298、D307、D314、D391、D481。</p>
@@ -303,9 +339,27 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>組合包名稱</td><td>附成員縮圖或圖示輔助辨識</td></tr>
     <tr><td>成員摘要</td><td>組合包內含的成員摘要</td></tr>
-    <tr><td>庫存</td><td>組合包可售量：有鎖定套數時是鎖定套數，沒鎖定時由各成員共用的量換算成套數取最小，見<a href="bundles.html#stock-sellable">組合包可售量</a><br>照公式顯示算出的套數，跟狀態欄分開表達</td></tr>
+    <tr><td>庫存</td><td>組合包可售量：鎖定庫存開啟時是鎖定套數減保留中的套數，沒鎖定時由各成員共用的量換算成套數取最小，見<a href="bundles.html#stock-sellable">組合包可售量</a><br>照公式顯示算出的套數，跟狀態欄分開表達</td></tr>
     <tr><td>組合價</td><td>組合包售價，見<a href="bundles.html#price">組合包的價格</a></td></tr>
     <tr><td>狀態</td><td>徽章集跟商品相同，已封存優先於其他徽章<br>因成員下架而一起被下架的組合包標「已下架」，原因在組合包細節頁看<br>含活動門票的組合包，徽章跟所屬活動一致，見<a href="bundles.html#timing-badge">電子商店清單的徽章</a></td></tr>
+  </tbody>
+</table></div>
+<p>組合包列的庫存欄與狀態徽章依條件換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">庫存欄</td></tr>
+    <tr><td>有鎖定套數</td><td>組合包設了鎖定套數</td><td>顯示鎖定套數</td></tr>
+    <tr><td>沒有鎖定套數</td><td>組合包沒鎖定</td><td>顯示各成員未鎖定量換算成套數後的最小值</td></tr>
+    <tr><td>成員下架或成員可售量歸零</td><td>任何一個成員下架，或可售量歸零</td><td>組合包不能賣；庫存欄照公式顯示算出的套數，不另標原因</td></tr>
+    <tr class="grp"><td colspan="3">狀態徽章</td></tr>
+    <tr><td>一般組合包</td><td>不含活動門票</td><td>徽章集跟商品相同，已封存優先</td></tr>
+    <tr><td>因成員下架被一起下架</td><td>成員下架，連動下架</td><td>徽章寫「已下架」，原因在組合包細節頁看</td></tr>
+    <tr><td>含活動門票，活動售票中</td><td>所屬活動正在售票</td><td>徽章寫「售票中」</td></tr>
+    <tr><td>含活動門票，活動已排程</td><td>所屬活動還沒開賣</td><td>徽章寫「已排程」</td></tr>
+    <tr><td>含活動門票，活動已結束</td><td>所屬活動已結束</td><td>徽章寫「已結束」</td></tr>
+    <tr><td>無法販售</td><td>某一個門票成員允許的門票全部隨場次刪除</td><td>徽章寫「無法販售」，取代「即將開賣」「販售中」</td></tr>
+    <tr><td>含活動門票，組合包已開賣但活動還在預售</td><td>活動已排程、組合包已開賣</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
@@ -318,12 +372,12 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>點一列</td><td>每一列都有</td><td>進<a href="eshop-bundle.html">組合包細節頁</a>，名稱、成員、定價、限量都在那裡改</td></tr>
-    <tr><td>下架（Unlist）</td><td>上架中<br>要確認</td><td>含活動門票、而且是活動最後一組仍在販售的組合包、活動又沒有還在的門票時，擋下並就地提示，見<a href="event-create.html#sellable">可賣條件與發布檢核</a><br>下架當下清除四個排程時間、退回未開賣</td></tr>
-    <tr><td>上架</td><td>已下架</td><td>跟細節頁頁首的「上架」是同一個動作，狀態連動<br>連帶上架已下架的成員：先確認並列出這些成員；成員有已封存的就擋下，提示「先解除封存」，見<a href="bundles.html#unlist-relist">組合包重新上架時帶著成員上架</a><br>含活動門票、所屬活動已結束或已封存時不能上架，按下時擋下並就地說明原因<br>按「上架」時檢查下架時保存的開賣、停售、定時下架時間：有已過的就擋下並提示先去改，都沒過就直接上架並恢復排程，不用確認，見電子商店販售流程的<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
+    <tr><td>點一列</td><td>每一列都有</td><td>進<a href="eshop-bundle.html">組合包細節頁</a>，名稱、成員、定價、庫存設定都在那裡改</td></tr>
+    <tr><td>下架（Unlist）</td><td>上架中<br>要確認</td><td>含活動門票、而且是活動最後一組仍在販售的組合包、活動又沒有還在的門票時，擋下並就地提示，見<a href="event-create.html#sellable">可賣條件與發布檢核</a><br>下架當下四個排程時間保存但暫停、開賣退回未開賣，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
+    <tr><td>上架</td><td>已下架</td><td>跟細節頁頁首的「上架」是同一個動作，狀態連動<br>連帶上架已下架的成員：先確認並列出這些成員；成員有已封存的就擋下，提示「先解除封存」，見<a href="bundles.html#unlist-relist">組合包重新上架時帶著成員上架</a><br>含活動門票、所屬活動已結束或已封存時不能上架，按下時擋下並就地說明原因<br>上架時先檢查下架時保存的時間，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
     <tr><td>封存（Archive）</td><td>已下架</td><td>不牽連成員商品<br>擋下的情形同下架</td></tr>
     <tr><td>解除封存（Unarchive）</td><td>已封存，是這一列唯一的主要動作</td><td>回到已下架，不直接回到上架，不連動任何成員</td></tr>
-    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>要確認</td><td>零成交的刪除不可復原，不影響成員，見<a href="bundles.html#unlist-delete">刪除組合包</a><br>有成交的組合包沒有刪除入口，只能封存</td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且零成交<br>要確認</td><td>不可復原；刪除不影響成員的狀態，鎖給這個組合包的量退回成員的未鎖定量<br>有成交的組合包沒有刪除入口，只能封存，見<a href="bundles.html#unlist-delete">刪除組合包</a></td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.5 F4 組合（Bundles）；主規格 §7.14；D087、D266、D288、D289、D290、D294、D298、D307、D314、D331、D332、D342、D363、D425、D429、D437、D481。</p>
@@ -339,7 +393,20 @@ table.map td:nth-child(2){width:22%}
     <tr><td>狀態</td><td>未開始（Upcoming）<br>競標中（Live）<br>完售（Sold）<br>流標（Unsold）<br>已出貨（Shipped）<br>已隱藏、已下架、未完成、已封存，跟商品同義<br>由三個開關推導，已封存優先於其他徽章，見<a href="eshop-sales.html#auction-states">拍賣的狀態</a></td></tr>
     <tr><td>次分類</td><td>拍賣標的所屬的次分類，任何商品都可以拍</td></tr>
     <tr><td>物品狀況（Condition）</td><td>全新（預設）<br>近全新<br>良好<br>使用痕跡明顯</td></tr>
-    <tr><td>競標資格（Eligibility）</td><td>Inner Circle<br>Super Fans+<br>All fans<br>對應粉絲分級，正式對應見頁尾尚待確認</td></tr>
+    <tr><td>競標資格（Eligibility）</td><td>核心圈（Inner Circle）<br>超級粉絲以上（Super Fans+）<br>全部粉絲（All fans）<br>對應粉絲分級，正式對應見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
+<p>拍賣列的狀態徽章依條件換樣子，各狀態如下；拍賣狀態的定義見<a href="eshop-sales.html#auction-states">拍賣的狀態</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>未開始</td><td>上架、顯示，還沒到開拍時間</td><td>徽章寫「未開始」</td></tr>
+    <tr><td>競標中</td><td>已開拍、還沒結標</td><td>徽章寫「競標中」</td></tr>
+    <tr><td>完售</td><td>結標，最高出價達到保留價，沒設保留價時有出價即可</td><td>徽章寫「完售」</td></tr>
+    <tr><td>已出貨</td><td>完售，而且已出貨</td><td>徽章寫「已出貨」</td></tr>
+    <tr><td>流標</td><td>結標時沒有出價，或最高出價沒達到保留價</td><td>徽章寫「流標」；沒達保留價時另通知創作者</td></tr>
+    <tr><td>已隱藏、已下架、未完成、已封存</td><td>跟商品同義</td><td>徽章寫對應的名稱，已封存優先於其他徽章</td></tr>
+    <tr><td>密封終局</td><td>拍賣開了密封終局</td><td>狀態篩選有這個選項；列上怎麼標示<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 
@@ -360,10 +427,10 @@ table.map td:nth-child(2){width:22%}
     <tr><td>追蹤履約</td><td>完售</td><td>進<a href="orders.html">訂單管理</a><br>已出貨時列上標「已出貨」</td></tr>
     <tr><td>下架</td><td>完售<br>流標</td><td>流標的拍賣粉絲端不能購買，跟已下架的商品同路：可以下架，下架後可以封存</td></tr>
     <tr class="grp"><td colspan="3">已下架、已封存、未完成</td></tr>
-    <tr><td>上架</td><td>已下架</td><td>跟細節頁頁首的「上架」是同一個動作<br>按「上架」時檢查下架時保存的開拍、定時下架時間：有已過的就擋下並提示先去改，都沒過就直接上架並恢復排程，不用確認，見電子商店販售流程的<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
+    <tr><td>上架</td><td>已下架</td><td>跟細節頁頁首的「上架」是同一個動作<br>上架時先檢查下架時保存的時間，見<a href="eshop-sales.html#archive-unlist">下架與重新上架</a></td></tr>
     <tr><td>封存（Archive）</td><td>已下架</td><td>見<a href="eshop-sales.html#auction-archive">拍賣的下架、封存與刪除</a></td></tr>
     <tr><td>解除封存（Unarchive）</td><td>已封存，是這一列唯一的主要動作</td><td>回到已下架，不直接回到上架</td></tr>
-    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且從沒有任何出價紀錄、沒有成交，含從沒開拍與流標<br>要確認</td><td>不可復原<br>曾有出價紀錄的拍賣沒有刪除入口，只能封存</td></tr>
+    <tr><td>刪除（Delete）</td><td>未完成（草稿）<br>已下架或已封存，而且從沒有任何出價紀錄、沒有成交，含從沒開拍與零出價的流標<br>要確認</td><td>不可復原<br>曾有出價紀錄的拍賣（含有出價但沒達保留價的流標）沒有刪除入口，只能封存</td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.5 F4 競標（Auctions）；主規格 §7.14、§8.14；D075、D080、D284、D285、D286、D287、D290、D298、D307、D314、D347、D455、D481。</p>
@@ -411,6 +478,16 @@ table.map td:nth-child(2){width:22%}
     <tr><td>關閉（×）</td><td>提醒出現時</td><td>關閉後收合，下方內容回到原位<br>條件仍成立時，下次登入使用時可以再出現</td></tr>
   </tbody>
 </table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>有低庫存</td><td>至少一件商品低於門檻</td><td>橫條出現，標題寫件數，副標列商品名</td></tr>
+    <tr><td>沒有低庫存</td><td>沒有商品低於門檻</td><td>不出現</td></tr>
+    <tr><td>還沒有任何商品</td><td>帳號沒建立過商品</td><td>不出現</td></tr>
+    <tr><td>已關閉</td><td>創作者按了關閉</td><td>收合，下方內容回到原位</td></tr>
+    <tr><td>低庫存商品很多</td><td>副標放不下所有商品名</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="banner-auction">拍賣即時橫條</h3>
 <p>拍賣即時橫條提醒創作者有進行中的競標，並提供監看入口；只在拍賣分頁出現，放在狀態篩選與清單之間。</p>
@@ -421,6 +498,15 @@ table.map td:nth-child(2){width:22%}
     <tr><td>查看（View →）</td><td>橫條出現時</td><td>進<a href="eshop-auction.html">拍賣細節頁</a>監看競標</td></tr>
   </tbody>
 </table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>有競標中的拍賣</td><td>拍賣分頁，至少一場競標中</td><td>橫條出現，寫競標中的拍賣數，附重點拍賣的摘要</td></tr>
+    <tr><td>沒有競標中的拍賣</td><td>拍賣分頁，沒有任何競標中</td><td>不出現</td></tr>
+    <tr><td>在商品或組合包分頁</td><td>目前不是拍賣分頁</td><td>不出現</td></tr>
+    <tr><td>同時有好幾場競標中</td><td>競標中的拍賣不只一場</td><td>重點拍賣怎麼挑，見頁尾尚待確認</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.5 F2、F6、頁面佈局；主規格 §6.10、§7.2。</p>
 
 <h2 id="loading"><span class="n"></span>載入與沒有資料時</h2>
@@ -428,7 +514,7 @@ table.map td:nth-child(2){width:22%}
 
 <h3 id="loading-batch">分批載入</h3>
 <ul class="plain">
-  <li>清單分批漸進載入，底部「載入更多」載下一批</li>
+  <li>清單分批漸進載入，底部「載入更多」載下一批；全部載完前一直出現</li>
   <li>縮圖在該列捲進畫面時才載入</li>
   <li>全部載完時，「載入更多」不出現，底部改寫「已顯示全部 N 筆」，N 跟狀態篩選的數量一致</li>
   <li>切換類型、改搜尋或狀態篩選時，從第一批重新載入</li>
@@ -459,15 +545,15 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5-電子商店.md</code>（最後更新 2026-10-20）F1–F6、頁面佈局、頁面狀態、使用情境；<code>0-設計規格書.md</code> §6、§7.2、§7.10、§7.14、§8.14</li>
-    <li>決策：D065、D066、D075、D080、D083、D084、D087、D092、D093、D094、D172、D184、D241、D262、D263、D265、D266、D284、D285、D286、D287、D288、D289、D290、D294、D298、D307、D314、D331、D332、D342、D347、D363、D391、D425、D429、D437、D455、D457、D481、D488</li>
+    <li>規格：<code>5.1.5-電子商店.md</code>（最後更新 2026-11-02）F1–F6、頁面佈局、頁面狀態、使用情境；<code>0-設計規格書.md</code>（v5.41）§6、§7.2、§7.10、§7.14、§8.14</li>
+    <li>決策：D065、D066、D075、D080、D083、D084、D087、D092、D093、D094、D172、D184、D241、D262、D263、D265、D266、D284、D285、D286、D287、D288、D289、D290、D294、D298、D307、D314、D331、D332、D342、D347、D363、D391、D425、D429、D437、D455、D457、D481、D488、D503、D510、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>狀態篩選的數量是否隨關鍵字搜尋連動</li>
     <li>組合包的狀態篩選要不要有「急需補貨」，也就是組合包要不要設低庫存門檻</li>
     <li>「無法販售」要不要另列成組合包的篩選選項</li>
-    <li>密封競標（Sealed）跟三個開關的關係</li>
+    <li>密封終局（Sealed）跟三個開關的關係</li>
     <li>多選項商品的價格欄怎麼顯示價格區間、庫存欄怎麼顯示各選項組合的合計</li>
     <li>限量商品的庫存欄是否顯示上限進度，例如「12/50」</li>
     <li>低庫存提醒的「查看低庫存」導向哪裡</li>
@@ -480,8 +566,13 @@ table.map td:nth-child(2){width:22%}
     <li>流標的拍賣能不能重新開拍</li>
     <li>拍賣即時橫條怎麼即時更新、「重點拍賣」怎麼挑</li>
     <li>商店預覽是否即時反映還沒儲存的管理變更</li>
+    <li>狀態篩選的選項數量是 0 時怎麼呈現</li>
+    <li>一件商品同時符合好幾個徽章時（例如已隱藏又售罄）顯示哪一個，已封存優先以外的順序</li>
+    <li>所有販售管道都設了鎖定、而且未鎖定量是 0 時，庫存欄怎麼標示</li>
+    <li>低庫存提醒的副標放不下所有商品名時怎麼收</li>
+    <li>密封終局的拍賣，列上怎麼標示</li>
   </ul>
-  <p class="k">最近同步：2026-10-29（D488：重新上架時檢查下架時保存的時間，有已過的就不讓上架、都沒過就直接恢復，不再詢問）；2026-10-27（D481：三種販售管道列的「上架」先問要不要恢復下架時保存的排程；對照 5.1.5 F4）；2026-10-20（D457 活動沒有取消動作，組合包不能加入與不能重新上架的條件以已封存取代已取消，連動只剩下架；對照 5.1.5.4、5.1.6.3 v96）；2026-10-20（D455：有出價但沒達保留價也算流標，保留價從尚待確認移除；對照 5.1.5 最後更新 2026-10-20）；2026-10-19（新頁，對照 5.1.5 最後更新 2026-10-16，至 D437）</p>
+  <p class="k">最近同步：2026-11-05（D513：組合包販售上限退場；5.1.5.4 v2.88、主規格 v5.41）</p>
 </details>
 </div>
 </body>

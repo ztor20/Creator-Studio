@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>取貨場次詳情 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -97,7 +97,7 @@ table.stage td:nth-child(4){width:12%}
 
 <h2 id="detail-intro" class="no-num">概述</h2>
 <ul class="plain">
-  <li>從取貨清單列上的「開啟詳情」進入；bookyay 匯入的活動，活動詳情的「前往領取場次」也連到這裡；下面除非標明，都是現場核銷場次的內容，掃碼領點場次見<a href="#scan">掃碼領點場次詳情</a></li>
+  <li>從取貨清單列上的「開啟詳情」進入；bookyay 匯入的活動，活動詳情的「前往領取場次」在組合包商品只綁一個場次時直接連到這裡；下面除非標明，都是現場核銷場次的內容，掃碼領點場次見<a href="#scan">掃碼領點場次詳情</a></li>
   <li>各階段能做什麼，見取貨規則的<a href="pickup-rules.html#stage">取貨場次的階段</a>；已封存的場次只供查看歷史紀錄</li>
   <li>名單與核銷紀錄的單位都是一件（一個領取單位），見<a href="pickup-rules.html#redeem-unit">一個領取碼核銷一件</a></li>
 </ul>
@@ -146,6 +146,17 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>編輯</td><td>—</td><td>開啟建立取貨場次的同一個視窗，見<a href="pickup-create.html#edit">編輯既有場次</a><br>已結束的場次要延長，也用這個按鈕改結束時間，見<a href="pickup-rules.html#actions">場次的動作</a></td></tr>
   </tbody>
 </table></div>
+
+<h4 id="info-states">場次狀態的各種樣子</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>尚未開始</td><td>目前時間早於開始時間</td><td>可查看與編輯場次、交付 Scanner 網址；Scanner 擋核銷，到開始時間自動轉進行中</td></tr>
+    <tr><td>進行中</td><td>目前時間在開始與結束時間之間</td><td>Scanner 可以正常核銷</td></tr>
+    <tr><td>已結束</td><td>場次時間已過</td><td>可查看紀錄、匯出、反轉錯誤核銷；Scanner 擋新的核銷，除非把結束時間往後調</td></tr>
+    <tr><td>已封存</td><td>場次已封存</td><td>只供查看歷史紀錄</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.5.15 F1、頁面狀態；D337、D338、D455。</p>
 
 <h2 id="scanner"><span class="n"></span>Scanner 存取</h2>
@@ -171,6 +182,16 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>啟用網址</td><td>—</td><td>恢復可以掃描</td></tr>
   </tbody>
 </table></div>
+
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>啟用中</td><td>網址已啟用</td><td>工作人員打開網址，輸入密碼後進入掃描畫面</td></tr>
+    <tr><td>已停用</td><td>創作者停用網址</td><td>工作人員打開網址只看到停用狀態，不能掃描；啟用後恢復</td></tr>
+    <tr><td>已重設</td><td>創作者重設網址</td><td>舊網址立即失效，尚未送出的掃描結果不能再送出；新網址沿用原本的密碼，或重新設定</td></tr>
+    <tr><td>密碼連錯</td><td>連續輸錯 5 次</td><td>該裝置鎖定 10 分鐘，只擋 Scanner 入口，不影響創作者在這裡改密碼或停用網址</td></tr>
+  </tbody>
+</table></div>
 <p>密碼連錯幾次會鎖定、Scanner 能看到哪些資料，見手機 Scanner 的<a href="pickup-scanner.html#access">掃描器能看到什麼</a>；鎖定只擋 Scanner 入口，不影響創作者在這裡改密碼或停用網址。</p>
 <p class="note">依據：5.1.5.15 F2（F2.1～F2.3）；5.1.5.12 F3。</p>
 
@@ -181,6 +202,7 @@ table.stage td:nth-child(4){width:12%}
 <p>名單一列是一件（一個領取單位）：買家買 3 件就有 3 列，各有自己的領取碼與狀態。</p>
 <ul class="plain">
   <li>取貨商品來自已付款的訂單品項，依購買數量展開；組合包展開成成員商品的領取單位</li>
+  <li>組合包另設了本場次時，成員的領取單位列入本場次，並帶來源組合標記</li>
   <li>活動票券來自已售出或已發出的票券，一張票一列</li>
   <li>同一位買家可以同時有取貨商品與活動票券，合在同一份名單，每一件各自保留來源與領取碼</li>
   <li>名單要看得出同一位買家在這個場次已領幾件、共幾件</li>
@@ -189,13 +211,38 @@ table.stage td:nth-child(4){width:12%}
   <thead><tr><th style="width:22%">欄位</th><th>內容</th></tr></thead>
   <tbody>
     <tr><td>買家／持票人</td><td>這一件屬於哪位買家或持票人</td></tr>
-    <tr><td>來源</td><td>來自訂單或活動票券，帶出訂單編號或票券編號（ticket_id）</td></tr>
+    <tr><td>來源</td><td>來自訂單或活動票券，帶出訂單編號或票券編號</td></tr>
     <tr><td>項目</td><td>這一件的商品名；票券顯示活動與票種</td></tr>
     <tr><td>選項組合</td><td>這一件的選項組合</td></tr>
     <tr><td>領取碼</td><td>領取碼的識別字串，供對照與客服查詢<br>不顯示買家的 QR 圖</td></tr>
     <tr><td>來源組合</td><td>這一件由組合包展開時，標示來自哪一個組合包<br>不是來自組合包就留空</td></tr>
-    <tr><td>目前狀態</td><td>取貨商品：取貨場次待設定、待取貨、已取貨、已取消<br>活動票券：待入場、已入場、已取消<br>已取消只來自 Admin 撤銷，見<a href="pickup-rules.html#code-void">領取碼什麼時候失效</a></td></tr>
+    <tr><td>目前狀態</td><td>取貨商品：取貨場次待設定、待取貨、已取貨、已取消<br>活動票券：待入場、已入場、已取消<br>已取消只來自撤銷（只有 Admin 能按 <span class="tag adm">Admin</span>），見<a href="pickup-rules.html#code-void">領取碼什麼時候失效</a></td></tr>
     <tr><td>最近核銷時間</td><td>這一件最近一次核銷的時間</td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="roster-states">名單的各種樣子</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">名單</td></tr>
+    <tr><td>有資料</td><td>場次裡有已付款的訂單品項或已售出的票券</td><td>每一件一列，看得出同一位買家已領幾件、共幾件</td></tr>
+    <tr><td>沒有資料</td><td>場次裡還沒有任何領取單位</td><td>怎麼顯示：<span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>搜尋沒有命中</td><td>搜尋或篩選找不到符合的件</td><td>怎麼顯示：<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">取貨商品的一件</td></tr>
+    <tr><td>取貨場次待設定</td><td>這件所屬的商品還沒加入任何取貨場次</td><td>目前狀態顯示取貨場次待設定</td></tr>
+    <tr><td>待取貨</td><td>已有場次，還沒掃碼核銷</td><td>目前狀態顯示待取貨</td></tr>
+    <tr><td>已取貨</td><td>已掃碼核銷</td><td>目前狀態顯示已取貨，最近核銷時間有值</td></tr>
+    <tr><td>已取消</td><td>只來自撤銷（只有 Admin 能按 <span class="tag adm">Admin</span>），是終態</td><td>目前狀態顯示已取消，領取碼失效</td></tr>
+    <tr class="grp"><td colspan="3">活動票券的一件</td></tr>
+    <tr><td>待入場</td><td>票還沒入場</td><td>目前狀態顯示待入場</td></tr>
+    <tr><td>已入場</td><td>票已掃碼入場</td><td>目前狀態顯示已入場</td></tr>
+    <tr><td>已取消</td><td>只來自撤銷（只有 Admin 能按 <span class="tag adm">Admin</span>）</td><td>目前狀態顯示已取消</td></tr>
+    <tr class="grp"><td colspan="3">來源</td></tr>
+    <tr><td>由組合包展開</td><td>這一件來自組合包</td><td>來源組合顯示組合包名稱</td></tr>
+    <tr><td>不是組合包</td><td>這一件是單售商品或票券</td><td>來源組合留空</td></tr>
+    <tr class="grp"><td colspan="3">已核銷之後才被撤銷</td></tr>
+    <tr><td>歷史資料</td><td>—</td><td>核銷紀錄保留、不自動反轉；在名單上怎麼呈現：<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 
@@ -203,7 +250,7 @@ table.stage td:nth-child(4){width:12%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>搜尋</td><td>—</td><td>比對下列欄位：<br>買家名稱<br>email<br>訂單編號<br>ticket_id<br>領取碼<br>商品名<br>活動名<br>票種<br>用領取碼搜尋時，直接定位到那一件</td></tr>
+    <tr><td>搜尋</td><td>—</td><td>比對下列欄位：<br>買家名稱<br>email<br>訂單編號<br>票券編號<br>領取碼<br>商品名<br>活動名<br>票種<br>用領取碼搜尋時，直接定位到那一件</td></tr>
     <tr><td>狀態篩選</td><td>—</td><td>選項：<br>待核銷<br>已核銷<br>已取消<br>篩選後的計數以件計</td></tr>
   </tbody>
 </table></div>
@@ -214,7 +261,7 @@ table.stage td:nth-child(4){width:12%}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>查看來源</td><td>—</td><td>取貨商品連回<a href="order-detail.html">訂單詳情</a>，活動票券連回活動詳情或票券名單</td></tr>
-    <tr><td>反轉核銷</td><td>已核銷的件</td><td>見<a href="#reverse">反轉錯誤核銷</a></td></tr>
+    <tr><td>反轉核銷</td><td>—</td><td>見<a href="#reverse">反轉錯誤核銷</a></td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.5.15 F3、F4（F4.1～F4.3）；5.1.5.14 F3；主規格 §7.2「取貨資格／核銷」「領取單位的正式定義」；D122、D123、D240、D252、D253、D455。</p>
@@ -230,7 +277,7 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>場次</td><td>這次核銷所屬的取貨場次</td></tr>
     <tr><td>Scanner 網址版本</td><td>經由哪一版 Scanner 網址送出</td></tr>
     <tr><td>買家／持票人</td><td>這一件的買家或持票人</td></tr>
-    <tr><td>來源訂單或 ticket_id</td><td>這一件追溯回的訂單編號或票券編號</td></tr>
+    <tr><td>來源訂單或票券編號</td><td>這一件追溯回的訂單編號或票券編號</td></tr>
     <tr><td>領取碼</td><td>這次核銷的領取碼識別字串，用來對應到是哪一件</td></tr>
     <tr><td>項目</td><td>商品名與選項組合；票券顯示活動與票種</td></tr>
     <tr><td>來源組合</td><td>這一件由組合包展開時，記下來自哪一個組合包</td></tr>
@@ -254,9 +301,25 @@ table.stage td:nth-child(4){width:12%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>結果篩選</td><td>—</td><td>依結果類型篩選紀錄，跟名單的篩選各自獨立</td></tr>
-    <tr><td>查看來源</td><td>—</td><td>取貨商品紀錄連回訂單詳情，活動票券紀錄連回活動詳情或票券名單</td></tr>
-    <tr><td>反轉核銷</td><td>成功核銷的紀錄</td><td>見<a href="#reverse">反轉錯誤核銷</a></td></tr>
+        <tr><td>查看來源</td><td>—</td><td>取貨商品紀錄連回訂單詳情，活動票券紀錄連回活動詳情或票券名單</td></tr>
+    <tr><td>反轉核銷</td><td>—</td><td>見<a href="#reverse">反轉錯誤核銷</a></td></tr>
+  </tbody>
+</table></div>
+
+<h4 id="log-states">核銷紀錄的各種樣子</h4>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">一筆紀錄的結果</td></tr>
+    <tr><td>成功</td><td>領取碼核銷成功</td><td>結果顯示成功</td></tr>
+    <tr><td>重複掃描</td><td>同一個領取碼再掃一次</td><td>結果顯示重複掃描，錯誤原因有值</td></tr>
+    <tr><td>不屬於此場次</td><td>領取碼屬於別的場次</td><td>結果顯示不屬於此場次</td></tr>
+    <tr><td>已取消</td><td>掃到已失效的領取碼</td><td>結果顯示已取消</td></tr>
+    <tr><td>場次未開始、場次已結束</td><td>掃描時間在場次時間之外</td><td>結果顯示場次未開始或場次已結束</td></tr>
+    <tr><td>密碼或網址問題</td><td>密碼錯誤或網址已失效、已停用</td><td>結果顯示密碼或網址問題</td></tr>
+    <tr><td>人工反轉</td><td>創作者反轉了一次核銷</td><td>新增一筆人工反轉紀錄，原紀錄保留</td></tr>
+    <tr class="grp"><td colspan="3">紀錄清單</td></tr>
+    <tr><td>沒有紀錄</td><td>場次還沒有任何核銷事件</td><td>怎麼顯示：<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 
@@ -280,10 +343,18 @@ table.stage td:nth-child(4){width:12%}
   <li>反轉後，這一件可以再掃描核銷</li>
   <li>已核銷之後才被撤銷的件，核銷紀錄保留、不自動反轉，見取貨規則的<a href="pickup-rules.html#code-void">領取碼什麼時候失效</a></li>
 </ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>反轉之後</td><td>反轉成功</td><td>多一筆人工反轉紀錄，原紀錄保留，來源狀態跟著寫回；這一件可以再掃描核銷</td></tr>
+    <tr><td>哪些件有反轉入口、要不要確認、填原因</td><td>按反轉時</td><td>怎麼處理：<span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
+
 <p class="note">依據：5.1.5.15 F4.3、F5.2；5.1.5.14 F1.3；D240、D242。</p>
 
-<h2 id="scan"><span class="n"></span>掃碼領點場次詳情</h2>
-<p>Admin 代管創作者時，掃碼領點場次的詳情是另一套內容，創作者本人看不到；沒有 Scanner 存取、名單與核銷紀錄。Admin 在這裡確認設定、決定要不要發點、看每個 QR 的名額、取得 QR 圖交給商家、查領取紀錄。設定與開關見<a href="#scan-basic">基本資料與啟用停用</a>；QR 的新增與管理見<a href="#scan-quota">QR 管理與 QR 圖</a>；誰領了見<a href="#scan-log">領取紀錄</a>；怎麼發點見<a href="#scan-rules">發點規則</a>；粉絲看到的提示見<a href="#scan-handoff">粉絲端的提示與紀錄</a>。</p>
+<h2 id="scan"><span class="n"></span>掃碼領點場次詳情 <span class="tag adm">Admin</span></h2>
+<p>掃碼領點場次的詳情是另一套內容，只在 Admin 代管創作者時出現；沒有 Scanner 存取、名單與核銷紀錄。Admin 在這裡確認設定、決定要不要發點、看每個 QR 的名額、取得 QR 圖交給商家、查領取紀錄。設定與開關見<a href="#scan-basic">基本資料與啟用停用</a>；QR 的新增與管理見<a href="#scan-quota">QR 管理與 QR 圖</a>；誰領了見<a href="#scan-log">領取紀錄</a>；怎麼發點見<a href="#scan-rules">發點規則</a>；粉絲看到的提示見<a href="#scan-handoff">粉絲端的提示與紀錄</a>。</p>
 
 <h3 id="scan-basic">基本資料與啟用停用</h3>
 <p>顯示場次設定，並提供手動停發的開關。欄位的定義見建立取貨場次的<a href="pickup-create.html#scan-fields">掃碼領點場次的欄位</a>。</p>
@@ -291,13 +362,25 @@ table.stage td:nth-child(4){width:12%}
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
     <tr><td>基本資料</td><td>—</td><td>顯示場次名稱、地點（有填才顯示）、開始與結束時間、時間狀態（尚未開始、進行中、已結束、已封存）、啟用狀態、場次 id、建立者（操作的 Admin）、建立時間</td></tr>
-    <tr><td>編輯</td><td>—</td><td>開啟建立取貨場次的同一個視窗；所有欄位可改，只影響之後的掃碼，不回算已發的點數</td></tr>
+    <tr><td>編輯</td><td>—</td><td>開啟建立取貨場次的同一個視窗；所有欄位可改，改動的效果見<a href="#scan-rules">發點規則</a></td></tr>
     <tr><td>啟用／停用（Enabled／Disabled）</td><td>—</td><td>手動開關，切換立即生效<br>停用：場次內所有 QR 立即停止發點，與開始、結束時間無關<br>啟用：恢復發點<br>切成停用前先確認，說明「停用後此場次所有 QR 立即不再發點，粉絲掃碼會看到『此活動未啟用』；切回啟用即恢復」</td></tr>
     <tr><td>封存</td><td>—</td><td>手動動作，封存後時間狀態變「已封存」，只供查看<br>有人領過的場次不能刪除，只能停用或封存</td></tr>
     <tr><td>事件關閉提醒</td><td>平台忠誠點數設定把線下掃碼領點事件關閉時</td><td>頁面頂端顯示提醒，說明此刻任何掃碼都不發點，樣子與取貨管理的<a href="pickup.html#types-off">事件關閉提醒</a>相同</td></tr>
   </tbody>
 </table></div>
 <p>進行中是依開始與結束時間算出的時間狀態，不能手動設定；啟用／停用是人工開關。要能發點，兩者必須同時成立，而且線下掃碼領點事件是開的，檢查順序見<a href="#scan-rules">發點規則</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">場次</td></tr>
+    <tr><td>啟用</td><td>手動開關為啟用</td><td>在時間內、QR 也啟用時可以發點</td></tr>
+    <tr><td>停用</td><td>手動開關為停用</td><td>場次內所有 QR 立即停止發點，與時間無關；切回啟用即恢復</td></tr>
+    <tr><td>事件關閉中</td><td>平台把線下掃碼領點事件關閉</td><td>頁面頂端顯示提醒，此刻任何掃碼都不發點；場次自己的啟用與時間狀態不變</td></tr>
+    <tr class="grp"><td colspan="3">時間狀態</td></tr>
+    <tr><td>尚未開始、進行中、已結束、已封存</td><td>依開始與結束時間，或手動封存</td><td>基本資料顯示時間狀態；已封存只供查看</td></tr>
+  </tbody>
+</table></div>
+
 
 <h3 id="scan-quota">QR 管理與 QR 圖</h3>
 <p>QR 是掃碼領點場次裡的項目，不是電子商店的商品。這一區逐個列出場次裡的 QR，讓 Admin 新增、編輯、啟用或停用，並提供 QR 圖。</p>
@@ -306,7 +389,7 @@ table.stage td:nth-child(4){width:12%}
   <tbody>
     <tr><td>QR 列</td><td>—</td><td>每列顯示 QR 名稱、每次領取點數、已領／總名額、啟用開關、狀態<br>「開啟」的視窗與列內展開，都看得到 QR 編號、建立者（操作的 Admin）與建立時間</td></tr>
     <tr><td>新增 QR</td><td>—</td><td>按區塊上方的「新增 QR」；欄位同建立場次時的<a href="pickup-create.html#scan-qr">QR 的欄位</a>：名稱、每次領取點數、總名額、啟用<br>新增的 QR 屬於這個場次</td></tr>
-    <tr><td>編輯 QR</td><td>—</td><td>名稱、每次領取點數、總名額都能改，只影響之後的掃碼，不回算已發的點數</td></tr>
+    <tr><td>編輯 QR</td><td>—</td><td>名稱、每次領取點數、總名額都能改，改動的效果見<a href="#scan-rules">發點規則</a></td></tr>
     <tr><td>啟用開關</td><td>—</td><td>QR 自己的開關；停用就是只停這個 QR，同場次的其他 QR 與場次本身不受影響<br>停用的 QR 在列上標示「已停用」</td></tr>
     <tr><td>名額已滿標示</td><td>已領次數等於總名額時</td><td>標示「名額已滿」；這個 QR 對所有人停止發點，其他 QR 不受影響</td></tr>
     <tr><td>檢視與下載 QR 圖</td><td>—</td><td>每個 QR 的「開啟」視窗顯示 QR 圖，可檢視與下載，頂部有 QR 名稱、編號、建立者與建立時間<br>商家自行印出分發，沒有專用硬體；視窗裡沒有商品連結，因為 QR 不是商品</td></tr>
@@ -317,6 +400,19 @@ table.stage td:nth-child(4){width:12%}
   <li>同一場次想避免一筆交易重複掃，做法是不同消費組合各建一個 QR，例如買 1 個 2 點、買 5 個 10 點，各一個 QR（數字為假設）；沒有其他防重複機制</li>
 </ul>
 
+
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">一個 QR</td></tr>
+    <tr><td>啟用</td><td>QR 自己的開關為啟用</td><td>可以發點</td></tr>
+    <tr><td>已停用</td><td>QR 自己的開關為停用</td><td>列上標示「已停用」，只停這個 QR；粉絲掃碼看到「此活動未啟用」</td></tr>
+    <tr><td>名額已滿</td><td>已領次數等於總名額</td><td>標示「名額已滿」，這個 QR 對所有人停止發點</td></tr>
+    <tr class="grp"><td colspan="3">場次的 QR 清單</td></tr>
+    <tr><td>場次沒有任何 QR</td><td>—</td><td>理論上不會發生（建立時至少一個）；顯示「沒有 QR」（推導）</td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="scan-log">領取紀錄</h3>
 <p>讓 Admin 追查誰在何時領了哪個 QR、拿到多少點。</p>
 <div class="tablewrap"><table class="fields">
@@ -324,7 +420,7 @@ table.stage td:nth-child(4){width:12%}
   <tbody>
     <tr><td>領取紀錄的一列</td><td>—</td><td>一列是一次成功領取，顯示領取時間、粉絲、QR 名稱、點數（例如 +10）<br>Admin 看得到是哪位粉絲，可連到<a href="fans-roster-detail.html">粉絲詳情</a></td></tr>
     <tr><td>篩選</td><td>—</td><td>可依粉絲、依 QR 篩選</td></tr>
-    <tr><td>修改或刪除</td><td>—</td><td>本列表不提供<br>每次成功領取是帳本的一筆分錄，只增不改；Admin 要校正，到粉絲詳情用「修改點數」，會新增一筆校正分錄、不改原筆</td></tr>
+    <tr><td>修改或刪除</td><td>—</td><td>本列表不提供<br>每次成功領取是點數明細的一筆，只增不改；Admin 要校正，到粉絲詳情用「修改點數」，會新增一筆校正紀錄、不改原筆</td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table>
@@ -332,7 +428,7 @@ table.stage td:nth-child(4){width:12%}
   <tbody>
     <tr><td>有紀錄</td><td>至少一位粉絲領過</td><td>依序列出每次成功領取</td></tr>
     <tr><td>沒有紀錄</td><td>還沒有人領過</td><td>顯示「尚無領取紀錄」</td></tr>
-    <tr><td>失敗的掃碼</td><td>未啟用、尚未開始、已結束、已領取過、名額已滿、事件關閉</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>失敗的掃碼</td><td>未啟用、尚未開始、已結束、已領取過、名額已滿、事件關閉</td><td>只記成功領取（推導）；失敗是否也留一列：<span class="tag wait">尚待確認</span></td></tr>
     <tr><td>紀錄很多</td><td>—</td><td>分批載入，做法同全站共用的載入規則</td></tr>
   </tbody>
 </table></div>
@@ -346,7 +442,7 @@ table.stage td:nth-child(4){width:12%}
   <li>掃碼時間在場次的開始與結束時間之間</li>
   <li>這個粉絲帳號沒領過這個 QR</li>
   <li>這個 QR 還沒達到總名額</li>
-  <li>通過後發點，並記一筆帳本分錄</li>
+  <li>通過後發點，並記一筆點數明細</li>
 </ol>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">項目</th><th>規則</th></tr></thead>
@@ -378,37 +474,38 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>點數</td><td>+點數</td></tr>
   </tbody>
 </table></div>
-<p>粉絲用 App 既有的 QR 掃描器掃商家的 QR，由後端依<a href="#scan-rules">發點規則</a>的順序判定。後台粉絲詳情的對應列見<a href="fans-roster-detail.html#detail-scan">掃碼領點的點數明細列</a>。</p>
+<p>粉絲用 App 既有的 QR 掃描器掃商家的 QR，依<a href="#scan-rules">發點規則</a>的順序判定。後台粉絲詳情的對應列見<a href="fans-roster-detail.html#detail-scan">掃碼領點的點數明細列</a>。</p>
 <p class="note">依據：5.1.5.15 F6.1～F6.5；5.1.5.11 F4.2、F5；D499、D503。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.15-取貨場次詳情.md</code>（v1.20）；<code>5.1.5.14-手機Scanner.md</code>（v1.16）F1.3、F3；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）F3、F5；<code>0-設計規格書.md</code>（v5.36）§7.2</li>
-    <li>決策：D116、D121、D122、D123、D240、D242、D252、D253、D337、D338、D401、D453、D455、D499、D503</li>
+    <li>規格：<code>5.1.5.15-取貨場次詳情.md</code>（v1.20）；<code>5.1.5.14-手機Scanner.md</code>（v1.16）F1.3、F3；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）F3、F5；<code>0-設計規格書.md</code>（v5.39）§7.2</li>
+    <li>決策：D116、D121、D122、D123、D240、D242、D252、D253、D337、D338、D401、D453、D455、D499、D503、D510</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
-    <li>反轉要不要確認、要不要填原因，以及「有權限的創作者」指的是誰</li>
+    <li>哪些件顯示反轉入口、反轉要不要確認、要不要填原因，以及「有權限的創作者」指的是誰</li>
+    <li>編輯掃碼領點場次時，場次類型唯讀顯示（推導）</li>
     <li>名單以買家分組、列首顯示進度、子列展開的做法，以及名單與核銷紀錄用什麼控制項切換（目前是呈現參考）</li>
     <li>狀態篩選有沒有「全部」，以及篩選後要不要並列買家人數</li>
-    <li>結果篩選有哪些選項</li>
+    <li>核銷紀錄有沒有結果篩選，以及有哪些選項</li>
     <li>匯出的檔案格式與欄位</li>
     <li>已核銷之後才被撤銷的件（只會出現在歷史資料）在名單上怎麼呈現</li>
-    <li>名單沒有資料或搜尋沒有命中時顯示什麼</li>
+    <li>名單沒有資料或搜尋沒有命中時顯示什麼；核銷紀錄沒有資料時顯示什麼</li>
     <li>掃碼領點場次的失敗掃碼（未啟用、尚未開始、已結束、已領取過、名額已滿、事件關閉）是否也留一列領取紀錄</li>
     <li>QR 圖下載的檔案格式與解析度</li>
-    <li>場次停用時不改各 QR 自己的開關，場次切回啟用時各 QR 維持原本狀態</li>
-    <li>停用單一 QR 前要先確認，切回啟用不用確認</li>
-    <li>場次停用與 QR 停用，粉絲掃碼時共用同一句「此活動未啟用」</li>
-    <li>QR 的總名額不能改到低於已領次數</li>
-    <li>沒人領過的 QR 可以刪除、有人領過只能停用；場次只剩一個 QR 時不能刪除</li>
-    <li>場次已有人領過之後還能不能新增 QR</li>
-    <li>新增的 QR 不能移到別的場次</li>
-    <li>點數歸場次所屬的創作者的榜</li>
+    <li>場次停用時不改各 QR 自己的開關，場次切回啟用時各 QR 維持原本狀態（推導）</li>
+    <li>停用單一 QR 前要先確認，切回啟用不用確認（推導）</li>
+    <li>場次停用與 QR 停用，粉絲掃碼時共用同一句「此活動未啟用」（推導）</li>
+    <li>QR 的總名額不能改到低於已領次數（推導）</li>
+    <li>沒人領過的 QR 可以刪除、有人領過只能停用；場次只剩一個 QR 時不能刪除（推導）</li>
+    <li>場次已有人領過之後還能不能新增 QR（推導）</li>
+    <li>新增的 QR 不能移到別的場次（推導）</li>
+    <li>點數歸場次所屬的創作者的榜（推導）</li>
   </ul>
-  <p class="k">最近同步：2026-11-02（D503：QR 是場次裡的項目，在這頁新增與管理；發點檢查多一項 QR 啟用；拿掉商品與移出場次的寫法；對照 5.1.5.15 v1.20）；上一次 2026-11-02（D499：新增掃碼領點場次詳情；對照 5.1.5.15）；上一次 2026-10-20（D455：場次狀態定案為 4 種、人工處理只留查看來源與反轉、核銷紀錄不記工作人員；對照 5.1.5.15 v1.14）；2026-10-19（新建頁面；對照 5.1.5.15 v1.13、5.1.5.14 v1.11、主規格 v4.90）</p>
+  <p class="k">最近同步：2026-11-04（逐條對照：反轉入口條件改尚待確認、補組合包場次；對照 5.1.5.15 v1.20）</p>
 </details>
 </div>
 </body>

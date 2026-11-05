@@ -220,14 +220,13 @@
       </div><!-- /tab-panel overview -->
 
       <!-- ════════ TAB · 組合庫存（2026-09-11 鎖定套數規則，L3 定案自 lab-bundle-lock.html）：
-           三塊 KPI 磚（可售套數／鎖定套數／組合上限）→ 商品庫存鎖定（鎖定套數一個欄位 ＋「指定鎖定項目」清單：
+           兩塊 KPI 磚（可售套數／鎖定套數；2026-11-05 D513「組合上限」磚隨販售上限退場）→ 商品庫存鎖定（鎖定套數一個欄位 ＋「指定鎖定項目」清單：
            單一選項商品自動 N × 用量、多選項商品可展開選填規格）→ 操作紀錄（一次改動一筆、點開看逐商品前 → 後）。 ════════ -->
       <div class="tab-panel" data-panel="stock" role="tabpanel">
       <div class="detail-cards">
         <div class="bento" data-bd-stock-kpi>
-          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="stock.bundle-qty">Bundle sellable</div><div class="kpi__value"><span data-bd-kpi-qty>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div><div class="kpi__meta kpi__meta--clip" data-bd-kpi-qty-meta hidden></div></div>
-          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="bd.lock.sets">Locked sets</div><div class="kpi__value"><span data-bd-kpi-sets>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div></div>
-          <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="cb.total">Total quantity</div><div class="kpi__value"><span data-bd-kpi-cap>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="stock.bundle-qty">Bundle sellable</div><div class="kpi__value"><span data-bd-kpi-qty>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div><div class="kpi__meta kpi__meta--clip" data-bd-kpi-qty-meta hidden></div></div>
+          <div class="kpi bento--span-6"><div class="kpi__label" data-i18n="bd.lock.sets">Locked sets</div><div class="kpi__value"><span data-bd-kpi-sets>—</span><span class="kpi__unit" data-i18n="bd.unit.sets">sets</span></div></div>
         </div>
 
         <section class="form-section form-section--outlined">
@@ -242,20 +241,19 @@
               <button class="btn btn--outline btn--sm" type="button" data-bd-lock-edit><span data-i18n="bd.lock.edit">Edit</span></button>
             </div>
           </div>
-          <!-- 2026-10-12 改版（D402，UI-CHANGES 一百八十八；同建立組合包的「數量」卡）：鎖定改成問句 form-ask——
-               「要鎖定庫存給這個組合嗎？」不鎖定／鎖定 → 鎖定組數列靠右（.form-ask__row--lockset）＋ 成員鎖定量表（.lockset）。
-               選不鎖定＝清空鎖定組數（同既有「空白＝不鎖定」語意）；二選一只在「編輯」後可切（syncLockEditing）。
-               墓碑：原 .lockset__sets 一列（鎖定套數）與 .lockset__title（bd.lock.items 小標＋說明）。 -->
-          <div class="form-ask">
-            <div class="form-ask__t" data-i18n="cb.lock.q">Lock stock for this bundle?</div>
-            <div class="form-ask__s" data-i18n="cb.lock.s">Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</div>
-            <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-bd-lockmode>
-              <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-bd-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
-              <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-bd-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
+          <!-- D513（2026-11-05）：鎖定改成「鎖定庫存」開關（同建立組合包第三個開關與組合設定的庫存設定）——開著＝露出鎖定組數列（.form-ask__row--lockset）＋成員鎖定量表，
+               可售＝鎖定組數（可以是 0）；關閉才是不鎖定。開關只在「編輯」後可切（syncLockEditing）。墓碑：form-ask「要鎖定庫存給這個組合嗎？」二選一。 -->
+          <div class="control-group">
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="cp.lock.title">Hold back stock</div>
+                <div class="control-row__sub" data-i18n="cb.lock.sub">Lock some member stock for this bundle only; adjust any time.</div>
+              </div>
+              <div class="switch" id="bd-lock-sw" role="switch" aria-checked="false" aria-label="Hold back stock" data-i18n-aria-label="cp.lock.title"></div>
             </div>
-            <div class="form-ask__body" data-bd-lock-body hidden>
+            <div class="form-ask__body control-group__body" data-bd-lock-body hidden>
               <div class="form-ask__row form-ask__row--lockset">
-                <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-bd-sets-hint></span><span class="lockset__sets-hint" data-bd-lock-auto hidden></span></span><!-- D480：限量時鎖定＝限量 − 已售、跟著限量走，二選一收起、鎖定組數唯讀，改顯示這一句（2026-10-27 放在鎖定組數標籤底下） -->
+                <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-bd-sets-hint></span></span>
                 <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" inputmode="numeric" id="bd-lock-sets" placeholder="0" data-i18n-aria-label="cb.lock.sets" aria-label="Sets to lock"><span class="amount-field__unit" data-i18n="bd.unit.sets">sets</span></span>
               </div>
               <div class="lockset" id="bd-alloc">
@@ -308,13 +306,13 @@
           </div>
           <!-- D435（2026-10-16，S81.1；規格 5.1.5.9 §2.3「活動發布後的修改」）：活動已發布的組合包，上架中只能改鎖定套數（「組合庫存」分頁，不受這裡的編輯管）；
                D438（2026-10-16）：另設的上架、下架、開賣、停售時間屬營運動作，上架中也能按「編輯組合」直接改（只開放上架與開賣兩節，bdStockLockApply）；
-               其他欄位（內容、售價、販售上限、購買條件…）唯讀——「編輯組合」停用並就地說明，附下架入口（與頁首「下架」同一個動作、同一個確認窗）。
+               其他欄位（內容、售價、購買條件…）唯讀——「編輯組合」停用並就地說明，附下架入口（與頁首「下架」同一個動作、同一個確認窗）。
                看的是組合包自己的上架狀態，不是活動的。電子商店組合包不受影響。bdStockSync() 切 hidden -->
           <div class="alert alert--row alert--info mt-16" data-bd-stockonly-note data-feat="S81.1" role="note" hidden>
             <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
             <div class="alert__body">
-              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only locked sets, sales cap and listing and sale times can change</div>
-              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab. Under Edit bundle you can raise or lower the sales cap and switch between limited and unlimited (never below the sets sold plus reserved; raising it needs enough member stock to lock), and change listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
+              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only stock settings and listing and sale times can change</div>
+              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab: they can’t go below the sets reserved, and raising them needs enough member stock. Under Edit bundle you can change stock settings and listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
             </div>
             <button class="btn btn--outline btn--sm" type="button" data-view-safe data-bd-stockonly-unlist data-i18n="bd.stockonly.go">Unlist bundle</button>
           </div>
@@ -513,31 +511,41 @@
           <div data-bd-codes-body><div data-bd-codes-host></div></div>
         </section>
 
-        <!-- 數量（2026-10-12 改版，D402，UI-CHANGES 一百八十八；5.1.5.9 §3 第 4 項：庫存版本留在組合設定、鎖定組數在組合庫存分頁）：
-             標題列右側「最多可賣 N 組」（.form-tally）；販售上限改問句 form-ask「要另設販售上限嗎？」不限量／限量 → 販售上限列。
-             上限超過成員能供應的組數＝紅字＋擋存（同建立組合包 capOver）。墓碑：原「庫存」卡的 selection-card 二選一與「總數量」欄。 -->
+        <!-- 庫存設定（D513，2026-11-05；同建立組合包的三個開關，5.1.5.4 F4／D496）：開啟不限量（賣完轉預購）／開啟限量標籤（前台標記）互斥；鎖定庫存與「組合庫存」分頁同一個值，
+             開著時鎖定組數與成員分配在組合庫存分頁調整（5.1.5.9 §3 第 4 項）。標題列右側「最多可賣 N 組」（.form-tally）。
+             墓碑：form-ask「要另設販售上限嗎？」二選一、販售上限列、capOver／capUnder 擋存。 -->
         <section class="form-section form-section--outlined" data-nav-sec="qty">
           <div class="form-section__head form-section__head--actions">
-            <h3 class="form-section__title" data-i18n="cb.sec.qty">Quantity</h3>
+            <h3 class="form-section__title" data-i18n="cp.stock.title.cfg">Stock settings</h3>
             <div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k" data-i18n="cb.qty.max">Can sell</span><span class="form-tally__v" data-bd-sets>—</span></span></div>
           </div>
-          <div class="stack">
-            <div class="form-ask">
-              <div class="form-ask__t" data-i18n="cb.cap.q">Set your own sales cap?</div>
-              <div class="form-ask__s" data-i18n="cb.cap.s">A cap only limits how many sets this bundle sells. It doesn’t lock stock.</div>
-              <div class="segmented radio-cards" role="radiogroup" aria-label="Sales cap" data-i18n-aria-label="cb.cap.q" id="bd-edition">
-                <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-view-safe data-bd-edition="unlimited"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.qty.unlim">Unlimited</span></span></button>
-                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-view-safe data-bd-edition="limited" data-feat="S45"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.avail.limited">Limited</span></span></button>
+          <div class="control-group" data-bd-stock-sw>
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
+                <div class="control-row__sub" data-i18n="cb.unl.sub">After the bundle sells out, switch to pre-order so fans can keep ordering.</div>
               </div>
-              <div class="form-ask__body" data-when-bd-edition="limited" data-feat="S45" hidden>
-                <div class="form-ask__row">
-                  <span class="form-ask__row-k" data-i18n="cb.cap.label">Sales cap</span>
-                  <span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" id="bd-total" inputmode="numeric" value="" placeholder="0" data-i18n-aria-label="cb.cap.label" aria-label="Sales cap"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span></span>
-                </div>
-                <div class="field__hint field__hint--warn" data-bd-capmax hidden></div><!-- 只在編輯態出現（檢視態的 .field__hint 由 shared.css 收起） -->
-              </div>
+              <div class="switch" id="bd-sw-unl" role="switch" aria-checked="false" tabindex="0" aria-label="Allow pre-orders after sell-out" data-i18n-aria-label="cp.unl.title"></div>
             </div>
-            <div class="field__hint field__hint--fact" data-i18n="bd.members.alloc-hint">Lock amounts are edited in Bundle stock.</div>
+            <div class="lctl__rule lctl__rule--flush"></div>
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="cp.tag.title">Limited-edition tag</div>
+                <div class="control-row__sub" data-i18n="cb.tag.sub">Mark this bundle as limited on the storefront.</div>
+              </div>
+              <div class="switch" id="bd-sw-tag" role="switch" aria-checked="false" tabindex="0" aria-label="Limited-edition tag" data-i18n-aria-label="cp.tag.title"></div>
+            </div>
+            <div class="lctl__rule lctl__rule--flush"></div>
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="cp.lock.title">Hold back stock</div>
+                <div class="control-row__sub" data-i18n="cb.lock.sub">Lock some member stock for this bundle only; adjust any time.</div>
+              </div>
+              <div class="switch" id="bd-sw-lock" role="switch" aria-checked="false" tabindex="0" aria-label="Hold back stock" data-i18n-aria-label="cp.lock.title"></div>
+            </div>
+            <div class="control-group__body" data-bd-sw-lock-body hidden>
+              <div class="field__hint field__hint--fact"><span data-bd-sw-lock-n></span> · <span data-i18n="bd.members.alloc-hint">Lock amounts are edited in Bundle stock.</span></div>
+            </div>
           </div>
         </section>
 
@@ -903,7 +911,7 @@
       const tbEff = TBm ? TBm.effective({ sched: b.sched || {} }, TBm.times(ev)) : {};
       const evSeed = {
         id: b.id, isEventBundle: true, name: b.name, description: '', persona: null,
-        members: members, cap: (b.cap === undefined || b.cap === null) ? null : b.cap,
+        members: members, preorder: !!b.preorder, limitedTag: !!b.limitedTag,
         /* 墓碑 2026-10-16（D429）：`srcFix`（bookyay 套票自動建立的組合包整組鎖定，D329；applySrcFix）隨自動組合包退場。 */
         lockSets: (b.lockSets != null && b.lockSets !== '') ? Number(b.lockSets) : null, alloc: {},
         holdSets: Number(b.holdSets) || 0,   /* D465：這個組合包被保留的套數（下單未付款） */
@@ -1086,7 +1094,7 @@
     const bundleModel = {
       id: (bundle && bundle.id) || 'ultimate-fan-bundle',
       members: [...document.querySelectorAll('#bd-members [data-bd-pid]')].map(memberOfRow),
-      cap: null,
+      preorder: !!(seed && seed.preorder), limitedTag: !!(seed && seed.limitedTag),   /* D513：賣完轉預購／前台限量標籤，同建立組合包（D496）；墓碑：cap（販售上限） */
       listed: seed ? seed.listed !== false : true,
       listAt: (seed && seed.listAt) || null,
       unlistAt: (seed && seed.unlistAt) || null,
@@ -1104,7 +1112,7 @@
       /* 鎖定套數與逐規格分配（2026-09-11）：從組合記錄帶入；成員商品身上的組合鎖定是它導出的（applyBundleLock） */
       lockSets: (seed && seed.lockSets !== undefined) ? seed.lockSets : null,
       alloc: (seed && seed.alloc) ? JSON.parse(JSON.stringify(seed.alloc)) : {},
-      /* D465：被保留的套數（下單未付款）——留在鎖定格裡，可售＝鎖定套數 − 保留套數；限量總量與鎖定套數都不得低於它 */
+      /* D465：被保留的套數（下單未付款）——留在鎖定格裡，可售＝鎖定套數 − 保留套數；鎖定套數不得低於它 */
       holdSets: (seed && Number(seed.holdSets)) || 0,
       /* D478：結帳中（保留中）的訂單筆數——示範資料 seed.pendingCheckout；沒寫時以保留套數代替（假設一筆訂單一套，UIA-297）。
          大於 0 時成員區唯讀（syncMembersLock），下架也一樣，等這些訂單付款或逾時結清。 */
@@ -1180,11 +1188,6 @@
     const allocEl = document.getElementById('bd-alloc');
     const setsInput = document.getElementById('bd-lock-sets');
     const setsHint = document.querySelector('[data-bd-sets-hint]');
-    const totalInput = document.getElementById('bd-total');
-    const limitedEdition = () => {
-      const a = document.querySelector('#bd-edition .segmented__btn--active');   /* 2026-10-12：庫存版本改 form-ask 的 segmented 二選一 */
-      return !!a && a.dataset.bdEdition === 'limited';
-    };
     /* 不限量掛 data-i18n，切語言時由 applyI18n 自己接手；其餘寫數字。 */
     function setQty(el, n) {
       if (!el) return;
@@ -1228,78 +1231,30 @@
       refreshAlloc();
     }
 
-    /* D480（2026-10-23，主規格 §7.14「組合包：限量與鎖定」，5.1.5.9 §2.3）：限量時鎖定＝限量 − 已售套數，跟著限量走、不另外設。
-       調高從成員未鎖定量再鎖、不夠就擋（capOver）；調低多出的鎖定退回未鎖定，下限＝已售＋保留（capUnder）；
-       改回不限量＝鎖定全部退回，之後可在「組合庫存」自己另設。不合法的上限不寫進鎖定（模型停在上一個合法值）。 */
-    let limitAutoOn = false;
-    function syncLimitLock() {
-      bundleModel.sold = soldUnits();   /* ListingState.bundleQty 用它算剩餘上限（cap − 已售 − 保留） */
-      const lim = limitedEdition();
-      const auto = document.querySelector('[data-bd-lock-auto]');
-      const mode = document.querySelector('[data-bd-lockmode]');
-      const body = document.querySelector('[data-bd-lock-body]');
-      if (mode) mode.hidden = lim;
-      if (mode) mode.closest('.form-ask').querySelectorAll(':scope > .form-ask__t, :scope > .form-ask__s').forEach(el => { el.hidden = lim; });   /* 2026-10-27：限量時問句與說明收起 */
-      if (!lim) {
-        if (limitAutoOn) {
-          bundleModel.lockSets = null; applyLock();
-          if (setsInput) setsInput.value = '';
-          if (body) body.hidden = true;
-          if (mode) mode.querySelectorAll('[data-bd-lock]').forEach(b => { const on = b.dataset.bdLock === 'no'; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
-          try { lockYes = false; } catch (_) {}
-        }
-        limitAutoOn = false;
-        if (auto) auto.hidden = true;
-        return;
-      }
-      limitAutoOn = true;
-      const c = totalInput ? Math.floor(Number(totalInput.value)) : NaN;
-      let blocked = false;
-      if (!isNaN(c) && c > 0) {
-        const want = c - soldUnits();
-        const max = LS.bundleMaxSets(bundleModel, productsMap()).max;
-        if (want >= (Number(bundleModel.holdSets) || 0) && (max === Infinity || want <= max)) {
-          bundleModel.lockSets = want > 0 ? want : null;
-          applyLock();
-        } else blocked = true;
-      }
-      if (setsInput) setsInput.value = bundleModel.lockSets == null ? '0' : String(bundleModel.lockSets);
-      if (body) body.hidden = false;
-      if (auto) {
-        auto.hidden = false;
-        auto.textContent = blocked
-          ? T('bd.lock.auto.blocked', 'A cap of {cap} sets can’t be saved — the lock stays at {n} sets until you fix the cap.').replace('{cap}', c.toLocaleString('en-US')).replace('{n}', String(LS.bundleLockSets(bundleModel) || 0))
-          : T('bd.lock.auto', 'Limited to {cap} sets, {s} sold — {n} sets locked automatically. The lock follows the cap: change the cap under Edit bundle, or switch to unlimited to set your own.')
-          .replace('{cap}', isNaN(c) ? '—' : c.toLocaleString('en-US')).replace('{s}', soldUnits().toLocaleString('en-US')).replace('{n}', String(LS.bundleLockSets(bundleModel) || 0));
-      }
-    }
     /* 數字、錯誤態、頁首徽章與右欄鏡射：組合可售量一律問 ListingState.bundleQty()。 */
     function refreshAlloc() {
       if (!LS) return;
-      const cap = totalInput ? parseFloat(totalInput.value) : NaN;
-      bundleModel.cap = (limitedEdition() && !isNaN(cap)) ? cap : null;
-      syncLimitLock();
+      bundleModel.sold = soldUnits();
       const map = productsMap();
       const n = LS.bundleLockSets(bundleModel);
       const lim = LS.bundleMaxSets(bundleModel, map);
       const wanted = setsInput ? Math.floor(Number(setsInput.value.trim())) : NaN;
       const over = setsInput && setsInput.value.trim() !== '' && !isNaN(wanted) && wanted > lim.max;
-      /* D465 補充二：調低鎖定套數不得低於它正被保留的套數（0／空白＝改成不鎖定，保留改記到未鎖定，不擋） */
+      /* D465 補充二／D513〔推導〕4：鎖定套數的下限＝被保留的套數（空白視同 0；關閉鎖定庫存時保留改記到未鎖定，不擋） */
       const hs = Number(bundleModel.holdSets) || 0;
-      const underHold = !over && setsInput && !isNaN(wanted) && wanted > 0 && wanted < hs;
+      const underHold = !over && n !== null && setsInput && !isNaN(wanted) && wanted < hs;
       /* 鎖定套數欄：提示寫上限與誰壓的；超過上限紅字、不寫進模型（模型停在上一個合法值） */
       if (setsInput) { if (over || underHold) setsInput.setAttribute('aria-invalid', 'true'); else setsInput.removeAttribute('aria-invalid'); }
-      /* 鎖定套數提示句（2026-09-21 第 2 批改 cpp.bd.sp.lock.*，同建立組合／建立活動第 6 步）：「空白＝不鎖定，與單賣共用剩餘。最多 N 套（受「票券／商品名」限制）」 */
-      if (setsHint && limitedEdition()) { setsHint.textContent = ''; setsHint.classList.remove('is-over'); }   /* D480：說明在 data-bd-lock-auto */
-      else if (setsHint) {
+      /* 鎖定套數提示句（同建立組合／建立活動）：上限與誰壓的；超過時寫缺幾套（D513〔推導〕3） */
+      if (setsHint) {
         const who = lim.by ? (lim.by.kind === 'ticket' ? T('cpp.bd.sp.who.tix', 'tickets') : (lim.by.name || '')) : '';
         setsHint.textContent = (lim.max === Infinity)
           ? T('cpp.bd.sp.lock.none', 'Add a member first — nothing to lock yet')
           : (over
-              ? T('cpp.bd.sp.lock.over', 'Over the ceiling of {n} sets (limited by {who})').replace('{n}', lim.max.toLocaleString('en-US')).replace('{who}', who)
+              ? T('cb.lock.short', 'Members can only lock {max} sets — {k} short (limited by {who})').replace('{max}', lim.max.toLocaleString('en-US')).replace('{k}', (wanted - lim.max).toLocaleString('en-US')).replace('{who}', who)
               : underHold
                 ? T('bd.lock.under-hold', 'Can’t go below the {n} sets reserved — those orders are awaiting payment').replace('{n}', hs.toLocaleString('en-US'))
-                : T('cpp.bd.sp.lock.hint', 'Blank = shares what’s left with single sales')
+                : T('cb.lock.max', 'Up to {n} sets can be locked.').replace('{n}', lim.max.toLocaleString('en-US'))
                   + (hs > 0 && n !== null ? ' · ' + T('bd.lock.held', '{a}/{n} sets sellable, {h} reserved').replace('{a}', Math.max(0, n - hs)).replace('{n}', n).replace('{h}', hs) : ''));
         setsHint.classList.toggle('is-over', !!(over || underHold));
       }
@@ -1326,16 +1281,15 @@
       /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：組合設定「數量」卡標題列右側讀數（.form-tally）＝最多可賣 N 組，同建立組合包 */
       const tally = document.querySelector('[data-bd-sets]');
       if (tally) tally.innerHTML = qty === Infinity ? esc(T('cb.stock.unlimited', 'Unlimited')) : esc(qty.toLocaleString('en-US')) + '<small>' + esc(T('cpp.bd.sp.unit.group', 'sets')) + '</small>';
-      syncCapOver();
       const kSets = document.querySelector('[data-bd-kpi-sets]');
       if (kSets) { if (n === null) { kSets.setAttribute('data-i18n', 'bd.lock.none'); kSets.textContent = T('bd.lock.none', 'None'); } else setQty(kSets, n); }
-      const kCap = document.querySelector('[data-bd-kpi-cap]');
-      const capOn = bundleModel.cap !== null && bundleModel.cap >= 0;
-      if (kCap) { if (capOn) setQty(kCap, bundleModel.cap); else setQty(kCap, Infinity); const u = kCap.parentElement && kCap.parentElement.querySelector('.kpi__unit'); if (u) u.hidden = !capOn; }   /* 「不限量」後面不接「套」 */
-      /* 可售套數的一句說明：鎖定時「鎖定 N 套」；不鎖定時寫是誰壓出這個數字（成員或組合上限） */
+      if (kSets) { const u = kSets.parentElement && kSets.parentElement.querySelector('.kpi__unit'); if (u) u.hidden = n === null; }   /* 「未鎖定」後面不接「套」 */
+      const swN = document.querySelector('[data-bd-sw-lock-n]');
+      if (swN && n !== null) swN.textContent = T('bd.lock.meta.locked', 'Locked {n} sets').replace('{n}', n.toLocaleString('en-US'));
+      /* 可售套數的一句說明：鎖定時「鎖定 N 套」；不鎖定時寫是誰壓出這個數字（成員） */
       const meta = document.querySelector('[data-bd-kpi-qty-meta]');
       if (meta) {
-        /* 2026-09-21 第 2 批：句型對齊建立組合的可售套數讀數（cpp.bd.sp.sets.*）——「最多 N 組 · 鎖定 N 套」／「· 受限量上限限制」／「· 受「票券剩餘／商品名庫存」限制」 */
+        /* 2026-09-21 第 2 批：句型對齊建立組合的可售套數讀數（cpp.bd.sp.sets.*）——「最多 N 組 · 鎖定 N 套」／「· 受「票券剩餘／商品名庫存」限制」 */
         let txt = '';
         const qtyTxt = qty === Infinity ? '' : qty.toLocaleString('en-US');
         /* 2026-09-22：建立頁把「最多 N 組 · 受…限制」拆成讀數＋hint 兩層（方案 A），本頁的 KPI 副標
@@ -1343,10 +1297,8 @@
         const val = T('cpp.bd.sp.sets.val', 'Up to {n} sets').replace('{n}', qtyTxt || String(n));
         if (n !== null) {
           txt = val + ' · ' + T('cpp.bd.sp.sets.why.lock', '{lock} locked').replace('{lock}', String(n));
-          if (capOn && bundleModel.cap < n) txt += T('cpp.bd.sp.sets.capnote', ', capped at {cap}').replace('{cap}', String(bundleModel.cap));
         } else if (qty !== Infinity) {
-          if (capOn && bundleModel.cap <= lim.max) txt = val + ' · ' + T('cpp.bd.sp.sets.why.cap', 'Limited by the cap');
-          else if (lim.by) txt = val + ' · ' + T('cpp.bd.sp.sets.why.by', 'Limited by {who}')
+          if (lim.by) txt = val + ' · ' + T('cpp.bd.sp.sets.why.by', 'Limited by {who}')
             .replace('{who}', lim.by.kind === 'ticket' ? T('cpp.bd.sp.sets.by.tix', 'ticket supply') : T('cpp.bd.sp.sets.by.item', '{name} stock').replace('{name}', lim.by.name || ''));
         }
         /* 任一成員已下架或已封存 → 組合不可售（§7.14 成交條件，D284；D288 起是不變式的防線——常態下成員下架時組合會一同下架）：
@@ -1359,49 +1311,7 @@
       }
       refreshBadges(qty);
     }
-    /* 販售上限不得大於成員能供應的組數（D292；2026-10-12 改版同建立組合包 capOver）：超過＝上限欄紅框＋一句紅字，儲存時擋下（見編輯模式的 capture） */
-    function capSupply() {
-      if (!LS) return null;
-      const keep = bundleModel.cap; bundleModel.cap = null;
-      const q = LS.bundleQty(bundleModel, allProducts()); bundleModel.cap = keep;
-      return q === Infinity ? null : q;
-    }
-    /* D465：限量總量含已售與保留中的套數，所以上限能到「已售＋保留＋成員還能供應的套數」（下限＝已售＋保留，見 capFloor）；
-       原本拿總量直接比還能供應的套數，已賣過的組合包一進編輯就紅字 */
-    /* D480：限量會自動鎖定，上限最多到「已售＋成員還能鎖的套數」（bundleMaxSets 已含本組合現有鎖定、保留在鎖定配額裡） */
-    const capRoom = () => { if (!LS) return null; const m = LS.bundleMaxSets(bundleModel, productsMap()).max; return m === Infinity ? null : soldUnits() + m; };
-    const capOver = () => {
-      if (!LS || !totalInput || !limitedEdition()) return false;
-      const c = Math.floor(Number(totalInput.value)), room = capRoom();
-      return !isNaN(c) && c > 0 && room !== null && c > room;
-    };
-    /* 限量總量的下限＝已售套數＋這個組合包被保留的套數（D465 補充三，取代 D447 決定四的〔推導〕「＝已售套數」）；空白不算低於 */
-    const holdSetsOf = () => (bundleModel && Number(bundleModel.holdSets)) || 0;
-    const capFloor = () => soldUnits() + holdSetsOf();
-    const capUnder = () => {
-      if (!totalInput || !limitedEdition() || totalInput.value.trim() === '') return false;
-      const c = Math.floor(Number(totalInput.value));
-      return !isNaN(c) && c < capFloor();
-    };
-    function syncCapOver() {
-      const over = capOver(), under = !over && capUnder();
-      const hint = document.querySelector('[data-bd-capmax]');
-      if (hint) {
-        hint.hidden = !over && !under;
-        const capWhoBy = over ? LS.bundleMaxSets(bundleModel, productsMap()).by : null;
-        hint.textContent = over ? T('bd.cap.short', 'Members can only cover a cap of {room} sets — {k} short (limited by {who})').replace('{room}', capRoom().toLocaleString('en-US'))
-              .replace('{k}', (Math.floor(Number(totalInput.value)) - capRoom()).toLocaleString('en-US'))
-              .replace('{who}', capWhoBy ? (capWhoBy.kind === 'ticket' ? T('cpp.bd.sp.who.tix', 'tickets') : (capWhoBy.name || '')) : '')
-          : under ? (holdSetsOf() > 0
-              ? T('bd.cap.under-hold', 'Can’t go below {n} sets — {s} sold plus {h} reserved').replace('{n}', capFloor().toLocaleString('en-US')).replace('{s}', soldUnits().toLocaleString('en-US')).replace('{h}', holdSetsOf().toLocaleString('en-US'))
-              : T('bd.cap.under', 'Can’t go below the {n} sets already sold').replace('{n}', soldUnits().toLocaleString('en-US'))) : '';
-      }
-      if (totalInput) { if (over || under) totalInput.setAttribute('aria-invalid', 'true'); else totalInput.removeAttribute('aria-invalid'); }
-    }
-    window.bdCapOver = capOver;
-    window.bdCapUnder = capUnder;
-    window.bdCapSig = () => (limitedEdition() ? 'limited' : 'unlimited') + '|' + (totalInput ? totalInput.value.trim() : '');
-    /* D480：限量帶動的鎖定變動——「編輯組合」進場拍鎖定快照；取消時（等快照還原跑完）放回原本的鎖定（含不限量時自己設的鎖定）；
+    /* D513：組合設定「庫存設定」的三個開關——「編輯組合」進場拍快照；取消時（等快照還原跑完）放回原本的鎖定與開關；
        儲存時鎖定有變就記一筆操作紀錄（同「組合庫存」的鎖定儲存，鎖定套數 前 → 後＋各成員導出量） */
     let limitLockSnap;
     document.addEventListener('click', e => {
@@ -1409,15 +1319,15 @@
       if (!edit && !cancel) return;
       const sp = document.querySelector('.tab-panel[data-panel="settings"]');
       const editing = !!sp && sp.getAttribute('data-mode') === 'edit';
-      if (edit && !editing) { limitLockSnap = { lockSets: bundleModel.lockSets, members: bundleModel.members.map(m => ({ productId: m.productId, lock: LS ? LS.bundleMemberLock(bundleModel, m) : null })) }; return; }
+      if (edit && !editing) { limitLockSnap = { lockSets: bundleModel.lockSets, preorder: bundleModel.preorder, limitedTag: bundleModel.limitedTag, members: bundleModel.members.map(m => ({ productId: m.productId, lock: LS ? LS.bundleMemberLock(bundleModel, m) : null })) }; return; }
       if (!limitLockSnap) return;
       const snap = limitLockSnap;
       if (cancel) {
         setTimeout(() => {
-          bundleModel.lockSets = snap.lockSets; applyLock();
+          bundleModel.lockSets = snap.lockSets; bundleModel.preorder = snap.preorder; bundleModel.limitedTag = snap.limitedTag; applyLock();
           if (setsInput) setsInput.value = snap.lockSets == null ? '' : String(snap.lockSets);
-          if (!limitedEdition()) { limitAutoOn = false; try { lockYes = snap.lockSets != null; paintLockMode(); } catch (_) {} }
-          renderAlloc();
+          lockYes = snap.lockSets != null; paintLockMode();
+          renderAlloc(); syncLockEditing();
         }, 0);
         limitLockSnap = undefined;
         return;
@@ -1474,31 +1384,45 @@
         return al.over || al.rows.some(r => r.bad);
       });
     }
-    /* 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：「要鎖定庫存給這個組合嗎？」不鎖定／鎖定二選一（form-ask，同建立組合包）。
-       鎖定＝露出鎖定組數列＋成員鎖定量表；選不鎖定＝清空鎖定組數（同既有「空白＝不鎖定」）。只在按「編輯」後可切，取消時跟著快照還原。 */
-    const lockModeEl = document.querySelector('[data-bd-lockmode]');
+    /* D513：「鎖定庫存」開關（組合庫存分頁 #bd-lock-sw、組合設定 #bd-sw-lock 同一個值）。開著＝鎖定（套數可以是 0）、露出鎖定組數列＋成員鎖定量表；
+       關閉＝不鎖定、與其他管道共用。組合庫存那顆只在按「編輯」後可切，組合設定那顆只在「編輯組合」後可切，取消時跟著快照還原。 */
+    const lockSwEl = document.getElementById('bd-lock-sw');
     const lockBody = document.querySelector('[data-bd-lock-body]');
     let lockYes = false;
-    function paintLockMode() {
-      if (lockModeEl) lockModeEl.querySelectorAll('[data-bd-lock]').forEach(b => { const on = (b.dataset.bdLock === 'yes') === lockYes; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
-      if (lockBody) lockBody.hidden = !lockYes;
+    function paintStockSw(el, on, disabled) {
+      if (!el) return;
+      el.classList.toggle('switch--on', on); el.setAttribute('aria-checked', on ? 'true' : 'false');
+      if (disabled === undefined) return;
+      if (disabled) { el.setAttribute('aria-disabled', 'true'); el.removeAttribute('tabindex'); } else { el.removeAttribute('aria-disabled'); el.setAttribute('tabindex', '0'); }
     }
-    if (lockModeEl) lockModeEl.addEventListener('click', e => {
-      const b = e.target.closest('[data-bd-lock]'); if (!b || !lockEditing || limitedEdition()) return;
-      lockYes = b.dataset.bdLock === 'yes';
-      if (!lockYes && setsInput) { setsInput.value = ''; bundleModel.lockSets = null; applyLock(); }
-      if (lockYes && setsInput && setsInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數 */
-        const mx = LS ? LS.bundleMaxSets(bundleModel, productsMap()).max : Infinity, n0 = mx === Infinity ? 100 : Math.min(100, mx);
-        if (n0 >= 1) { setsInput.value = String(n0); bundleModel.lockSets = n0; applyLock(); }
+    function paintLockMode() {
+      paintStockSw(lockSwEl, lockYes);
+      paintStockSw(document.getElementById('bd-sw-lock'), lockYes);
+      if (lockBody) lockBody.hidden = !lockYes;
+      const swBody = document.querySelector('[data-bd-sw-lock-body]'); if (swBody) swBody.hidden = !lockYes;
+      paintStockSw(document.getElementById('bd-sw-unl'), !!bundleModel.preorder, !!bundleModel.limitedTag);   /* 不限量與限量標籤互斥，同建立組合包 */
+      paintStockSw(document.getElementById('bd-sw-tag'), !!bundleModel.limitedTag, !!bundleModel.preorder);
+    }
+    function setLockOn(yes) {
+      lockYes = yes;
+      if (!yes && setsInput) { setsInput.value = ''; bundleModel.lockSets = null; applyLock(); }
+      if (yes && setsInput && setsInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數，不低於保留 */
+        const mx = LS ? LS.bundleMaxSets(bundleModel, productsMap()).max : Infinity, hs0 = Number(bundleModel.holdSets) || 0;
+        const n0 = Math.max(hs0, mx === Infinity ? 100 : Math.min(100, mx));
+        setsInput.value = String(n0); bundleModel.lockSets = n0; applyLock();
       }
       paintLockMode();
-      refreshAlloc(); syncLockEditing();
+      renderAlloc(); syncLockEditing();
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
-    });
+    }
+    if (lockSwEl) {
+      lockSwEl.addEventListener('click', () => { if (lockEditing) setLockOn(!lockYes); });
+      lockSwEl.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (lockEditing) setLockOn(!lockYes); } });
+    }
     function syncLockEditing() {
-      if (lockModeEl) lockModeEl.querySelectorAll('[data-bd-lock]').forEach(b => { b.disabled = !lockEditing; });
+      if (lockSwEl) { lockSwEl.parentElement.setAttribute('data-mode', lockEditing ? 'edit' : 'view'); if (lockEditing) lockSwEl.setAttribute('tabindex', '0'); else lockSwEl.removeAttribute('tabindex'); }   /* 檢視態＝狀態展示、不可點（shared.css [data-mode="view"] .switch） */
       /* 墓碑 2026-10-16（D429）：bookyay 自動建立的組合包鎖定套數整組鎖定（D329，srcFix）退場。 */
-      if (setsInput) setsInput.disabled = !lockEditing || limitedEdition();   /* D480：限量時鎖定跟著限量、不另外設 */
+      if (setsInput) setsInput.disabled = !lockEditing;
       if (allocEl) allocEl.querySelectorAll('[data-bd-alloc-input]').forEach(inp => { inp.disabled = !lockEditing || (LS && LS.bundleLockSets(bundleModel) === null); });
       if (lockEditBtn) lockEditBtn.hidden = lockEditing;
       if (lockActions) lockActions.hidden = !lockEditing;
@@ -1513,7 +1437,7 @@
         bundleModel.lockSets = lockSnap.lockSets; bundleModel.alloc = JSON.parse(JSON.stringify(lockSnap.alloc));
         applyLock();
         if (setsInput) setsInput.value = bundleModel.lockSets === null ? '' : String(bundleModel.lockSets);
-        lockYes = bundleModel.lockSets !== null && bundleModel.lockSets !== undefined; paintLockMode();   /* 2026-10-12：二選一跟著快照還原 */
+        lockYes = bundleModel.lockSets !== null && bundleModel.lockSets !== undefined; paintLockMode();   /* 開關跟著快照還原 */
       }
       lockEditing = false; lockSnap = null;
       renderAlloc(); syncLockEditing();
@@ -1542,18 +1466,19 @@
       });
       if (items.length) bdHistory.add(Object.assign({ items: items }, b !== a ? { sets: fmt(b) + ' → ' + fmt(a) } : {}));
       lockEditing = false; lockSnap = null;
-      lockYes = a !== null && a !== undefined; paintLockMode();   /* 2026-10-12：選了鎖定卻沒填組數＝存成不鎖定，二選一跟著回到「不鎖定」 */
+      lockYes = a !== null && a !== undefined; paintLockMode();
       syncLockEditing();
+      if (window.bdMirror) window.bdMirror();   /* D513：鎖定寫回活動資料（活動詳情的可售量與庫存設為 0 讀同一份） */
     });
-    /* 鎖定套數：空白／0＝不鎖定；填正數＝鎖定 N 套。超過上限不寫進模型（成員會被鎖到負數），只標紅。 */
+    /* 鎖定套數（D513）：開關開著時＝鎖定 N 套，空白視同 0。超過上限或低於保留不寫進模型（成員會被鎖到負數），只標紅。 */
     if (setsInput) setsInput.addEventListener('input', () => {
       if (!LS) return;
       const raw = setsInput.value.trim();
       const lim = LS.bundleMaxSets(bundleModel, productsMap());
-      const n = raw === '' ? null : Math.floor(Number(raw));
-      const hs = Number(bundleModel.holdSets) || 0;   /* D465 補充二：不得低於保留套數（0＝不鎖定除外） */
-      if (raw === '' || (!isNaN(n) && n >= 0 && n <= lim.max && (n === 0 || n >= hs))) {
-        bundleModel.lockSets = (n === null || n <= 0) ? null : n;
+      const n = raw === '' ? 0 : Math.floor(Number(raw));
+      const hs = Number(bundleModel.holdSets) || 0;   /* D513〔推導〕4：下限＝被保留的套數 */
+      if (!isNaN(n) && n >= hs && n <= lim.max) {
+        bundleModel.lockSets = n;
         applyLock();
       }
       refreshAlloc(); syncLockEditing();
@@ -1864,8 +1789,10 @@
         Object.keys(bundleModel.sched || {}).forEach(k => { const v = bundleModel.sched[k]; if (typeof v === 'string' && v) s[k] = v; });
         put('sched', s, {});
         put('paused', bundleModel.paused || null, null);   /* D481：下架時保存但暫停的排程；重新上架（本頁或活動詳情 D448 彈窗）時讀它檢查並恢復（D488） */
-        /* D447：限量總量（cap；null＝不限量）也寫回——活動詳情「庫存設為 0」把總量收到已售後，這裡調高總量或改回不限量才會留住 */
-        put('cap', (bundleModel.cap === undefined ? null : bundleModel.cap), null);
+        /* D513：鎖定套數（null＝不鎖定，0＝鎖定 0 套）與兩個開關寫回——活動詳情「庫存設為 0」之後，這裡調高鎖定或關閉鎖定才會留住 */
+        put('lockSets', (bundleModel.lockSets === undefined ? null : bundleModel.lockSets), null);
+        put('preorder', !!bundleModel.preorder, false);
+        put('limitedTag', !!bundleModel.limitedTag, false);
       }
       /* D489 示範：連帶上架（D289）把替身商品成員拉上來後，events-store 那筆的 listed:false 一併拿掉，活動詳情的 D448 彈窗才不會再把它當已下架 */
       (b.products || []).forEach((pr, i) => {
@@ -2203,11 +2130,11 @@
       });
     }
     /* 儲存前擋（「擋存並就地提示」，D342）：capture 階段搶在編輯模式的切換之前；取消時還原本組合的跟隨／另設與購買條件。 */
-    let tbSnap = null, bdCapSig = '';
+    let tbSnap = null;
     document.addEventListener('click', e => {
       if (!TB || !settingsPanel) return;
       if (e.target.closest('[data-bd-editmode]')) {
-        if (!tbEditing()) { tbSnap = JSON.stringify({ sched: bundleModel.sched, rules: bundleModel.rules, onSale: bundleModel.onSale, limits: bundleModel.limits, conds: bundleModel.conds }); bdCapSig = window.bdCapSig ? window.bdCapSig() : ''; return; }
+        if (!tbEditing()) { tbSnap = JSON.stringify({ sched: bundleModel.sched, rules: bundleModel.rules, onSale: bundleModel.onSale, limits: bundleModel.limits, conds: bundleModel.conds }); return; }
         const c = tbCtx();
         /* D398：組合包限購的擋存（不足 1 組、超過門票上限、非整數）——純商品組合包沒有 tbCtx 也要擋 */
         const limErr = limitsErrCount();
@@ -2217,23 +2144,6 @@
           if (window.bdSettingsGo) window.bdSettingsGo('rules');   /* 2026-10-12：購買條件與限購移到販售設定分類 */
           if (bdCondsApi) bdCondsApi.check();
           const msg = bdUni() ? T('pc.err.save', 'Fix the purchase conditions marked in red.') : T('pl.err.save', 'Fix the purchase limits marked in red.');
-          if (window.ztorToast) window.ztorToast.show(msg, { tone: 'error' }); else alert(msg);
-          return;
-        }
-        /* 販售上限超過成員能供應的組數（D292；2026-10-12 改版同建立組合包）：擋存、跳到數量卡。
-           只擋這次有動到上限（二選一或數字）的儲存——既有資料因成員賣掉或鎖定而變成「上限大於供應」時只標紅，不卡住其他欄位的儲存〔呈現假設〕 */
-        if (window.bdCapOver && window.bdCapOver() && window.bdCapSig && window.bdCapSig() !== bdCapSig) {
-          e.stopPropagation(); e.preventDefault();
-          if (window.bdSettingsGo) window.bdSettingsGo('qty');
-          const msg = T('cpp.bd.sp.why.cap', 'Cap exceeds what members can supply');
-          if (window.ztorToast) window.ztorToast.show(msg, { tone: 'error' }); else alert(msg);
-          return;
-        }
-        /* D452／D447 決定四：販售上限不得低於已售套數（上架中恢復庫存也走同一道擋） */
-        if (window.bdCapUnder && window.bdCapUnder() && window.bdCapSig && window.bdCapSig() !== bdCapSig) {
-          e.stopPropagation(); e.preventDefault();
-          if (window.bdSettingsGo) window.bdSettingsGo('qty');
-          const msg = T('bd.cap.under.why', 'Sales cap can’t be lower than the sets already sold');
           if (window.ztorToast) window.ztorToast.show(msg, { tone: 'error' }); else alert(msg);
           return;
         }
@@ -2449,30 +2359,22 @@
       ? window.ztorCodePicker.mount(bdCodesHost, { key: bdCodesKey, readonly: true, hideLabel: true, label: () => (bundle && bundle.name) || bdCodesKey }) : null;
     if (bundle) bdRecalc();
 
-    /* 庫存版本（2026-10-12 改版：form-ask「要另設販售上限嗎？」不限量／限量，segmented 二選一；限量才露出販售上限列）*/
-    const eGrid = document.getElementById('bd-edition');
-    function paintEdition(limited) {
-      if (!eGrid) return;
-      eGrid.querySelectorAll('[data-bd-edition]').forEach(b => { const on = (b.dataset.bdEdition === 'limited') === limited; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
-      document.querySelectorAll('[data-when-bd-edition]').forEach(el => el.hidden = el.dataset.whenBdEdition !== (limited ? 'limited' : 'unlimited'));
-    }
-    if (eGrid) eGrid.querySelectorAll('[data-bd-edition]').forEach(btn => btn.addEventListener('click', () => {
+    /* 庫存設定三個開關（D513，同建立組合包）：只在「編輯組合」後可切；不限量與限量標籤互斥；鎖定庫存走 setLockOn。 */
+    function bdStockSw(k) {
       if (!bdLadderEditable()) return;
-      paintEdition(btn.dataset.bdEdition === 'limited');
-      if (btn.dataset.bdEdition === 'limited' && totalInput && totalInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數 */
-        const mx1 = LS ? LS.bundleMaxSets(bundleModel, productsMap()).max : Infinity, n1 = mx1 === Infinity ? 100 : Math.min(100, mx1);
-        if (n1 >= 1) totalInput.value = String(n1);
-      }
-      refreshAlloc();   /* 限量硬上限會壓低組合可售量（§7.14）*/
+      if (k === 'lock') { setLockOn(!lockYes); return; }
+      const f = k === 'unl' ? 'preorder' : 'limitedTag', other = k === 'unl' ? 'limitedTag' : 'preorder';
+      if (bundleModel[other]) return;
+      bundleModel[f] = !bundleModel[f];
+      paintLockMode();
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
-    }));
-    if (totalInput) totalInput.addEventListener('input', refreshAlloc);
-    /* 限量與上限自組合記錄帶入（seed.cap：數字＝限量＋上限、null＝不限量），要在 snapshot 之前 */
-    if (eGrid && seed && seed.cap != null) {
-      paintEdition(true);
-      if (totalInput) totalInput.value = String(seed.cap);
-      refreshAlloc();
     }
+    [['unl', 'bd-sw-unl'], ['tag', 'bd-sw-tag'], ['lock', 'bd-sw-lock']].forEach(([k, id]) => {
+      const el = document.getElementById(id); if (!el) return;
+      el.addEventListener('click', () => bdStockSw(k));
+      el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); bdStockSw(k); } });
+    });
+    paintLockMode();
 
     /* ── 銷售摘要與項目引用（2026-09-11 改資料驅動）──
        .when-data／.when-empty 是 cheat code Empty 用的同一組 class（shared.css），這裡逐區塊依資料切：
@@ -2760,7 +2662,7 @@
         sp.querySelectorAll('input, textarea, select').forEach(el => snap.push({ el, value: el.value }));
         sp.querySelectorAll('.switch').forEach(el => snap.push({ el, on: el.classList.contains('switch--on') }));
         sp.querySelectorAll('.radio-list').forEach(rl => snap.push({ el: rl, active: rl.querySelector('.radio-list__item--active') }));
-        sp.querySelectorAll('.segmented.radio-cards').forEach(sg => snap.push({ el: sg, seg: sg.querySelector('.segmented__btn--active') }));   /* 2026-10-12：販售上限二選一 */
+        sp.querySelectorAll('.segmented.radio-cards').forEach(sg => snap.push({ el: sg, seg: sg.querySelector('.segmented__btn--active') }));   
         return snap;
       };
       const restore = snap => (snap || []).forEach(r => {
@@ -2778,7 +2680,7 @@
         return window.bdMemberRowHTML({ id: p.id, kind: 'product', real: true, name: p.name, meta: p.subLabel || p.catLabel || '', priceAmount: amt, price: bdMoney(amt), imgSrc: p.img ? 'images/products/' + p.img : '', qty: 1, multi: !!(p.variant === 'multiple' && (p.variants || []).length) });
       }
       /* 已售出後成員內容鎖定（D292 裁決七，5.1.5.9 §2.3）：已售任何一套之後，成員清單（票券與商品）與各成員數量不可再改——
-         加入區收起、移除鈕藏起、數量欄停用，並在清單上方說明理由與仍可改的東西（售價／折扣／販售上限／停售）。 */
+         加入區收起、移除鈕藏起、數量欄停用，並在清單上方說明理由與仍可改的東西（售價／折扣／停售）。 */
       /* D478（2026-10-23，主規格 §7.14「組合包修改成員的條件」；5.1.5.9 §2.3「修改成員的條件」）：尚未售出時，
          改成員（增減、替換、每套用量、票券成員的允許門票與張數）要同時符合「已下架」與「沒有結帳中的訂單」。
          回傳成員區為什麼唯讀：'sold'（已售出鎖定，D292）／'listed'（上架中，先下架）／'checkout'（還有結帳中的訂單）／null（可改）。
@@ -2805,7 +2707,7 @@
           : why === 'listed' ? T('bd.members.listed', 'This bundle is listed. Unlist it to change its members.')
           : why === 'checkout' ? (pc === 1 ? T('bd.members.checkout1', '1 order is still in checkout. You can change members once it’s settled.')
               : T('bd.members.checkout', '{n} orders are still in checkout. You can change members once they’re settled.').replace('{n}', String(pc)))
-          : T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, cap and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold));
+          : T('bd.members.locked', '{n} sold — members and quantities are locked. You can still change the price, discount, purchase rules and limits, listing and sale times, and sale; to change what is inside, create a new bundle.').replace('{n}', String(sold));
         /* D478：鎖↔解鎖可能在編輯中切換（例如上架中進編輯、再從頁首下架），解鎖時把加入區與移除鈕還原成編輯態的樣子 */
         if (!locked && editing) ensureRemoveButtons();
         sp.querySelectorAll('[data-bd-edit-only]').forEach(el => { el.hidden = locked || !editing; });
@@ -2916,9 +2818,8 @@
          （[data-bd-listing]／[data-bd-sale-lctl] 所在的 form-section，含四個時間與開賣開關）可改；其他各節掛 data-mode="view"
          （沿用檢視態的樣子與按鈕白名單，不另做第三種鎖定外觀）、欄位逐一設唯讀。各節重畫（renderTB／renderLimits／成員表）後
          由 bdStockLockApply() 補鎖。下架後照現行規則全部開放。 */
-      /* D452／D447 決定三、四（2026-10-19）：「數量」卡（data-nav-sec="qty"）也放行。
-         D481（2026-10-27，修訂 D435）：組合包的販售上限（限量）視同庫存，上架中可以直接調高、調低、切換限量與不限量，不再是 D435 的例外——
-         調低下限＝已售＋保留套數、調高上限＝成員還能鎖的套數（D480，syncCapOver 擋、儲存前也擋）。純商品組合包與含票券的組合包一樣。 */
+      /* D452（2026-10-19）：「庫存設定」卡（data-nav-sec="qty"）也放行。D513：販售上限退場，這張卡只剩三個開關；鎖定視同庫存、開賣中可改（D435 決定二）。
+         〔呈現假設 UIA-333〕不限量與限量標籤跟著同一張卡，上架中也可改。 */
       const bdStockFreeSec = sec => !!(sec.querySelector('[data-bd-listing]') || sec.querySelector('[data-bd-sale-lctl]') || sec.getAttribute('data-nav-sec') === 'qty');
       function bdStockLockApply() {
         const lock = sp.getAttribute('data-mode') === 'edit' && bdStockOnly();

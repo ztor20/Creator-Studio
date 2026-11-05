@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>平台忠誠點數設定 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -161,70 +161,110 @@ table.map td:nth-child(2){width:22%}
 <body>
 <div class="wrap">
 <h1>平台忠誠點數設定</h1>
-<p class="lede">Admin 在這頁設定全平台通用的忠誠點數參數：賺分事件的給分、上限與開關，分級門檻與名稱，粉絲管理指標的天數，全站活動的給分與上限、多人署名時各職務的計入比例、賽季加倍、衰減與等級保留，並查看上線時歷史訂單回填的狀態。參數改了之後粉絲怎麼升降級，見<a href="fans-tiers.html">粉絲分級</a>頁首的流程圖。</p>
+<p class="lede">Admin 在這頁設定全平台共用的忠誠點數參數：賺分事件給多少分、分級怎麼切、粉絲管理指標用幾天。參數改了之後粉絲怎麼升降級，見粉絲分級的<a href="fans-tiers.html#s5">粉絲怎麼升級</a>。</p>
 <div class="toc"></div>
 
-<h2 id="scope"><span class="n"></span>設定範圍與權限</h2>
-<p>這頁只管全平台通用的忠誠點數參數，作用於所有創作者的計分。哪些在這頁設定、哪些在別處，見<a href="#scope-items">哪些參數在這頁設定</a>；誰能進入這頁，見<a href="#access">誰能進入這頁</a>。</p>
-
-<h3 id="scope-items">哪些參數在這頁設定</h3>
-<p>Admin 在這頁調全平台參數。</p>
+<h2 id="intro" class="no-num">概述</h2>
 <ul class="plain">
-  <li>這頁設定參數是多少；每位粉絲的忠誠點數即時入帳、達標即時升級，降級先倒數降級緩衝天數、到期後的下一次每週重算仍未達標才降，見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a>。全站活動的點數 100% 計入粉絲當下的主要應援對象，選擇與切換主要應援對象的操作在粉絲端</li>
-  <li>這頁的參數不開放創作者覆寫；創作者自己的賽季加倍除外，見<a href="fans-tiers.html#season">粉絲分級的賽季加倍</a>。哪些由創作者調、哪些由 Admin 調，見<a href="fans-tiers.html#who-adjusts">誰能調整什麼</a></li>
-  <li>誠信規則由平台強制、任何人都不能關，規則內容見<a href="fans-tiers.html#integrity">粉絲分級的誠信規則</a></li>
-  <li>只顯示、不能改的兩項：平台基準幣別，預設港幣；誠信規則摘要。購買類先把金額換成基準幣別再乘基準費率，幣別與匯率規則不在這頁設定</li>
+  <li>這些參數作用於所有創作者的計分；這頁只決定參數是多少、什麼時候生效，不重算個別粉絲</li>
+  <li>全站活動、多人署名的計入比例、賽季加倍、衰減與上線時的歷史訂單，見<a href="admin-loyalty-other.html">全站活動、賽季與衰減設定</a></li>
+  <li>每一次參數異動都留一筆紀錄，見<a href="#change-log">修改紀錄</a></li>
 </ul>
 
-<h3 id="access">誰能進入這頁</h3>
-<ul class="plain">
-  <li>只有 Admin 可以進入與編輯</li>
-  <li>創作者工作區不含這頁</li>
-  <li>沒有權限時，畫面顯示無權限狀態並說明原因</li>
-</ul>
-<p class="note">依據：5.1.0.8 頁面定位、F1、F5、F6、頁面狀態；主規格 §4.1、§7.5、§7.15；D316、D347、D348、D498。</p>
+<h2 id="flow"><span class="n"></span>操作流程</h2>
+<p>Admin 看完目前的參數，事件開關可以直接切，其他參數要先按編輯、改完再儲存。各畫面狀態見<a href="#page-states">畫面的狀態</a>。</p>
+<div class="dg" role="img" aria-label="平台忠誠點數設定的操作流程圖：先查看目前的參數；要改事件開關就直接切換，立即生效並留一筆紀錄；要改其他參數就按編輯，改完選儲存或取消，儲存後依參數類別生效並留一筆紀錄，取消則回到上次儲存的值，切過的事件開關不還原">
+<div class="dg-hg" style="--dg-c:5">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1"><span class="s">1</span>查看目前的參數<small>預設只能看</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:3"><span class="s">2</span>要改什麼？</div>
+  <span class="dg-a" data-t="事件開關" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="其他參數" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:5">直接切換開關<small>不必按編輯與儲存</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:5">按編輯、改參數</div>
+  <span class="dg-a" style="grid-row:1;grid-column:6/9"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:6"></span>
+  <div class="dg-node q" style="grid-row:2/4;grid-column:7"><span class="s">3</span>要留下這次修改嗎？</div>
+  <span class="dg-a" data-t="儲存" style="grid-row:2;grid-column:8"></span>
+  <span class="dg-a" data-t="取消" style="grid-row:3;grid-column:8"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:9">立即生效<small>當下留一筆紀錄</small></div>
+  <div class="dg-node end" style="grid-row:2;grid-column:9"><span class="s">4</span>依參數類別生效<small>留一筆紀錄</small></div>
+  <div class="dg-node stop" style="grid-row:3;grid-column:9">回到上次儲存的值<small>切過的事件開關不還原</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面一列切事件開關，下面兩列改其他參數；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>查看目前的參數：進入這頁預設只能看</li>
+  <li>要改什麼？
+    <ul class="plain">
+      <li>事件開關：直接切換，立即生效，當下留一筆紀錄，見<a href="#earn-switch">賺分事件的開關</a></li>
+      <li>其他參數：按編輯後調整，欄位見<a href="#earn-events">賺分事件的給分、上限與開關</a>、<a href="#tier-rules">分級門檻、名稱與降級</a>、<a href="#kpi-windows">粉絲管理指標的天數</a></li>
+    </ul>
+  </li>
+  <li>要留下這次修改嗎？
+    <ul class="plain">
+      <li>儲存：往下到第 4 點</li>
+      <li>取消：回到上次儲存的值；編輯期間切過的事件開關維持切換後的狀態</li>
+    </ul>
+  </li>
+  <li>依參數類別生效，並留一筆紀錄，見<a href="#effective-when">生效時點</a></li>
+</ol>
+
+<h3 id="page-states">畫面的狀態</h3>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>唯讀檢視（Viewing）</td><td>進入這頁的預設狀態</td><td>看到各參數目前的值<br>事件開關也能直接切換</td></tr>
+    <tr><td>編輯中（Editing）</td><td>Admin 對某一群參數按編輯</td><td>可以調整該群參數，再選儲存或取消</td></tr>
+    <tr><td>事件已停止發分（Event stopped）</td><td>某個賺分事件的開關已關閉</td><td>見<a href="#earn-switch">賺分事件的開關</a></td></tr>
+    <tr><td>已儲存待生效（Saved, Pending）</td><td>有已儲存、尚未生效的變更，例如尚未開始的賽季加倍期間</td><td>顯示待生效提示，見<a href="#effective-when">生效時點</a></td></tr>
+    <tr><td>無權限（No Access）</td><td>非 Admin 進入</td><td>顯示無權限狀態並說明原因，不提供編輯</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.8 F9、F6、頁面狀態；主規格 §6.4；D498、D508。</p>
 
 <h2 id="earn-events"><span class="n"></span>賺分事件的給分、上限與開關</h2>
-<p>Admin 在這裡設定購買、互動與推薦這幾種賺分事件給多少分、上限多少，並能在發現漏洞、被刷或程式錯誤時立刻關掉某個事件。購買類怎麼算，見<a href="#earn-purchase">購買類的計分</a>；互動與推薦，見<a href="#earn-engage">互動與推薦的給分與上限</a>；開關，見<a href="#earn-switch">事件開關</a>。</p>
+<p>Admin 在這裡設定購買、互動與推薦事件給多少分、上限多少，並能在發現漏洞、被刷或程式錯誤時立刻關掉某個事件。購買類怎麼算，見<a href="#earn-purchase">購買類的計分</a>；互動與推薦，見<a href="#earn-engage">互動與推薦的給分與上限</a>；開關，見<a href="#earn-switch">賺分事件的開關</a>。其他賺分事件啟用時，同樣有給分、上限與開關。</p>
 
 <h3 id="earn-purchase">購買類的計分</h3>
-<p>購買類的點數＝消費金額 × 基準費率 × 品項份量，算法見<a href="fans-tiers.html#buy">粉絲分級的購買怎麼換算成點數</a>。</p>
+<p>購買類的點數＝消費金額 × 基準費率 × 品項份量，算法見粉絲分級的<a href="fans-tiers.html#buy">購買怎麼換算成點數</a>。下表都可以改。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>基準費率（Base rate，畫面上的 K_A）</td><td>可以改</td><td>每 1 元基準幣別換得多少點數<br>預設 10</td></tr>
-    <tr><td>活動票券的份量（畫面上的「消費類型倍率 γ」）</td><td>可以改</td><td>預設 1.1</td></tr>
-    <tr><td>電子商店商品的份量（畫面上的「消費類型倍率 γ」）</td><td>可以改</td><td>預設 1.0</td></tr>
+    <tr><td>基準費率（Base rate，畫面上的 K_A）</td><td>—</td><td>每 1 元基準幣別換得多少點數<br>預設 10</td></tr>
+    <tr><td>活動票券的份量（畫面上的「消費類型倍率 γ」）</td><td>—</td><td>預設 1.1</td></tr>
+    <tr><td>電子商店商品的份量（畫面上的「消費類型倍率 γ」）</td><td>—</td><td>預設 1.0</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
+  <li>購買類先把金額換算成<a href="admin-loyalty-other.html#constants">平台基準幣別</a>再算分</li>
   <li>購買類沒有上限</li>
   <li>活動票券與電子商店商品的份量只在這頁設定，創作者在分級設定不能覆寫</li>
 </ul>
 
 <h3 id="earn-engage">互動與推薦的給分與上限</h3>
-<p>每個互動與推薦事件各設「每次給幾分」與「滾動視窗幾天內最多多少」，天數與上限都可以改；滾動視窗預設 90 天。</p>
+<p>每個互動與推薦事件各設「每次給幾分」與「最近幾天內最多多少」，天數與上限都可以改，天數預設 90 天。「最近幾天」從給分當下往回算，不是固定的日曆區間（畫面上的「滾動視窗」）。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>共創投票（Co-create vote）的給分與上限</td><td>可以改</td><td>預設每票 150 分<br>預設上限 90 天 10 票</td></tr>
-    <tr><td>邀請朋友追蹤這位創作者（Invite to follow）的給分與上限</td><td>可以改</td><td>預設每位 400 分<br>預設上限 90 天 10 位</td></tr>
-    <tr><td>按讚（Like）的給分</td><td>可以改</td><td>預設每次 5 分</td></tr>
-    <tr><td>收藏（Save）的給分</td><td>可以改</td><td>預設每次 10 分</td></tr>
-    <tr><td>按讚與收藏的上限</td><td>可以改</td><td>目前是兩者合計 90 天 1,500 分<br>拆成各自一個上限後的預設值，見頁尾尚待確認</td></tr>
+    <tr><td>共創投票（Co-create vote）的給分與上限</td><td>—</td><td>預設每票 150 分<br>預設上限最近 90 天 10 票</td></tr>
+    <tr><td>邀請朋友追蹤這位創作者（Invite to follow）的給分與上限</td><td>—</td><td>預設每位 400 分<br>預設上限最近 90 天 10 位</td></tr>
+    <tr><td>按讚（Like）的給分</td><td>—</td><td>預設每次 5 分</td></tr>
+    <tr><td>收藏（Save）的給分</td><td>—</td><td>預設每次 10 分</td></tr>
+    <tr><td>按讚與收藏的上限</td><td>—</td><td>目前是兩者合計最近 90 天 1,500 分<br>拆成各自一個上限後的預設值，見頁尾尚待確認</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>上限在給分當下判定，不追溯；達上限之後的同類行為不再給分</li>
-  <li>各事件的資格條件（例如收藏保留滿 7 天才算），見<a href="fans-tiers.html#sources">粉絲分級的點數從哪來</a></li>
+  <li>各事件的資格條件（例如收藏保留滿 7 天才算），見粉絲分級的<a href="fans-tiers.html#sources">點數從哪來</a></li>
 </ul>
 
-<h3 id="earn-switch">事件開關</h3>
-<p>每個賺分事件各有一個開關，預設開；目前有開關的事件是活動票券、電子商店商品、共創投票、邀請朋友追蹤這位創作者、按讚、收藏與<a href="#offline-scan">線下掃碼領點</a>。</p>
+<h3 id="earn-switch">賺分事件的開關</h3>
+<p>開關用來緊急停用某個事件；目前有開關的事件是活動票券、電子商店商品、共創投票、邀請朋友追蹤這位創作者、按讚、收藏與<a href="#offline-scan">線下掃碼領點</a>。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>每個事件的開關</td><td>可以改<br>預設開<br>任何時候都能直接切，不必先按編輯、也不必再按儲存</td><td>關閉：該事件立即停止發分<br>重開：恢復發分<br>每次切換當下留一筆<a href="#change-log">修改紀錄</a><br>正在改其他參數時切了開關、之後取消那次修改，開關不會跟著還原<br>已發出的點數不受影響，不回算、不扣除</td></tr>
+    <tr><td>每個事件的開關</td><td>—</td><td>預設開<br>任何時候都能直接切，不必先按編輯、也不必再按儲存<br>關閉：該事件立即停止發分<br>重開：恢復發分<br>每次切換當下留一筆<a href="#change-log">修改紀錄</a><br>正在改其他參數時切了開關、之後取消那次修改，開關不會跟著還原</td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table>
@@ -235,203 +275,149 @@ table.map td:nth-child(2){width:22%}
     <tr><td>關閉期間發生的行為</td><td>開關關著時粉絲做了這個行為</td><td>要不要留一筆 0 點紀錄<span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.0.8 F9、頁面狀態、情境 8；主規格 §7.5；D347、D348、D498、D508。</p>
+<p class="note">依據：5.1.0.8 F9、頁面狀態、情境 8；主規格 §7.5；D347、D348、D498、D500、D502、D508。</p>
 
 <h2 id="tier-rules"><span class="n"></span>分級門檻、名稱與降級</h2>
-<p>這一區讓 Admin 設定分級的切點、顯示名稱、最低門檻與降級節奏，都不開放創作者覆寫。兩道門檻怎麼判定，見<a href="fans-tiers.html#gates">粉絲分級的兩道門檻</a>。</p>
+<p>這一區讓 Admin 設定分級的切點、顯示名稱、最低門檻與降級節奏；除了前 % 名，創作者都不能覆寫。兩道門檻怎麼判定，見粉絲分級的<a href="fans-tiers.html#gates">兩道門檻</a>。除了每週重算，下表都可以改。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>前 % 名（Top %）</td><td>可以改<br>核心圈、超級粉絲、上榜粉絲各一個</td><td>預設核心圈 1%、超級粉絲 10%、上榜粉絲 30%<br>一般粉絲沒有切點<br>創作者也能在<a href="fans-tier-settings.html#thresholds">分級設定</a>設定前 % 名，兩者怎麼並存見頁尾尚待確認</td></tr>
-    <tr><td>分級顯示名稱（Tier display name）</td><td>可以改<br>四級各一個</td><td>預設核心圈、超級粉絲、上榜粉絲、一般粉絲<br>改名後，全站顯示該分級的地方都用新名稱，包括粉絲端排行榜、粉絲管理與媒體庫</td></tr>
-    <tr><td>最低忠誠點數門檻（Min. loyalty points）</td><td>可以改</td><td>預設 500 點<br>全站只有一個值，進任何排名分級都要先達到；點數低於它一律是一般粉絲<br>創作者在<a href="fans-tier-settings.html#thresholds">分級設定</a>只能看、不能改</td></tr>
-    <tr><td>降級緩衝（Demotion grace）</td><td>可以改</td><td>預設 14 天<br>粉絲掉到該級門檻以下時開始倒數這段天數<br>期間回到門檻以上就取消降級<br>天數到期後的下一次每週重算仍未達標，才降級</td></tr>
-    <tr><td>每週重算（Weekly recompute）</td><td>只顯示</td><td>分級每週重算一次；這頁只顯示頻率，不能改成其他頻率</td></tr>
+    <tr><td>前 % 名（Top %）</td><td>—</td><td>核心圈、超級粉絲、上榜粉絲各一個<br>預設核心圈 1%、超級粉絲 10%、上榜粉絲 30%<br>一般粉絲沒有切點<br>創作者也能在<a href="fans-tier-settings.html#thresholds">分級設定</a>設定前 % 名，兩者怎麼並存見頁尾尚待確認</td></tr>
+    <tr><td>分級顯示名稱（Tier display name）</td><td>—</td><td>四級各一個<br>預設核心圈、超級粉絲、上榜粉絲、一般粉絲<br>改名後，全站顯示該分級的地方都用新名稱，包括粉絲端排行榜、粉絲管理與媒體庫</td></tr>
+    <tr><td>最低忠誠點數門檻（Min. loyalty points）</td><td>—</td><td>預設 500 點<br>全站只有一個值，進任何排名分級都要先達到；點數低於它一律是一般粉絲<br>也是點數低於它的粉絲「下一級進度」的分母<br>創作者在<a href="fans-tier-settings.html#thresholds">分級設定</a>只能看、不能改</td></tr>
+    <tr><td>降級緩衝（Demotion grace）</td><td>—</td><td>預設 14 天<br>粉絲掉到該級門檻以下時開始倒數這段天數，見粉絲分級的<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></td></tr>
+    <tr><td>每週重算（Weekly recompute）</td><td>—</td><td>分級每週重算一次<br>這頁能不能改頻率，見頁尾尚待確認</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.0.8 F10、情境 9；主規格 §7.5；D347、D348、D476、D479、D497、D498。</p>
+<p class="note">依據：5.1.0.8 F10、情境 9；主規格 §7.5；D347、D348、D476、D479、D497、D498、D500。</p>
 
 <h2 id="kpi-windows"><span class="n"></span>粉絲管理指標的天數</h2>
-<p>這一區讓 Admin 設定粉絲總覽與粉絲詳情的指標用幾天計算；指標的定義見<a href="fans-roster.html#roster-kpi">粉絲總覽的摘要指標</a>。</p>
+<p>這一區讓 Admin 設定粉絲總覽與粉絲詳情的指標用幾天計算，下表都可以改；指標的定義見粉絲總覽的<a href="fans-roster.html#roster-kpi">摘要指標</a>。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>活躍的天數（Active window）</td><td>可以改</td><td>預設 90 天<br>近這麼多天內至少 1 筆有效動作的粉絲算活躍；活躍粉絲收入也用這個天數</td></tr>
-    <tr><td>流失風險的天數（At-risk window）</td><td>可以改</td><td>預設 30 天<br>近這麼多天內沒有任何有效動作的粉絲算流失風險</td></tr>
-    <tr><td>近期入帳的天數（Recent points window）</td><td>可以改</td><td>預設 7 天<br>粉絲詳情的忠誠點數小字「近 7 天入帳 +X」用這個天數</td></tr>
+    <tr><td>活躍的天數（Active window）</td><td>—</td><td>預設 90 天<br>近這麼多天內至少 1 筆有效動作的粉絲算活躍；活躍粉絲收入也用這個天數</td></tr>
+    <tr><td>流失風險的天數（At-risk window）</td><td>—</td><td>預設 30 天<br>近這麼多天內沒有任何有效動作的粉絲算流失風險</td></tr>
+    <tr><td>近期入帳的天數（Recent points window）</td><td>—</td><td>預設 7 天<br>粉絲詳情的忠誠點數副標「近 N 天入帳 +X」用這個天數</td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：5.1.0.8 F11；5.1.7 F2；D497、D498。</p>
 
-<h2 id="activities"><span class="n"></span>全站活動給多少點數、能拿幾次</h2>
-<p>全站活動是 ztor 平台層級的行為，點數由平台發；Admin 在這裡設定每一種全站活動給多少點數、上限多少。各項的預設值，見<a href="#activities-list">四項全站活動</a>；點數怎麼入帳、什麼時候作廢，見<a href="#activities-claim">點數怎麼入帳</a>；上限怎麼算、點數計入哪位創作者，見<a href="#activities-limits">能拿幾次與點數算給誰</a>。</p>
-
-<h3 id="activities-list">四項全站活動</h3>
-<p>每項全站活動各有一組給分與上限，Admin 可以改；下表規則格是預設值。資格條件照<a href="fans-tiers.html#primary">粉絲分級的全站活動與主要應援對象</a>，這頁只設定給分與上限。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>每日簽到（Daily check-in）的給分與上限</td><td>可以改</td><td>預設每天 50 分<br>預設上限每天一次</td></tr>
-    <tr><td>連續簽到（Streak bonus）的給分與上限</td><td>可以改</td><td>預設每連續第 7 天加 200 分<br>預設上限 90 天 12 次</td></tr>
-    <tr><td>全站發文互動（Community post）的給分與上限</td><td>可以改</td><td>預設每則 30 分<br>預設上限每天 3 則<br>該則發文須有至少一則非本人的互動才給分</td></tr>
-    <tr><td>邀請朋友加入 Ztor（Invite to Ztor）的給分與上限</td><td>可以改</td><td>預設每位合格啟用 1,000 分<br>預設上限 90 天 10 位</td></tr>
-  </tbody>
-</table></div>
-
-<h3 id="activities-claim">點數怎麼入帳</h3>
-<ul class="plain">
-  <li>每日簽到、連續簽到、全站發文互動要粉絲手動領取才入帳，領取在粉絲端操作</li>
-  <li>邀請朋友加入 Ztor 自動入帳</li>
-  <li>未領取的點數在當天結束的 UTC+8 00:00（伺服器時間）作廢，不可補領</li>
-  <li>需要領取的點數，給領取當下選定的主要應援對象</li>
-  <li>粉絲第一次領取全站活動點數時，必須先選一位主要應援對象，沒有預設</li>
-  <li>粉絲還沒選定主要應援對象時，邀請朋友加入 Ztor 的點數先暫存；選定的那一刻才入帳給該對象，暫存不設期限、不作廢</li>
-</ul>
-
-<h3 id="activities-limits">能拿幾次與點數算給誰</h3>
-<ul class="plain">
-  <li>標 90 天的上限以滾動 90 天計，在給分當下判定，不追溯</li>
-  <li>上限以每位用戶全站合計計算，切換主要應援對象不會重置額度</li>
-  <li>連續簽到中斷只是重新數，不扣分，也不顯示愧疚計數</li>
-  <li>新朋友在 7 天內同時追蹤某位創作者時，兩份分數都給：追蹤的 400 分計入被追蹤的那位創作者</li>
-  <li>創作者設定的各類行為份量不影響全站活動</li>
-</ul>
-<p class="note">依據：5.1.0.8 F2；主規格 §7.5；D347、D474。</p>
-
-<h2 id="credit-roles"><span class="n"></span>多人署名時各職務分到多少點數</h2>
-<p>活動票券、影片租賃與付費首映有多位署名藝人時，每位署名藝人各得一筆點數：該筆購買類點數 × 該藝人職務的計入比例。Admin 在這裡調整各級的計入比例；怎麼分、誰拿得到，見<a href="fans-tiers.html#credits">粉絲分級的多人署名的購買怎麼分點數</a>。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>導演、編劇、原著、劇集原創者、主角、主要主持、主唱這一級的計入比例</td><td>可以改</td><td>預設 100%</td></tr>
-    <tr><td>配角、劇本統籌、部門統籌、主要旁白、系列製片這一級的計入比例</td><td>可以改</td><td>預設 80%</td></tr>
-    <tr><td>客串、直接產出畫面聲音角色道具的職務、舞者這一級的計入比例</td><td>可以改</td><td>預設 60%</td></tr>
-    <tr><td>小角色、專業技術、協調、檢查、製作管理這一級的計入比例</td><td>可以改</td><td>預設 40%</td></tr>
-    <tr><td>群演、助理、實習、後勤這一級的計入比例</td><td>可以改</td><td>預設 20%</td></tr>
-    <tr><td>出資人、掛名監製、IP 持有人、製作公司、平台、贊助、經紀、AI 模型與工具</td><td>—</td><td>不計分（0%），不發分，但保留關係資料</td></tr>
-  </tbody>
-</table></div>
-<p class="note">依據：主規格 §7.5；D476。</p>
-
-<h2 id="season"><span class="n"></span>賽季加倍</h2>
-<p>賽季加倍讓 Admin 指定哪些期間、哪些範圍的計分要加倍、加幾倍。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>賽季期間（Period）</td><td>可以設定多段</td><td>每一段指定加倍的起訖時間<br>行為發生在任何一段期間內，就適用加倍</td></tr>
-    <tr><td>新增一段期間</td><td>—</td><td>多加一段加倍期間，儲存後記入<a href="#change-log">修改紀錄</a>；生效時點見<a href="#effective-when">生效時點</a></td></tr>
-    <tr><td>範圍（Scope）</td><td>每一段各設一個</td><td>全平台：套用到所有創作者的計分<br>特定藝人：只套用到該位藝人的榜</td></tr>
-    <tr><td>加倍幾倍（畫面上的「倍率」Multiplier）</td><td>每一段各設一個</td><td>預設 2<br>期間內所有行為的分數乘上這個倍率，包含全站活動</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>同一層級有多段加倍同時生效時怎麼取、創作者自己設的賽季加倍怎麼覆寫平台設定，見<a href="fans-tiers.html#season">粉絲分級的賽季加倍</a></li>
-</ul>
-<p class="note">依據：5.1.0.8 F3；主規格 §7.5；D347、D476。</p>
-
-<h2 id="decay"><span class="n"></span>衰減與等級保留</h2>
-<p>這一區讓 Admin 設定點數隨時間淡出的速度，以及粉絲多久沒有行為就往下掉一階；掉級前的緩衝天數見<a href="#tier-rules">分級門檻、名稱與降級</a>。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>點數減半要多久（畫面上的「衰減半衰期」）</td><td>可以改</td><td>預設 45 天<br>點數每過這段天數剩一半：<br>第 45 天剩 50%<br>第 90 天剩 25%<br>第 180 天約剩 6%</td></tr>
-    <tr><td>多久沒有行為就往下掉一階（Inactive days before dropping a tier）</td><td>可以改</td><td>預設 90 天<br>粉絲每連續這麼多天沒有任何行為，等級上限往下掉一階：<br>第 90 天最多留在原等級的下一階<br>第 180 天再往下一階<br>第 270 天掉到一般粉絲<br>點數保留並照曲線繼續衰減，仍佔該級名額</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>沉睡與衰減的完整規則見<a href="fans-tiers.html#decay">粉絲分級的衰減與沉睡</a></li>
-</ul>
-<p class="note">依據：5.1.0.8 F4；主規格 §7.5；D347、D348、D351、D476、D479。</p>
-
-<h2 id="effective"><span class="n"></span>生效時點與修改紀錄</h2>
-<p>這一區讓 Admin 追查歷次修改。儲存後什麼時候生效，依參數分三類，見<a href="#effective-when">生效時點</a>；每次儲存記下什麼，見<a href="#change-log">修改紀錄</a>。</p>
-
-<h3 id="effective-when">生效時點</h3>
-<p>改過的參數儲存後什麼時候生效，依參數類別分三種；粉絲的點數本身照常即時入帳。所有參數異動都只往後生效，不回算歷史紀錄。</p>
-<div class="tablewrap"><table class="fields">
-  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
-  <tbody>
-    <tr><td>儲存</td><td>改過參數後</td><td>每次儲存留一筆，見<a href="#change-log">修改紀錄</a></td></tr>
-    <tr><td>計分類參數儲存後</td><td>基準費率、活動票券與電子商店商品的份量、互動與推薦事件的給分與上限、全站活動的給分與上限、各職務的計入比例、賽季加倍</td><td>只作用於儲存之後發生的事件<br>已入帳的點數不改寫</td></tr>
-    <tr><td>等級類參數儲存後</td><td>前 % 名、最低忠誠點數門檻、衰減半衰期、降級緩衝、多久沒有行為就往下掉一階</td><td>從下一次每週重算起生效<br>不改寫點數，只影響之後的等級判定</td></tr>
-    <tr><td>立即生效的參數</td><td>事件開關、分級顯示名稱、粉絲管理指標的天數</td><td>事件開關立即停止或恢復發分<br>分級顯示名稱儲存後全站同步<br>指標的天數儲存後指標立即用新天數</td></tr>
-    <tr><td>已儲存提示（Saved notice）</td><td>儲存成功後</td><td>畫面要看得出「已儲存」<br>用一句話說明這次改的參數什麼時候生效</td></tr>
-  </tbody>
-</table></div>
-
-<h3 id="change-log">修改紀錄</h3>
-<ul class="plain">
-  <li>每一次參數異動都留一筆修改紀錄，包含開關切換</li>
-  <li>每筆記錄操作者、時間、改了哪個參數、原值與新值</li>
-  <li>每筆紀錄標出生效類別：計分類標「之後的事件起」，等級類標「下一次每週重算起」，立即生效的標「立即」；一次改了好幾類就各自標</li>
-</ul>
-<p class="note">依據：5.1.0.8 F6、頁面狀態；主規格 §7.5；D347、D476、D479、D497、D498。</p>
-
-<h2 id="backfill"><span class="n"></span>歷史訂單回填</h2>
-<p>忠誠點數上線時，平台把上線前 365 天內的歷史訂單依計分模型回算成點數，粉絲一上線就有分；Admin 在這頁看回填的狀態。</p>
-<ul class="plain">
-  <li>回填由平台執行一次，創作者不需要操作</li>
-  <li>回填範圍是忠誠點數上線前 365 天內的訂單，更早的訂單不回填；畫面上的回填起始日期顯示「上線前 365 天」</li>
-  <li>衰減、賽季加倍、退款與帳本標記怎麼處理，見<a href="fans-tiers.html#backfill">粉絲分級的上線時把歷史訂單算進點數</a></li>
-</ul>
-<p class="note">依據：主規格 §7.5；D476、D479。</p>
-
 <h2 id="offline-scan"><span class="n"></span>線下掃碼領點的事件開關與計點</h2>
-<p>線下掃碼領點是粉絲用 App 掃商家印出的 QR 領忠誠點數的事件。這頁只設定事件開關，沒有給分與上限的欄位。開關見<a href="#offline-switch">事件開關</a>；點數怎麼算見<a href="#offline-points">每次發多少點</a>。</p>
+<p>線下掃碼領點是粉絲用 App 掃商家印出的 QR 領忠誠點數的事件。這頁只設定事件開關，沒有給分與上限的欄位。開關見<a href="#offline-switch">線下掃碼領點的開關</a>；點數怎麼算見<a href="#offline-points">每次發多少點</a>。</p>
 
-<h3 id="offline-switch">事件開關</h3>
+<h3 id="offline-switch">線下掃碼領點的開關</h3>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>線下掃碼領點（Offline scan to earn）的開關</td><td>可以改<br>預設開</td><td>開：粉絲掃碼照規則發點<br>關：任何掃碼都不發點，粉絲 App 顯示「線下積分暫停中」<br>重新打開即恢復發點<br>已發出的點數不受影響，不回算、不扣除</td></tr>
+    <tr><td>線下掃碼領點（Offline scan to earn）的開關</td><td>—</td><td>預設開，切換規則見<a href="#earn-switch">賺分事件的開關</a><br>關閉時任何掃碼都不發點，粉絲 App 顯示「線下積分暫停中」<br>已發放的點數不受影響</td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
   <tbody>
     <tr><td>開</td><td>預設</td><td>掃碼領點場次照自己的啟用／停用與時間發點</td></tr>
-    <tr><td>關</td><td>Admin 關閉開關</td><td>取貨管理頁首顯示事件關閉提醒，每個掃碼領點場次的列標「事件關閉中」，場次詳情頂端顯示同樣的提醒，見<a href="pickup.html#types-off">事件關閉提醒</a></td></tr>
+    <tr><td>關</td><td>Admin 關閉開關</td><td>Admin 代管創作者時，取貨管理頁首顯示事件關閉提醒，每個掃碼領點場次的列標「事件關閉中」，場次詳情頂端顯示同樣的提醒，見取貨管理的<a href="pickup.html#types-off">事件關閉提醒</a></td></tr>
   </tbody>
 </table></div>
 
 <h3 id="offline-points">每次發多少點</h3>
 <ul class="plain">
-  <li>每次領取的點數、總名額不在這頁設定：點數與總名額在每個 QR 上設定，見<a href="pickup-create.html#scan-qr">QR 的欄位</a>；有效期在取貨場次設定，見<a href="pickup-create.html#scan-fields">掃碼領點場次的欄位</a></li>
-  <li>線下掃碼領點發的點數就是 QR 設定的數字，不乘創作者設定的份量、不吃賽季加倍、不衰減，也不受 90 天滾動上限</li>
-  <li>掃碼時的檢查順序與每人只領一次，見<a href="pickup-detail.html#scan-rules">發點規則</a></li>
+  <li>每次領取的點數、總名額不在這頁設定：點數與總名額在每個 QR 上設定，見建立取貨場次的<a href="pickup-create.html#scan-qr">QR 的欄位</a>；有效期在取貨場次設定，見建立取貨場次的<a href="pickup-create.html#scan-fields">掃碼領點場次的欄位</a></li>
+  <li>線下掃碼領點發的點數就是 QR 設定的數字，不乘創作者設定的份量、不吃賽季加倍、不衰減，也不受最近 90 天的上限限制</li>
+  <li>掃碼時的檢查順序與每人只領一次，見取貨場次詳情的<a href="pickup-detail.html#scan-rules">發點規則</a></li>
 </ul>
 <p class="note">依據：5.1.0.8 F9 的 A6 說明；主規格 §7.5；D499、D503。</p>
+
+<h2 id="effective"><span class="n"></span>生效時點與修改紀錄</h2>
+<p>這一區讓 Admin 知道改了參數何時生效，並能追查歷次修改。儲存後什麼時候生效，依參數分三類，見<a href="#effective-when">生效時點</a>；每次異動記下什麼，見<a href="#change-log">修改紀錄</a>。</p>
+
+<h3 id="effective-when">生效時點</h3>
+<p>所有參數異動都只往後生效，不回算歷史紀錄；粉絲的點數本身照常即時入帳。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:16%">類別</th><th style="width:44%">包含的參數</th><th>什麼時候生效</th></tr></thead>
+  <tbody>
+    <tr><td>計分類</td><td>基準費率<br>活動票券與電子商店商品的份量<br>互動與推薦事件的給分、天數與上限<br>全站活動的給分與上限<br>各職務的計入比例<br>賽季加倍</td><td>只作用於儲存之後發生的事件<br>已入帳的點數不改寫</td></tr>
+    <tr><td>等級類</td><td>前 % 名<br>最低忠誠點數門檻<br>點數減半要多久<br>降級緩衝<br>多久沒有行為就往下掉一階</td><td>從下一次每週重算起生效<br>不改寫點數，只影響之後的等級判定</td></tr>
+    <tr><td>立即生效</td><td>事件開關<br>分級顯示名稱<br>粉絲管理指標的天數</td><td>事件開關立即停止或恢復發分<br>分級顯示名稱儲存後全站同步<br>指標的天數儲存後指標立即用新天數</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>待生效提示（Pending notice）</td><td>有已儲存、尚未生效的變更時，例如尚未開始的賽季加倍期間</td><td>讓 Admin 看得出何時生效</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="change-log">修改紀錄</h3>
+<p>每一次參數異動都留一筆，包含開關切換。每筆記下：</p>
+<ul class="plain">
+  <li>操作者</li>
+  <li>時間</li>
+  <li>改了哪個參數</li>
+  <li>原值與新值；事件開關寫開→關或關→開</li>
+  <li>生效類別，見<a href="#effective-when">生效時點</a></li>
+</ul>
+<p class="note">依據：5.1.0.8 F6、頁面狀態；主規格 §7.5；D347、D476、D479、D497、D498、D508。</p>
+
+<h2 id="scope"><span class="n"></span>設定範圍與權限</h2>
+<p>這頁只管全平台通用的參數。哪些在這裡設定，見<a href="#scope-items">哪些參數在這頁設定</a>；誰能進入，見<a href="#access">誰能進入這頁</a>；頁首有什麼，見<a href="#page-header">頁首與同層導覽</a>。</p>
+
+<h3 id="scope-items">哪些參數在這頁設定</h3>
+<ul class="plain">
+  <li>這頁的參數不開放創作者覆寫，例外是前 % 名與創作者自己的賽季加倍；哪些由創作者調、哪些由 Admin 調，見粉絲分級的<a href="fans-tiers.html#who-adjusts">誰能調整什麼</a></li>
+  <li>誠信規則由平台強制，任何人都不能關，見粉絲分級的<a href="fans-tiers.html#integrity">誠信規則</a></li>
+</ul>
+
+<h3 id="access">誰能進入這頁</h3>
+<ul class="plain">
+  <li>只有 Admin 可以進入與編輯，不需要先選定創作者</li>
+  <li>創作者介面不含這頁</li>
+</ul>
+
+<h3 id="page-header">頁首與同層導覽</h3>
+<p>頁首讓 Admin 分辨這裡是全平台設定，不是某位創作者的分級設定。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>導航脈絡（Breadcrumb Context）</td><td>—</td><td>顯示 Admin Creator Studio → 平台忠誠點數設定</td></tr>
+    <tr><td>範圍說明（Scope Description）</td><td>—</td><td>說明這頁的參數作用於全平台所有創作者；創作者可調的參數在各自的分級設定</td></tr>
+    <tr><td>同層導覽（Peer Navigation）</td><td>—</td><td>可前往：<br><a href="admin-creators.html">Creator 管理</a><br><a href="admin-events.html">創作者活動管理</a><br><a href="admin-ipbank.html">Admin IP Bank</a><br><a href="admin-ipbank-report.html">IP Bank Reporting</a><br><a href="admin-fees.html">平台費率設定</a><br><a href="admin-promotions.html">平台優惠設定</a><br><a href="admin-video-review.html">影片上架審核</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.8 頁面定位、F1、F6；主規格 §4.1、§6.4、§7.5；D316、D347、D348、D498、D500、D510。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.0.8-平台忠誠點數設定.md</code>（v1.11）、<code>5.1.7.6-分級設定.md</code>、<code>0-設計規格書.md §4.1／§7.5／§7.15／§8.29</code></li>
-    <li>決策：D316、D347、D348、D351、D391、D474、D476、D479、D497、D498、D499、D500、D503、D508</li>
+    <li>規格：<code>5.1.0.8-平台忠誠點數設定.md</code>（v1.11）、<code>0-設計規格書.md §4.1／§6.4／§7.5／§8.29</code>（v5.39）</li>
+    <li>決策：D316、D347、D348、D476、D479、D497、D498、D499、D500、D502、D503、D508、D510</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>每週重算在每週哪一天、幾點，以哪個時區計</li>
-    <li>全站發文互動發生在哪裡</li>
-    <li>邀請朋友加入 Ztor 的「合格啟用」怎麼定義</li>
-    <li>候選項目「完成個人資料或綁定付款」（一次性 200 分）是否存在、是否正式啟用</li>
-    <li>判定沉睡的「任何行為」只算對這位創作者的行為，或包含平台上任何計分行為</li>
-    <li>賽季加倍的倍率可以填的範圍</li>
-    <li>回填的狀態有哪幾種、完成後畫面顯示什麼</li>
     <li>基準費率以哪一種幣別表示（新台幣或港幣）；確定前寫成「每 1 元基準幣別」</li>
-    <li>創作者在分級設定設的前 % 名，與這頁設的前 % 名怎麼並存（例如創作者沒設時是否沿用這頁的值）</li>
+    <li>創作者在分級設定設的前 % 名，與這頁設的前 % 名怎麼並存，例如 Admin 改值時會不會蓋過創作者已設的值</li>
+    <li>創作者沒有自行設定前 % 名時，沿用這頁的值（推導）</li>
+    <li>這頁只顯示每週重算的頻率，不提供改成其他頻率（推導）</li>
     <li>按讚與收藏拆成各自一個上限後，各自的預設值</li>
     <li>事件開關關閉期間發生的行為，要不要留一筆 0 點紀錄</li>
     <li>切換事件開關前要不要先確認一次</li>
     <li>分級顯示名稱是中英文各一個，還是共用一個</li>
     <li>其他購買品項（項目支持、拍賣、影片租賃與付費首映）啟用時，份量由誰設定</li>
     <li>各欄位是否必填、可以填的範圍（例如能不能填 0）</li>
-    <li>已設定的賽季期間怎麼修改或刪除</li>
+    <li>編輯以哪一群參數為單位</li>
     <li>修改紀錄在畫面上從哪裡查看</li>
+    <li>一次儲存改了好幾類參數時，生效類別怎麼標</li>
+    <li>儲存成功後畫面怎麼提示</li>
     <li>畫面載入中、儲存失敗時怎麼顯示</li>
   </ul>
-  <p class="k">最近同步：2026-11-02（D508：事件開關任何時候都能直接切，切換當下留一筆修改紀錄，取消其他參數的修改不會還原開關；對照 5.1.0.8 v1.11）；上一次 2026-11-02（D503：每次領取點數與總名額改在掃碼領點場次的 QR 上設定，不再是商品；對照 5.1.0.8 v1.10）；上一次 2026-11-02（D500：基準費率的單位改寫成「每 1 元基準幣別」、預設 10；前 % 名創作者也能設定）；2026-11-02（D497、D498：新增賺分事件的給分、上限與開關、分級門檻與名稱、粉絲管理指標的天數；基準費率改為可調；降級緩衝移到分級；生效時點多一類立即生效；修改紀錄包含開關切換）；2026-11-02（D499：新增線下掃碼領點的事件開關與計點）；上一次 2026-10-23（D479：回填範圍上線前 365 天、主要應援對象未選時邀請點數暫存、降級緩衝改以天數為準、參數生效時點分計分類與等級類）；2026-10-23（D476：各職務的計入比例、賽季加倍的範圍與倍率、降級要連續兩次每週重算未達標、主要應援對象首次領取強制選擇、歷史訂單回填）；2026-10-22（D474：全站活動的入帳方式與作廢、上限全站合計）；2026-10-09（至 D351；另含 D391 角色改稱 Admin）</p>
+  <p class="k">最近同步：2026-11-05（逐條對照 5.1.0.8 F9 補線下掃碼關閉時已發點數不受影響、事件關閉提醒限 Admin 代管；5.1.0.8 v1.11、主規格 v5.39）</p>
 </details>
+<script>
+(function(){var m={'activities':'admin-loyalty-other.html#activities','activities-list':'admin-loyalty-other.html#activities-list','activities-claim':'admin-loyalty-other.html#activities-claim','activities-limits':'admin-loyalty-other.html#activities-limits','credit-roles':'admin-loyalty-other.html#credit-roles','season':'admin-loyalty-other.html#season','decay':'admin-loyalty-other.html#decay','backfill':'admin-loyalty-other.html#backfill'};var h=location.hash.slice(1);if(m[h])location.replace(m[h]);})();
+</script>
 </div>
 </body>
 </html>

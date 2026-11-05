@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>粉絲總覽 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -152,7 +152,7 @@ table.map td:nth-child(2){width:22%}
 <h2 id="roster-intro" class="no-num">概述</h2>
 <ul class="plain">
   <li>每位粉絲的狀態（活躍、流失風險、已挽回）自動判定，見<a href="#status">粉絲狀態</a>；有流失風險時，頁面最上方會提醒，見<a href="#roster-alert">流失風險提醒</a></li>
-  <li>忠誠點數即時入帳、達標即時升級；降級先倒數緩衝天數，到期後下一次每週重算仍未達標才降，規則見<a href="fans-tiers.html#recalc">粉絲分級</a></li>
+  <li>分級的升降時機見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a></li>
   <li>還沒有任何粉絲時，整頁改成取得第一批粉絲的引導，見<a href="#roster-empty">沒有資料時</a></li>
 </ul>
 
@@ -162,7 +162,7 @@ table.map td:nth-child(2){width:22%}
 <h3 id="roster-flow-find">找粉絲和看詳情</h3>
 <div class="dg" role="img" aria-label="找粉絲和看詳情的流程圖，由左往右：打開粉絲總覽看整體狀況，在排行榜找粉絲，再決定要看這位粉絲的詳情、發訊息給這位粉絲，或發訊息給目前篩選出的一群粉絲">
 <div class="dg-hg" style="--dg-c:4">
-  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>打開粉絲總覽<small>看摘要指標與分級分布</small></div>
+  <div class="dg-node" style="grid-row:1/4;grid-column:1"><span class="s">1</span>打開粉絲總覽<small>看摘要指標</small></div>
   <span class="dg-a" style="grid-row:1/4;grid-column:2"></span>
   <div class="dg-node" style="grid-row:1/4;grid-column:3"><span class="s">2</span>在排行榜找粉絲<small>可搜尋、篩選、改排序</small></div>
   <span class="dg-a" style="grid-row:1/4;grid-column:4"></span>
@@ -177,7 +177,7 @@ table.map td:nth-child(2){width:22%}
 </div>
 <p class="dg-cap">流程圖：由左往右走，圓圈數字對應下方步驟清單的編號。</p>
 <ol class="plain">
-  <li>打開粉絲總覽，看<a href="#roster-kpi">摘要指標</a>與<a href="#roster-tiers">分級分布</a>，掌握整體狀況</li>
+  <li>打開粉絲總覽，看<a href="#roster-kpi">摘要指標</a>，掌握整體狀況；各級人數在分級設定彈窗的<a href="#roster-tiers">分級分布</a>看</li>
   <li>在<a href="#roster-rank">排行榜</a>找粉絲；搜尋、篩選與排序見排行榜的功能與欄位表</li>
   <li>要做什麼？
     <ul class="plain">
@@ -232,7 +232,7 @@ table.map td:nth-child(2){width:22%}
   <li><a href="#roster-alert">流失風險提醒</a>：有粉絲可能流失時的提醒</li>
   <li><a href="#roster-help">看懂指標的說明</a>：說明開關與粉絲系統說明</li>
   <li><a href="#roster-kpi">摘要指標</a>：整體的數字</li>
-  <li><a href="#roster-tiers">分級分布</a>：各分級的人數與貢獻</li>
+  <li><a href="#roster-tiers">分級分布</a>：各分級的人數與貢獻，放在分級設定彈窗的右欄</li>
   <li><a href="#roster-rank">排行榜</a>：依價值排序的粉絲清單</li>
   <li><a href="#roster-fame">名人堂</a>：長期高貢獻的粉絲</li>
   <li><a href="#roster-empty">沒有資料時</a>：還沒有粉絲或查不到時顯示什麼</li>
@@ -265,14 +265,14 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:32%">指標</th><th>數字</th><th style="width:28%">輔助資訊</th></tr></thead>
   <tbody>
     <tr><td>活躍粉絲（Active fans）</td><td>近 90 天內至少有 1 筆有效動作的粉絲數</td><td>總粉絲數</td></tr>
-    <tr><td>流失風險（At risk）</td><td>近 30 天內沒有任何有效動作的粉絲數</td><td>分級與沉默天數</td></tr>
+    <tr><td>流失風險（At risk）</td><td>被判定為流失風險的粉絲數，判定見<a href="#status">粉絲狀態</a></td><td>分級與沉默天數</td></tr>
     <tr><td>活躍粉絲收入（Revenue active）</td><td>近 90 天內的粉絲營收總額</td><td>統計期間，例如近 90 天</td></tr>
     <tr><td>平均忠誠點數（Avg loyalty points）</td><td>所有粉絲的忠誠點數總和 ÷ 粉絲總數</td><td>與上月比較</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>四個指標各附一個說明（i），內容就是上表的定義</li>
-  <li>活躍的 90 天與流失風險的 30 天是預設值，天數由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>調整</li>
+  <li>活躍的 90 天與流失風險的 30 天是預設值，天數由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定</li>
 </ul>
 <p>每個指標依數字換樣子，各狀態如下；完全沒有粉絲時四個指標都不出現，見<a href="#roster-empty">沒有資料時</a>。</p>
 <div class="tablewrap"><table>
@@ -286,7 +286,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>小字的分級</td><td>流失風險粉絲分屬好幾個分級</td><td>寫分級最高的那一級（核心圈 &gt; 超級粉絲 &gt; 上榜粉絲 &gt; 一般粉絲）</td></tr>
     <tr><td>完整清單</td><td>滑鼠移到小字上</td><td>每一個有流失風險的分級一行，分級高的在前，例如：<br>「2 位核心圈 · 沉默 10/90 天」<br>「5 位超級粉絲 · 沉默 21/90 天」（數字為假設）</td></tr>
     <tr><td>小字的 N</td><td>—</td><td>該級流失風險粉絲裡，最近一次有效動作的那一位，距今幾天；也就是這群人每一位都至少沉默 N 天</td></tr>
-    <tr><td>小字的 M</td><td>—</td><td>幾天沒有行為就往下掉一級，由 Admin 設定，預設 90 天，見<a href="fans-tiers.html#decay">衰減與沉睡</a></td></tr>
+    <tr><td>小字的 M</td><td>—</td><td>幾天沒有行為就往下掉一級，由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定，預設 90 天，見<a href="fans-tiers.html#decay">衰減與沉睡</a></td></tr>
     <tr><td>剛有行為</td><td>N 是 0；流失風險要求近 30 天沒有有效動作，實際上不會出現</td><td>小字只寫分級，例如「超級粉絲」</td></tr>
     <tr><td>沒有流失風險</td><td>流失風險人數是 0</td><td>數字是 0，小字寫「無」</td></tr>
     <tr class="grp"><td colspan="3">活躍粉絲收入</td></tr>
@@ -301,7 +301,7 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 
 <h3 id="roster-tiers">分級分布</h3>
-<p>分級分布顯示各分級的人數與貢獻比例，作為經營與設計福利的依據，放在「分級設定」彈窗的右欄，從下方的「分級設定」按鈕進入。分級的定義見<a href="fans-tiers.html#tiers">四個分級</a>。</p>
+<p>分級分布顯示各分級的人數與貢獻比例，作為經營與設計福利的依據，放在「分級設定」彈窗的右欄，不放在粉絲總覽主頁，讓創作者在調整門檻與福利時一起看到各級分到多少人。分級的定義見<a href="fans-tiers.html#tiers">四個分級</a>。</p>
 <ul class="plain">
   <li>比例長條顯示四個分級各自的人數與占比</li>
   <li>人數只算活躍粉絲，四級加總等於摘要指標的活躍粉絲數；排行榜仍列全部粉絲</li>
@@ -312,7 +312,19 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>分級設定（Tier settings）</td><td>—</td><td>前往粉絲分級設定分頁；門檻與各級福利在同一個分頁，從這裡進入，見<a href="fans-tier-settings.html">分級設定</a>與<a href="fans-benefits.html">各級福利</a></td></tr>
+    <tr><td>分級設定（Tier settings）</td><td>—</td><td>進入粉絲分級設定，入口只有這一個，按鈕放在頁面哪裡由畫面決定；門檻與各級福利在同一個分頁，見<a href="fans-tier-settings.html">分級設定</a>與<a href="fans-benefits.html">各級福利</a><br>分級分布顯示在這個彈窗的右欄</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">比例長條與洞察</td></tr>
+    <tr><td>有粉絲</td><td>至少一位活躍粉絲</td><td>顯示四個分級的人數與占比，例如「Super Fans · 28% · 359 位」（數字為假設）</td></tr>
+    <tr><td>洞察有符合的分級</td><td>有分級人數占比最小、而且收入占比大於人數占比</td><td>顯示一行洞察，凸顯該級的貢獻</td></tr>
+    <tr><td>洞察沒有符合的分級</td><td>沒有任何分級符合上一列的條件</td><td>整行隱藏，不顯示 0%</td></tr>
+    <tr><td>完全沒有粉絲</td><td>尚無粉絲可分級</td><td>不顯示比例長條與洞察，整區退位給取得第一批粉絲的引導；分級設定的入口仍在</td></tr>
+    <tr><td>某一級 0 人</td><td>四級中有一級沒有活躍粉絲</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>全部粉絲都不活躍</td><td>有粉絲，但活躍粉絲數是 0，占比算不出來</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 
@@ -339,7 +351,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>排序</td><td>有粉絲時</td><td>點清單的欄位標題排序，可依排行榜（忠誠點數）或分級排序<br>沒有另外的排序選單<br>預設用哪一種見頁尾尚待確認</td></tr>
     <tr><td>發訊息（每一列）</td><td>每一列</td><td>開啟<a href="fans-broadcast.html">群發訊息</a>，收件對象帶入這位粉絲</td></tr>
     <tr><td>詳情（每一列）</td><td>每一列</td><td>進入這位粉絲的<a href="fans-roster-detail.html">粉絲詳情</a></td></tr>
-    <tr><td>載入更多（Load more）</td><td>有粉絲時</td><td>每次載入 25 列，一開始顯示 25 列<br>顯示已載入與總數，例如「Showing 25 of 30」</td></tr>
+    <tr><td>載入更多（Load more）</td><td>有粉絲時</td><td>每次載入 25 列，一開始顯示 25 列<br>顯示已載入與總數，例如「Showing 25 of 30」<br>全部載入後或總數不到 25 列時按鈕的樣子，見頁尾尚待確認</td></tr>
     <tr id="roster-message"><td>群發訊息（Message segment）</td><td>見頁尾尚待確認</td><td>開啟<a href="fans-broadcast.html">群發訊息</a><br>篩的是分級：收件對象帶入那一級<br>只用了搜尋或標籤：收件對象是全部粉絲，並提示「目前的搜尋或標籤篩選不會帶入」</td></tr>
     <tr id="roster-export"><td>匯出 CSV（Export CSV）</td><td>見頁尾尚待確認</td><td>把粉絲名單匯出成 CSV</td></tr>
   </tbody>
@@ -350,6 +362,7 @@ table.map td:nth-child(2){width:22%}
 <ul class="plain">
   <li>列出每位粉絲歷史上的最高分級與達成年份</li>
   <li>粉絲目前的分級變動時，名人堂紀錄不改寫</li>
+  <li>名人堂只讀，沒有可操作的欄位；還沒有任何粉絲進過名人堂時顯示什麼，見頁尾尚待確認</li>
 </ul>
 
 <h3 id="roster-empty">沒有資料時</h3>
@@ -363,7 +376,7 @@ table.map td:nth-child(2){width:22%}
 <p class="note">依據：5.1.7 F1～F6、F12、頁面狀態；5.1.7.5 F4；5.1.7.7 §2.3；主規格 §6.10、§7.5；D069、D150、D169、D493、D495、D497、D498、D507。</p>
 
 <h2 id="status"><span class="n"></span>粉絲狀態</h2>
-<p>粉絲狀態自動判定，三種狀態依序轉換，條件如下。</p>
+<p>粉絲狀態自動判定，三種狀態依序轉換，條件如下；活躍的 90 天、流失風險的 30 天與沉睡的 90 天怎麼並存，見<a href="#status-time">狀態的時間門檻</a>。</p>
 <div class="flow">
   <span class="tag ok">Active 活躍</span><span class="arr">→</span><span class="tag warn">At risk 流失風險</span><span class="arr">→</span><span class="tag wait">Recovered 已挽回</span>
   <span class="flow__alt">已挽回是暫時狀態，約維持 7 天。</span>
@@ -371,30 +384,49 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:24%">狀態</th><th>條件</th></tr></thead>
   <tbody>
-    <tr><td>流失風險</td><td>近 30 天內沒有任何有效動作（任何可賺忠誠點數的行為）<br>天數預設 30 天，由 Admin 調整</td></tr>
-    <tr><td>已挽回</td><td>判準尚待確認</td></tr>
+    <tr><td>活躍</td><td>近 90 天內至少有 1 筆有效動作（任何可賺忠誠點數的行為）<br>天數預設 90 天，由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定</td></tr>
+    <tr><td>流失風險</td><td>近 30 天內沒有任何有效動作<br>天數預設 30 天，由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定</td></tr>
+    <tr><td>已挽回</td><td>判準尚待確認；暫時狀態，約維持 7 天</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>流失風險目前只標是或否，沒有機率分數</li>
-  <li>流失風險、降級緩衝、沉睡（連續 90 天沒有任何行為）是三套並存的規則；流失風險的 30 天比沉睡的 90 天早到</li>
+  <li>流失風險、降級緩衝、沉睡是三套並存的規則；降級緩衝見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a>，沉睡見<a href="fans-tiers.html#decay">衰減與沉睡</a></li>
 </ul>
+
+<h3 id="status-time">狀態的時間門檻</h3>
+<p>下圖把活躍、流失風險、沉睡三個時間門檻放在同一條時間線上，時間是粉絲最近一次行為距今的天數。</p>
+<div class="dg" role="img" aria-label="粉絲狀態的時間門檻示意：時間由左到右是最近一次行為距今的天數；活躍涵蓋 0 到 90 天，流失風險從第 30 天起，沉睡從第 90 天起；第 30 到 90 天之間，同一位粉絲同時符合活躍與流失風險">
+<div class="dg-tl">
+  <div class="dg-tl__marks"><i style="left:0"></i><i style="left:30%"></i><i style="left:60%"></i></div>
+  <div class="dg-tl__row"><div class="dg-tl__k"><span class="tag ok">活躍</span><span>Active</span></div><div class="dg-tl__track"><span class="dg-tl__bar ok" style="left:0;width:60%"><i>近 90 天有有效動作</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k"><span class="tag warn">流失風險</span><span>At risk</span></div><div class="dg-tl__track"><span class="dg-tl__bar warn" style="left:30%;width:70%"><i>近 30 天沒有有效動作</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k"><span class="tag">沉睡</span><span>Dormant</span></div><div class="dg-tl__track"><span class="dg-tl__bar off" style="left:60%;width:40%"><i>連續 90 天沒有行為</i></span></div></div>
+  <div class="dg-tl__row axis"><div class="dg-tl__k"></div><div class="dg-tl__axis"><span class="l" style="left:0">剛有行為</span><span class="key" style="left:30%">第 30 天</span><span class="key" style="left:60%">第 90 天</span></div></div>
+</div>
+</div>
+<p class="dg-cap">時間軸圖：由左到右是最近一次行為距今的天數，畫的是預設的 30 天與 90 天，兩個天數都由 Admin 在<a href="admin-loyalty.html">平台忠誠點數設定</a>設定。第 30 到 90 天之間，粉絲同時符合活躍與流失風險；兩者是否重複計入摘要指標見頁尾尚待確認。降級緩衝從掉到門檻以下才開始倒數，不是以最近一次行為起算，不畫在圖上，見<a href="fans-tiers.html#recalc">點數入帳與升降級的時機</a>。已挽回的判準未定，也不畫。</p>
 <p class="note">依據：5.1.7 F2、F4、F5；主規格 §7.5；D497、D498。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.7-粉絲關係管理.md</code>（最後更新 2026-11-02）、<code>5.1.7.5-粉絲系統說明.md</code> F4、<code>0-設計規格書.md §6.10／§7.5</code></li>
-    <li>決策：D069、D150、D169、D493、D495、D497、D498、D505、D507</li>
+    <li>規格：<code>5.1.7-粉絲關係管理.md</code>（最後更新 2026-11-05）、<code>5.1.7.5-粉絲系統說明.md</code>（最後更新 2026-11-02）F4、<code>5.1.7.7-粉絲詳情.md</code>（最後更新 2026-11-02）、<code>0-設計規格書.md</code>（v5.40）§6.10／§7.5</li>
+    <li>決策：D069、D150、D169、D493、D495、D497、D498、D505、D507、D509、D511</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>快速篩選要恢復可複選，還是維持單選</li>
     <li>流失風險要不要保留防誤報的例外，例如剛加入的粉絲、從未有過任何動作的粉絲</li>
-    <li>已挽回的判準：原本以舊的流失風險判斷為前提，新判準還沒定</li>
+    <li>已挽回的判準：原本以舊的流失風險判斷為前提，新判準還沒定；暫以「流失風險粉絲重新出現一筆有效動作就算已挽回」（推導）</li>
     <li>活躍粉絲收入是否只算活躍粉絲的營收</li>
     <li>已達上限、入帳 0 點的行為算不算一筆有效動作（推導為算）</li>
+    <li>活躍與流失風險在第 30 到 90 天重疊，同一位粉絲是否同時計入兩個摘要指標</li>
+    <li>分級分布：某一級 0 人，以及活躍粉絲數是 0 時占比怎麼顯示</li>
+    <li>名人堂還沒有任何粉絲時顯示什麼</li>
+    <li>載入更多：全部載入後，以及總數不到 25 列時，按鈕與「Showing N of N」的樣子</li>
+    <li>摘要指標：活躍粉絲數是 0 時，活躍粉絲指標顯示什麼</li>
     <li>排行榜預設依排行榜還是分級排序（推導為排行榜）</li>
     <li>完全沒有粉絲時，群發訊息（Message segment）與匯出 CSV 是否照樣出現</li>
     <li>匯出 CSV 匯出的是全部粉絲還是目前篩選出的粉絲，以及包含哪些欄位</li>
@@ -404,7 +436,7 @@ table.map td:nth-child(2){width:22%}
     <li>摘要指標：統計期間沒有營收時，活躍粉絲收入顯示什麼</li>
     <li>粉絲詳情相關的待確認列在<a href="fans-roster-detail.html">粉絲詳情</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-11-02（D507：頁首恢復「認識粉絲系統」入口，粉絲系統說明的入口只在這一頁）；2026-11-02（D506：排序改為點清單的欄位標題，沒有另外的排序選單）；2026-11-02（D505：頁首不設粉絲系統說明的入口）；2026-11-02（D497：四個摘要指標改用有效動作定義並附說明、流失風險改為近 30 天沒有有效動作、平均忠誠點數改算所有粉絲、排序、升級進度；D498：活躍與流失風險的天數由 Admin 調整）；2026-10-30（D495：群發訊息只帶入分級、分級分布只算活躍粉絲；摘要指標補上各狀態；D493 流失風險小字定為「分級 · 沉默 N/M 天」）；2026-10-23（D476 點數即時入帳與升降級時機）；2026-10-19（粉絲詳情拆成獨立一頁；排行榜欄位名改中文附英文；補說明開關與粉絲系統說明入口）；2026-10-09</p>
+  <p class="k">最近同步：2026-11-05（D511 分級設定入口只有一個、位置屬畫面；對照規格 5.1.7 最後更新 2026-11-05）</p>
 </details>
 </div>
 <script>

@@ -313,7 +313,8 @@
   }
 
   /**
-   * 組合包可售量＝各成員在這個組合包的可售量取最小值，再與組合自己的限量硬上限取最小。
+   * 組合包可售量＝各成員在這個組合包的可售量取最小值；鎖定庫存開著時＝鎖定套數 − 被保留的套數（鎖定套數可以是 0，D513）。
+   * 墓碑 2026-11-05（D513）：組合自己的限量硬上限（bundle.cap）退場，組合包不再有販售上限。
    * productsById：{ [productId]: product }。查不到的成員視為 0（不可售）。
    */
   function bundleQty(bundle, productsById) {
@@ -342,21 +343,17 @@
       var s = (q === INF) ? INF : Math.floor(q / per);
       if (s < min) min = s;
     }
-    /* D480：限量 cap 是對外總量（含已售），剩餘上限＝cap − 已售套數 − 這個組合包被保留的套數。
-       已售讀 bundle.sold（細節頁模型），沒有就讀示範資料的 sales.units。原本直接拿 cap 比，等於把總量當成剩餘。 */
-    var cap = (bundle && bundle.cap !== undefined && bundle.cap !== null) ? num(bundle.cap) : null;
-    if (cap !== null) {
-      var soldSets = (bundle.sold !== undefined && bundle.sold !== null) ? num(bundle.sold) : num(bundle.sales && bundle.sales.units);
-      var capLeft = Math.max(0, cap - soldSets - num(bundle.holdSets));
-      if (capLeft < min) min = capLeft;
-    }
     return min;
   }
 
   /* ── 組合包鎖定套數（2026-09-11 使用者重定義；規格 D266 待補）──────────── */
   function memberPer(m) { return num(m && m.qty) > 0 ? num(m.qty) : 1; }
-  /** 組合目前鎖定幾套；不鎖定回 null。 */
-  function bundleLockSets(bundle) { return lockVal(bundle && bundle.lockSets); }
+  /** 組合目前鎖定幾套；不鎖定回 null。D513：鎖定庫存開著時套數可以是 0（庫存設為 0 就是這個狀態），只有 null／空白才是不鎖定。 */
+  function bundleLockSets(bundle) {
+    var v = bundle && bundle.lockSets;
+    if (v === undefined || v === null || v === '') return null;
+    var n = num(v); return n >= 0 ? n : null;
+  }
   /** 某成員在這個組合的鎖定總量（＝N × 每套用量）；不鎖定回 null。 */
   function bundleMemberLock(bundle, m) {
     var n = bundleLockSets(bundle);
@@ -380,16 +377,6 @@
       if (n < max) { max = n; by = p; }
     }
     return { max: max, by: by };
-  }
-  /**
-   * D480：限量的組合包自動鎖定＝限量 N − 已售套數（對內預留跟著對外總量走）；不限量回 null。
-   * cap 空白或不是正數時也回 null（還沒填）。已售讀 bundle.sold，沒有就讀 sales.units。
-   */
-  function bundleLimitLock(bundle) {
-    var cap = (bundle && bundle.cap !== undefined && bundle.cap !== null && bundle.cap !== '') ? num(bundle.cap) : null;
-    if (cap === null || !(cap > 0)) return null;
-    var soldSets = (bundle.sold !== undefined && bundle.sold !== null) ? num(bundle.sold) : num(bundle.sales && bundle.sales.units);
-    return Math.max(0, cap - soldSets);
   }
   /** D480 決定 4：成員是不是數位商品——數位商品沒有在庫，不鎖。 */
   function isStocklessMember(product) {
@@ -426,7 +413,7 @@
       if (!p.pool.locks) p.pool.locks = { single: null, bundles: {} };
       if (!p.pool.locks.bundles) p.pool.locks.bundles = {};
       var total = bundleMemberLock(bundle, m);
-      /* D480 決定 4：數位商品沒有在庫（池＝unlimited），不鎖；限量的組合包只看限量上限 */
+      /* D480 決定 4：數位商品沒有在庫（池＝unlimited），不鎖 */
       if (isStocklessMember(p)) total = null;
       p.pool.locks.bundles[bundle.id] = total;
       if (isMulti(p)) {
@@ -1081,7 +1068,6 @@
     bundleLockSets: bundleLockSets,
     bundleMemberLock: bundleMemberLock,
     bundleMaxSets: bundleMaxSets,
-    bundleLimitLock: bundleLimitLock,
     isStocklessMember: isStocklessMember,
     bundleAllocOf: bundleAllocOf,
     applyBundleLock: applyBundleLock,

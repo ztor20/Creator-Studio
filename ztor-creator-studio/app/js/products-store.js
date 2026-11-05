@@ -1335,7 +1335,7 @@
       /* 鎖定套數（2026-09-11）：鎖 1 套，四個成員各鎖 1 件（zine 池只有 3：單售 1 ＋ 本組合 1 ＋ 簽名會組 1） */
       lockSets: 1, alloc: {},
       /* unlistAt（2026-10-16 示範資料補齊，稽核 S3）：組合包定時下架排定（未來）——單售商品早有、組合包原本沒有 */
-      cap: null, listed: true, listAt: null, unlistAt: '2026-12-31T23:59:00',
+      listed: true, listAt: null, unlistAt: '2026-12-31T23:59:00',
       /* lowThreshold＝0（2026-09-04 修正，原本兩個組合都是 3）：e-shop 的 Bundles 狀態篩選
          沒有「急需補貨」tab（組合是否設低庫存門檻仍是產品待確認，ASSUMPTIONS UIA-133），
          非 0 門檻卻沒有對應 tab 會讓組合列在某些成員量小時掉進 deriveStatus 判成 low、
@@ -1357,7 +1357,7 @@
       members: [{ productId: 'acetate' }, { productId: 'wristband' }, { productId: 'jacket' }, { productId: 'zine' }],
       /* 鎖 1 套（zine 剩 1 件、壓住上限）；手環指定 S、外套指定 Black / M（各 1 件＝全部指定） */
       lockSets: 1, alloc: { wristband: { 0: 1 }, jacket: { 1: 1 } },
-      cap: 6, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       /* 墓碑 2026-10-16：perks（額外權益，D292 示範）——D402 已從組合包移除，殘留欄位刪除（稽核順帶發現） */
@@ -1376,7 +1376,7 @@
       description: '編號黑膠與簽名海報，只給持連結的人。',
       membersKey: 'e-shop.b2.members',
       members: [{ productId: 'acetate' }, { productId: 'poster' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: false, privateLink: 'https://ztor.example/s/vinyl-poster-set?k=g6t2mw84', saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
       sales: { units: 9, gross: '$1,350', net: '$1,080' }
@@ -1386,7 +1386,7 @@
       id: 'neon-gift-box', persona: 'default', name: '霓虹徽章禮盒', img: 'enamel-pin-wave.webp',
       description: '琺瑯徽章與貼紙包的小禮盒。',
       members: [{ productId: 'pin' }, { productId: 'sticker' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
       sales: { units: 20, gross: '$240', net: '$192' }
@@ -1401,7 +1401,7 @@
       members: [{ productId: 'hoodie' }, { productId: 'cap', qty: 2 }, { productId: 'song' }],
       lockSets: 40, alloc: {},
       /* 2026-10-29：四個時間全填、相對今天（原本只有寫死的 saleStart 2026-11-01）：上架 10 天前、開賣 5 天後、停售 50 天後、定時下架 75 天後 */
-      cap: 40, listed: true, listAt: daysFromNow(-10, 10), unlistAt: daysFromNow(75, 23),
+      listed: true, listAt: daysFromNow(-10, 10), unlistAt: daysFromNow(75, 23),
       shown: true, privateLink: null, saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(50, 23), lowThreshold: 0,
       discountPct: 15, discount: null,
       limits: { person: '1' },
@@ -1417,7 +1417,7 @@
       description: '巡演限定襪組搭配紀念 T 恤，早鳥價開放預購。',
       members: [{ productId: 'tour-socks' }, { productId: 'tee' }],
       lockSets: null, alloc: {},
-      cap: null, listed: true, listAt: daysFromNow(-6, 10), unlistAt: daysFromNow(75, 23),
+      listed: true, listAt: daysFromNow(-6, 10), unlistAt: daysFromNow(75, 23),
       shown: true, privateLink: null, saleStart: daysFromNow(7, 12), saleEnd: daysFromNow(45, 23), lowThreshold: 0,
       discountPct: 10, discount: null,
       limits: { person: '2' },
@@ -1430,7 +1430,7 @@
       description: '重新上架流程的測試資料：成員「霓虹招牌 琺瑯徽章 收藏盒」已下架、「六片帽」上架中。保存的上架、下架、開賣、停售時間都還沒到，按「上架」會成功。',
       members: [{ productId: 'cap' }, { productId: 'pin-case' }],
       lockSets: null, alloc: {},
-      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      listed: false, listAt: null, unlistAt: null, onSale: false,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: null, sales: null,
       paused: { listAt: daysFromNow(-14, 10), unlistAt: daysFromNow(80, 23), saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(45, 23), onSale: true }
@@ -1441,7 +1441,7 @@
       description: '重新上架流程的測試資料：下架前排的開賣與停售時間都已過，按「上架」會被擋下並列出已過的時間，什麼都不會改。',
       members: [{ productId: 'tee' }, { productId: 'keychain' }],
       lockSets: null, alloc: {},
-      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      listed: false, listAt: null, unlistAt: null, onSale: false,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 5, discount: null, sales: null,
       paused: { listAt: daysFromNow(-30, 10), unlistAt: daysFromNow(60, 23), saleStart: daysFromNow(-3, 12), saleEnd: daysFromNow(-1, 23), onSale: true }
@@ -1451,7 +1451,7 @@
       id: 'tour-recap-set', persona: 'default', name: '巡迴回顧組', img: 'coastline-tee.webp',
       description: '巡迴收官的紀念組：T 恤＋寫真誌。',
       members: [{ productId: 'tee' }, { productId: 'zine' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: '2026-08-20T23:59:00', lowThreshold: 0,
       discountPct: 10, discount: null,
       sales: { units: 44, gross: '$2,200', net: '$1,760' },
@@ -1462,7 +1462,7 @@
       id: 'internal-test-set', persona: 'default', name: '內部測試組', img: 'cap.webp',
       description: '內部測試用，不對外。',
       members: [{ productId: 'cap' }, { productId: 'shoes' }],
-      cap: null, listed: false, listAt: null, unlistAt: null,
+      listed: false, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null, sales: null,
       /* D478 示範（2026-10-23）：下架前已建立、還在付款計時中的 1 筆訂單（保留 1 套）——已下架但還沒結清，
@@ -1474,7 +1474,7 @@
       id: 'draft-set', persona: 'default', name: '新組合', img: null,
       description: '',
       members: [{ productId: 'tee' }, { productId: 'cap' }],
-      cap: null, listed: false, listAt: null, unlistAt: null,
+      listed: false, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null, draft: true
     },
@@ -1484,7 +1484,7 @@
       id: 'launch-set', persona: 'default', name: '首發紀念組', img: 'coaster-pack.webp',
       description: '首發週限定：Logo 馬克杯＋明信片組。',
       members: [{ productId: 'mug' }, { productId: 'postcard' }],
-      cap: 50, listed: false, listAt: null, unlistAt: null, archived: true,
+      lockSets: 0, listed: false, listAt: null, unlistAt: null, archived: true,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: null,
       sales: { units: 50, gross: '$1,170', net: '$936' }
@@ -1495,7 +1495,7 @@
       id: 'postcard-set', persona: 'default', name: '明信片＋寫真誌組', img: 'postcard-set.webp',
       description: '明信片組搭配幕後寫真誌，寄給沒到場的朋友。',
       members: [{ productId: 'postcard' }, { productId: 'zine' }],
-      cap: null, listed: false, listAt: null, unlistAt: null,
+      listed: false, listAt: null, unlistAt: null,
       unlistReason: { type: 'member-unlisted', productId: 'postcard', productName: '九龍夜行 明信片組' },
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 5, discount: null,
@@ -1506,7 +1506,7 @@
       id: 'roadie-set', persona: 'default', name: '巡演工作組', img: 'patch-set.webp',
       description: '刺繡布章＋六片帽，隨行工作人員同款。',
       members: [{ productId: 'patch' }, { productId: 'cap' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
       /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件＝限時購買（D400；S94），期間內才買得到 */
@@ -1520,7 +1520,7 @@
       id: 'backstage-set', persona: 'default', name: '後台茶水組', img: 'coaster-pack.webp',
       description: '杯墊組＋六片帽，後台休息時間的標配。',
       members: [{ productId: 'coaster' }, { productId: 'cap' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       /* D488 示範（2026-10-29；資料沿用 D481 示範）：被 coaster 連動下架前排了定時開賣與停售——連動下架時保存但暫停（paused），
          兩個都還沒到。重新上架（細節頁或清單）只檢查本組合自己的時間：沒問題，照 D289 確認「會一起上架的成員：杯墊組」後直接恢復 */
       shown: true, privateLink: null, saleStart: daysFromNow(4, 12), saleEnd: daysFromNow(50, 23), lowThreshold: 0,
@@ -1533,7 +1533,7 @@
       id: 'sample-set', persona: 'default', name: '試賣樣品組', img: 'beanie.webp',
       description: '毛帽＋六片帽的試賣組，沒有人買就先收起來。',
       members: [{ productId: 'beanie' }, { productId: 'cap' }],
-      cap: null, listed: false, listAt: null, unlistAt: null, archived: true,
+      listed: false, listAt: null, unlistAt: null, archived: true,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null, sales: null
     },
@@ -1550,7 +1550,7 @@
       ],
       /* 鎖 12 套（＝限量 50 − 已售 38，D480）；白 Tee 是多選項、不指定規格（少分配＝只限總數） */
       lockSets: 12, alloc: {},
-      cap: 50, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3,
       discountPct: 20, discount: null,
       /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件＝限時購買（D400；S94） */
@@ -1570,7 +1570,7 @@
       members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-tee' }, { productId: 'wy-24ce-jersey' }],
       /* 鎖 12 套（＝限量 20 − 已售 8，D480）；球衣指定 M 2 件（其餘少分配）、Tee 不指定規格 */
       lockSets: 12, alloc: { 'wy-24ce-jersey': { 1: 2 } },
-      cap: 20, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: { percent: 10, limited: { start: '2026-10-01', end: '2026-10-31' }, stack: true },
       limits: { person: '1' },   /* 2026-10-16 示範資料補齊（稽核 S1）：組合包限購自己設每人 1 組（D456） */
@@ -1585,7 +1585,7 @@
       /* 舊的 e-shop.bnick.vinyl.members 寫「巡演寫真誌」、與成員不符，改由成員名自動組出 */
       members: [{ productId: 'nick-vinyl' }, { productId: 'wy-24ce-wyagl-tee' }],
       lockSets: 12, alloc: {},
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: false, privateLink: 'https://ztor.example/s/nick-vinyl-set?k=z3q8dm45', saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
       sales: { units: 15, gross: 'NT$59,700', net: 'NT$50,745' }
@@ -1595,7 +1595,7 @@
       id: 'nick-soldout-set', persona: 'nick', name: '24CE 紀念禮盒', img: '24ce-skateboard-01.jpg',
       description: 'WYAGL 抱枕＋Dupont Bag 的紀念禮盒。',
       members: [{ productId: 'wy-24ce-pillow' }, { productId: 'wy-24ce-dupont-bag' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
       sales: { units: 30, gross: 'NT$79,800', net: 'NT$67,830' }
@@ -1607,7 +1607,7 @@
       members: [{ productId: 'wy-26ms-hoodie' }, { productId: 'wy-bundle-cap' }],
       /* 2026-10-29：四個時間全填、相對今天（原本 listAt 10/25、saleStart 11/01 寫死，listAt 一過就變成沒有示範）：上架 10 天前、開賣 5 天後、停售 50 天後、定時下架 75 天後 */
       lockSets: 3, alloc: {},
-      cap: 3, listed: true, listAt: daysFromNow(-10, 12), unlistAt: daysFromNow(75, 23),
+      listed: true, listAt: daysFromNow(-10, 12), unlistAt: daysFromNow(75, 23),
       shown: true, privateLink: null, saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(50, 23), lowThreshold: 0,
       discountPct: 15, discount: null,
       sales: null
@@ -1618,7 +1618,7 @@
       description: '巡演攝影集電子版搭配 WYAGL 襪子，早鳥價開放預購。',
       members: [{ productId: 'nick-fanbook' }, { productId: 'wy-24ce-sock' }],
       lockSets: null, alloc: {},
-      cap: null, listed: true, listAt: daysFromNow(-5, 10), unlistAt: daysFromNow(70, 23),
+      listed: true, listAt: daysFromNow(-5, 10), unlistAt: daysFromNow(70, 23),
       shown: true, privateLink: null, saleStart: daysFromNow(7, 12), saleEnd: daysFromNow(40, 23), lowThreshold: 0,
       discountPct: 10, discount: null,
       limits: { person: '2' },
@@ -1630,7 +1630,7 @@
       description: '重新上架流程的測試資料：成員「24CE Skateboard」已下架、「刺繡 Logo 老帽」上架中。保存的上架、下架、開賣、停售時間都還沒到，按「上架」會成功。',
       members: [{ productId: 'wy-24ce-skateboard' }, { productId: 'wy-bundle-cap' }],
       lockSets: null, alloc: {},
-      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      listed: false, listAt: null, unlistAt: null, onSale: false,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 10, discount: null, sales: null,
       paused: { listAt: daysFromNow(-14, 10), unlistAt: daysFromNow(80, 23), saleStart: daysFromNow(5, 12), saleEnd: daysFromNow(45, 23), onSale: true }
@@ -1641,7 +1641,7 @@
       description: '重新上架流程的測試資料：下架前排的開賣與停售時間都已過，按「上架」會被擋下並列出已過的時間，什麼都不會改。',
       members: [{ productId: 'wy-24ce-rug' }, { productId: 'wy-26ms-socks' }],
       lockSets: null, alloc: {},
-      cap: null, listed: false, listAt: null, unlistAt: null, onSale: false,
+      listed: false, listAt: null, unlistAt: null, onSale: false,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: 5, discount: null, sales: null,
       paused: { listAt: daysFromNow(-30, 10), unlistAt: daysFromNow(60, 23), saleStart: daysFromNow(-3, 12), saleEnd: daysFromNow(-1, 23), onSale: true }
@@ -1651,7 +1651,7 @@
       id: 'nick-recap-set', persona: 'nick', name: '白趴回顧組', img: '26ms-t-shirt-w-02.jpeg',
       description: '白趴收官紀念：26MS 白 Tee＋襪子。',
       members: [{ productId: 'wy-26ms-tshirt-white' }, { productId: 'wy-26ms-socks' }],
-      cap: null, listed: true, listAt: null, unlistAt: null,
+      listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: '2026-08-20T23:59:00', lowThreshold: 0,
       discountPct: null, discount: null,
       sales: { units: 60, gross: 'NT$144,000', net: 'NT$122,400' },
@@ -1662,7 +1662,7 @@
       id: 'nick-internal-set', persona: 'nick', name: '內部測試組', img: 'wyagl-cap-generated.webp',
       description: '內部測試用，不對外。',
       members: [{ productId: 'wy-bundle-cap' }, { productId: 'wy-bundle-lowtop-sneakers' }],
-      cap: null, listed: false, listAt: null, unlistAt: null,
+      listed: false, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null, sales: null
     },
@@ -1671,7 +1671,7 @@
       id: 'nick-draft-set', persona: 'nick', name: '新組合', img: null,
       description: '',
       members: [{ productId: 'wy-26ms-tshirt-red' }, { productId: 'wy-26ms-socks' }],
-      cap: null, listed: false, listAt: null, unlistAt: null,
+      listed: false, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null, draft: true
     }
@@ -1951,7 +1951,7 @@
        basePrice    string                              baseAmount 的顯示字串（有折扣時頁面畫成刪除線原價）
        currency     'USD' | 'TWD'
        stockAvail   number | Infinity                   組合可售量（ListingState.bundleQty）
-       stockCap     number | null                       ＝seed.cap（給 e-shop 列的 data-stock-cap）
+       stockCap     null                                D513：組合包販售上限退場，固定 null（e-shop 列的 data-stock-cap 照舊讀）
      store.getBundle(id) 維持回 seed 本體（頁面改三開關時直接寫它）。 */
   function moneyOfPersona(n) {
     if (n === null || n === undefined || isNaN(n)) return '—';
@@ -2005,7 +2005,7 @@
       baseAmount: baseAmount, baseHi: baseHi, basePrice: rangeText(baseAmount, baseHi),
       priceAmount: priceAmount, priceHi: priceHi, price: rangeText(priceAmount, priceHi),
       currency: persona() === 'nick' ? 'TWD' : 'USD',
-      stockAvail: stockAvail, stockCap: (seed.cap === undefined) ? null : seed.cap
+      stockAvail: stockAvail, stockCap: null
     });
   };
   window.ztorGetAuction = function (id) {
