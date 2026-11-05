@@ -588,7 +588,7 @@
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vault-access.css` — .vault-access, .vault-reachline, .vault-access__head, .vault-method, .vault-method__head ｜ vault-access.css · 媒體庫「存取權限」分頁（2026-10-09）
 - `vault-list.css` — .vault-shell, .vault-stage, .vault-list, .vault-list__head, .vault-list__label ｜ Ztor — Vault list（媒體庫的庫房列表，左側欄）
-- `vault-open.css` — .vault-open, .vault-open__head, .vault-open__tabs, .vault-way, .vault-way__head ｜ Ztor — Vault open（媒體庫「開啟方式」：條件開啟｜鑰匙開啟 分頁）
+- `vault-open.css` — .vault-open, .vault-open__row, .vault-open__rowhead, .vault-open__rowtext, .vault-open__title ｜ Ztor — Vault open（媒體庫「開啟方式」：條件開啟、鑰匙開啟兩個開關）
 - `vault-overview.css` — .vault-ov, .vault-ov__pair, .vault-ov__viewer, .vault-ov__itemname, .vault-ov__tags ｜ vault-overview.css · 媒體庫「總覽」分頁的卡片內版面（2026-10-09）
 - `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板
 - `vault-stage.css` — .vault-bar, .vault-bar__title, .vault-bar__sched, .vault-bar__name, .vault-bar__nameinput ｜ Ztor — Vault stage（媒體庫主欄：標頭、成效 bento、內容卡片）

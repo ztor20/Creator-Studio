@@ -569,7 +569,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
   - **添加入口兩種（2026-11-05，UI-CHANGES 四百六十七）**：空庫房拿掉 `.vault-pool` 灰底（`--empty`），只留滿版投放區 `.upload-tile.vault-drop`（大加號、「添加內容」、一行檔案類型，UI-CHANGES 四百六十八）；已有內容時 `.vault-card--add` 是卡片牆最後一張，與內容卡同高，正中央寫「添加」與一行檔案類型。庫房頁與建立流程第 2 步共用 `poolHtml`。
   - **卡片**：縮圖 2:3（`--img-portrait`）、名稱、一行任務（S86）＋看得到的人數；檢視身分開著時人數換成已解開／需要條件／未解開／上鎖小標；點整張卡開單件設定抽屜（原型原有，預覽加 `.mpreview--portrait`）。
   - **建立流程**：左欄「新增庫房」開全畫面 `.wizard.vault-wizard`（取名 → 放內容 → 誰開得了）；第 1 步繼續＝建立草稿；第 2、3 步與頁面共用 `poolHtml`／`openHtml`；發布走頁面同一個發布彈窗。第 3 步底列只有上一步與上架，草稿自動存（UI-CHANGES 四百七十）。
-  - **開啟方式開關（2026-11-05，UI-CHANGES 四百七十、UIA-335）**：`openHtml` 由分頁改成兩列 `.vault-open__row`，每列一個 `.switch[data-vault-way]`；`toggleWay` 處理。`state.wayOpen` 記條件開關，`state.rulesOff` 收著關掉時的方法；鑰匙開關是庫房欄位 `keyWay`（`V.keyWay`，D515）。
+  - **開啟方式開關（2026-11-05，UI-CHANGES 四百七十、UIA-335）**：`openHtml` 由分頁改成兩列 `.vault-open__row`，每列一個 `.switch[data-vault-way]`；`toggleWay` 處理。`state.wayOpen` 記條件開關（進庫方法改成橫卡、再加一種方法是外框按鈕，UI-CHANGES 四百七十五），`state.rulesOff` 收著關掉時的方法；鑰匙開關是庫房欄位 `keyWay`（`V.keyWay`，D515）。
   - **分享連結**：標頭「分享」開 `[data-vault-sharepop]` 彈窗（Link field，草稿與已下架停用），取代存取權限分頁的分享卡。
   - **檢視身分**：仍在頁首下拉（`lens()`、`renderGate`、`renderViewAs` 不變）；左欄人數、成效第一格、卡片小標跟著換。
   - **JS**：`renderRail`／`renderHead`／`renderBento`／`renderMain`（含 `cardHtml`、`openHtml`）／`renderWizard`；事件委派在 document（`data-vault-act`、`data-vault-way`、`data-rule-add`、`data-wiz*`），因為頁面與建立流程畫的是同一份。`renderDoor`、總覽與存取權限分頁、`startDraft`、`askDelete`／`startRename` 已撤除（墓碑註解留在檔內）。
