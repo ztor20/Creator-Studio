@@ -371,7 +371,20 @@
     }
     return false;
   }
+  /* 2026-11：各交付版是獨立網址，清單在完整版網址的 js/release-links.js；本版只顯示跳到其他版本的選單。 */
+  function relLinks() {
+    var list = (window.ZTOR_RELEASES || []).filter(function (r) { return r.key !== 'release2.2'; });
+    if (!list.length) return '';
+    return '<select class="ztd__select" data-rel-go aria-label="Other versions" style="margin-top:9px"><option value="">其他版本（另開網址）</option>'
+      + list.map(function (r) { return '<option value="' + r.url + '">' + r.name + '</option>'; }).join('') + '</select>';
+  }
   function loadVersions() {
+    try {
+      var rl = document.createElement('script');
+      rl.src = 'https://ztor-v2-creator-studio.vercel.app/js/release-links.js'; rl.async = true;
+      rl.onload = function () { paint(); };
+      document.head.appendChild(rl);
+    } catch (e) {}
     try {
       fetch(SITE_ROOT + 'feature-scope-map.md').then(function (r) { return r.ok ? r.text() : null; })
         .then(function (t) { if (t) { parseScopeMd(t); if (root.classList.contains('is-open')) paint(); applyVersion(); } })
@@ -632,6 +645,7 @@
       +       '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
       /* ★ RELEASE2.2 FROZEN：本分支不提供版本切換，只顯示鎖定說明 */
       +         '<div class="ztd__select-desc">release2.2（凍結版）— 本站是 release2.2（E-Shop）交付依據，版本鎖死；改版紀錄見 RELEASE2.2-CHANGES.md</div>'
+      +         relLinks()
       +         '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
       +       '</div>'
       +       '<div class="ztd__group"><p class="ztd__group-label">Persona · 資料人格</p>'
@@ -900,6 +914,8 @@
 
   /* 版本 dropdown（原生 select 觸發 change 而非 click）：套用選定版本 */
   root.addEventListener('change', function (e) {
+    var go = e.target.closest('select[data-rel-go]');
+    if (go && go.value) { location.href = go.value + location.pathname + location.search + location.hash; return; }
     var sel = e.target.closest('select[data-ver-select]');
     if (!sel) return;
     state.version = sel.value; update();
