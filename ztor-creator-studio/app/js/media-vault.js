@@ -667,21 +667,6 @@
   /* ── 門條 ───────────────────────────────────────────────── */
   /* 一條條件晶片。移除鈕是每個 chip 自己的按鈕，不是列尾一個共用的垃圾桶
      ——刪掉「哪一條」必須在按下去之前就確定。座標是「第幾組:第幾條」。 */
-  function ruleChip(r, gi, ri, removable) {
-    var l = V.ruleLabel(r);
-    var text = r.t === "tier"
-      ? '<span class="vault-rule__verb">' + tx("Tier", "分級") + " ≥ </span>" + esc(tierName(r.v))
-      : l.solo ? esc(V.t(l.text))
-      : '<span class="vault-rule__verb">' + esc(V.t(l.verb)) + " · </span>" + esc(V.t(l.text));
-    return '<span class="chip chip--static' + (removable ? " chip--removable" : "") + ' vault-rule">' +
-      icon(l.icon) + text +
-      (removable
-        ? '<button type="button" class="chip__remove" data-rule-remove="' + gi + ":" + ri + '" ' +
-          'aria-label="' + esc(tx("Remove condition", "移除條件")) + '">' + icon("x") + "</button>"
-        : "") +
-      "</span>";
-  }
-
   /* 一種進得來的方法的人數：同一支 reachAll，只餵「只有這一組、沒有鑰匙」的庫房。空的方法誰都不放行，不寫人數。 */
   function methodReach(g) {
     if (!g || !(g.items || []).length) return null;
@@ -692,21 +677,31 @@
      只有兩種：條件開啟（符合任一種進庫方法就能開）｜鑰匙開啟（拿到鑰匙就能開，不看條件），各一個開關，開了才展開設定。
      頁面與建立流程第 3 步畫的是同一份（openHtml），所以事件一律掛在 document、靠 .vault-open 認出來。
      鑰匙（S123）不在版本內時只剩條件開啟一列。 */
+  /* 一個條件一行（2026-11-05，UI-CHANGES 四百七十五）：類型｜內容｜移除。分級寫「分級 ≥」＋分級名；單獨成立的條件（如支持過）只有類型一欄，內容留空。 */
+  function condRowHtml(r, gi, ri) {
+    var l = V.ruleLabel(r), type, val = "", solo = false;
+    if (r.t === "tier") { type = tx("Tier", "分級") + " ≥"; val = esc(tierName(r.v)); }
+    else if (l.solo) { type = esc(V.t(l.text)); solo = true; }
+    else { type = esc(V.t(l.verb)); val = esc(V.t(l.text)); }
+    return '<div class="vault-cond"><span class="vault-cond__type' + (solo ? " vault-cond__type--solo" : "") + '">' + icon(l.icon) + "<span>" + type + "</span></span>" +
+      (solo ? "" : '<span class="vault-cond__val">' + val + "</span>") +
+      '<button type="button" class="btn btn--icon btn--ghost btn--sm" data-rule-remove="' + gi + ":" + ri + '" aria-label="' + esc(tx("Remove condition", "移除條件")) + '">' + icon("x") + "</button></div>";
+  }
+  /* 一種方法一張橫卡：左欄窄（方法 N、符合人數），右欄是這種方法的條件列，最後一列「加條件」。 */
   function methodHtml(g, gi) {
     var items = g.items || [];
     var n = methodReach(g);
-    return (gi ? '<div class="vault-door__sep"><span>' + esc(L("vault.ac.or")) + "</span></div>" : "") +
-      '<div class="vault-way__item"><div class="vault-way__item-head"><span class="vault-way__item-name">' + esc(L("vault.ac.method", { n: gi + 1 })) + "</span>" +
-        (n == null ? "" : '<span class="vault-way__item-n' + (n ? "" : " vault-way__item-n--zero") + '">' +
-          L(n === 1 ? "vault.ac.method.count.one" : "vault.ac.method.count", { n: num(n) }) + "</span>") + "</div>" +
-      (items.length >= 2 ? '<div class="vault-door__all">' + esc(L("vault.ac.all")) + "</div>" : "") +
-      '<div class="vault-door__chips">' + items.map(function (r, ri) { return ruleChip(r, gi, ri, true); }).join("") +
-        /* 一種方法最多 10 個條件（D497）：到上限「再加一個」停用，旁邊一句說明上限。 */
-        (items.length >= V.limits.items
-          ? '<button type="button" class="vault-door__add" disabled aria-label="' + esc(L("vault.ac.add.aria")) + '">' + icon("plus") + esc(L("vault.ac.add")) + "</button>" +
-            '<span class="vault-way__note">' + esc(L("vault.ac.limit.items", { n: V.limits.items })) + "</span>"
-          : '<button type="button" class="vault-door__add" data-rule-add="' + gi + '" aria-label="' + esc(L("vault.ac.add.aria")) + '">' +
-            icon("plus") + esc(L("vault.ac.add")) + "</button>") + "</div></div>";
+    /* 一種方法最多 10 個條件（D497）：到上限「加條件」停用，下面一句說明上限。 */
+    var full = items.length >= V.limits.items;
+    return '<div class="vault-way__card"><div class="vault-way__who"><span class="vault-way__name">' + esc(L("vault.ac.method", { n: gi + 1 })) + "</span>" +
+        (n == null ? "" : '<span class="vault-way__count' + (n ? "" : " vault-way__count--zero") + '">' +
+          L(n === 1 ? "vault.method.count.one" : "vault.method.count", { n: num(n) }) + "</span>") + "</div>" +
+      '<div class="vault-way__conds">' +
+        (items.length >= 2 ? '<p class="vault-way__hint">' + esc(L("vault.ac.all")) + "</p>" : "") +
+        items.map(function (r, ri) { return condRowHtml(r, gi, ri); }).join("") +
+        '<button type="button" class="vault-cond vault-cond--add"' + (full ? " disabled" : ' data-rule-add="' + gi + '"') + ' aria-label="' + esc(L("vault.ac.add.aria")) + '">' +
+          icon("plus") + "<span>" + esc(L("vault.open.cond.add")) + "</span></button>" +
+        (full ? '<p class="vault-way__hint">' + esc(L("vault.ac.limit.items", { n: V.limits.items })) + "</p>" : "") + "</div></div>";
   }
   function condWayHtml(f) {
     var gs = f.rules || [];
@@ -717,17 +712,16 @@
     }
     /* 一座庫房最多 5 種方法（D497）：到上限「再加一種方法」停用，旁邊一句說明上限。 */
     var full = gs.length >= V.limits.methods;
-    return '<div class="vault-way"><div class="vault-way__list">' + gs.map(methodHtml).join("") + "</div>" +
-      '<div class="vault-way__actions"><button type="button" class="btn btn--ghost btn--sm vault-way__more"' + (full ? " disabled" : " data-group-add") + ">" + icon("plus") + "<span>" + esc(L("vault.ac.addway")) + "</span></button>" +
-        (full ? '<span class="vault-way__note">' + esc(L("vault.ac.limit.methods", { n: V.limits.methods })) + "</span>" : "") + "</div></div>";
+    return '<div class="vault-way"><div class="vault-way__list">' + gs.map(methodHtml).join("") +
+      '<button type="button" class="vault-way__add"' + (full ? " disabled" : " data-group-add") + '><span class="vault-way__add-ico">' + icon("plus") + "</span><span>" + esc(L("vault.ac.addway")) + "</span></button></div>" +
+      (full ? '<p class="vault-way__note">' + esc(L("vault.ac.limit.methods", { n: V.limits.methods })) + "</p>" : "") + "</div>";
   }
   function keyWayHtml(f) {
     var keys = (f.keys || []).slice().reverse();
-    var small = keys.length ? " btn--sm" : "";
-    var gift = '<button type="button" class="btn btn--outline' + small + '" data-vault-share="new" data-share-intent="gift">' + icon("gift") + "<span>" + esc(L("vault.ac.direct.gift")) + "</span></button>";
-    var nfc = '<button type="button" class="btn btn--outline' + small + '" data-vault-share="new" data-share-intent="nfc">' + icon("scan") + "<span>" + esc(L("vault.ac.direct.nfc")) + "</span></button>";
-    /* 空的時候只有兩顆入口按鈕；有鑰匙之後所有動作收在清單下面同一排，最右「管理鑰匙」開抽屜看全部鑰匙與連結。 */
-    if (!keys.length) return '<div class="vault-way"><div class="vault-way__actions">' + gift + nfc + "</div></div>";
+    /* 一個入口方塊（滿版，同「再加一種方法」）：點開分享抽屜，在抽屜裡再選「送給一位粉絲」或「做成 NFC 商品」。 */
+    var adds = '<button type="button" class="vault-way__add" data-vault-share="new"><span class="vault-way__add-ico">' + icon("plus") + "</span><span>" + esc(L("vault.ac.key.new")) + "</span></button>";
+    /* 空的時候只有這個入口方塊；有鑰匙之後鑰匙一把一行放進外框卡，下面是入口方塊，最下面靠右「管理鑰匙」開抽屜看全部鑰匙與連結。 */
+    if (!keys.length) return '<div class="vault-way">' + adds + "</div>";
     var list = keys.map(function (k) {
       return '<div class="vault-key' + (k.revoked ? " vault-key--revoked" : "") + '"><span class="vault-key__main"><span class="vault-key__code">' + esc(k.code) + "</span>" +
         '<span class="vault-key__label">' + esc(V.t(k.label)) + "</span></span>" +
@@ -738,9 +732,18 @@
             '<button type="button" class="btn btn--ghost btn--sm" data-vkey-revoke="' + esc(k.id) + '">' + esc(L("vault.ac.keys.revoke")) + "</button>") +
         "</div>";
     }).join("");
-    return '<div class="vault-way"><div class="vault-way__list">' + list + "</div>" +
-      '<div class="vault-way__actions">' + gift + nfc +
-        '<button type="button" class="btn btn--ghost btn--sm vault-way__manage" data-vault-share="keys">' + icon("key") + "<span>" + esc(L("vault.btn.share-links")) + "</span></button></div></div>";
+    return '<div class="vault-way"><div class="vault-way__keys">' + list + "</div>" + adds +
+      '<div class="vault-way__actions"><button type="button" class="btn btn--ghost btn--sm vault-way__manage" data-vault-share="keys">' + icon("key") + "<span>" + esc(L("vault.btn.share-links")) + "</span></button></div></div>";
+  }
+  /* 開關開著的條件：有進庫方法就一定開著；沒有方法時看創作者有沒有打開（開了才看得到「加條件」）。
+     鑰匙開關是庫房設定 V.keyWay（D515）：還有有效鑰匙就鎖在開，規格沒有整批停用鑰匙，要關得先逐把撤銷。 */
+  function condOn(f) { return (f.rules || []).length > 0 || !!state.wayOpen[f.id + ":cond"]; }
+  function wayRowHtml(id, title, help, desc, n, on, locked, body) {
+    return '<div class="vault-open__row"><div class="vault-open__rowhead"><div class="vault-open__rowtext">' +
+        '<span class="vault-open__title">' + esc(title) + help + "</span>" + desc + "</div>" + n +
+        '<button type="button" class="switch' + (on ? " switch--on" : "") + '" role="switch" aria-checked="' + on + '" aria-label="' + esc(title) + '"' +
+          (locked ? ' aria-disabled="true" disabled' : "") + ' data-vault-way="' + id + '"></button></div>' +
+      (on ? body : "") + "</div>";
   }
   /* 開關開著的條件：有進庫方法就一定開著；沒有方法時看創作者有沒有打開（開了才看得到「加條件」）。
      鑰匙開關是庫房設定 V.keyWay（D515）：還有有效鑰匙就鎖在開，規格沒有整批停用鑰匙，要關得先逐把撤銷。 */
