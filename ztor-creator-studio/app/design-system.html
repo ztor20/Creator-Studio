@@ -5610,14 +5610,13 @@ Letterpress cover, uncoated stock.</textarea></div>
       <div class="form-section__head form-section__head--actions"><h3 class="form-section__title"><span data-en>Quantity</span><span data-zh>數量</span></h3><div class="form-section__head-actions"><span class="form-tally"><span class="form-tally__k"><span data-en>Can sell</span><span data-zh>最多可賣</span></span><span class="form-tally__v">60<small><span data-en>sets</span><span data-zh>組</span></small></span></span></div></div>
       <div class="stack">
         <div class="form-ask"><div class="form-ask__t"><span data-en>Lock stock for this bundle?</span><span data-zh>要鎖定庫存給這個組合嗎？</span></div><div class="form-ask__s"><span data-en>Locked stock can’t be bought as single items. Without a lock, the bundle shares what’s left with single sales — first come, first served.</span><span data-zh>鎖定的庫存不能單買；不鎖定就跟單品共用剩下的量，先搶先贏。</span></div><div class="segmented radio-cards" role="radiogroup"><button type="button" class="segmented__btn" role="radio" aria-checked="false"><span class="radio-card__text"><span class="radio-card__title"><span data-en>Don’t lock</span><span data-zh>不鎖定</span></span></span></button><button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true"><span class="radio-card__text"><span class="radio-card__title"><span data-en>Lock</span><span data-zh>鎖定</span></span></span></button></div><div class="form-ask__body"><div class="form-ask__row"><span class="form-ask__row-k"><span data-en>Sets to lock</span><span data-zh>鎖定組數</span></span><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">sets</span><input class="amount-field__input input zstep__input" type="number" value="20" aria-label="Locked sets"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div></div></div>
-        <div class="form-ask"><div class="form-ask__t"><span data-en>Set your own sales cap?</span><span data-zh>要另設販售上限嗎？</span></div><div class="form-ask__s"><span data-en>A cap only limits how many sets this bundle sells. It doesn’t lock stock.</span><span data-zh>上限只限制這個組合賣幾組，不鎖庫存。</span></div><div class="segmented radio-cards" role="radiogroup"><button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true"><span class="radio-card__text"><span class="radio-card__title"><span data-en>Unlimited</span><span data-zh>不限量</span></span></span></button><button type="button" class="segmented__btn" role="radio" aria-checked="false"><span class="radio-card__text"><span class="radio-card__title"><span data-en>Limited</span><span data-zh>限量</span></span></span></button></div></div>
       </div>
     </section>
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-text"><code>.form-ask</code> ＞ <code>__t</code>（問句）· <code>__s</code>（說明）· <code>.segmented.radio-cards</code>（二選一）· <code>__body[hidden]</code>（選了才出現）＞ <code>__row</code>（<code>__row-k</code> 名稱＋控制項推到最右，<code>.amount-field</code> 固定 132px；下面接 <code>.lockset</code> 時加 <code>__row--lockset</code> 讓輸入框右緣對齊表格「已鎖定」欄）。<code>.form-ask</code> 每題自己一個外框（2026-10-27，原本題與題之間一條細線退場），題與題的間距由容器 gap 持有。<code>.form-tally</code> ＞ <code>__k</code>（名稱）· <code>__v</code>（大數字，內含 <code>small</code> 單位），放在 <code>.form-section__head-actions</code> 槽。狀態：<code>__body</code> 顯示／<code>[hidden]</code>。</p>
-    <p class="field-text">消費：<code>create-bundle.html</code>（第一個）。<br><code>ds-components/form-ask.css</code></p>
+    <p class="field-text">消費：<code>create-bundle.html</code>、<code>bundle-detail.html</code>、<code>js/bundle-editor.js</code>（建立活動組合包）用 <code>__body</code>／<code>__row</code>／<code>.form-tally</code>，掛在 <code>.control-group</code> 開關列底下。2026-11-05（D513）起組合包的問句二選一退場（鎖定改開關、販售上限退場），<code>.form-ask</code> 問句本身暫無產品頁消費者，只留這張 demo。<br><code>ds-components/form-ask.css</code></p>
   </div>
   </details>
 </section>
@@ -12968,19 +12967,10 @@ Letterpress cover, uncoated stock.</textarea></div>
             <span class="salloc__nolock" data-i18n="stock.free">Unlocked</span>
             <span class="salloc__qty">72</span>
           </div>
-          <div class="salloc__row salloc__row--cap">
-            <span class="salloc__name">
-              <span><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></span>
-              <span class="salloc__sub" data-i18n="cb.total.hint">Hard cap · still limited by member stock</span>
-            </span>
-            <span class="salloc__qty salloc__qty--muted">—</span>
-            <span class="salloc__lock"><div class="amount-field amount-field--suffix"><input class="input amount-field__input" value="12"><span class="amount-field__unit" data-i18n="stock.unit-pcs">pcs</span></div></span>
-            <span class="salloc__qty">12</span>
-          </div>
           <div class="salloc__row salloc__row--free">
             <span class="salloc__name">
               <span data-i18n="stock.bundle-qty">Bundle sellable</span>
-              <span class="salloc__sub"><span data-en>Capped by Total quantity</span><span data-zh>受組合上限限制</span></span>
+              <span class="salloc__sub"><span data-en>Limited by member stock</span><span data-zh>受成員庫存限制</span></span>
             </span>
             <span class="salloc__qty">12</span>
           </div>

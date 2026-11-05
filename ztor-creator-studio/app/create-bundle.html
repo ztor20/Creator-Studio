@@ -20,12 +20,12 @@
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2"><!-- 2026-09-21 第 2 批：限量二選一改 .segmented.radio-cards（同第 1 批的定價與數量段） -->
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2"><!-- 2026-09-21 第 2 批：.segmented.radio-cards 二選一 -->
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 電影關聯的 tag-input／chip 由 partials/film-picker.js 注入；預覽卡的票種／規格 chip 由頁尾腳本注入 -->
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stepper.css?v=r2.2"><!-- .zstep 步進器：每組張數、每組用量、折扣 %、鎖定套數、限量上限、限時折扣 % -->
+<link rel="stylesheet" href="ds-components/stepper.css?v=r2.2"><!-- .zstep 步進器：每組張數、每組用量、折扣 %、鎖定套數、限時折扣 % -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 2026-09-21 D296：票券表的允許票種勾選（.zcheck） -->
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2"><!-- 原價算式列（.calc-list 內的 .kv）與「跟著活動」一列 -->
 <link rel="stylesheet" href="ds-components/follow-field.css?v=r2.2"><!-- D342：上架與開賣「跟隨活動／另設」 -->
@@ -43,7 +43,7 @@
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/price-ladder.css?v=r2.2"><!-- 2026-10-12 改版：價格階梯（原價合計→折扣→粉絲實付，區間小字） -->
 <link rel="stylesheet" href="ds-components/member-table.css?v=r2.2"><link rel="stylesheet" href="ds-components/member-picker.css?v=r2.2"><!-- 2026-10-28 組合物挑選：空狀態大按鈕＋多選彈窗 --><!-- 2026-10-12 改版：組合物表（商品＋票券同一張，票券列可展開） -->
-<link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：問句設定塊（鎖定／販售上限）、分類標、標題列讀數 -->
+<link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：鎖定組數列、分類標、標題列讀數 -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2"><!-- 2026-10-12 改版：「加入組合物」彈窗的商品／活動票券分頁 -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398／D456：組合包限購（自己的設定、獨立計算；js/purchase-limits.js） -->
 <link rel="stylesheet" href="ds-components/rules-group.css?v=r2.2"><!-- 2026-10-21：購買條件與限購整併成一個群組 -->
@@ -290,8 +290,9 @@
       <div class="stack">
         <!-- 2026-10-30（使用者：「組合包也要照這個方向改」，同建立商品的 lab-stock-settings）：數量區改成三個開關——
              開啟不限量（賣完轉預購）／開啟限量標籤（前台標記）／鎖定庫存（沿用既有鎖定機制：鎖定組數＋逐成員分配，D266／D268）。
-             不限量與限量標籤互斥。原「販售上限」（限量二選一＋上限組數，D292／D480）退場，下方原 markup 留著但收起、狀態固定不限量，
-             鎖定的二選一同樣收起、由第三個開關代操作。 -->
+             不限量與限量標籤互斥。
+             墓碑 2026-11-05（D513）：「販售上限」（限量二選一＋上限組數，D292／D480）與鎖定的二選一 markup 移除，鎖定只由第三個開關控制；
+             開著時可售＝鎖定套數（可以是 0），關閉才是不鎖定。 -->
         <div class="control-group" data-cb-stock-sw>
           <div class="control-row">
             <div>
@@ -318,7 +319,7 @@
           </div>
           <div class="form-ask__body control-group__body" data-cb-lock-body hidden>
             <div class="form-ask__row form-ask__row--lockset">
-              <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-cb-sets-hint></span><span class="lockset__sets-hint" data-cb-lock-auto hidden></span></span><!-- D480：限量時鎖定跟著限量走，二選一收起、鎖定組數唯讀，改顯示這一句（2026-10-27 放在鎖定組數標籤底下） -->
+              <span class="lockset__sets-titles"><span class="form-ask__row-k" data-i18n="cb.lock.sets">Sets to lock</span><span class="lockset__sets-hint" data-cb-sets-hint></span></span>
               <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="0" step="1" value="" id="cb-lock-sets" aria-label="Locked sets" data-i18n-aria-label="cb.lock.sets" disabled><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
             </div>
             <div class="field bd-field--table" data-cb-alloc-field hidden>
@@ -327,30 +328,6 @@
               </div>
               <p class="lctl__note" data-i18n="stock.restock-hint">Restocks land in unlocked stock; locked ones need to lock again</p>
             </div>
-          </div>
-        </div>
-        <!-- 退場的舊控制項（狀態與 JS 仍引用，不顯示）：販售上限二選一、鎖定二選一 -->
-        <div hidden>
-        <div class="form-ask">
-          <div class="form-ask__t" data-i18n="cb.cap.q">Set your own sales cap?</div>
-          <div class="form-ask__s" data-i18n="cb.cap.s">A cap only limits how many sets this bundle sells. It doesn’t lock stock.</div>
-          <div class="segmented radio-cards" role="radiogroup" aria-label="Limit" data-i18n-aria-label="cpp.bd.sp.limit" id="cb-edition">
-            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-edition="unlimited"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.qty.unlim">Unlimited</span></span></button>
-            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-edition="limited" data-feat="S45"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.bd.avail.limited">Limited</span></span></button>
-          </div>
-          <div class="form-ask__body" data-when-cb-edition="limited" data-feat="S45" hidden>
-            <div class="form-ask__row">
-              <span class="form-ask__row-k" data-i18n="cb.cap.label">Sales cap</span>
-              <span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit" data-i18n="cpp.bd.sp.unit.group">sets</span><input class="amount-field__input input zstep__input" type="number" min="1" step="1" value="" id="cb-total" aria-label="Sales cap" data-i18n-aria-label="cb.cap.label"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span>
-            </div>
-            <div class="field__hint field__hint--warn" data-cb-capmax hidden></div>
-          </div>
-        </div>
-          <div class="form-ask">
-          <div class="segmented radio-cards" role="radiogroup" aria-label="Lock stock" data-i18n-aria-label="cb.lock.q" data-cb-lockmode>
-            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-cb-lock="no"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.no">Don’t lock</span></span></button>
-            <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cb-lock="yes"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cb.lock.yes">Lock</span></span></button>
-          </div>
           </div>
         </div>
       </div>
@@ -721,7 +698,7 @@
    但實作仍是本頁自己的表單（取捨見 UI-CHANGES 五十四）：電子商店脈絡多了「挑活動」步驟、三開關、限時折扣、
    電影關聯、十格素材、嵌入建立商品、ListingState 的鎖定分配——把這些塞進共用編輯器要動到募資兩頁共用的
    渲染迴圈；這裡改成共用**元件 CSS＋文案 key＋同一套算式語意**，實作不合流。
-   狀態→畫面：members／票券／折扣／鎖定套數／限量／名稱全部改完就跑 recompute()，就地更新推導值；
+   狀態→畫面：members／票券／折扣／鎖定套數／名稱全部改完就跑 recompute()，就地更新推導值；
    輸入欄不重繪（重繪會丟游標），只有票種表與已加入表在成員變動時重畫。
    庫存與可售套數一律問 ListingState（bundleQty／bundleMaxSets／applyBundleLock），本頁不自己算 min。 */
 (function () {
@@ -752,9 +729,6 @@
   const itemsTableEl = document.querySelector('[data-cb-items-table]');
   const notesEl = document.querySelector('[data-cb-notes]');
   const addTile = document.getElementById('cb-add-tile');
-  const editionGrid = document.getElementById('cb-edition');
-  const totalInput = document.getElementById('cb-total');
-  const capHintEl = document.querySelector('[data-cb-capmax]');
   const salePctEl = document.getElementById('cb-sale-percent');
   const fanHost = document.querySelector('[data-cb-fan]');
   const footFinal = document.querySelector('[data-cb-foot-final]');
@@ -779,8 +753,8 @@
   const TIX_KEY = 'tix:member';   /* 一個組合只有一筆票券成員（D292 裁決十六），固定一把 key */
   const LS = window.ListingState;
   const products = {};                       /* 成員 id → 商品（帶池與鎖定） */
-  const bundleDraft = { id: DRAFT_ID, members: [], cap: null, lockSets: null, alloc: {} };
-  const state = { discountOn: false, nameTouched: false, avail: 'unlimited' };
+  const bundleDraft = { id: DRAFT_ID, members: [], lockSets: null, alloc: {} };
+  const state = { discountOn: false, nameTouched: false };
   /* 票券成員的工作狀態：挑到的活動、勾選的允許票種、整組張數 */
   const tix = { event: null, tierIds: [], qty: 1 };
   /* D397：從活動詳情進來（?ev=<id>&from=event-detail）時記下那場與回程網址；預帶與回程見頁尾 */
@@ -903,7 +877,6 @@
   const saleStart = document.getElementById('cb-sale-start');
   const saleEnd = document.getElementById('cb-sale-end');
   const saleHint = document.getElementById('cb-sale-hint');
-  const limitedEdition = () => state.avail === 'limited';
   /* 最終版（S105）：限時折扣改在購買條件設（discTime），價格階梯的限時折扣列收起、不參與算價與就緒檢查（2026-10-22 使用者裁決） */
   const saleOn = () => !(window.ztorPurchaseConds && window.ztorPurchaseConds.uniOn()) && !!(saleToggle && saleToggle.getAttribute('aria-checked') === 'true');
 
@@ -965,29 +938,19 @@
   const whoText = w => w === 'tix' ? T('cpp.bd.sp.who.tix', 'tickets') : String(w || '');
   const lockN = () => LS ? LS.bundleLockSets(bundleDraft) : null;
   function lockOver() {
-    if (!setsInput || !LS || limitedEdition()) return false;   /* D480：限量時超量由 capOver 擋，不重複報 */
+    if (!setsInput || !LS) return false;
     const raw = setsInput.value.trim(); if (raw === '') return false;
     const n = Math.floor(Number(raw)); if (isNaN(n)) return false;
     return n > capWho().n;
   }
   function lockHintText() {
-    if (limitedEdition()) return '';   /* D480：限量時鎖定跟著限量走，說明在 data-cb-lock-auto */
     const c = capWho();
     if (c.n === Infinity) return T('cpp.bd.sp.lock.none', 'Add a member first');
-    if (lockOver()) return T('cpp.bd.sp.lock.over', 'Over the ceiling of {n} sets (limited by {who})').replace('{n}', fmtInt(c.n)).replace('{who}', whoText(c.who));
+    /* D513：超過成員還能鎖的量＝擋下並寫出缺幾套、受誰限制 */
+    if (lockOver()) return T('cb.lock.short', 'Members can only lock {max} sets — {k} short (limited by {who})').replace('{max}', fmtInt(c.n)).replace('{k}', fmtInt(Math.floor(Number(setsInput.value)) - c.n)).replace('{who}', whoText(c.who));
     return T(setsInput && setsInput.value.trim() ? 'cb.lock.max' : 'cb.lock.blank', 'Up to {n} sets can be locked.').replace('{n}', fmtInt(c.n));
   }
-  /* 可售套數（受限量之前）：把 cap 暫時拿掉問 ListingState */
-  function setsBeforeCap() {
-    if (!LS || !hasContent()) return null;
-    const keep = bundleDraft.cap; bundleDraft.cap = null;
-    const q = LS.bundleQty(bundleDraft, products); bundleDraft.cap = keep;
-    return q === Infinity ? null : q;
-  }
-  const capN = () => { const c = totalInput ? Math.floor(Number(totalInput.value)) : NaN; return (limitedEdition() && !isNaN(c) && c > 0) ? c : null; };
-  /* D480：限量會自動鎖定成員庫存，上限要看成員還能鎖幾套（數位成員不算，ListingState.bundleMaxSets 已跳過）；建立時已售＝0 */
   const lockableSets = () => (LS && hasContent()) ? LS.bundleMaxSets(bundleDraft, products).max : Infinity;
-  const capOver = () => { const c = capN(), m = lockableSets(); return c !== null && m !== Infinity && c > m; };
   function sellableSets() {
     if (!LS || !hasContent()) return null;
     const q = LS.bundleQty(bundleDraft, products);
@@ -1003,54 +966,17 @@
   function setsWhyText() {
     const s = sellableSets(), c = capWho();
     if (s === null) return '';
-    if (lockN() && !lockOver()) {
-      const t = T('cpp.bd.sp.sets.why.lock', '{lock} locked').replace('{lock}', fmtInt(lockN()));
-      return capN() && capN() < lockN() ? t + T('cpp.bd.sp.sets.capnote', ', capped at {cap}').replace('{cap}', fmtInt(capN())) : t;
-    }
-    if (capN() && (c.n === Infinity || capN() < c.n)) return T('cpp.bd.sp.sets.why.cap', 'Limited by the cap');
+    if (lockN() !== null && !lockOver()) return T('cpp.bd.sp.sets.why.lock', '{lock} locked').replace('{lock}', fmtInt(lockN()));
     if (c.n === Infinity) return '';
     return T('cpp.bd.sp.sets.why.by', 'Limited by {who}')
       .replace('{who}', c.who === 'tix' ? T('cpp.bd.sp.sets.by.tix', 'ticket supply') : T('cpp.bd.sp.sets.by.item', '{name} stock').replace('{name}', String(c.who || '')));
   }
-  /* 限量 hint：前半「成員最多供應 N 組」是同一個上限第 3 次出現，刪；只留「賣完自動售罄」。 */
-  /* 2026-10-12 改版：上限只在超過時說話（使用者拿掉了「賣完自動售罄」那句常駐說明） */
-  function capHintText() {
-    /* D480：上限超過成員還能鎖的套數＝擋下並就地寫出缺幾套、受誰限制 */
-    if (capOver()) { const c = capWho(), m = lockableSets();
-      return T('cb.cap.short', 'Members can only lock {max} sets — {k} short (limited by {who})').replace('{max}', fmtInt(m)).replace('{k}', fmtInt(capN() - m)).replace('{who}', whoText(c.who)); }
-    return '';
-  }
-  /* D480（2026-10-23，主規格 §7.14「組合包：限量與鎖定」）：限量時鎖定＝限量 − 已售（建立時已售 0，所以＝限量），
-     不另外設；鎖定二選一收起、鎖定組數唯讀，改顯示一句「已自動鎖定 N 套」。上限超過成員能鎖的量時不寫進模型（只標紅擋下）。
-     改回不限量時鎖定歸 0、恢復可以自己設（在 edition 切換處處理）。 */
-  function syncLimitLock() {
-    const auto = document.querySelector('[data-cb-lock-auto]');
-    const mode = document.querySelector('[data-cb-lockmode]');
-    const body = document.querySelector('[data-cb-lock-body]');
-    const lim = limitedEdition();
-    if (mode) mode.hidden = lim;
-    if (mode) mode.closest('.form-ask').querySelectorAll(':scope > .form-ask__t, :scope > .form-ask__s').forEach(el => { el.hidden = lim; });   /* 2026-10-27：限量時鎖定自動跟著走，問句與說明收起 */
-    if (!lim) { if (auto) auto.hidden = true; return; }
-    const c = capN();
-    const ok = c !== null && !capOver();
-    bundleDraft.lockSets = ok ? c : null;
-    if (setsInput) setsInput.value = ok ? String(c) : '';   /* 擋下時不寫進鎖定，欄位也不顯示上限數字（與說明句一致） */
-    applyLock();
-    if (body) body.hidden = false;
-    if (auto) {
-      auto.hidden = false;
-      auto.textContent = c === null ? T('cb.lock.auto.empty', 'A limited bundle locks member stock for every set automatically. Fill in the sales cap first.')
-        : !ok ? T('cb.lock.auto.blocked', 'Limited to {cap} sets — nothing is locked yet because members can’t cover that many. Lower the sales cap.').replace('{cap}', fmtInt(c))
-        : T('cb.lock.auto', 'Limited to {cap} sets — {n} sets locked automatically. The lock follows the cap; switch to unlimited to set your own.').replace('{cap}', fmtInt(c)).replace('{n}', fmtInt(ok ? c : 0));
-    }
-  }
-
   /* 數字、錯誤態與可售套數：一律問 ListingState；沒有成員時鎖定 UI 收起 */
   function refreshAlloc() {
     if (!allocEl || !LS) return;
     const has = hasContent();
     if (allocField) allocField.hidden = !has;
-    if (setsInput) setsInput.disabled = !has || limitedEdition();   /* D480：限量時鎖定組數唯讀 */
+    if (setsInput) setsInput.disabled = !has;
     if (!has) { lockBad = false; if (setsHint) { setsHint.textContent = lockHintText(); setsHint.classList.remove('is-over'); } return; }
     const lim = LS.bundleMaxSets(bundleDraft, products);
     const over = lockOver();
@@ -1060,27 +986,24 @@
     void lim;
     lockBad = anyBad || !!over;
   }
-  /* 2026-10-12 改版：「要鎖定庫存給這個組合嗎？」不鎖定／鎖定二選一；選不鎖定＝清空鎖定組數（同既有「空白＝不鎖定」語意） */
-  const lockModeEl = document.querySelector('[data-cb-lockmode]');
+  /* D513：鎖定庫存開關——開著＝鎖定（套數可以是 0）；關閉才是不鎖定、與其他管道共用 */
   const lockBody = document.querySelector('[data-cb-lock-body]');
-  if (lockModeEl) lockModeEl.querySelectorAll('[data-cb-lock]').forEach(btn => btn.addEventListener('click', () => {
-    const yes = btn.dataset.cbLock === 'yes';
-    lockModeEl.querySelectorAll('[data-cb-lock]').forEach(b => { const on = b === btn; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+  function setLockOn(yes) {
     if (lockBody) lockBody.hidden = !yes;
     if (!yes && setsInput) { setsInput.value = ''; bundleDraft.lockSets = null; applyLock(); }
     if (yes && setsInput && setsInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數 */
       const lim0 = lockableSets(), n0 = lim0 === Infinity ? 100 : Math.min(100, lim0);
-      if (n0 >= 1) { setsInput.value = String(n0); bundleDraft.lockSets = n0; applyLock(); }
+      setsInput.value = String(n0); bundleDraft.lockSets = n0; applyLock();
     }
     recompute();
-  }));
-  /* 鎖定套數：空白／0＝不鎖定；填正數＝鎖定 N 套。超過上限不寫進模型（成員會被鎖到負數），只標紅 */
+  }
+  /* 鎖定套數：開關開著時空白＝0；超過上限不寫進模型（成員會被鎖到負數），只標紅 */
   if (setsInput) setsInput.addEventListener('input', () => {
     if (!LS) return;
     const raw = setsInput.value.trim();
     const lim = LS.bundleMaxSets(bundleDraft, products);
-    const n = raw === '' ? null : Math.floor(Number(raw));
-    if (raw === '' || (!isNaN(n) && n >= 0 && n <= lim.max)) { bundleDraft.lockSets = (n === null || n <= 0) ? null : n; applyLock(); }
+    const n = raw === '' ? 0 : Math.floor(Number(raw));
+    if (!isNaN(n) && n >= 0 && n <= lim.max) { bundleDraft.lockSets = n; applyLock(); }
     recompute();
   });
   if (allocEl) allocEl.addEventListener('input', e => {
@@ -1361,8 +1284,6 @@
     if (!bundleName()) add(2, T('cb.why.name', 'Name it first'));
     if (!discInfo().ok) add(2, T('cb.why.disc', 'Discount must be 0–100'));
     if (lockOver() || lockBad) add(2, T('cpp.bd.sp.why.lock', 'Locked sets exceed the ceiling'));
-    if (limitedEdition() && !capN()) add(2, T('cb.why.cap', 'Limited needs a cap'));
-    if (capOver()) add(2, T('cpp.bd.sp.why.cap', 'Cap exceeds what members can supply'));
     if (saleOn()) {
       const sp = salePctInfo();
       const s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
@@ -1422,10 +1343,7 @@
   }
 
   function recompute() {
-    /* 限量硬上限先寫回草稿，可售套數＝ListingState.bundleQty() */
-    const cap = capN();
-    bundleDraft.cap = cap;
-    syncLimitLock();   /* D480：限量時鎖定跟著限量 */
+    /* 可售套數＝ListingState.bundleQty() */
     refreshAlloc();
     /* 相容性提示（顯示層）：限量成員、多選項成員、含票券 */
     renderCbPickup();   /* D471：取貨與核銷區跟著成員重畫 */
@@ -1454,8 +1372,6 @@
     if (saveEl) saveEl.textContent = saveText();
     if (discHintEl) { discHintEl.hidden = d.ok; discHintEl.textContent = d.ok ? '' : T('cb.price.discount-bad', 'Discount must be 0–100.'); }
     if (setsOut) setsOut.innerHTML = setsValHTML();
-    if (capHintEl) { const ct = capHintText(); capHintEl.textContent = ct; capHintEl.hidden = !ct; }
-    if (totalInput) { if (capOver()) totalInput.setAttribute('aria-invalid', 'true'); else totalInput.removeAttribute('aria-invalid'); }
     /* 限時折扣：疊在售價之上；右欄＝檔期內的價（錯誤才出提示句） */
     const sp0 = salePctInfo(), saleK = sp0.ok ? 1 - sp0.pct / 100 : 1;
     const saleLive = saleOn() && sp0.ok && has;
@@ -1507,7 +1423,7 @@
     discToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   }
 
-  /* ── 三個開關（2026-10-30，同建立商品）：不限量（賣完轉預購）與限量標籤互斥；鎖定庫存代操作收起來的鎖定二選一 ── */
+  /* ── 三個開關（2026-10-30，同建立商品）：不限量（賣完轉預購）與限量標籤互斥；鎖定庫存開關見 setLockOn（D513） ── */
   const swUnl = document.getElementById('cb-sw-unl'), swTag = document.getElementById('cb-sw-tag'), swLock = document.getElementById('cb-sw-lock');
   function syncBundleSw() {
     const lockYes = !!lockBody && !lockBody.hidden;
@@ -1522,11 +1438,7 @@
     if (!el || el.getAttribute('aria-disabled') === 'true') return;
     if (k === 'unl') bundleDraft.preorder = !bundleDraft.preorder;
     else if (k === 'tag') bundleDraft.limitedTag = !bundleDraft.limitedTag;
-    else {
-      const yes = !!lockBody && !lockBody.hidden;
-      const btn = lockModeEl && lockModeEl.querySelector('[data-cb-lock="' + (yes ? 'no' : 'yes') + '"]');
-      if (btn) btn.click();
-    }
+    else setLockOn(!!lockBody && lockBody.hidden);
     syncBundleSw();
     if (k !== 'lock') recompute();
   }
@@ -1536,29 +1448,6 @@
     el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleBundleSw(k); } });
   });
   syncBundleSw();
-  /* 限量二選一：限量才顯示上限欄 */
-  if (editionGrid) editionGrid.querySelectorAll('[data-cb-edition]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const wasLimited = limitedEdition();
-      state.avail = btn.dataset.cbEdition;
-      if (limitedEdition() && totalInput && totalInput.value.trim() === '') {   /* 2026-10-27 預帶示意值：100，不超過成員撐得起的套數 */
-        const lim1 = lockableSets(), n1 = lim1 === Infinity ? 100 : Math.min(100, lim1);
-        if (n1 >= 1) totalInput.value = String(n1);
-      }
-      /* D480 決定 3：改回不限量＝鎖定全部退回共用庫存；之後可以自己另設鎖定套數 */
-      if (wasLimited && !limitedEdition()) {
-        bundleDraft.lockSets = null; if (setsInput) setsInput.value = ''; applyLock();
-        const mode = document.querySelector('[data-cb-lockmode]'), body = document.querySelector('[data-cb-lock-body]');
-        if (mode) mode.querySelectorAll('[data-cb-lock]').forEach(b => { const on = b.dataset.cbLock === 'no'; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
-        if (body) body.hidden = true;
-      }
-      editionGrid.querySelectorAll('[data-cb-edition]').forEach(b => { const on = b === btn; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
-      document.querySelectorAll('[data-when-cb-edition]').forEach(el => el.hidden = el.dataset.whenCbEdition !== state.avail);
-      recompute();
-    });
-  });
-  if (totalInput) totalInput.addEventListener('input', recompute);
-
   /* 限時折扣開關 */
   if (saleToggle) {
     const flip = () => {
@@ -2317,7 +2206,6 @@
       eventId: (ticketMember() || {}).eventId || null,
       /* D471：組合包自己的取貨場次（選填；null＝繼承，各成員沿用自己商品的場次） */
       pickupSession: cbPickupApi ? cbPickupApi.get() : null,
-      cap: bundleDraft.cap,
       lockSets: bundleDraft.lockSets,
       preorder: !!bundleDraft.preorder, limitedTag: !!bundleDraft.limitedTag,   /* 2026-10-30 呈現假設（UIA-321）：賣完轉預購／前台限量標籤 */
       alloc: bundleDraft.alloc || {},
@@ -2503,15 +2391,14 @@
     };
   }
   /* 發布前檢核＝表單擋關 gateWhy() 的同一組條件（只換成「項目＋是否通過」的形狀，同建立商品 stageChecks），
-     不適用的項目不列（例：沒開限量就沒有「限量上限」）。進得來第 2 步＝全部通過。 */
+     不適用的項目不列（例：沒開鎖定庫存就沒有「鎖定套數」）。進得來第 2 步＝全部通過。 */
   function stageChecks() {
     const out = [];
     const push = (key, labelKey, fb, ok, step) => out.push({ key, label: T(labelKey, fb), ok: !!ok, step });
     push('members', 'cb.qc.members', 'At least 1 item or ticket', hasContent(), CB_STEP.content);
     push('name', 'cb.qc.name', 'Name', !!bundleName(), CB_STEP.name);
     if (state.discountOn) push('disc', 'cb.qc.disc', 'Discount between 0–100%', discInfo().ok, CB_STEP.price);
-    if (!limitedEdition() && (bundleDraft.lockSets || (setsInput && setsInput.value.trim()))) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.qty);
-    if (limitedEdition()) push('cap', 'cb.qc.cap', 'Cap filled in, within supply', !!capN() && !capOver(), CB_STEP.qty);
+    if (bundleDraft.lockSets !== null) push('lock', 'cb.qc.lock', 'Locked sets within the ceiling', !(lockOver() || lockBad), CB_STEP.qty);
     if (saleOn()) {
       const sp = salePctInfo(), s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
       push('sale', 'cb.qc.sale', 'Limited-time discount complete', sp.ok && s && e && e > s, CB_STEP.offers);

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>語言與在地化 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -142,18 +142,79 @@ table.cmp td:nth-child(1){width:20%}
 </ul>
 <p class="note">依據：主規格 §7.4「登入時的語言選擇」；5.1.10 F7；D222、D225。</p>
 
+<h2 id="translatable"><span class="n"></span>可翻譯欄位</h2>
+<p>使用者以自然語言輸入的文案欄位都是可翻譯欄位；資料值與檔案不翻譯，各語系共用。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%"></th><th>包括</th></tr></thead>
+  <tbody>
+    <tr><td>可翻譯</td><td>名稱<br>描述、簡介類欄位<br>結構化清單裡逐筆輸入的文案，例如商品的詳細規格（規格名稱與規格值）、商品選項（選項名與選項值）、活動描述的每個文字區塊</td></tr>
+    <tr><td>不翻譯、各語系共用</td><td>價格、數量、日期、SKU<br>檔案，包括文案欄位裡夾帶的圖片與影片</td></tr>
+    <tr><td>不列入翻譯、維持原文</td><td>姓名、暱稱，包括表演陣容的人名<br>表演陣容的角色標籤<br>IP 條款與法律文件<br>第三方平台名稱</td></tr>
+  </tbody>
+</table></div>
+<div class="dg" role="img" aria-label="可翻譯欄位與語系的對照示意圖：假設預設語言是繁體中文，電子商店的商品名稱與描述在繁體中文是原文、其他三個語系自動翻譯，價格四個語系共用同一個值">
+<div class="dg-mx" style="--dg-c:4">
+  <span></span><span class="h">繁體中文<small>預設語言</small></span><span class="h">英文</span><span class="h">簡體中文</span><span class="h">印尼語</span>
+  <span class="r">名稱<small>可翻譯</small></span><span class="c"><b>原文</b></span><span class="c"><b>自動翻譯</b></span><span class="c"><b>自動翻譯</b></span><span class="c"><b>自動翻譯</b></span>
+  <span class="r">描述<small>可翻譯</small></span><span class="c"><b>原文</b></span><span class="c"><b>自動翻譯</b></span><span class="c"><b>自動翻譯</b></span><span class="c"><b>自動翻譯</b></span>
+  <span class="r">價格<small>不翻譯</small></span><span class="c fb span">四個語系共用同一個值</span>
+</div>
+</div>
+<p class="dg-cap">對照圖（假設預設語言是繁體中文、商品屬於電子商店）：列是欄位，欄是語系；可翻譯欄位在其他語系自動翻譯，不翻譯的欄位各語系共用。活動的其他語系不自動翻譯，見<a href="#auto-vs-manual">自動翻譯與活動的手動翻譯</a>。</p>
+<ul class="plain">
+  <li>這是通則；各流程實際涵蓋哪些欄位，由各流程逐一列出，例如活動見<a href="event-create-step8.html#preview-translation">步驟 7 的翻譯</a></li>
+</ul>
+<p class="note">依據：主規格 §7.4「可翻譯欄位的判準」「活動例外：手動翻譯」第 7 項、「顯示規則」；D223、D305、D335、D354、D445。</p>
+
+<h2 id="auto-vs-manual"><span class="n"></span>自動翻譯與活動的手動翻譯</h2>
+<p>電子商店（商品、組合包）、建立項目與作品上架的其他語系自動翻譯；活動例外，其他語系由創作者手動填。</p>
+<div class="tablewrap"><table class="cmp">
+  <thead><tr><th>事項</th><th>電子商店、項目、作品上架</th><th>活動</th></tr></thead>
+  <tbody>
+    <tr><td>其他語系怎麼來</td><td>依預設語言的內容自動產生翻譯</td><td>創作者在預覽主區就地填，或在翻譯表逐欄填<br>某語系沒填的欄位，粉絲與預覽都顯示預設語言原文，不產生機器譯文</td></tr>
+    <tr><td>預設語言的內容改了</td><td>其他語系一律重新產生翻譯，手動改過的翻譯也會被覆蓋</td><td>已填的譯文保留，不被覆蓋</td></tr>
+    <tr><td>側欄語言段的狀態</td><td>預設<br>自動翻譯（沒改過）<br>已修改 N 欄</td><td>預設<br>未翻譯（一欄都沒填）<br>已翻譯 n／N 欄（n 是已填欄數，N 是可翻譯欄位總數）</td></tr>
+    <tr><td>側欄語言段的動作</td><td>還原自動翻譯：把目前語系的手動修改退回自動翻譯</td><td>清除譯文：清掉該欄在該語系的譯文，回到顯示原文</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>各幣別價格的重算規則跟翻譯是兩套，見<a href="common-currency.html#recalc">定價幣別的重算規則</a></li>
+</ul>
+<p class="note">依據：主規格 §7.4「自動翻譯與重生成規則」「活動例外：手動翻譯」；D223、D312。</p>
+
+<h2 id="display"><span class="n"></span>語言怎麼顯示</h2>
+<ul class="plain">
+  <li>卡片、清單等摘要顯示預設語言那一份內容</li>
+  <li>日期、數字、幣別與相對時間，依預設語言的習慣格式顯示</li>
+  <li>金額用交易原本的幣別與使用者的設定，不隨介面語言改變；幣別規則見<a href="common-currency.html">定價幣別</a></li>
+  <li>介面上不出現空白文字或翻譯鍵名</li>
+</ul>
+<p class="note">依據：主規格 §7.4「顯示規則」「使用限制」；D306。</p>
+
 <h2 id="preview"><span class="n"></span>預覽與在地化畫面</h2>
-<p>所有含可翻譯文案的建立流程，表單全程只用預設語言填寫；按下發布前，先進一個全頁的預覽與在地化畫面確認其他語系的文案與各幣別價格。畫面上有哪些區塊，見<a href="#preview-layout">畫面的組成</a>；哪些流程用這個畫面，見<a href="#preview-where">哪些流程用這個畫面</a>；發布後怎麼再開，見<a href="#preview-after">發布後再開</a>。</p>
+<p>所有含可翻譯文案的建立流程，表單全程只用預設語言填寫；按下發布前，先進一個全頁的預覽與在地化畫面確認其他語系的文案與各幣別價格，翻譯只在這個畫面處理。畫面上有哪些區塊與各種狀態，見<a href="#preview-layout">畫面的組成</a>；哪些流程用這個畫面，見<a href="#preview-where">哪些流程用這個畫面</a>；發布後怎麼再開，見<a href="#preview-after">發布後再開</a>。</p>
 
 <h3 id="preview-layout">畫面的組成</h3>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:22%">區塊</th><th>做什麼</th></tr></thead>
+<p>畫面分主區與右側欄：主區是粉絲視角預覽，側欄分語言、幣別、發布前檢核三段，主鈕在側欄。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>主區：粉絲視角預覽</td><td>呈現粉絲端這個項目頁面的全部設定，照選的語系與幣別顯示<br>預設語言是初始語系，畫面上要標示哪一個是預設語言<br>可以直接修改目前語系的文案<br>點價格打開價格表；價格不在主區直接改</td></tr>
-    <tr><td>側欄第一段：語言（Language）</td><td>四個語系各一列，標出各語系的狀態；點一列，主區切到該語系<br>「逐欄位對照」打開翻譯表（可翻譯欄位 × 四個語系），在同一張表把四個語系一次改完<br>各語系的狀態與動作，電子商店與活動不同，見<a href="#auto-vs-manual">自動翻譯與活動的手動翻譯</a></td></tr>
-    <tr><td>側欄第二段：幣別（Currency）</td><td>基準幣別與四個換算幣別各一列；點一列，主區的價格切到該幣別<br>價格表能不能改，見<a href="common-currency.html#override">定價幣別的逐幣別覆寫</a></td></tr>
-    <tr><td>側欄第三段：發布前檢核（Pre-publish checks）</td><td>逐項列出這個流程的必填與擋下條件是否通過，點一項跳回對應的步驟或欄位<br>檢核項目由各流程自己定，例如建立活動見<a href="event-create-step8.html#preview-check">步驟 7 的發布前檢核</a></td></tr>
-    <tr><td>主鈕：發布或送出審核</td><td>在側欄，按下就發布，不再跳第二層確認</td></tr>
+    <tr class="grp"><td colspan="3">主區：粉絲視角預覽</td></tr>
+    <tr><td>預覽內容</td><td>—</td><td>呈現粉絲端這個項目頁面的全部設定，照選的語系與幣別顯示<br>預設語言是初始語系，畫面上標示哪一個是預設語言<br>可以直接修改目前語系的文案</td></tr>
+    <tr><td>點價格</td><td>—</td><td>打開價格表；價格不在主區直接改，價格表能不能改見<a href="common-currency.html#override">定價幣別的逐幣別覆寫</a></td></tr>
+    <tr class="grp"><td colspan="3">側欄第一段：語言（Language）</td></tr>
+    <tr><td>語系列</td><td>—</td><td>四個語系各一列，標出各語系的狀態；點一列，主區切到該語系；狀態見<a href="#auto-vs-manual">自動翻譯與活動的手動翻譯</a></td></tr>
+    <tr><td>逐欄位對照</td><td>—</td><td>打開翻譯表（可翻譯欄位 × 四個語系），在同一張表把四個語系一次改完</td></tr>
+    <tr><td>還原自動翻譯</td><td>電子商店、建立項目、作品上架</td><td>把目前語系的手動修改退回自動翻譯</td></tr>
+    <tr><td>清除譯文</td><td>活動</td><td>清掉該欄在該語系的譯文，回到顯示原文</td></tr>
+    <tr class="grp"><td colspan="3">側欄第二段：幣別（Currency）</td></tr>
+    <tr><td>幣別列</td><td>—</td><td>基準幣別與四個換算幣別各一列；點一列，主區的價格切到該幣別</td></tr>
+    <tr class="grp"><td colspan="3">側欄第三段：發布前檢核（Pre-publish checks）</td></tr>
+    <tr><td>檢核項</td><td>建立流程</td><td>逐項列出這個流程的必填與擋下條件是否通過，點一項跳回對應的步驟或欄位<br>檢核項目由各流程自己定，例如建立活動見<a href="event-create-step8.html#preview-check">步驟 7 的發布前檢核</a></td></tr>
+    <tr><td>未儲存的變更</td><td>發布後再開</td><td>取代發布前檢核，見<a href="#preview-after">發布後再開</a></td></tr>
+    <tr class="grp"><td colspan="3">主鈕</td></tr>
+    <tr><td>發布或送出審核</td><td>建立流程</td><td>在側欄，按下就發布，不再跳第二層確認</td></tr>
+    <tr><td>儲存</td><td>發布後再開</td><td>儲存就對已上架的項目生效，不改上架狀態</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
@@ -162,14 +223,31 @@ table.cmp td:nth-child(1){width:20%}
   <li>預覽是粉絲端的鏡像：粉絲端版型改了，預覽跟著改；粉絲端版型與現行規則衝突時，預覽照規則畫</li>
   <li>活動頁預覽的區塊與預覽裡的價格怎麼顯示，見<a href="event-create-step8.html#preview-page">步驟 7 的預覽裡的活動頁</a></li>
 </ul>
+<p>幾個會依條件換樣子的地方，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">語系列的狀態</td></tr>
+    <tr><td>各語系的狀態</td><td>電子商店、項目、作品上架與活動各用一組</td><td>見<a href="#auto-vs-manual">自動翻譯與活動的手動翻譯</a></td></tr>
+    <tr class="grp"><td colspan="3">幣別列的狀態</td></tr>
+    <tr><td>換算</td><td>價格沿用自動換算值</td><td>幣別列標「換算」</td></tr>
+    <tr><td>已覆寫 N 項</td><td>只有活動，創作者改過某幣別的價格</td><td>幣別列標「已覆寫 N 項」；電子商店一律顯示換算，不會出現已覆寫</td></tr>
+    <tr class="grp"><td colspan="3">發布前檢核的每一項</td></tr>
+    <tr><td>通過</td><td>這一項的必填與擋下條件都滿足</td><td>逐項顯示通過；畫面長什麼樣 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>未通過</td><td>有一項沒備齊</td><td>不能發布，點那一項跳回對應的步驟或欄位；主鈕此時的外觀 <span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">未儲存的變更（發布後再開）</td></tr>
+    <tr><td>有變更</td><td>本語系改了欄位，或本幣別覆寫了項目</td><td>顯示本語系改了幾欄、本幣別覆寫了幾項</td></tr>
+    <tr><td>沒有變更</td><td>兩個數字都是 0</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="preview-where">哪些流程用這個畫面</h3>
 <p>多步驟的建立流程，這個畫面就是流程的最後一步，不另外彈出視窗。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:30%">流程</th><th>在哪一步</th></tr></thead>
   <tbody>
-    <tr><td><a href="eshop-create.html">建立商品</a></td><td>第 2 步「預覽與發布」（第 1 步是商品內容）</td></tr>
-    <tr><td><a href="eshop-create-bundle.html">建立組合包</a></td><td>第 2 步「預覽與發布」（第 1 步是組合內容）</td></tr>
+    <tr><td><a href="eshop-create.html">建立商品</a></td><td>第 3 步「預覽與發布」（第 1 步是商品設定，第 2 步是上架與販售）</td></tr>
+    <tr><td><a href="eshop-create-bundle.html">建立組合包</a></td><td>第 4 步「預覽與發布」（前三步是選擇組合商品、組合包設定、上架與販售）</td></tr>
     <tr><td><a href="event-create.html">建立活動</a></td><td>最後一步「預覽與發布」</td></tr>
     <tr><td><a href="project-create.html">建立項目</a></td><td>最後一步，依項目類型與作品家族共 4 到 5 步</td></tr>
     <tr><td><a href="project-publish.html">作品上架</a></td><td>第 6 步「預覽與送審」；從建立項目進入時沿用建立項目自己的最後一步</td></tr>
@@ -197,52 +275,11 @@ table.cmp td:nth-child(1){width:20%}
 </ul>
 <p class="note">依據：主規格 §7.4「發布前預覽確認」「發布後再開」「適用範圍」；D223、D305、D310、D317、D318、D319、D321、D322、D323、D413、D435、D443、D453、D455。</p>
 
-<h2 id="translatable"><span class="n"></span>可翻譯欄位</h2>
-<p>使用者以自然語言輸入的文案欄位都是可翻譯欄位；資料值與檔案不翻譯，各語系共用。</p>
-<div class="tablewrap"><table>
-  <thead><tr><th style="width:22%"></th><th>包括</th></tr></thead>
-  <tbody>
-    <tr><td>可翻譯</td><td>名稱<br>描述、簡介類欄位<br>結構化清單裡逐筆輸入的文案，例如商品的詳細規格（規格名稱與規格值）、商品選項（選項名與選項值）、活動描述的每個文字區塊</td></tr>
-    <tr><td>不翻譯、各語系共用</td><td>價格、數量、日期、SKU<br>檔案，包括文案欄位裡夾帶的圖片與影片</td></tr>
-    <tr><td>不列入翻譯、維持原文</td><td>姓名、暱稱，包括表演陣容的人名<br>表演陣容的角色標籤<br>IP 條款與法律文件<br>第三方平台名稱</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>這是通則；各流程實際涵蓋哪些欄位，由各流程逐一列出，例如活動見<a href="event-create-step8.html#preview-translation">步驟 7 的翻譯</a></li>
-</ul>
-<p class="note">依據：主規格 §7.4「可翻譯欄位的判準」「活動例外：手動翻譯」第 7 項、「顯示規則」；D223、D305、D335、D354、D445。</p>
-
-<h2 id="auto-vs-manual"><span class="n"></span>自動翻譯與活動的手動翻譯</h2>
-<p>電子商店（商品、組合包）、建立項目與作品上架的其他語系自動翻譯；活動例外，其他語系由創作者手動填。</p>
-<div class="tablewrap"><table class="cmp">
-  <thead><tr><th>事項</th><th>電子商店、項目、作品上架</th><th>活動</th></tr></thead>
-  <tbody>
-    <tr><td>其他語系怎麼來</td><td>依預設語言的內容自動產生翻譯</td><td>創作者在預覽主區就地填，或在翻譯表逐欄填<br>某語系沒填的欄位，粉絲與預覽都顯示預設語言原文，不產生機器譯文</td></tr>
-    <tr><td>預設語言的內容改了</td><td>其他語系一律重新產生翻譯，手動改過的翻譯也會被覆蓋</td><td>已填的譯文保留，不被覆蓋</td></tr>
-    <tr><td>側欄語言段的狀態</td><td>預設<br>自動翻譯（沒改過）<br>已修改 N 欄</td><td>預設<br>未翻譯（一欄都沒填）<br>已翻譯 n／N 欄（n 是已填欄數，N 是可翻譯欄位總數）</td></tr>
-    <tr><td>側欄語言段的動作</td><td>還原自動翻譯：把目前語系的手動修改退回自動翻譯</td><td>清除譯文：清掉該欄在該語系的譯文，回到顯示原文</td></tr>
-  </tbody>
-</table></div>
-<ul class="plain">
-  <li>兩邊的表單都只用預設語言填，翻譯只在預覽與在地化畫面處理</li>
-  <li>各幣別價格的重算規則跟翻譯是兩套，見<a href="common-currency.html#recalc">定價幣別的重算規則</a></li>
-</ul>
-<p class="note">依據：主規格 §7.4「自動翻譯與重生成規則」「活動例外：手動翻譯」；D223、D312。</p>
-
-<h2 id="display"><span class="n"></span>語言怎麼顯示</h2>
-<ul class="plain">
-  <li>卡片、清單等摘要顯示預設語言那一份內容</li>
-  <li>日期、數字、幣別與相對時間，依預設語言的習慣格式顯示</li>
-  <li>金額用交易原本的幣別與使用者的設定，不隨介面語言改變；幣別規則見<a href="common-currency.html">定價幣別</a></li>
-  <li>介面上不出現空白文字或翻譯鍵名</li>
-</ul>
-<p class="note">依據：主規格 §7.4「顯示規則」「使用限制」；D306。</p>
-
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>0-設計規格書.md §7.4</code>（v4.95）；<code>5.1.10-登入.md</code> F7；<code>5.1.9-設定.md</code> F8</li>
+    <li>規格：<code>0-設計規格書.md §7.4</code>（v5.39）；<code>5.1.10-登入.md</code> F7；<code>5.1.9-設定.md</code> F8</li>
     <li>決策：D220、D222、D223、D225、D305、D306、D310、D312、D317、D318、D319、D321、D322、D323、D335、D354、D413、D435、D443、D445、D453、D455</li>
   </ul>
   <p class="k">尚待確認</p>
@@ -257,8 +294,10 @@ table.cmp td:nth-child(1){width:20%}
     <li>發布後改翻譯是否需要審核或留版本紀錄</li>
     <li>建立拍賣是否套用預覽與在地化畫面、是否改成兩步驟</li>
     <li>拍賣商品細節頁是否也提供「預覽與在地化」入口</li>
+    <li>發布前檢核每一項通過與未通過時的畫面，以及檢核未通過時主鈕的外觀</li>
+    <li>發布後再開時，未儲存的變更數字都是 0 的畫面</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D455 活動發布後上架中，翻譯要先下架才能改定案；對照主規格 v4.95 §7.4）；2026-10-19（新建；對照主規格 v4.90 §7.4）</p>
+  <p class="k">最近同步：2026-11-05（V38 逐條對照：預覽與在地化畫面在建立商品、建立組合的步數更正；對照主規格 v5.39）</p>
 </details>
 </div>
 </body>

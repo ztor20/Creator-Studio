@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全站活動、賽季與衰減設定 — ztor Creator Studio 規則手冊</title>
+<script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
+  --border:#e2ded8; --border-strong:#c9c4bc;
+  --text:#1c1b19; --text-2:#5f5e5a; --text-3:#8a8880;
+  --sel-bg:#2c2c2a; --sel-text:#f1efe8;
+  --ok-fill:#e1f5ee; --ok-line:#9fe1cb; --ok-ink:#0f6e56; --ok-key:#1d9e75;
+  --wait-fill:#eeedfe; --wait-line:#cecbf6; --wait-ink:#3c3489; --wait-key:#7f77dd;
+  --warn-fill:#faece7; --warn-line:#f5c4b3; --warn-ink:#712b13; --warn-key:#d85a30;
+  --pink-fill:#fbeaf0; --pink-line:#f4c0d1; --pink-ink:#72243e; --pink-key:#d4537e;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+}
+  :root[data-theme="dark"]{
+    --bg:#17161a; --surface:#201f24; --surface-sunken:#1a191d;
+    --border:#33313a; --border-strong:#4a4854;
+    --text:#eceaf2; --text-2:#a5a2b0; --text-3:#78757f;
+    --sel-bg:#f1efe8; --sel-text:#2c2c2a;
+    --ok-fill:#085041; --ok-line:#0f6e56; --ok-ink:#9fe1cb; --ok-key:#5dcaa5;
+    --wait-fill:#3c3489; --wait-line:#534ab7; --wait-ink:#cecbf6; --wait-key:#afa9ec;
+    --warn-fill:#712b13; --warn-line:#993c1d; --warn-ink:#f5c4b3; --warn-key:#f0997b;
+    --pink-fill:#72243e; --pink-line:#993556; --pink-ink:#f4c0d1; --pink-key:#ed93b1;
+  }
+
+*{box-sizing:border-box}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Heiti TC","Hiragino Sans CNS",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text);
+  margin:0; padding:32px 24px 64px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:500;margin:40px 0 10px;padding-top:6px;letter-spacing:-0.005em}
+h2 .n{display:inline-block;min-width:26px;color:var(--text-3);font-weight:400;font-variant-numeric:tabular-nums}
+h3{font-size:14px;font-weight:500;margin:20px 0 6px;color:var(--text-2)}
+p{margin:0 0 10px}
+.lede{font-size:14px;color:var(--text-2);margin:0 0 4px}
+.src{font-size:13px;color:var(--text-3);margin:0 0 28px}
+.src code,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+ul.plain{margin:4px 0 10px;padding-left:20px}
+ul.plain li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--text-2);background:var(--surface-sunken);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.tag.ok{background:var(--ok-fill);border-color:var(--ok-line);color:var(--ok-ink)}
+.tag.wait{background:var(--wait-fill);border-color:var(--wait-line);color:var(--wait-ink)}
+.tag.warn{background:var(--warn-fill);border-color:var(--warn-line);color:var(--warn-ink)}
+.tag.pink{background:var(--pink-fill);border-color:var(--pink-line);color:var(--pink-ink)}
+.tag.off{background:var(--surface-sunken);color:var(--text-3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:10px 0 6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px 14px;overflow:hidden}
+.band{height:4px;margin:0 -16px 12px;background:var(--text-3)}
+.card.ok .band{background:var(--ok-key)} .card.wait .band{background:var(--wait-key)} .card.warn .band{background:var(--warn-key)} .card.pink .band{background:var(--pink-key)}
+.card h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.card p{font-size:13px;color:var(--text-2);margin:0 0 6px}
+.card .k{font-size:12px;color:var(--text-3)}
+/* 流程示意（建立順序 → 池與販售管道） */
+.steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 6px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.step__n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--sel-bg);color:var(--sel-text);font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+.step--later .step__n{background:var(--surface-sunken);color:var(--text-3);border:1px solid var(--border-strong)}
+.step__t{font-size:14px;font-weight:500;margin:3px 0 0}
+.step__d{font-size:12.5px;color:var(--text-3);margin:3px 0 0}
+.step__out{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:11px}
+.step__arrow{color:var(--text-3);font-size:18px;text-align:center}
+.unit{min-width:0;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;background:var(--surface-sunken)}
+.unit--back{border-style:dashed;border-color:var(--border-strong)}
+.unit--same{opacity:.68}
+.unit__tag{font-size:11px;color:var(--text-3)}
+.unit__t{font-size:13px;font-weight:500;margin-top:2px;display:flex;gap:8px;align-items:center}
+.unit__d{font-size:12px;color:var(--text-3);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok-key);flex:none}
+.dot.b{background:var(--wait-key)}
+.dot.n{background:var(--text-3)}
+.stepsum{margin-top:10px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+@media (max-width:600px){.step{grid-template-columns:1fr}.step__n{margin-bottom:2px}.step__out{grid-template-columns:1fr}.step__arrow{transform:rotate(90deg)}}
+.chs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;display:flex;gap:10px;align-items:center}
+.ch--old{opacity:.5}
+.ch .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap}
+/* 互動：三開關模擬器 */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:10px 0 6px}
+.sim .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.sim label.lbl{font-size:12px;color:var(--text-3);width:100%}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-text)}
+.seg[aria-disabled="true"]{opacity:.45}
+.seg button:disabled{cursor:not-allowed}
+.sim input[type=number]{width:88px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.sim .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sim .out .k{font-size:12px;color:var(--text-3)}
+.sim .out .v{font-size:15px;margin-top:2px}
+.sim .out .v small{font-size:12px;color:var(--text-3)}
+.note{font-size:12.5px;color:var(--text-3);margin:6px 0 0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-3)}
+.foot ul{margin:8px 0 0;padding-left:20px}
+.foot li{margin-bottom:5px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.toc a{font-size:12.5px;color:var(--text-2);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.toc a:hover{border-color:var(--text-3);color:var(--text)}
+.k{font-size:12px;color:var(--text-3)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 12px}
+.flow .arr{color:var(--text-3)}
+.flow__alt{flex-basis:100%;font-size:12.5px;color:var(--text-3);margin-top:2px}
+ul.plain ul.plain{margin:4px 0 4px}
+table.map th:nth-child(3),table.map th:nth-child(4){white-space:nowrap}
+table.map{min-width:720px}
+table.map td:nth-child(1){width:20%}
+table.map td:nth-child(2){width:22%}
+.sim label{font-size:13px;color:var(--text-2)}
+.card ul.plain{font-size:13px;color:var(--text-2);margin:0 0 6px;padding-left:18px}
+/* 內文連結（章節互指） */
+.wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
+.stepsum{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--text-3);border-radius:var(--radius);background:var(--surface);font-size:13px}
+/* 販售層級示意圖 */
+.layers{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;margin:10px 0 6px}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;margin-bottom:8px}
+.layer__k{font-size:12.5px;color:var(--text-2);line-height:1.4}
+.layer__k span{display:block;font-size:11.5px;color:var(--text-3)}
+.layer__track{position:relative;height:18px;border-radius:999px;background:var(--surface-sunken)}
+.layer__bar{position:absolute;top:0;bottom:0;border-radius:999px;border:1px solid var(--border-strong)}
+.layer__bar.l1{background:var(--ok-fill);border-color:var(--ok-line)}
+.layer__bar.l2{background:var(--wait-fill);border-color:var(--wait-line)}
+.layer__bar.l3{background:var(--pink-fill);border-color:var(--pink-line)}
+.layer__bar.l4{background:var(--warn-fill);border-color:var(--warn-key);border-style:dashed}
+.layer__axis{position:relative;height:18px;font-size:11.5px;color:var(--text-3)}
+.layer__axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.layer__axis span:first-child{transform:none}
+.layer__axis span:last-child{transform:translateX(-100%)}
+@media (max-width:600px){.layer{grid-template-columns:1fr;gap:4px}.layer--axis .layer__k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>全站活動、賽季與衰減設定</h1>
+<p class="lede">Admin 在這頁設定全站活動的給分與上限、多人署名時各職務的計入比例、賽季加倍、衰減與等級保留，並查核平台常數與上線時的歷史訂單規則。</p>
+<div class="toc"></div>
+
+<h2 id="intro" class="no-num">概述</h2>
+<ul class="plain">
+  <li>這頁和<a href="admin-loyalty.html">平台忠誠點數設定</a>是同一個設定畫面的內容，權限、生效時點與修改紀錄都照該頁</li>
+  <li>全站活動的點數 100% 計入粉絲當下的主要應援對象，選擇與切換主要應援對象的操作在粉絲端</li>
+  <li>平台常數與歷史訂單的規則只能看，不能改</li>
+</ul>
+
+<h2 id="flow"><span class="n"></span>操作流程</h2>
+<p>Admin 按編輯改參數或新增一段賽季加倍，儲存後依參數類別生效。</p>
+<div class="dg" role="img" aria-label="全站活動、賽季與衰減設定的操作流程圖：先選要改哪一項，全站活動或職務比例、賽季加倍、衰減或等級保留；儲存後，前兩項只作用於之後發生的事件，第三項從下一次每週重算起生效">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node q" style="grid-row:1/4;grid-column:1"><span class="s">1</span>要改哪一項？</div>
+  <span class="dg-a" style="grid-row:1;grid-column:2"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:2"></span>
+  <span class="dg-a" style="grid-row:3;grid-column:2"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:3">全站活動或職務比例<small>改給分、上限或比例</small></div>
+  <div class="dg-node" style="grid-row:2;grid-column:3">賽季加倍<small>新增一段期間</small></div>
+  <div class="dg-node" style="grid-row:3;grid-column:3">衰減或等級保留<small>改天數</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" style="grid-row:2;grid-column:4"></span>
+  <span class="dg-a" style="grid-row:3;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1/4;grid-column:5"><span class="s">2</span>儲存<small>留一筆修改紀錄</small></div>
+  <span class="dg-a" data-t="計分類" style="grid-row:1/3;grid-column:6"></span>
+  <span class="dg-a" data-t="等級類" style="grid-row:3;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1/3;grid-column:7"><span class="s">3</span>只作用於之後的事件<small>已入帳的點數不改寫</small></div>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">下一次每週重算起生效<small>不改寫點數</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，一列一種設定，在儲存合流後依參數類別分開；圓圈數字對應下方步驟清單的編號。</p>
+<ol class="plain">
+  <li>要改哪一項？
+    <ul class="plain">
+      <li>全站活動或職務比例：見<a href="#activities">全站活動給多少點數、能拿幾次</a>、<a href="#credit-roles">多人署名時各職務分到多少點數</a></li>
+      <li>賽季加倍：見<a href="#season">賽季加倍</a></li>
+      <li>衰減或等級保留：見<a href="#decay">衰減與等級保留</a></li>
+    </ul>
+  </li>
+  <li>儲存，留一筆修改紀錄；取消則回到上次儲存的值</li>
+  <li>依參數類別生效，見平台忠誠點數設定的<a href="admin-loyalty.html#effective-when">生效時點</a></li>
+</ol>
+<p class="note">依據：5.1.0.8 頁面狀態、F6、情境 1～3、6；D479、D498。</p>
+
+<h2 id="activities"><span class="n"></span>全站活動給多少點數、能拿幾次</h2>
+<p>全站活動是 ztor 平台層級的行為，點數由平台發；Admin 在這裡設定每一種全站活動給多少點數、上限多少。各項的預設值，見<a href="#activities-list">四項全站活動</a>；點數怎麼入帳、什麼時候作廢，見<a href="#activities-claim">點數怎麼入帳</a>；上限怎麼算、點數計入哪位創作者，見<a href="#activities-limits">能拿幾次與點數算給誰</a>。</p>
+
+<h3 id="activities-list">四項全站活動</h3>
+<p>每項全站活動各有一組給分與上限，都可以改；下表規則格是預設值。資格條件見粉絲分級的<a href="fans-tiers.html#primary">全站活動與主要應援對象</a>，這頁只設定給分與上限。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>每日簽到（Daily check-in）的給分與上限</td><td>—</td><td>預設每天 50 分<br>預設上限每天一次</td></tr>
+    <tr><td>連續簽到（Streak bonus）的給分與上限</td><td>—</td><td>預設每連續第 7 天加 200 分<br>預設上限最近 90 天 12 次</td></tr>
+    <tr><td>全站發文互動（Community post）的給分與上限</td><td>—</td><td>預設每則 30 分<br>預設上限每天 3 則<br>該則發文須有至少一則非本人的互動才給分</td></tr>
+    <tr><td>邀請朋友加入 Ztor（Invite to Ztor）的給分與上限</td><td>—</td><td>預設每位合格啟用 1,000 分<br>預設上限最近 90 天 10 位</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="activities-claim">點數怎麼入帳</h3>
+<p>三項要粉絲手動領取，邀請朋友加入 Ztor 自動入帳；領取的畫面在粉絲端，這頁不設定領取機制。</p>
+<div class="dg" role="img" aria-label="全站活動點數入帳流程圖：每日簽到、連續簽到、全站發文互動要粉絲當天領取，領了就入帳給領取當下選定的主要應援對象，第一次領取必須先選對象，沒領則當天結束時作廢；邀請朋友加入 Ztor 自動入帳，粉絲已選主要應援對象就入帳給該對象，還沒選就先記著，選定那一刻才入帳">
+<div class="dg-hg" style="--dg-c:4">
+  <div class="dg-node" style="grid-row:1/3;grid-column:1">手動領取的三項<small>每日簽到<br>連續簽到<br>全站發文互動</small></div>
+  <span class="dg-a" style="grid-row:1/3;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:1/3;grid-column:3">粉絲當天領了嗎？</div>
+  <span class="dg-a" data-t="領了" style="grid-row:1;grid-column:4"></span>
+  <span class="dg-a" data-t="沒領" style="grid-row:2;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:1;grid-column:5">選定主要應援對象<small>第一次領取必須先選</small></div>
+  <div class="dg-node stop" style="grid-row:2;grid-column:5">當天結束時作廢<small>不可補領</small></div>
+  <span class="dg-a" style="grid-row:1;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:1;grid-column:7">入帳<small>給領取當下選定的對象</small></div>
+  <div class="dg-node" style="grid-row:3/5;grid-column:1">邀請朋友加入 Ztor<small>自動入帳</small></div>
+  <span class="dg-a" style="grid-row:3/5;grid-column:2"></span>
+  <div class="dg-node q" style="grid-row:3/5;grid-column:3">粉絲選定主要應援對象了嗎？</div>
+  <span class="dg-a" data-t="選了" style="grid-row:3;grid-column:4/7"></span>
+  <span class="dg-a" data-t="還沒" style="grid-row:4;grid-column:4"></span>
+  <div class="dg-node" style="grid-row:4;grid-column:5">先記著、還沒入帳<small>不設期限、不作廢</small></div>
+  <span class="dg-a" style="grid-row:4;grid-column:6"></span>
+  <div class="dg-node end" style="grid-row:3;grid-column:7">入帳<small>給該對象</small></div>
+  <div class="dg-node end" style="grid-row:4;grid-column:7">入帳<small>選定那一刻給該對象</small></div>
+</div>
+</div>
+<p class="dg-cap">流程圖：由左往右走，上面兩列是要手動領取的三項，下面兩列是自動入帳的邀請朋友加入 Ztor。</p>
+<ul class="plain">
+  <li>每日簽到、連續簽到、全站發文互動要粉絲手動領取才入帳</li>
+  <li>邀請朋友加入 Ztor 自動入帳</li>
+  <li>未領取的點數在當天結束的 UTC+8 00:00 作廢，不可補領；時間以伺服器時間（平台統一的時間，不看粉絲所在地）為準</li>
+  <li>需要領取的點數，給領取當下選定的主要應援對象</li>
+  <li>粉絲第一次領取全站活動點數時，必須先選一位主要應援對象，沒有預設</li>
+  <li>粉絲還沒選定主要應援對象時，邀請朋友加入 Ztor 的點數先記著、不入帳；選定的那一刻才入帳給該對象，不設期限、不作廢</li>
+</ul>
+
+<h3 id="activities-limits">能拿幾次與點數算給誰</h3>
+<ul class="plain">
+  <li>標 90 天的上限從給分當下往回算最近 90 天，在給分當下判定，不追溯</li>
+  <li>上限以每位用戶全站合計計算，切換主要應援對象不會重置額度</li>
+  <li>連續簽到中斷只是重新數，不扣分，也不顯示愧疚計數（提醒粉絲「斷了幾天」「少拿多少」的計數）</li>
+  <li>新朋友在 7 天內同時追蹤某位創作者時，兩份分數都給：加入 Ztor 的 1,000 分計入邀請人的主要應援對象，追蹤的 400 分計入被追蹤的那位創作者</li>
+  <li>創作者設定的各類行為份量不影響全站活動</li>
+</ul>
+<p class="note">依據：5.1.0.8 F2；主規格 §7.5；D347、D474、D476、D479。</p>
+
+<h2 id="credit-roles"><span class="n"></span>多人署名時各職務分到多少點數</h2>
+<p>活動票券、影片租賃與付費首映有多位署名創作者時，每位各得一筆點數：該筆購買類點數 × 該創作者職務的計入比例（畫面上的「職務權重」）。項目支持、拍賣、電子商店商品歸單一創作者，不套用。下表五級的比例都可以改；怎麼分、誰拿得到，見粉絲分級的<a href="fans-tiers.html#credits">多人署名的購買怎麼分點數</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>第一級職務的計入比例</td><td>—</td><td>預設 100%<br>導演<br>編劇<br>原著<br>劇集原創者<br>主角<br>主要主持<br>主唱</td></tr>
+    <tr><td>第二級職務的計入比例</td><td>—</td><td>預設 80%<br>配角<br>劇本統籌<br>部門統籌<br>主要旁白<br>系列製片</td></tr>
+    <tr><td>第三級職務的計入比例</td><td>—</td><td>預設 60%<br>客串<br>直接產出畫面、聲音、角色、道具的職務<br>舞者</td></tr>
+    <tr><td>第四級職務的計入比例</td><td>—</td><td>預設 40%<br>小角色<br>專業技術<br>協調<br>檢查<br>製作管理</td></tr>
+    <tr><td>第五級職務的計入比例</td><td>—</td><td>預設 20%<br>群演<br>助理<br>實習<br>後勤</td></tr>
+    <tr><td>不計分的職務</td><td>—</td><td>0%，不發分，但保留關係資料<br>出資人<br>掛名監製<br>IP 持有人<br>製作公司<br>平台<br>贊助<br>經紀<br>AI 模型與工具</td></tr>
+    <tr><td>規則摘要（Rules summary）</td><td>—</td><td>只顯示，不提供開關，內容見粉絲分級的<a href="fans-tiers.html#credits">多人署名的購買怎麼分點數</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.8 F7；主規格 §7.5；D476。</p>
+
+<h2 id="season"><span class="n"></span>賽季加倍</h2>
+<p>賽季加倍讓 Admin 指定哪些期間、哪些範圍的計分要加倍、加幾倍。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>賽季期間（Season period）</td><td>—</td><td>可以設定多段<br>每一段指定加倍的起訖時間<br>行為發生在任何一段期間內，就適用加倍</td></tr>
+    <tr><td>新增一段期間</td><td>—</td><td>多加一段加倍期間，儲存後記入平台忠誠點數設定的<a href="admin-loyalty.html#change-log">修改紀錄</a></td></tr>
+    <tr><td>範圍（Scope）</td><td>—</td><td>每一段選一個：全平台，或特定創作者</td></tr>
+    <tr><td>加倍幾倍（畫面上的「倍率」Multiplier）</td><td>—</td><td>每一段各設一個<br>預設 2<br>期間內四類行為與全站活動的分數都乘上這個倍率</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>尚未開始</td><td>已儲存、期間還沒到</td><td>顯示待生效提示，見平台忠誠點數設定的<a href="admin-loyalty.html#effective-when">生效時點</a></td></tr>
+    <tr><td>進行中</td><td>現在落在期間內</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已結束</td><td>期間已過</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>沒有任何賽季</td><td>還沒設定過期間</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>線下掃碼領點與上線時算進來的歷史訂單不套用賽季加倍</li>
+  <li>同一層級有多段加倍同時生效時怎麼取、創作者自己設的賽季加倍怎麼覆寫平台設定，見粉絲分級的<a href="fans-tiers.html#season">賽季加倍</a></li>
+</ul>
+<p class="note">依據：5.1.0.8 F3、F6；主規格 §7.5；D347、D476、D499。</p>
+
+<h2 id="decay"><span class="n"></span>衰減與等級保留</h2>
+<p>這一區讓 Admin 設定點數隨時間淡出的速度，以及粉絲多久沒有行為就往下掉一階，下表都可以改；掉級前的緩衝天數見平台忠誠點數設定的<a href="admin-loyalty.html#tier-rules">分級門檻、名稱與降級</a>。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>點數減半要多久（畫面上的「衰減半衰期」）</td><td>—</td><td>預設 45 天<br>點數每過這段天數剩一半：<br>第 45 天剩 50%<br>第 90 天剩 25%<br>第 180 天約剩 6%</td></tr>
+    <tr><td>多久沒有行為就往下掉一階（Inactive days before dropping a tier）</td><td>—</td><td>預設 90 天<br>粉絲每連續這麼多天沒有任何行為，等級上限往下掉一階：<br>第 90 天最多留在原等級的下一階<br>第 180 天再往下一階<br>第 270 天掉到一般粉絲，不再往下<br>點數保留並照曲線繼續衰減，仍佔該級名額<br>回來做任何一件事就解除</td></tr>
+  </tbody>
+</table></div>
+<div class="dg" role="img" aria-label="衰減與等級保留的時間軸圖：假設核心圈粉絲第 0 天做了最後一次行為並入帳一筆點數，天數都用預設值。這筆點數第 45 天剩 50%，第 90 天剩 25%，第 180 天約剩 6%。等級上限第 90 天降到超級粉絲，第 180 天降到上榜粉絲，第 270 天降到一般粉絲">
+<div class="dg-tl wide">
+  <div class="dg-tl__marks"><i style="left:0"></i><i style="left:14.29%"></i><i style="left:28.57%"></i><i style="left:57.14%"></i><i style="left:85.71%"></i></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">這筆點數剩多少<span>點數減半要多久 · 45 天</span></div><div class="dg-tl__track"><span class="dg-tl__bar wait" style="left:0;width:57.14%"><i style="flex:0 0 25%">→ 50%</i><i style="flex:0 0 25%">→ 25%</i><i>→ 約 6%</i></span></div></div>
+  <div class="dg-tl__row"><div class="dg-tl__k">等級上限<span>往下掉一階 · 90 天</span></div><div class="dg-tl__track"><span class="dg-tl__bar ok" style="left:0;width:100%"><i style="flex:0 0 28.57%">核心圈</i><i style="flex:0 0 28.57%">超級粉絲</i><i style="flex:0 0 28.57%">上榜粉絲</i><i>一般粉絲</i></span></div></div>
+  <div class="dg-tl__row axis"><div class="dg-tl__k"></div><div class="dg-tl__axis"><span class="l key" style="left:0">第 0 天</span><span style="left:14.29%">第 45 天</span><span class="key" style="left:28.57%">第 90 天</span><span class="key" style="left:57.14%">第 180 天</span><span class="key" style="left:85.71%">第 270 天</span></div></div>
+</div>
+</div>
+<p class="dg-cap">時間軸圖：假設一位核心圈粉絲在第 0 天做了最後一次行為、入帳一筆點數，之後都沒有行為，天數都用預設值。上面一列每一段的數字是這段結束那天剩下的比例；下面一列是這段時間最多能留在哪一級。實際等級取這個上限與依排名算出的等級中較低的那一個，見粉絲分級的<a href="fans-tiers.html#decay">衰減與沉睡</a>。</p>
+<ul class="plain">
+  <li>購買類的衰減作用在金額價值上，其他類直接作用在點數上；線下掃碼領點不衰減</li>
+  <li>往下掉一階造成的降級，同樣適用降級緩衝</li>
+</ul>
+<p class="note">依據：5.1.0.8 F4；主規格 §7.5；D347、D348、D351、D476、D479、D499。</p>
+
+<h2 id="constants"><span class="n"></span>不能在這裡改的平台常數</h2>
+<p>這一區讓 Admin 查核計分模型中不在這裡調整的項目，兩項都只顯示。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>平台基準幣別（Platform base currency）</td><td>—</td><td>預設港幣<br>購買類先把金額換算成這個幣別再乘基準費率<br>幣別與匯率規則見定價幣別的<a href="common-currency.html#platform-currency">平台基準幣別</a></td></tr>
+    <tr><td>誠信規則（Integrity rules）</td><td>—</td><td>只列規則摘要，不提供開關<br>平台強制，創作者與 Admin 都不能關，內容見粉絲分級的<a href="fans-tiers.html#integrity">誠信規則</a></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.8 F5；主規格 §7.5、§7.15；D316、D498。</p>
+
+<h2 id="backfill"><span class="n"></span>上線時把歷史訂單算進點數</h2>
+<p>忠誠點數上線時，平台把上線前的歷史訂單回算成點數（畫面上的「回填」），粉絲一上線就有分；Admin 在這裡查核規則，創作者不需要操作。</p>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>規則摘要（Rules summary）</td><td>—</td><td>只顯示，內容見粉絲分級的<a href="fans-tiers.html#backfill">上線時把歷史訂單算進點數</a></td></tr>
+    <tr><td>算進來的訂單範圍（Backfill scope）</td><td>—</td><td>只顯示<br>上線前 365 天內的訂單；更早的訂單不算進來，因為衰減後已近 0</td></tr>
+    <tr><td>執行方式（Execution）</td><td>—</td><td>平台在上線時執行一次<br>這裡沒有開關，也不能重複執行</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>查核規則</td><td>Admin 進入這區</td><td>顯示規則摘要與訂單範圍，一律唯讀</td></tr>
+    <tr><td>執行前、執行中、完成</td><td>上線前後</td><td>要不要分開顯示<span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.0.8 F8、頁面狀態；主規格 §7.5；D476、D479。</p>
+
+<details class="foot">
+  <summary>來源與尚待確認</summary>
+  <p class="k">來源</p>
+  <ul>
+    <li>規格：<code>5.1.0.8-平台忠誠點數設定.md</code>（v1.11）、<code>0-設計規格書.md §7.5／§7.15／§8.29</code>（v5.39）</li>
+    <li>決策：D316、D347、D348、D351、D474、D476、D479、D498、D499</li>
+  </ul>
+  <p class="k">尚待確認</p>
+  <ul>
+    <li>全站發文互動發生在哪裡</li>
+    <li>邀請朋友加入 Ztor 的「合格啟用」怎麼定義</li>
+    <li>候選項目「完成個人資料或綁定付款」（一次性 200 分）是否存在、是否正式啟用</li>
+    <li>判定沉睡的「任何行為」只算對這位創作者的行為，或包含平台上任何計分行為</li>
+    <li>範圍選特定創作者時，加倍只作用在該創作者榜上的計分（推導）</li>
+    <li>賽季加倍的倍率可以填的範圍</li>
+    <li>已設定的賽季期間怎麼修改或刪除</li>
+    <li>賽季加倍進行中、已結束、沒有任何賽季時畫面怎麼顯示</li>
+    <li>歷史訂單算進點數的執行前、執行中、完成要不要分開顯示</li>
+    <li>各欄位是否必填、可以填的範圍（例如能不能填 0）</li>
+    <li>畫面載入中、儲存失敗時怎麼顯示</li>
+  </ul>
+  <p class="k">最近同步：2026-11-05（逐條對照 5.1.0.8 F2～F5、F7、F8，內容無需改動；5.1.0.8 v1.11、主規格 v5.39）</p>
+</details>
+</div>
+</body>
+</html>

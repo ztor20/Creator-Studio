@@ -139,7 +139,7 @@
      必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
   /* 載入前／失敗後的安全後備：非 P1 gate 不能因 fetch 問題降格成 P1。 */
   var FEAT_TIER = {
-    full: 'full', S05: 'release2.3', S06: 'release2.3', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.3', S45: 'release2.3' /* 2026-10-16 使用者裁決 release2.3 電子商店範圍 */,
+    full: 'full', S05: 'release2.3', S06: 'release2.3', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.3' /* S45 組合限量 2026-11-05 D513 退場 */,
     S52: 'release2.3', S53: 'release2.3', S54: 'retired', S55: 'tbd', S56: 'release2.3',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
     S57: 'retired',   // 2026-09-29 D334（活動：說明區塊）；2026-10-05 D354 退場（功能表 ⚫）
     S86: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、每件可看人數；大彩蛋拆到 S121、其餘六種行動任務拆到 S122）

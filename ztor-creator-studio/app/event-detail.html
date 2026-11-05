@@ -6930,10 +6930,10 @@
        比單買一張票多出來的東西），沒有商品圖就退回活動主視覺。 */
     const bds = ev.bundles || [];
     const bundleHTML = bds.map(b => {
-        const cap = Number(b.cap) || 0, bsold = Number(b.sold) || 0;
+        const bsold = Number(b.sold) || 0, bcap = window.ztorEvents.bundleLockOf(b) === null ? 0 : bsold + window.ztorEvents.bundleLockOf(b);   // D513：進度分母＝已售＋鎖定（不鎖定不畫進度）
         /* D465 決定 11：進度分子＝已售＋保留（被保留的套數），剩餘也扣保留 */
         const bheld = window.ztorEvents.bundleHoldSets ? window.ztorEvents.bundleHoldSets(b) : 0;
-        const pct = cap ? Math.round((bsold + bheld) / cap * 100) : 0;
+        const pct = bcap ? Math.round((bsold + bheld) / bcap * 100) : 0;
         /* tickets 形狀＝{ tierIds, qty }（2026-09-21 D296，相容讀取走 ztorEvents.bundleTickets）：
            量表列副標寫「VIP／Floor 任選 ×2」（一種「VIP ×2」，1 張不寫 ×1）。 */
         const tk = window.ztorEvents.bundleTickets(b);
@@ -6952,12 +6952,12 @@
           '</span>' +
           '<span class="meter-list__meter">' +
             '<span class="meter-list__num' + (pct >= 80 ? ' meter-list__num--hot' : '') + '">' +
-              '<b>' + fmtNum(bsold) + '</b>' + (cap ? ' / ' + fmtNum(cap) : '') +
+              '<b>' + fmtNum(bsold) + '</b>' +
             '</span>' +
             '<span class="stock-bar"><span class="stock-bar__fill" style="width:' + pct + '%"></span></span>' +
           '</span>' +
           '<span class="meter-list__left">' +
-            (cap ? esc(T('event-detail.sales.left', 'left {n}').replace('{n}', fmtNum(Math.max(0, cap - bsold - bheld))) + (bheld ? ' · ' + T('event-detail.sales.held', '{n} held').replace('{n}', bheld) : '')) : '') +
+            (window.ztorEvents.bundleLockOf(b) !== null ? esc(T('event-detail.sales.left', 'left {n}').replace('{n}', fmtNum(window.ztorEvents.bundleLeft(ev, b))) + (bheld ? ' · ' + T('event-detail.sales.held', '{n} held').replace('{n}', bheld) : '')) : '') +
           '</span>' +
         '</div>';
     }).join('');
@@ -7488,7 +7488,7 @@
         ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', tixNames.join('／')).replace('{n}', tk.qty)
         : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', tixNames[0]).replace('{n}', tk.qty));
       const sold = Number(b.sold) || 0;
-      const cap = Number(b.cap) || 0, capOn = b.cap !== null && b.cap !== undefined && b.cap !== '';   // D447：限量總量可以是 0（庫存設為 0 且沒賣出時）
+      const lock = window.ztorEvents.bundleLockOf(b), lockOn = lock !== null;   // D513：鎖定套數可以是 0（庫存設為 0）；販售上限退場
       /* 已佔用票券張數＝已售組數 × 每組張數（D296：一組內 n 張同一票種）。示範資料沒有記粉絲各選了哪個票種，
          逐票種分配不明時只顯總數（ASSUMPTIONS BDL-001 產品缺口）。組合包與單賣的票共用同一個數量池，
          這個數字才看得出「庫存被組合包吃掉多少」。 */
@@ -7503,12 +7503,12 @@
       const saleVal = b.sale ? T('cpp.bd.sp.sale.val', '{pct}% off · {from} – {to}').replace('{pct}', String(b.sale.pct))
         .replace('{from}', saleWhen(b.sale.from)).replace('{to}', saleWhen(b.sale.to)) : '';
       /* 摘要卡（2026-10-27，UI-CHANGES 三百五十九）：與票種卡同一副骨架——封面直式在上（組合包封面 b.cover → 第一個商品圖 → 活動主視覺）
-         → 名稱＋隱藏徽章 → 事實列（組合價／內含票券／內含商品／已佔用票券／限時折扣）→ 底部銷售區（已售／限量＋剩幾組或售完）；
+         → 名稱＋隱藏徽章 → 事實列（組合價／內含票券／內含商品／已佔用票券／限時折扣）→ 底部銷售區（已售＋鎖定時剩幾組或售完）；
          卡尾原本那排「在電子商店管理 →／庫存設為 0／隱藏・顯示」收進右上「⋯」。整卡點開改成彈窗（使用者：「組合包點開，可以先用 popup 開啟」）。 */
       const cover = (typeof b.cover === 'string' && b.cover) || ((b.products || []).map(x => x && x.img).filter(Boolean)[0]) || (ev.images && ev.images.keyvisual) || '';
-      const left = capOn ? Math.max(0, cap - sold) : null;
-      const pct = capOn && cap ? Math.min(100, Math.round(sold / cap * 100)) : 0;
-      const state = !capOn ? '' : (left > 0
+      const left = lockOn ? window.ztorEvents.bundleLeft(ev, b) : null;
+      const pct = lockOn && (sold + lock) ? Math.min(100, Math.round(sold / (sold + lock) * 100)) : 0;
+      const state = !lockOn ? '' : (left > 0
         ? '<span>' + esc(T('tc.left.sets', '{n} left').replace('{n}', fmtNum(left))) + '</span>'
         : '<span class="tier-card__sales-state--out">' + esc(T('events.badge.soldout', 'Sold out')) + '</span>');
       const zWhy = ev.status === 'draft' ? 'draft' : bdZeroBlock(b), vWhy = bdVisBlock();
@@ -7540,8 +7540,8 @@
           (saleVal ? fact(T('cpp.bd.sp.sale', 'Limited-time discount'), esc(saleVal)) : '') +
           /* 墓碑 2026-10-27（三百五十九）：「已售」「剩餘」兩列收進下方銷售區 */
         '</dl>' +
-        '<div class="tier-card__sales"><div class="tier-card__sales-row"><span>' + esc(T('ed.bd.sold', 'Sold')) + ' <b>' + fmtNum(sold) + '</b>' + (capOn ? ' / ' + fmtNum(cap) : '') + '</span>' + state + '</div>' +
-          (capOn ? '<div class="stock-bar"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div>' : '') + '</div>' +
+        '<div class="tier-card__sales"><div class="tier-card__sales-row"><span>' + esc(T('ed.bd.sold', 'Sold')) + ' <b>' + fmtNum(sold) + '</b></span>' + state + '</div>' +
+          (lockOn ? '<div class="stock-bar"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div>' : '') + '</div>' +
       '</div>';
     }).join('') +
       /* D397 決定一：有組合包時的新增入口＝空狀態那顆的同一個目的地。長相沿用票種的「新增門票」卡（.upload-tile.tier-add），
@@ -7572,20 +7572,20 @@
       esc(T(hidden ? 'ed.tix.show' : 'ed.tix.hide', hidden ? 'Show' : 'Hide')) + '</button>';
   }
   /* ── 組合包庫存設為 0（D447 決定三，2026-10-19；S100）─────────────────────────────────
-     組合包的庫存＝組合實際可售量。「庫存設為 0」＝把這個組合包切成「限量」，總量上限（cap，bundle-detail 的 Total Quantity）
-     改成剛好等於已售套數＋這個組合包被保留的套數（D465 補充三，ztorEvents.bundleZeroCap），剩餘 0、不能再買；不新增欄位。恢復＝到組合商品細節頁把總量調高或改回不限量。
+     組合包的庫存＝組合實際可售量。「庫存設為 0」（D513〔推導〕2，取代切成限量）＝開啟鎖定庫存，鎖定套數收到等於這個組合包被保留的套數
+     （ztorEvents.bundleZeroLock），其餘退回共用庫存，可售 0、粉絲端顯示完售；不新增欄位。恢復＝到組合商品細節頁調高鎖定套數或關閉鎖定庫存。
      營運動作〔同隱藏／顯示〕：檢視與編輯模式都能按、立即生效、不算進「儲存 N 項變更」。含 bookyay 門票、由創作者自建的組合包照樣可按。
-     不能按：已結束／已取消（唯讀）、已經是限量且剩餘 0；草稿活動不畫。 */
+     不能按：已結束／已取消（唯讀）、鎖定庫存已開且可售 0；草稿活動不畫。 */
   function bdZeroBlock(b) {
     if (!b) return 'none';
     if (stageRO()) return 'ro';
     const left = window.ztorEvents.bundleLeft(ev, b);
-    if (b.cap !== null && b.cap !== undefined && b.cap !== '' && left === 0) return 'zero';
+    if (window.ztorEvents.bundleLockOf(b) !== null && left === 0) return 'zero';
     return '';
   }
   const bdZeroWhy = why => ({
     ro: T('ed.bd.vis.ro', 'This event has ended or is archived — bundles here are view-only.'),
-    zero: T('ed.bd.zero.done', 'Stock is already 0 — raise the total in the bundle page to sell again')
+    zero: T('ed.bd.zero.done', 'Stock is already 0 — raise the locked sets in the bundle page, or turn the lock off, to sell again')
   }[why] || '');
   function bdZeroBtn(b) {
     if (ev.status === 'draft') return '';
@@ -7597,12 +7597,9 @@
   function setBundleSetsZeroNow(id) {
     const b = (ev.bundles || []).find(x => x.id === id);
     if (!b || bdZeroBlock(b)) return;
-    b.cap = window.ztorEvents.bundleZeroCap(b);
-    /* D480 決定 7（2026-10-23）：限量就自動鎖定＝限量 − 已售＝只剩被保留的套數；其餘鎖定退回門票的共用庫存 */
-    const hs = Number(b.holdSets) || 0;
-    b.lockSets = hs > 0 ? hs : null;
+    b.lockSets = window.ztorEvents.bundleZeroLock(b);   /* D513：鎖定收到被保留的套數（可以是 0），其餘退回門票的共用庫存 */
     window.ztorEvents.saveEdits(ev.id, { bundles: ev.bundles });
-    if (window.ztorToast) window.ztorToast.show(T('ed.bd.zero.toast', 'Stock of {name} set to 0 — raise the total in the bundle page to sell again').replace('{name}', b.name || ''));
+    if (window.ztorToast) window.ztorToast.show(T('ed.bd.zero.toast', 'Stock of {name} set to 0 — raise the locked sets in the bundle page, or turn the lock off, to sell again').replace('{name}', b.name || ''));
     renderBundles();
   }
   /* 墓碑（2026-10-15，D424 決定 9）：hidesLastSellableBundle()（組合包隱藏的可賣性防呆，D423 推導）退場——
@@ -7617,7 +7614,7 @@
       toHidden ? 'Hid {name} — it\u2019s off the shop and event page now' : 'Showing {name} again').replace('{name}', b.name || ''));
     renderBundles();
   }
-  /* 列表檢視：一列一組，事實同卡片（組合價、內含票券、內含商品、已售／上限、剩餘、已佔用票券）＋狀態＋隱藏／顯示 */
+  /* 列表檢視：一列一組，事實同卡片（組合價、內含票券、內含商品、已售、剩餘、已佔用票券）＋狀態＋隱藏／顯示 */
   function renderBundleTable(bds) {
     const box = document.getElementById('ed-bundle-table');
     if (!box) return;
@@ -7629,7 +7626,7 @@
       const tixLine = !tixNames.length ? '—' : (tixNames.length > 1
         ? T('cpp.bd.sum.any', '{names} (pick one) × {n}').replace('{names}', tixNames.join('／')).replace('{n}', tk.qty)
         : T('cpp.bd.sum.line', '{name} × {n}').replace('{name}', tixNames[0]).replace('{n}', tk.qty));
-      const sold = Number(b.sold) || 0, cap = Number(b.cap) || 0, capOn = b.cap !== null && b.cap !== undefined && b.cap !== '';
+      const sold = Number(b.sold) || 0, lockOn = Z.bundleLockOf(b) !== null;
       const href = 'bundle-detail.html?id=' + encodeURIComponent(b.id) + '&ev=' + encodeURIComponent(ev.id);
       const hidden = b.shown === false;
       return '<tr>' +
@@ -7637,8 +7634,8 @@
           '<span class="ztor-table__sub">' + esc((b.products || []).map(x => (x && x.name) || x).join('，') || T('ed.bd.noproducts', 'Tickets only')) + '</span></span></td>' +
         '<td>' + esc(Z.moneyIn(Z.bundlePriceOf(ev, b))) + '</td>' +
         '<td>' + esc(tixLine) + '</td>' +
-        '<td>' + fmtNum(sold) + (capOn ? ' / ' + fmtNum(cap) : '') + '</td>' +
-        '<td>' + (capOn ? fmtNum(Math.max(0, cap - sold)) : '—') + '</td>' +
+        '<td>' + fmtNum(sold) + '</td>' +
+        '<td>' + (lockOn ? fmtNum(Z.bundleLeft(ev, b)) : '—') + '</td>' +
         '<td>' + fmtNum((tixNames.length ? tk.qty : 0) * sold) + '</td>' +
         '<td><span class="badge ' + (hidden ? 'badge--neutral' : 'badge--success') + '">' +
           esc(T(hidden ? 'ce.tier.hidden' : 'ed.tix.status.shown', hidden ? 'Hidden' : 'Shown')) + '</span></td>' +

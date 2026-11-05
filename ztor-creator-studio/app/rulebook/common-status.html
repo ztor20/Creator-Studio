@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>狀態語言 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -95,7 +95,7 @@ table.objs td:nth-child(3){width:24%}
 <div class="wrap">
 
 <h1 id="overview">狀態語言</h1>
-<p class="lede">創作者與 Admin 在每一頁看到的狀態，都照這頁的同一組狀態詞；各類資料有哪些狀態集中列在這裡，怎麼轉換寫在各自的規則頁。</p>
+<p class="lede">創作者在每一頁看到的狀態，都照這頁的同一組狀態詞；各類資料有哪些狀態集中列在這裡，怎麼轉換寫在各自的規則頁。</p>
 
 <div class="toc"></div>
 
@@ -110,8 +110,8 @@ table.objs td:nth-child(3){width:24%}
       <li>外部整合的部分支援不等於完整同步</li>
     </ul>
   </li>
-  <li>同一個對象有好幾條獨立的狀態時（例如商品的上架與庫存、訂單的付款與履約），各條分開顯示，不混成一個狀態</li>
-  <li>平台不提供退款動作，所有資料都沒有「已退款」狀態；取消一律由 Admin 撤銷，見訂單詳情的<a href="order-detail.html#void-where">門票與組合包在哪裡撤銷</a></li>
+  <li>同一個對象有好幾條獨立的狀態時（例如商品的上架與庫存、活動的階段與上下架），各條分開顯示，不混成一個狀態</li>
+  <li>平台不提供退款動作，訂單與收入都沒有「已退款」狀態；訂單品項與領取單位轉為已取消的唯一途徑，是 <span class="tag adm">Admin</span> 只有 Admin 能按的撤銷，見訂單詳情的<a href="order-detail.html#void-where">門票與組合包在哪裡撤銷</a></li>
 </ul>
 <p class="note">依據：主規格 §7.2「規格用途」「顯示規則」「使用限制」；D252、D253。</p>
 
@@ -120,7 +120,7 @@ table.objs td:nth-child(3){width:24%}
 <div class="tablewrap"><table class="objs">
   <thead><tr><th>資料</th><th>狀態</th><th>規則在哪</th></tr></thead>
   <tbody>
-    <tr><td>收入</td><td>待結算（Accrued）→ 已結算（Settled）→ 已取消（Cancelled）或爭議中（Disputed）</td><td><a href="#revenue">收入與提款的狀態</a></td></tr>
+    <tr><td>收入</td><td>待結算（Accrued）→ 已結算（Settled）→ 已取消（Cancelled）或爭議中（Disputed）<br>交易明細上的用字不同，見收入與提款的狀態</td><td><a href="#revenue">收入與提款的狀態</a></td></tr>
     <tr><td>提款</td><td>提款申請中（Payout Requested）<br>已付款（Paid）<br>提款失敗（Failed）</td><td><a href="#revenue">收入與提款的狀態</a></td></tr>
     <tr><td>項目</td><td>草稿（Draft）→ 準備中（Scheduled）→ 進行中（Published）→ 已成功（Succeeded）→ 已上線（Live）<br>任一階段可轉已取消（Cancelled）</td><td>項目規則的<a href="project-rules.html#stage">項目的階段</a></td></tr>
     <tr><td>作品審核</td><td>草稿（Draft）→ 待審核（Pending review）→ 審核中（In review）→ 審核通過（Approved）或審核不通過（Rejected）<br>審核不通過修改後重送，回到待審核</td><td>項目規則的<a href="project-rules.html#review">作品審核</a>；<a href="admin-video-review.html">影片上架審核</a></td></tr>
@@ -128,33 +128,77 @@ table.objs td:nth-child(3){width:24%}
     <tr><td>商品的庫存</td><td>充足（In stock）<br>低庫存（Low Stock）<br>售罄（Sold Out）<br>補貨中（Restocking）<br>不限量（Unlimited）</td><td><a href="#stock">商品的庫存狀態</a></td></tr>
     <tr><td>訂單</td><td>待付款（Unpaid）<br>已付款（Paid）<br>待出貨（To Ship）<br>已出貨（Shipped）<br>已完成（Completed）<br>爭議（Disputed）<br>已取消（Cancelled）<br>已過期（Expired）</td><td>訂單詳情的<a href="order-detail.html#status">訂單的狀態</a></td></tr>
     <tr><td>領取單位</td><td>取貨場次待設定<br>待核銷<br>已核銷<br>已取消（Cancelled）</td><td>訂單詳情的<a href="order-detail.html#status-unit">品項與領取單位的狀態</a></td></tr>
-    <tr><td>取貨場次</td><td>尚未開始（Scheduled）<br>進行中（Active）<br>已結束（Ended）<br>已封存（Archived）</td><td><a href="pickup.html">取貨管理</a></td></tr>
+    <tr><td>取貨場次</td><td>尚未開始（Scheduled）<br>進行中（Active）<br>已結束（Ended）<br>已封存（Archived）<br>前三個依時間判定，已封存是手動<br><span class="tag adm">Admin</span> 只在 Admin 代管創作者時出現：掃碼領點類型另有啟用（Enabled）／停用（Disabled），是手動旗標，與進行中是兩件事</td><td><a href="pickup.html">取貨管理</a></td></tr>
     <tr><td>優惠碼</td><td>未開始（Scheduled）<br>進行中（Active）<br>已用完（Exhausted）<br>已結束（Ended）<br>已停用（Disabled）</td><td>優惠規則的<a href="promo-rules.html#s4-5-4">優惠碼的狀態</a></td></tr>
-    <tr><td>活動</td><td>草稿（Draft）→ 已排程（Scheduled）→ 售票中（On sale）→ 進行中（Live）→ 已結束（Ended）<br>已下架與已封存不是階段：已下架是另加的徽章，已封存只能從已下架進入，見活動規則的<a href="event-rules.html#archive">封存與解除封存</a></td><td>活動規則的<a href="event-rules.html#stage">活動的階段</a></td></tr>
+    <tr><td>活動</td><td>草稿（Draft）→ 已排程（Scheduled）→ 售票中（On sale）→ 進行中（Live）→ 已結束（Ended）<br>活動沒有取消動作，也沒有已取消階段<br>已下架與已封存不是階段：已下架是另加的徽章，已封存只能從已下架進入，見活動規則的<a href="event-rules.html#archive">封存與解除封存</a></td><td>活動規則的<a href="event-rules.html#stage">活動的階段</a></td></tr>
     <tr><td>IP 授權</td><td>草稿（Draft）→ 生效（Active）→ 到期（Expired）、撤銷（Revoked）或爭議（Disputed）</td><td>IP 授權規則的<a href="ip-rules.html#stage">授權的階段</a></td></tr>
-    <tr><td>身分驗證（KYC）</td><td>未開始 → 審核中 → 已驗證、已拒絕或已過期<br>已驗證滿 12 個月過期，要重新驗證<br>是提款的前置條件</td><td><a href="revenue-withdraw.html">申請提款</a></td></tr>
-    <tr><td>收款方式</td><td>未驗證 → 驗證中 → 已驗證 → 啟用或停用<br>可以設主要與備用；唯一一個已驗證的收款方式不能移除</td><td><a href="revenue-withdraw.html">申請提款</a></td></tr>
+    <tr><td>身分驗證（KYC）</td><td>未開始（unstarted）→ 審核中（pending）→ 已驗證（verified）、已拒絕（rejected）或已過期（expired）<br>申請提款要身分驗證已驗證，並且至少一個收款方式啟用</td><td><a href="#identity">身分驗證、收款方式與外部整合的狀態</a></td></tr>
+    <tr><td>收款方式</td><td>未驗證 → 驗證中（pending）→ 已驗證（verified）→ 啟用（active）或停用（suspended）</td><td><a href="#identity">身分驗證、收款方式與外部整合的狀態</a></td></tr>
     <tr><td>IP Bank 擁有者連結</td><td>已連結（Linked）<br>已邀請（Invited），等擁有者認領<br>已邀請時可以累積應付金額，但不能提款；認領後轉已連結</td><td><a href="admin-ipbank.html">IP Bank</a></td></tr>
-    <tr><td>外部整合</td><td>未連結<br>已連結<br>同步中<br>同步失敗<br>部分支援<br>已撤銷</td><td>—</td></tr>
+    <tr><td>外部整合</td><td>未連結<br>已連結<br>同步中<br>同步失敗<br>部分支援<br>已撤銷</td><td><a href="#identity">身分驗證、收款方式與外部整合的狀態</a></td></tr>
   </tbody>
 </table></div>
 <p class="note">依據：主規格 §7.2「共用欄位」；D041、D122、D129、D169、D179、D240、D252、D253、D272、D284、D298、D361、D424。</p>
 
 <h2 id="revenue"><span class="n"></span>收入與提款的狀態</h2>
-<p>一筆收入照結算狀態走：待結算 → 已結算，之後可能因 Admin 撤銷變成已取消，或因買家端發起爭議變成爭議中。</p>
+<p>一筆收入照結算狀態走：待結算 → 已結算，之後可能因 <span class="tag adm">Admin</span> 只有 Admin 能按的撤銷產生沖銷而變成已取消，或因買家端發起爭議變成爭議中。</p>
 <div class="flow">
   <span class="tag wait">待結算</span><span class="arr">→</span><span class="tag ok">已結算</span>
-  <span class="flow__alt">已結算之後 → <span class="tag off">已取消</span>（Admin 撤銷）或 <span class="tag warn">爭議中</span>（買家或銀行端發起）</span>
+  <span class="flow__alt">已結算之後 → <span class="tag off">已取消</span>（撤銷產生沖銷）或 <span class="tag warn">爭議中</span>（買家或銀行端發起）</span>
 </div>
+<p>交易明細的每一列只顯示自己那一類交易適用的狀態；各狀態什麼時候出現、畫面長什麼樣如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">收入類交易</td></tr>
+    <tr><td>待結算</td><td>收入已經產生、還不能提領</td><td>顯示待結算，後面接預計可提領的日期（結算週期尚待確認，日期只是示意）；不能提領，也不進項目的可分配淨利<br>手動補登的待結算列改接「不計入可提領」</td></tr>
+    <tr><td>已結算</td><td>收入已結算</td><td>計入可提領（Available）與項目的可分配淨利；交易明細上顯示「可提領」</td></tr>
+    <tr><td>已付款（Paid）</td><td>這筆收入已撥付結清</td><td>顯示 Paid；和提款類交易的 Paid 不是同一件事，兩者用不同色票</td></tr>
+    <tr><td>爭議中（Disputed）</td><td>買家或銀行端發起爭議，調查期間</td><td>標示凍結，金額從可提領扣除；申訴成立還原、不成立維持扣除，見財務術語與收入事件的<a href="common-finance.html#void-reserve">撤銷沖銷與爭議</a></td></tr>
+    <tr><td>已取消（Cancelled）</td><td>撤銷當下自動產生一筆負值沖銷分錄（見<a href="common-finance.html#void-reserve">撤銷沖銷與爭議</a>）</td><td>撤銷沖銷列顯示「已取消」；原收入列怎麼標示 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已扣款</td><td>扣款類交易（平台費、支付費、稅費、爭議調整或其他扣減）</td><td>顯示「已扣款」，金額是負值</td></tr>
+    <tr class="grp"><td colspan="3">提款類交易</td></tr>
+    <tr><td>提款申請中（Payout Requested）</td><td>創作者送出申請之後</td><td>提款紀錄新增一筆，交易明細新增對應的提款交易；可提領金額先扣掉這次申請的金額</td></tr>
+    <tr><td>已付款（Paid）</td><td>提款已成功入帳</td><td>顯示 Paid 與實際到帳日、手續費；由誰、什麼時候把申請中轉成已付款 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>提款失敗（Failed）</td><td>銀行退回、支付通道失敗等</td><td>提款紀錄顯示失敗，提供查看原因、更新付款資訊、重新申請；失敗後可提領金額有沒有還原 <span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 <ul class="plain">
-  <li>只有已結算的收入計入可提領（Available）與項目的可分配淨利；待結算的不能提領，也不進可分配淨利</li>
-  <li>已取消來自 Admin 撤銷時產生的沖銷分錄：沖銷以新分錄表達，原事件不改寫</li>
-  <li>爭議中的金額從可提領扣除並凍結，處理方式見財務術語與收入事件的<a href="common-finance.html#void-reserve">撤銷沖銷與爭議</a></li>
-  <li>收入類交易顯示待結算、可提領、已付款、爭議；提款類交易顯示提款申請中、已付款、提款失敗；一列交易只顯示自己那一類的狀態</li>
-  <li>已付款在收入類表示這筆收入已撥付結清，在提款類表示提款已成功入帳</li>
   <li>手動補登、未驗證是資料來源的標記，不是交易狀態，可以和上面的狀態並存，見<a href="common-finance.html#categories">收入與交易分類</a></li>
 </ul>
-<p class="note">依據：主規格 §7.2「共用欄位」收入列、「使用限制」；§7.3「使用限制」；D041、D253、D452。</p>
+<p class="note">依據：主規格 §7.2「共用欄位」收入列、「使用限制」；§7.3「使用限制」；5.1.8 F3、F7、F8；D041、D253、D452。</p>
+
+<h2 id="identity"><span class="n"></span>身分驗證、收款方式與外部整合的狀態</h2>
+<p>三類資料的狀態順序如下；申請提款要身分驗證已驗證，並且至少一個收款方式啟用（含第一筆）。規格只定義了狀態詞與順序，什麼時候進入各狀態、畫面長什麼樣多半沒有寫。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:26%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">身分驗證（KYC）</td></tr>
+    <tr><td>未開始（unstarted）</td><td>還沒送出驗證</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>審核中（pending）</td><td>已送出、等審核</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已驗證（verified）</td><td>審核通過</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已拒絕（rejected）</td><td>審核不通過</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已過期（expired）</td><td>已驗證滿 12 個月</td><td>到期前會提醒，要重新驗證；沒通過驗證時，申請提款不能送出，見<a href="revenue-withdraw.html#wd-main">申請提款主畫面</a></td></tr>
+    <tr class="grp"><td colspan="3">收款方式</td></tr>
+    <tr><td>未驗證</td><td>剛新增</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>驗證中（pending）</td><td>需要後續驗證時</td><td>銀行卡顯示驗證中，這家銀行不能送出提款</td></tr>
+    <tr><td>已驗證（verified）</td><td>驗證完成</td><td>唯一一個已驗證的收款方式不能移除</td></tr>
+    <tr><td>啟用（active）</td><td>—</td><td>可以設為主要或備用，同時只能有一個主要；設新的主要時，舊的主要自動降為備用；只有可用與預設的銀行能選來提款 <span class="tag wait">尚待確認</span>（「可用」「預設」與啟用、停用的對應）</td></tr>
+    <tr><td>停用（suspended）</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">外部整合</td></tr>
+    <tr><td>未連結</td><td>—</td><td>連結要經第三方授權流程</td></tr>
+    <tr><td>已連結</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>同步中</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>同步失敗</td><td>—</td><td>顯示原因、最後同步時間與重試入口</td></tr>
+    <tr><td>部分支援</td><td>只支援部分功能，不等於完整同步</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已撤銷</td><td>—</td><td>撤銷要經第三方授權流程；畫面說明影響哪些同步與功能，已同步的歷史資料不受影響</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>Spotify、StreetVoice、YouTube、Instagram、TikTok 五個粉絲資料來源不用外部整合的六個狀態：官方串接看同步狀態，自行上傳看未上傳、已上傳、資料過期</li>
+  <li>設定頁對這五個來源只唯讀顯示，不提供重試或重新連結</li>
+</ul>
+<p class="note">依據：主規格 §7.2「共用欄位」身分驗證、收款方式、外部整合列；5.1.9 F5、F6、使用情境第 5、6 項；D165。</p>
 
 <h2 id="stock"><span class="n"></span>商品的庫存狀態</h2>
 <p>庫存狀態是商品上架開關以外的另一條狀態，兩條並存、不混用；庫存狀態每次售出、撤銷、補貨與手動調整後重新計算。</p>
@@ -185,16 +229,21 @@ table.objs td:nth-child(3){width:24%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>0-設計規格書.md §7.2</code>（v4.95）、<code>§7.3</code>「使用限制」</li>
-    <li>決策：D041、D105、D122、D129、D151、D154、D169、D177、D178、D179、D182、D192、D196、D240、D241、D252、D253、D272、D284、D298、D361、D424、D452、D457</li>
+    <li>規格：<code>0-設計規格書.md §7.2</code>（v5.41）、<code>§7.3</code>「使用限制」；<code>5.1.8-收入管理.md</code>（2026-11-05）F3、F7、F8；<code>5.1.9-設定.md</code> F5、F6</li>
+    <li>決策：D041、D105、D122、D129、D151、D154、D169、D177、D178、D179、D182、D192、D196、D240、D241、D252、D253、D272、D284、D298、D361、D424、D452、D457、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>不限量商品沒有固定的庫存上限，低庫存門檻 10% 的基準是什麼</li>
     <li>庫存狀態的「不限量」與庫存版本的「不限量」之間的關係</li>
-    <li>撤銷在收入端的沖銷口徑仍待上游核准，見<a href="common-finance.html">財務術語與收入事件</a>頁尾</li>
+    <li>撤銷後，已取消的原收入列怎麼標示；撤銷沖銷金額口徑的未定事項，見<a href="common-finance.html">財務術語與收入事件</a>頁尾</li>
+    <li>交易明細上的「可提領」是不是已結算的畫面用字（規格以待結算對應 accrued、可提領對應 settled）（推導）</li>
+    <li>提款從申請中轉成已付款或失敗，由誰、什麼時候轉換；失敗後金額有沒有還原到可提領</li>
+    <li>結算週期（款項幾天後變可提領）：5.1.8 寫尚未定義，5.1.9 提款排程寫 T+7，兩份規格互相矛盾，待上游裁決</li>
+    <li>身分驗證、收款方式、外部整合各狀態的進入條件與畫面（外部整合的未連結、同步失敗、已撤銷已有畫面規則，其餘仍待補）</li>
+    <li>外部整合的六個狀態，規則寫在哪一頁</li>
   </ul>
-  <p class="k">最近同步：2026-10-20（D457 活動階段改五個，拿掉已取消；已封存不是階段）；2026-10-20（來源版本對照到主規格 v4.95）；2026-10-19（新建；對照主規格 v4.90 §7.2）</p>
+  <p class="k">最近同步：2026-11-05（D513 撤銷自動產生負值沖銷分錄；對照規格 v5.41）</p>
 </details>
 </div>
 </body>

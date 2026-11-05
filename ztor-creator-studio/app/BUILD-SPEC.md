@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-11-05 · D513 組合包販售上限退場（UI-CHANGES 四百六十六、ASSUMPTIONS UIA-333）**：沒有新元件。`bundle-detail.html`、`js/bundle-editor.js`（`layout:'split'`）的庫存節改成 `.control-group`＋`.control-row`＋`.switch` 三開關，同 `create-bundle.html`；`.form-ask` 問句二選一退場，`__body`／`__row`／`.form-tally` 留用。下方 D480、capOver 等段落是歷史紀錄。
+
 > **⚠ 2026-10-29 已被 D488／D489 取代（UI-CHANGES 四百一十一）：重新上架不再詢問，改為檢查保存的時間（有已過的擋下並提示、都沒過直接恢復）；下方 `ask`／`bindChoice`／`skipOf` 與「恢復／不恢復」選擇區已退場，只留歷史說明。**
 > **2026-10-27 · D481 下架保存排程、重新上架詢問是否恢復（UI-CHANGES 三百零五、ASSUMPTIONS UIA-303）**：新增元件 `ds-components/sched-restore.css`（`.sched-restore` 內容區塊：`__label`／`__group`／`__list`／`__item`（`--skip`）／`__what`／`__when`／`__note`／`__choice`，兩個選項沿用 `.radio-list`），行為與 markup 集中在 `partials/relist-restore.js`（`plan`／`ask`／`blockHTML`／`bindChoice`／`skipOf`）；`ask()` 自帶 `leave-dialog` 殼、只注入一次，沒選選項前主鈕停用；活動詳情 D448 彈窗用 `blockHTML()` 放進既有 `#ed-confirm`、主鈕以 `blocked` 停用到選完。狀態層：`ListingState.unlist` 把生效中的四個時間存進 `entity.paused`（活動組合包連另設格子 `sched`），`relist(entity, { restore, skip })` 依 `restorableTimes()` 恢復；products-store 工作階段欄位加 `paused`、events-store 組合包記錄加 `paused`。消費者：product-detail／bundle-detail／auction-detail／e-shop／event-detail、`partials/bundle-relist.js`。
 

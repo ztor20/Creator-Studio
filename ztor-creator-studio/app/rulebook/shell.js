@@ -9,10 +9,10 @@
   }
   applyTheme(getTheme());
 
-  /* 章節樹：照原型左側欄排——章節＝功能項目、第二層＝子功能頁（側欄下拉的目的地）、
+  /* 章節樹：照原型左側欄排，並分成「創作者介面」（第 1～8 章，第 1 章為共用）與「Admin 介面」（第 9 章）兩組——章節＝功能項目、第二層＝子功能頁（側欄下拉的目的地）、
      第三層＝子頁（本手冊的一頁）。沒有 h 的子頁是已規劃、尚無內容。 */
   var TREE=[
-    {n:'1', t:'專案概覽', groups:[
+    {n:'1', t:'專案概覽', iface:'創作者介面', shared:true, groups:[
       {t:'專案概覽', pages:[{h:'index.html', t:'專案概覽'}]},
       {t:'共同規格', pages:[{h:'taxonomy.html', t:'商品分類與模組應用'},{h:'common-status.html', t:'狀態語言'},{h:'common-finance.html', t:'財務術語與收入事件'},{h:'common-i18n.html', t:'語言與在地化'},{h:'common-currency.html', t:'定價幣別'},{h:'common-media.html', t:'展示素材與年齡分級'},{h:'common-terms.html', t:'用詞規則'}]}
     ]},
@@ -28,11 +28,11 @@
     ]},
     {n:'4', t:'IP', groups:[
       {t:'IP 規則', pages:[{h:'ip-rules.html', t:'IP 授權規則'}]},
-      {t:'我的 IP', pages:[{h:'my-ip.html', t:'我的 IP'},{h:'ip-register.html', t:'登錄 IP'},{h:'ip-manage.html', t:'管理 IP'}]},
+      {t:'IP 資產', pages:[{h:'my-ip.html', t:'IP 資產'},{h:'ip-register.html', t:'登錄 IP'},{h:'ip-manage.html', t:'管理 IP'}]},
       {t:'IP 市場', pages:[{h:'ip-market.html', t:'IP 市場'},{h:'ip-detail.html', t:'IP 詳情'}]}
     ]},
     {n:'5', t:'電子商店', groups:[
-      {t:'電子商店規則', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'promo-rules.html', t:'優惠規則'},{h:'pickup-rules.html', t:'取貨規則'}]},
+      {t:'電子商店規則', pages:[{h:'eshop-sales.html', t:'電子商店販售流程'},{h:'bundles.html', t:'組合包與票務商品'},{h:'bundles-stock.html', t:'組合包的庫存與成交條件'},{h:'bundles-lifecycle.html', t:'組合包的階段與連動'},{h:'promo-rules.html', t:'優惠規則'},{h:'pickup-rules.html', t:'取貨規則'}]},
       {t:'建立商品', pages:[{h:'eshop-create.html', t:'建立商品'},{h:'eshop-create-physical.html', t:'賣實體商品'},{h:'eshop-create-digital.html', t:'賣數位商品'},{h:'eshop-create-bundle.html', t:'建立組合包'},{h:'eshop-create-auction.html', t:'建立拍賣'}]},
       {t:'電子商店', pages:[{h:'eshop-list.html', t:'商品清單'}]},
       {t:'商品詳情', pages:[{h:'eshop-product.html', t:'商品細節頁'},{h:'eshop-product-stock.html', t:'商品庫存'},{h:'eshop-product-settings.html', t:'商品設定'},{h:'eshop-bundle.html', t:'組合包細節頁'},{h:'eshop-auction.html', t:'拍賣細節頁'}]},
@@ -58,15 +58,16 @@
     {n:'8', t:'收入管理', groups:[
       {t:'收入管理', pages:[{h:'revenue.html', t:'收入管理'},{h:'revenue-withdraw.html', t:'申請提款'},{h:'revenue-manual.html', t:'手動補登收入'}]}
     ]},
-    {n:'9', t:'Admin', groups:[
+    {n:'9', t:'Admin', iface:'Admin 介面', groups:[
       {t:'Creator 管理', pages:[{h:'admin-creators.html', t:'Creator 列表'},{h:'admin-creator-detail.html', t:'Creator 詳情'}]},
       {t:'創作者活動管理', pages:[{h:'admin-events.html', t:'創作者活動管理'}]},
-      {t:'影片上架審核', pages:[{h:'admin-video-review.html', t:'影片上架審核'}]},
       {t:'Admin IP Bank', pages:[{h:'admin-ipbank.html', t:'IP Bank'},{h:'admin-ipbank-create.html', t:'建立 IP Entry'}]},
       {t:'IP Bank Reporting', pages:[{h:'admin-ipbank-report.html', t:'IP Bank Reporting'}]},
       {t:'平台費率設定', pages:[{h:'admin-fees.html', t:'平台費率設定'}]},
       {t:'平台優惠設定', pages:[{h:'admin-promotions.html', t:'平台優惠設定'}]},
-      {t:'平台忠誠點數設定', pages:[{h:'admin-loyalty.html', t:'平台忠誠點數設定'}]}
+      {t:'平台忠誠點數設定', pages:[{h:'admin-loyalty.html', t:'平台忠誠點數設定'},{h:'admin-loyalty-other.html', t:'全站活動、賽季與衰減設定'}]},
+      {t:'影片上架審核', pages:[{h:'admin-video-review.html', t:'影片上架審核'}]},
+      {t:'Admin 專屬操作', pages:[{h:'admin-actions.html', t:'Admin 專屬操作總表'}]}
     ]}
   ];
   function current(){
@@ -175,7 +176,8 @@
     TREE.forEach(function(c){
       var open=here&&here.c===c, filled=0, total=0;
       c.groups.forEach(function(g){ g.pages.forEach(function(p){ total++; if(p.h) filled++; }); });
-      html+='<li class="rb-ch'+(open?' is-open is-cur':'')+(filled?'':' is-empty')+'"><button type="button" class="rb-chb" aria-expanded="'+(open?'true':'false')+'" title="'+esc(c.t)+'"><span class="n">'+c.n+'</span><span class="rb-t">'+esc(c.t)+'</span>'+(filled?'':'<span class="rb-todo">待補</span>')+'<span class="rb-car" aria-hidden="true">›</span></button><div class="rb-chbody">';
+      if(c.iface) html+='<li class="rb-if" role="presentation">'+esc(c.iface)+'</li>';
+      html+='<li class="rb-ch'+(open?' is-open is-cur':'')+(filled?'':' is-empty')+'"><button type="button" class="rb-chb" aria-expanded="'+(open?'true':'false')+'" title="'+esc(c.t)+'"><span class="n">'+c.n+'</span><span class="rb-t">'+esc(c.t)+'</span>'+(c.shared?'<span class="rb-shared">共用</span>':'')+(filled?'':'<span class="rb-todo">待補</span>')+'<span class="rb-car" aria-hidden="true">›</span></button><div class="rb-chbody">';
       c.groups.forEach(function(g){
         html+='<div class="rb-grp">'+esc(g.t)+'</div><ul class="rb-pg">';
         g.pages.forEach(function(p){

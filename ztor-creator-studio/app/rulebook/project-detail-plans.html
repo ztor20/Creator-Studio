@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>方案 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -194,7 +194,7 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>共創目標</td><td>只有共創</td><td>金額<br>改動要先確認</td></tr>
     <tr><td>最少預購數</td><td>只有預購</td><td>累計賣出的作品份數<br>改動要先確認</td></tr>
-    <tr><td>未達標時自動全額退款</td><td>共創<br>預購是否適用見頁尾尚待確認</td><td>創作者自選開或關<br>開：項目未達標時自動全額退款<br>關：照其他處理（保留或轉換，依方案）<br>這是共創與預購未達標的退款，和一般訂單的退款不同範圍</td></tr>
+    <tr><td>未達標處理</td><td>共創、預購</td><td>未達標一律全額退款，創作者沒有開關可選<br>這是共創與預購未達標的退款，和創作者主動退款不同範圍</td></tr>
   </tbody>
 </table></div>
 <p>未達標時項目轉已取消，終止原因記為未達標，見<a href="project-rules.html#cancel">項目的取消</a>。</p>
@@ -205,12 +205,13 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>支持者位數與位數限制</td><td>只有共創</td><td>方案含幾個分潤名額</td></tr>
-    <tr><td>作品與含作品份數</td><td>只有預購，必含作品</td><td>份數預設 1</td></tr>
-    <tr><td>商品</td><td>共創：方案內的商品<br>預購：附屬商品，可加</td><td>引用電子商店的商品資料，這裡不重建商品</td></tr>
-    <tr><td>方案優惠</td><td>—</td><td>百分比，用在<a href="#plan-price">方案價格怎麼算</a></td></tr>
-    <tr><td>權益</td><td>只有共創</td><td>—</td></tr>
-    <tr><td>販售數量上限</td><td>只有預購</td><td>—</td></tr>
+    <tr><td>分潤名額數（畫面上的「支持者位數」）</td><td>只有共創</td><td>方案含幾個分潤名額，一個名額是一份淨收益分潤<br>可以是 0，就是只給商品與權益、不分潤的純回饋方案</td></tr>
+    <tr><td>位數限制</td><td>只有共創</td><td>單選：無限或有限</td></tr>
+    <tr><td>作品與含作品份數</td><td>只有預購，必含作品</td><td>份數最小 1、預設 1</td></tr>
+    <tr><td>商品</td><td>共創：方案內的商品<br>預購：附屬商品，可加</td><td>引用電子商店的商品資料，這裡不重建商品<br>IP 資產不出現在商品清單，不能當商品賣進方案</td></tr>
+    <tr><td>方案優惠</td><td>—</td><td>0–100 的百分比，選填、預設 0，用在<a href="#plan-price">方案價格怎麼算</a><br>填超過上限時夾在上限，並說明實際生效的百分比與金額</td></tr>
+    <tr><td>額外權益</td><td>—</td><td>可新增自訂權益；不另計價，不進價格算式</td></tr>
+    <tr><td>販售數量上限</td><td>只有預購</td><td>選填，這個方案最多賣幾筆，賣完不能再下單；不填就是不限量<br>和含作品份數是兩件事：方案最多能賣的作品份數＝販售數量上限 × 含作品份數</td></tr>
     <tr><td>價格</td><td>—</td><td>自動算出，不手填，見<a href="#plan-price">方案價格怎麼算</a></td></tr>
     <tr><td>作品的單位價格</td><td>只有預購</td><td>在這裡維護；改了之後，還沒鎖定的方案價格一起重算</td></tr>
     <tr><td>新增方案、移除方案</td><td>—</td><td>已有人下單或支持的方案見<a href="#plan-sold">已成立方案的調整</a></td></tr>
@@ -220,6 +221,25 @@ table.map td:nth-child(2){width:22%}
   <li>預購方案不含分潤名額</li>
   <li>總覽的<a href="project-detail-overview.html#ov-plans">方案摘要</a>只列名稱、價格與一句摘要，完整內容在這裡</li>
 </ul>
+<h4 id="plan-states">方案的狀態</h4>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">方案清單</td></tr>
+    <tr><td>有方案</td><td>項目至少有一個方案</td><td>列出每個方案</td></tr>
+    <tr><td>沒有方案</td><td>方案分頁是空的</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>已有人下單或支持</td><td>某個方案已成立對外承諾</td><td>調整要先確認，見<a href="#plan-sold">已成立方案的調整</a></td></tr>
+    <tr><td>已取消</td><td>項目已取消</td><td>方案內容、門檻、數量上限全部凍結</td></tr>
+    <tr class="grp"><td colspan="3">販售數量上限（預購）</td></tr>
+    <tr><td>未滿</td><td>賣出筆數低於上限</td><td>照常販售</td></tr>
+    <tr><td>達到上限</td><td>賣出筆數等於上限</td><td>不能再下單；方案分頁上怎麼顯示 <span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">方案優惠</td></tr>
+    <tr><td>優惠是 0</td><td>方案沒有折扣</td><td>價格就是定價加總，由公式算出</td></tr>
+    <tr><td>優惠超過可折抵上限（共創）</td><td>填的百分比讓折抵金額超過商品定價加總</td><td>夾在上限，說明實際生效的百分比與金額；價格最低是股份總價</td></tr>
+    <tr><td>只含名額、沒有商品（共創）</td><td>方案商品定價加總是 0</td><td>可折抵上限是 0%，一分都不能折</td></tr>
+    <tr><td>純回饋方案（共創）</td><td>方案含 0 個名額</td><td>可折抵上限等於原價，最多折到 0</td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.2.2 §2.2.4、§2.2.5；5.1.2.1 §5.2.2 F24、F25，§5.3.1 F27，§5.3.2 F28、F29；D166、D167、D168。</p>
 
 <h2 id="plan-price"><span class="n"></span>方案價格怎麼算</h2>
@@ -227,39 +247,38 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:14%">方案</th><th>價格</th></tr></thead>
   <tbody>
-    <tr><td>共創</td><td>（支持者位數 × 每名額單價 ＋ 商品定價加總）×（1 − 方案優惠 ÷ 100）<br>每名額單價＝共創目標 ÷ 支持者位數<br>方案優惠只折商品那一段，折後價格最低是股份總價</td></tr>
+    <tr><td>共創</td><td>（分潤名額數 × 每名額單價 ＋ 商品定價加總）×（1 − 方案優惠 ÷ 100）<br>每名額單價＝共創目標 ÷ 支持者位數（分潤名額的總數）<br>方案優惠只折商品那一段，折後價格最低是股份總價（分潤名額數 × 每名額單價）</td></tr>
     <tr><td>預購</td><td>（單位價格 × 含作品份數 ＋ 附屬商品定價加總）×（1 − 方案優惠 ÷ 100）</td></tr>
   </tbody>
 </table></div>
-<div class="stepsum">範例（數字為假設）：預購的單位價格 300、含作品 2 份、附屬商品定價合計 200、方案優惠 10，價格＝（300 × 2 ＋ 200）×（1 − 10 ÷ 100）＝ 720。</div>
+<ul class="plain">
+  <li>任一來源變動就重算：共創目標、分潤名額總數、商品定價、單位價格、含作品份數、方案優惠</li>
+  <li>可折抵的上限金額是商品定價加總，換成百分比＝商品定價加總 ÷ 原價 × 100，向下取整</li>
+</ul>
+<div class="stepsum">範例（數字為假設）：預購的單位價格 300、含作品 2 份、附屬商品定價合計 200、方案優惠 10，價格＝（300 × 2 ＋ 200）×（1 − 10 ÷ 100）＝ 720。<br>共創：共創目標 100,000、分潤名額總數 100，每名額單價 1,000；方案含 2 個名額、商品定價合計 500、方案優惠 10，價格＝（2 × 1,000 ＋ 500）×（1 − 10 ÷ 100）＝ 2,250，高於股份總價 2,000。</div>
 <p class="note">依據：5.1.2.2 §2.2.5；5.1.2.1 F25、F29；D167、D168。</p>
 
 <h2 id="plan-sold"><span class="n"></span>已成立方案的調整</h2>
-<p>已有粉絲下單或支持的方案是已成立的對外承諾，下列調整都要先確認、保守處理；可以調整的範圍與是否鎖定見頁尾尚待確認。</p>
-<ul class="plain">
-  <li>價格組成</li>
-  <li>方案內容</li>
-  <li>數量上限</li>
-</ul>
-<p>已取消的項目，方案、門檻、數量上限與未達標退款開關全部凍結，見<a href="project-detail.html#frozen">已取消的凍結範圍</a>。</p>
+<p>已有粉絲下單或支持的方案是已成立的對外承諾，價格組成、方案內容與數量上限的調整都要先確認、保守處理；可以調整的範圍與是否鎖定見頁尾尚待確認。</p>
+<p>已取消的項目，方案、門檻與數量上限全部凍結，見<a href="project-detail.html#frozen">已取消的凍結範圍</a>。</p>
 <p class="note">依據：5.1.2.2 §2.2.4、§2.2.5；D166、D192。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.2.2-專案詳情.md</code>（v3.23）§2.0、§2.2.4、§2.2.5、§3；<code>5.1.2.1-建立專案流程.md</code> F24、F25、F27、F28、F29</li>
-    <li>決策：D155、D166、D167、D168、D192</li>
+    <li>規格：<code>5.1.2.2-專案詳情.md</code>（v3.27）§2.0、§2.2.1、§2.2.4、§2.2.5、§3；<code>5.1.2.1-建立專案流程.md</code> F22、F24、F25、F27、F28、F29</li>
+    <li>決策：D155、D166、D167、D168、D192、D455、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>已有人下單或支持的方案，可以調整的範圍與是否鎖定</li>
-    <li>預購未達最少預購數時，是否也套用「未達標時自動全額退款」開關，或一律全額退款</li>
     <li>兩段式只寫明適用於總覽與公開資訊兩個區段群，方案與設定分頁的其他區段是否也走兩段式</li>
-    <li>未達標退款開關關閉時，「保留或轉換」各自怎麼處理</li>
-    <li>方案分頁載入中、沒有方案時的畫面</li>
+    <li>創作者主動取消共創或預購時，對支持者的退款方式（規格現況為依其他處理，未定義）</li>
+    <li>方案分頁沒有方案時的畫面；預購方案販售數量達到上限時的畫面</li>
+    <li>新增與移除方案時，建立項目時的最少方案數（共創 3 個、預購 1 個）是否仍適用</li>
   </ul>
-  <p class="k">最近同步：2026-10-19（新建頁面；對照 5.1.2.2 v3.23）</p>
+  <p class="k">最近同步：2026-11-05（D513 拿掉自動全額退款開關，未達標一律全額退款；對照 5.1.2.2 v3.27、5.1.2.1 v4.15）</p>
 </details>
 </div>
 </body>

@@ -59,7 +59,7 @@
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/price-ladder.css?v=r2.2"><!-- 2026-10-12 改版（D402，UI-CHANGES 一百八十八）：第 5 步組合包彈窗的價格階梯 -->
 <link rel="stylesheet" href="ds-components/member-table.css?v=r2.2"><!-- 2026-10-12 改版：組合物表（票券＋商品同一張） -->
-<link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：鎖定／販售上限問句、分類標、最多可賣讀數 -->
+<link rel="stylesheet" href="ds-components/form-ask.css?v=r2.2"><!-- 2026-10-12 改版：鎖定組數列、分類標、最多可賣讀數 -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- 2026-10-12（UI-CHANGES 一百八十八）：第 5 步組合包彈窗的限購改接 js/purchase-limits.js（「限購」＋「跟隨成員預設」開關＋三列） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2"><!-- 同上：購買條件與限購兩組的直向節奏（同 create-bundle [data-cb-rules]） -->
 <link rel="stylesheet" href="ds-components/rules-group.css?v=r2.2"><!-- 2026-10-21：購買條件與限購整併成一個群組（組合包彈窗第 5 段） -->
@@ -4940,7 +4940,7 @@
     const list = savedTiers();
     if (!list.length) { box.innerHTML = '<p class="field__hint">' + esc(dT("d.quick.none")) + '</p>'; return; }
     /* 試算（2026-10-28，#370，使用者：「這個加上試算」）：每張票被組合包鎖走幾張、還剩幾張可單售。
-       鎖定張數＝鎖定套數 × 每組張數（D266；限量時鎖定＝限量，D480，bundle-editor 已同步進 lockSets）：
+       鎖定張數＝鎖定套數 × 每組張數（D266）：
          · 只含一種票的組合包：整個鎖定套數都算這張票；
          · 可選多種票的組合包（D296）：照「逐票種分配」（alloc）算，沒分配到票種的套數另寫一行，從允許的票種共用庫存扣。
        只算鎖定（保證留給組合包的量），不算銷售——原型在建立階段沒有銷售資料。 */
@@ -6992,7 +6992,7 @@
         tickets: { tierIds: ((db.tickets && db.tickets.tierIds) || []).map(id => tierMap[id]).filter(Boolean), qty: (db.tickets && db.tickets.qty) || 1 },
         items: (db.products || []).map((it, k) => ({ id: (db.id || "bd") + "-p" + k, name: it.name, img: it.img || "", meta: it.price ? "$" + it.price : "", price: it.price || "" })),
         discountOn: !!db.discount, discount: db.discount || "",
-        lockSets: db.lockSets || "", scope: db.scope || "shared", collapsed: true, pickOpen: false,
+        lockSets: (db.lockSets === 0 || db.lockSets) ? String(db.lockSets) : "", preorder: !!db.preorder, limitedTag: !!db.limitedTag, scope: db.scope || "shared", collapsed: true, pickOpen: false,
         /* 2026-10-16（示範資料補齊 E5／E7）：草稿存過的電影關聯與另設的上架／開賣時間同屬不鎖的欄位，照 D386 決定二一併保留——
            原本只疊回名稱、成員與折扣，草稿裡的 films／sched 在續填時被丟掉。 */
         films: Array.isArray(db.films) ? db.films.slice() : [],

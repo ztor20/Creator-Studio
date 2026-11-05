@@ -309,36 +309,51 @@
       <!-- 2026-10-28 使用者：「尺寸指南只有在服飾配件的實體分類出現」——外包一層 [data-cp-apparel]（與主分類／次分類／適用對象同一個開關，syncApparel 管），
            內層 data-cp-show="physical" 照舊交給 applyVisibility；兩層各管各的，切成數位或改別的實體分類都會收起。 -->
       <div data-cp-apparel hidden>
-      <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
-        <div class="field__label" data-i18n="cp.sg.title">Size guide</div>
-        <div class="control-group control-group--plain">
-          <div class="control-row" data-cp-sg="inherit">
-            <div>
-              <div class="control-row__main" data-i18n="cp.sg.inherit">Using your shop's size guides</div>
-              <div class="control-row__sub"><span data-i18n="cp.sg.inherit.pre">Default size guides: </span><span data-cp-sg-list>Tops · Bottoms · Hats</span><span data-i18n="cp.sg.inherit.post">. </span><button type="button" class="control-row__link" data-cp-sg-view data-i18n="cp.sg.view">View</button></div>
-            </div>
-            <!-- 專屬尺寸指南只在 Phase 4（2026-08-20 使用者裁示，D213）：這個能力沒有 scope 編號，
-                 走保留 gate；Phase 1–3 只看得到「沿用商店的尺寸指南」這一行。 -->
-            <button class="btn btn--outline" type="button" data-feat="full" data-cp-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
+      <!-- D512（2026-11-05）：先用開關決定要不要用尺寸指南（預設關閉）；開啟後選預設或專屬。
+           預設／專屬二選一只在最終版（data-feat="full"，沿用 D213 的保留 gate）；release2.3、2.4 開啟後直接用商店的預設尺寸指南。 -->
+      <div class="control-group" data-cp-show="physical" style="margin-top:var(--sp-24)">
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cp.sg.title">Size guide</div>
+            <div class="control-row__sub" data-i18n="cp.sg.on.sub">Show fans a measurement chart on this item.</div>
           </div>
-          <!-- 商店一份指南都沒有時的狀態（2026-09-10）：沿用什麼都沒有就別假裝在沿用；
-               清單由 js/size-guides-store.js 回答，與商店設定同一份資料。 -->
-          <div class="control-row" data-cp-sg="none" hidden>
-            <div>
-              <div class="control-row__main" data-i18n="cp.sg.none">No size guides set up</div>
-              <div class="control-row__sub"><span data-i18n="cp.sg.none.hint">Add one in store settings — every item uses it.</span> <a class="control-row__link" href="store-settings.html#specs" data-i18n="cp.sg.none.cta">Store settings</a></div>
-            </div>
-            <button class="btn btn--outline" type="button" data-feat="full" data-cp-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
+          <div class="switch" id="cp-sg-on" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="control-group__body" data-feat="full" data-cp-sg-modebody hidden>
+          <div class="segmented radio-cards" role="radiogroup" aria-label="Size guide" data-i18n-aria-label="cp.sg.title" data-cp-sg-mode>
+            <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-cp-sg-pick="default" data-i18n="cp.sg.mode.default">Default size guide</button>
+            <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-cp-sg-pick="own" data-i18n="cp.sg.mode.own">Item size guide</button>
           </div>
-          <div class="control-row" data-cp-sg="own" data-feat="full" hidden>
-            <div>
-              <div class="control-row__main" data-i18n="cp.sg.own">Using its own size guide</div>
-              <div class="control-row__sub" data-i18n="cp.sg.own.hint">Your shop&#39;s guides don&#39;t show here.</div>
-            </div>
-            <div class="control-row__actions">
-              <button class="btn btn--outline btn--sm" type="button" data-cp-sg-edit data-i18n="cp.sg.edit">Edit</button>
-              <button class="btn btn--ghost btn--sm" type="button" data-cp-sg-remove data-i18n="cp.sg.remove">Remove</button>
-            </div>
+        </div>
+        <div class="lctl__rule lctl__rule--flush" data-cp-sg-rule hidden></div>
+        <div class="control-row" data-cp-sg="inherit" hidden>
+          <div>
+            <div class="control-row__main" data-i18n="cp.sg.inherit">Using your shop's size guides</div>
+            <div class="control-row__sub"><span data-i18n="cp.sg.inherit.pre">Default size guides: </span><span data-cp-sg-list>Tops · Bottoms · Hats</span><span data-i18n="cp.sg.inherit.post">. </span><button type="button" class="control-row__link" data-cp-sg-view data-i18n="cp.sg.view">View</button></div>
+          </div>
+        </div>
+        <!-- 商店一份指南都沒有時的狀態（2026-09-10）：清單由 js/size-guides-store.js 回答，與商店設定同一份資料。 -->
+        <div class="control-row" data-cp-sg="none" hidden>
+          <div>
+            <div class="control-row__main" data-i18n="cp.sg.none">No size guides set up</div>
+            <div class="control-row__sub"><span data-i18n="cp.sg.none.hint">Add one in store settings — every item uses it.</span> <a class="control-row__link" href="store-settings.html#specs" data-i18n="cp.sg.none.cta">Store settings</a></div>
+          </div>
+        </div>
+        <div class="control-row" data-cp-sg="own-empty" data-feat="full" hidden>
+          <div>
+            <div class="control-row__main" data-i18n="cp.sg.own.empty">No item size guide yet</div>
+            <div class="control-row__sub" data-i18n="cp.sg.own.hint">Your shop&#39;s guides don&#39;t show here.</div>
+          </div>
+          <button class="btn btn--outline btn--sm" type="button" data-cp-sg-own data-i18n="cp.sg.own.create">Create</button>
+        </div>
+        <div class="control-row" data-cp-sg="own" data-feat="full" hidden>
+          <div>
+            <div class="control-row__main" data-i18n="cp.sg.own">Using its own size guide</div>
+            <div class="control-row__sub" data-i18n="cp.sg.own.hint">Your shop&#39;s guides don&#39;t show here.</div>
+          </div>
+          <div class="control-row__actions">
+            <button class="btn btn--outline btn--sm" type="button" data-cp-sg-edit data-i18n="cp.sg.edit">Edit</button>
+            <button class="btn btn--ghost btn--sm" type="button" data-cp-sg-remove data-i18n="cp.sg.remove">Remove</button>
           </div>
         </div>
       </div>
@@ -1665,6 +1680,7 @@
     const ap = apparelRecord();
     return {
       type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants,
+      ...(state.type === 'physical' && window.cpSizeGuide ? { sizeGuide: window.cpSizeGuide.get() } : {}),   /* D512 */
       ...(state.type === 'physical' && state.varMode === 'single' ? { sku: state.sku ? ((document.getElementById('cp-sku') || {}).value || '').trim() : '' } : {}),   /* D497：單一選項的 SKU（選填） */
       /* 2026-10-30 實體庫存設定（呈現假設，見 ASSUMPTIONS）：賣完轉預購／前台限量標籤／鎖定庫存量（null＝沒鎖） */
       ...(state.type === 'physical' ? { preorder: !!state.unl, limitedTag: !!state.tag, lockQty: state.lock && state.varMode === 'single' && fLock && fLock.value.trim() !== '' ? Number(fLock.value.trim()) : null } : {}),
@@ -1837,8 +1853,9 @@
   }
   function stageHasSizeGuide() {
     if (state.type !== 'physical') return false;
-    const own = document.querySelector('[data-cp-sg="own"]');
-    if (own && !own.hidden) return true;
+    const sg = window.cpSizeGuide ? window.cpSizeGuide.get() : null;
+    if (sg && !sg.on) return false;   /* D512：開關關著就不給尺寸指南 */
+    if (sg && sg.mode === 'own') return sg.hasOwn;
     const S = window.ZtorSizeGuides;
     return !!(S && S.list && S.list().length);
   }
@@ -2123,6 +2140,7 @@
 
   /* 全頁畫面開著時，側欄檢核跟著表單狀態重算（只重畫側欄、不重畫預覽；i18n:applied 也走這裡，
      而 publish-stage 每次畫預覽都會 applyI18n——所以這裡只能 syncChecks，不能 refresh，否則會互相觸發） */
+  document.addEventListener('cp:sg-change', () => refresh());   /* D512：尺寸指南開關與模式改了，預覽跟著變 */
   function refresh() { if (cpCondsApi) cpCondsApi.refresh(); renderReadiness(); renderStepper(); renderPreview(); if (stage) stage.syncChecks(); if (cpOutline) cpOutline.refresh(); }
 
   /* ---- 本頁大綱（左側空白欄的區段導覽，2026-10-12；元件 partials/section-outline.js）----
@@ -3063,6 +3081,12 @@
     if (!section || !window.ztorSizeGuide) return;
     var own = document.querySelector('[data-cp-sg="own"]');
     var none = document.querySelector('[data-cp-sg="none"]');
+    var ownEmpty = document.querySelector('[data-cp-sg="own-empty"]');
+    var sw = document.getElementById('cp-sg-on');
+    var modeBody = document.querySelector('[data-cp-sg-modebody]');
+    var rule = document.querySelector('[data-cp-sg-rule]');
+    var modeEl = document.querySelector('[data-cp-sg-mode]');
+    var on = false, mode = 'default';
     var list = document.querySelector('[data-cp-sg-list]');
     var T = function (k) { return (window.i18nT && window.i18nT(k)) || ''; };
     var S = window.ZtorSizeGuides || null;
@@ -3079,18 +3103,38 @@
     }
     /* 三選一的狀態：專屬指南 › 商店沒有任何指南 › 沿用商店的。 */
     function paintState() {
-      var empty = guides().length === 0;
-      section.hidden = hasOwn || empty;
-      if (none) none.hidden = hasOwn || !empty;
-      own.hidden = !hasOwn;
+      var empty = guides().length === 0, isOwn = mode === 'own';
+      if (sw) { sw.classList.toggle('switch--on', on); sw.setAttribute('aria-checked', on ? 'true' : 'false'); }
+      if (modeBody) modeBody.hidden = !on;
+      if (rule) rule.hidden = !on;
+      if (modeEl) modeEl.querySelectorAll('[data-cp-sg-pick]').forEach(function (b) {
+        var act = b.getAttribute('data-cp-sg-pick') === mode;
+        b.classList.toggle('segmented__btn--active', act); b.setAttribute('aria-checked', act ? 'true' : 'false');
+      });
+      section.hidden = !on || isOwn || empty;
+      if (none) none.hidden = !on || isOwn || !empty;
+      if (ownEmpty) ownEmpty.hidden = !on || !isOwn || hasOwn;
+      own.hidden = !on || !isOwn || !hasOwn;
     }
+    /* 只有使用者動作才通知預覽：paintState 也會被 i18n:applied 呼叫，在這裡發事件會和預覽重畫互相觸發 */
+    function changed() { paintState(); document.dispatchEvent(new CustomEvent('cp:sg-change')); }
+    window.cpSizeGuide = { get: function () { return { on: on, mode: mode, hasOwn: hasOwn }; } };
+    function toggleOn() { on = !on; changed(); }
+    if (sw) {
+      sw.addEventListener('click', toggleOn);
+      sw.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleOn(); } });
+    }
+    if (modeEl) modeEl.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-cp-sg-pick]'); if (!b) return;
+      mode = b.getAttribute('data-cp-sg-pick'); changed();
+    });
     paintList();
     document.addEventListener('i18n:applied', paintList);
     if (S) window.addEventListener(S.EVENT, paintList);
 
     function setOwn(v) {
       hasOwn = v;
-      paintState();
+      changed();
     }
 
     function openEditor(isNew) {
@@ -3129,6 +3173,7 @@
       if (e.target.closest('[data-cp-sg-own]')) { openEditor(true); return; }
       if (e.target.closest('[data-cp-sg-edit]')) { openEditor(false); return; }
       if (e.target.closest('[data-cp-sg-remove]')) {
+        mode = 'default';   /* 移除專屬＝回到預設（D211） */
         setOwn(false);
         if (window.ztorToast) window.ztorToast.show(T('cp.sg.toast.removed') || "Back to your shop's size guides");
       }

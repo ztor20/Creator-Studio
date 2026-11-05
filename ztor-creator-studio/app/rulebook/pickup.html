@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>取貨管理 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -99,7 +99,7 @@ table.stage td:nth-child(4){width:12%}
 <ul class="plain">
   <li>一個取貨場次把好幾個取貨商品與好幾種活動票券放進同一個核銷範圍，現場共用同一個 Scanner；物流配送的商品照訂單逐筆出貨，不經過這裡</li>
   <li>場次的階段、能核銷的範圍、核銷與領取碼、跟訂單與活動的關係，見<a href="pickup-rules.html">取貨規則</a></li>
-  <li>Admin 代管創作者時，場次分現場核銷與掃碼領點兩種類型；上面的內容除非標明，都是現場核銷，兩種類型的差別見<a href="#types">兩種場次類型</a></li>
+  <li>場次類型有現場核銷與掃碼領點兩種；上面的內容除非標明，都是現場核銷，兩種的差別見<a href="#types">兩種場次類型</a></li>
 </ul>
 
 <h2 id="pickup-flow"><span class="n"></span>操作流程</h2>
@@ -141,11 +141,12 @@ table.stage td:nth-child(4){width:12%}
 <p>取貨清單讓創作者管理所有取貨場次，快速進入詳情、複製 Scanner 網址或開始掃描。頁首的數字見<a href="#summary">摘要</a>；每一列有什麼見<a href="#rows">清單</a>；從哪裡建新場次見<a href="#create-entry">建立取貨場次</a>；還沒有場次時見<a href="#empty">沒有資料時</a>。</p>
 
 <h3 id="summary">摘要</h3>
-<p>三個指標讓創作者一眼看到今天現場的工作量。件數一律以件（領取單位數）計，不以買家人數計：一位買家有好幾件就計好幾件，跟掃描次數對得上。</p>
+<p>三個指標讓創作者進頁面先看場次總覽。件數一律以件（領取單位數）計，不以買家人數計：一位買家有好幾件就計好幾件，跟掃描次數對得上。</p>
 <ul class="plain">
   <li>今日待核銷：目前日期落在場次開始與結束時間內、仍待核銷的件數</li>
   <li>今日已核銷：今天完成核銷的件數</li>
   <li>進行中場次：目前時間介於開始與結束時間之間的場次數</li>
+  <li>三個指標只計現場核銷場次；掃碼領點場次沒有待核銷的領取單位，不計入（推導）</li>
 </ul>
 
 <h3 id="rows">清單</h3>
@@ -212,10 +213,36 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>清單載入中、載入失敗</td><td>照全站共用的載入與錯誤狀態規則顯示</td></tr>
   </tbody>
 </table></div>
+
+<h3 id="list-states">摘要與清單的各種樣子</h3>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">摘要的三個指標</td></tr>
+    <tr><td>有進行中場次</td><td>目前時間落在至少一個場次的開始與結束時間內</td><td>顯示進行中場次數與今日待核銷件數，清單可以快速開始掃描或複製 Scanner 網址</td></tr>
+    <tr><td>指標是 0</td><td>沒有場次、或今天沒有待核銷或已核銷的件數</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">場次狀態</td></tr>
+    <tr><td>尚未開始</td><td>還沒到開始時間</td><td>場次狀態欄顯示尚未開始</td></tr>
+    <tr><td>進行中</td><td>目前時間介於開始與結束時間之間</td><td>場次狀態欄顯示進行中</td></tr>
+    <tr><td>已結束</td><td>場次時間已過</td><td>場次狀態欄顯示已結束；未核銷的維持待核銷，仍可查看名單與紀錄，Scanner 依場次時間擋新的核銷，除非延長結束時間</td></tr>
+    <tr><td>已封存</td><td>創作者手動封存</td><td>場次狀態欄顯示已封存，只供查看</td></tr>
+    <tr class="grp"><td colspan="3">Scanner 狀態</td></tr>
+    <tr><td>已啟用</td><td>Scanner 網址可以使用</td><td>Scanner 狀態欄顯示已啟用</td></tr>
+    <tr><td>已停用</td><td>Scanner 網址被停用</td><td>Scanner 狀態欄顯示已停用</td></tr>
+    <tr><td>已重設</td><td>Scanner 網址重設過</td><td>Scanner 狀態欄顯示已重設</td></tr>
+    <tr class="grp"><td colspan="3">清單</td></tr>
+    <tr><td>載入更多</td><td>還有沒載入的場次</td><td>底部顯示「載入更多」，每批預設 25 筆</td></tr>
+    <tr><td>已顯示全部</td><td>全部載完</td><td>顯示「已顯示全部 N 筆」，N 與狀態篩選後的總數一致</td></tr>
+    <tr><td>搜尋或篩選沒有命中</td><td>有場次、但搜尋或篩選沒有符合的</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>類型篩選後沒有場次 <span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現：篩選的類型沒有場次</td><td>沿用「尚未建立取貨場次」，建立入口預選目前篩選的類型（推導）</td></tr>
+    <tr class="grp"><td colspan="3">列操作</td></tr>
+    <tr><td>各列操作的出現</td><td>各場次狀態</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 <p class="note">依據：5.1.5.11 F1～F4（F4.1～F4.3）、頁面狀態；主規格 §6、§7.2「取貨場次」；D094、D117、D118、D119、D120、D240。</p>
 
-<h2 id="types"><span class="n"></span>兩種場次類型</h2>
-<p>Admin 代管創作者時，取貨場次分現場核銷與掃碼領點兩種，建立時選擇。兩種類型的差別見<a href="#types-compare">類型比較</a>；清單上怎麼分辨見<a href="#types-list">清單上的差異</a>；全平台關閉掃碼領點事件時見<a href="#types-off">事件關閉提醒</a>。</p>
+<h2 id="types"><span class="n"></span>兩種場次類型 <span class="tag adm">Admin</span></h2>
+<p>取貨場次分現場核銷與掃碼領點兩種，建立時選擇；創作者本人看不到掃碼領點，只在 Admin 代管創作者時出現。兩種類型的差別見<a href="#types-compare">類型比較</a>；清單上怎麼分辨見<a href="#types-list">清單上的差異</a>；全平台關閉掃碼領點事件時見<a href="#types-off">事件關閉提醒</a>。</p>
 
 <h3 id="types-compare">類型比較</h3>
 <div class="tablewrap"><table>
@@ -224,7 +251,7 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>怎麼運作</td><td>工作人員用手機 Scanner 掃粉絲的領取碼</td><td>粉絲用 App 掃商家印出的 QR 領忠誠點數</td></tr>
     <tr><td>放什麼</td><td>取貨商品與活動票券</td><td>只放點數 QR（不是商品）</td></tr>
     <tr><td>Scanner 與領取碼</td><td>用 Scanner，產生領取單位與領取碼</td><td>不用 Scanner，不產生領取單位</td></tr>
-    <tr><td>誰看得到、誰能建立</td><td>創作者與 Admin</td><td>只有 Admin 代管創作者時出現，只有 Admin 能建立與編輯；創作者本人看不到</td></tr>
+    <tr><td>誰看得到、誰能建立 <span class="tag adm">Admin</span></td><td>創作者與 Admin</td><td>只在 Admin 代管創作者時出現，只有 Admin 能建立與編輯</td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
@@ -234,12 +261,12 @@ table.stage td:nth-child(4){width:12%}
 </ul>
 
 <h3 id="types-list">清單上的差異</h3>
-<p>下表只列 Admin 代管創作者時，清單上與現場核銷不同的地方。</p>
+<p>下表只列掃碼領點出現時，清單上與現場核銷不同的地方。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>類型篩選</td><td>只在 Admin 代管創作者時出現</td><td>選項：<br>全部<br>現場核銷<br>掃碼領點<br>與關鍵字搜尋、狀態篩選可以疊加</td></tr>
-    <tr><td>類型欄</td><td>只在 Admin 代管創作者時出現</td><td>顯示現場核銷或掃碼領點</td></tr>
+    <tr><td>類型篩選 <span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>選項：<br>全部<br>現場核銷<br>掃碼領點<br>與關鍵字搜尋、狀態篩選可以疊加</td></tr>
+    <tr><td>類型欄 <span class="tag adm">Admin</span></td><td>只在 Admin 代管創作者時出現</td><td>顯示現場核銷或掃碼領點</td></tr>
     <tr><td>場次狀態</td><td>掃碼領點場次</td><td>除了尚未開始、進行中、已結束、已封存，另加「啟用（Enabled）／停用（Disabled）」標示<br>啟用／停用是人工開關，進行中是依開始與結束時間算出的狀態，兩者是不同維度，見<a href="pickup-detail.html#scan-basic">基本資料與啟用停用</a></td></tr>
     <tr><td>可核銷項目摘要</td><td>掃碼領點場次</td><td>改列「N 個 QR · 已領 M 次」：N 是場次裡的 QR 數，M 是這些 QR 累計已領的次數</td></tr>
     <tr><td>名單摘要、Scanner 狀態</td><td>掃碼領點場次</td><td>顯示「—」</td></tr>
@@ -248,12 +275,12 @@ table.stage td:nth-child(4){width:12%}
     <tr><td>複製 Scanner 網址、顯示 Scanner QR code、開始掃描</td><td>—</td><td>掃碼領點場次沒有這三個操作，因為不使用 Scanner</td></tr>
   </tbody>
 </table></div>
-<p>有人領過的掃碼領點場次不能刪除，只能停用或封存。</p>
+<p>有人領過的掃碼領點場次不能刪除，見<a href="pickup-detail.html#scan-basic">基本資料與啟用停用</a>。</p>
 
-<h3 id="types-off">事件關閉提醒</h3>
-<p>全平台把線下掃碼領點事件關閉時，Admin 一眼知道掃碼領點場次此刻不發點，避免以為是場次設定有問題。開關在<a href="admin-loyalty.html#offline-scan">平台忠誠點數設定</a>，只有 Admin 能改，這頁不提供切換。</p>
+<h3 id="types-off">事件關閉提醒 <span class="tag adm">Admin</span></h3>
+<p>全平台把線下掃碼領點事件關閉時，一眼知道掃碼領點場次此刻不發點，避免以為是場次設定有問題。只在 Admin 代管創作者時出現；開關由 Admin 在<a href="admin-loyalty.html#offline-scan">平台忠誠點數設定</a>設定，這頁不提供切換。</p>
 <div class="tablewrap"><table>
-  <thead><tr><th style="width:22%">對象</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
   <tbody>
     <tr class="grp"><td colspan="3">清單上方的提醒條</td></tr>
     <tr><td>提醒條</td><td>事件開著</td><td>不顯示</td></tr>
@@ -271,20 +298,22 @@ table.stage td:nth-child(4){width:12%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.12）；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）§2；<code>0-設計規格書.md</code>（v5.36）§6、§7.2</li>
-    <li>決策：D094、D111、D117、D118、D119、D120、D240、D394、D401、D499、D503</li>
+    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.12）；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）§2；<code>0-設計規格書.md</code>（v5.39）§6、§7.2</li>
+    <li>決策：D094、D111、D117、D118、D119、D120、D240、D394、D401、D499、D503、D510</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>各列操作（開始掃描、複製網址、編輯、封存等）在哪些場次狀態出現</li>
     <li>搜尋與狀態篩選是否同時生效取交集；搜尋或篩選沒有命中時顯示什麼</li>
+    <li>三個指標是 0 時怎麼顯示</li>
     <li>每批載入幾筆（規格預設 25 筆）與載入方式（按鈕或捲到底自動載入），由畫面決定</li>
     <li>清單每一列的欄位排法與名單摘要的呈現</li>
-    <li>場次類型建立後能不能更改</li>
-    <li>創作者本人是否看得到類型篩選與類型欄，以及三項摘要指標是否計入掃碼領點場次</li>
+    <li>場次類型建立後不可更改（推導）</li>
+    <li>創作者本人的清單不顯示類型篩選與類型欄（推導）</li>
+    <li>三項摘要指標不計入掃碼領點場次（推導）</li>
     <li>場次規則相關的待確認列在<a href="pickup-rules.html">取貨規則</a>頁尾</li>
   </ul>
-  <p class="k">最近同步：2026-11-02（D503：掃碼領點場次放的是點數 QR，不是商品；列摘要改成 QR 數與已領次數；對照 5.1.5.11 v2.12）；上一次 2026-11-02（D499：新增兩種場次類型、掃碼領點在清單上的差異、事件關閉提醒；對照 5.1.5.11）；上一次 2026-10-19（新建頁面，規則節拆到取貨規則；對照 5.1.5.11 v2.8、5.1.5.12 v1.11、5.1.5.14 v1.11、5.1.5.15 v1.13、主規格 v4.90）</p>
+  <p class="k">最近同步：2026-11-04（逐條對照：推導項改標；對照 5.1.5.11 v2.12）</p>
 </details>
 
 <script>

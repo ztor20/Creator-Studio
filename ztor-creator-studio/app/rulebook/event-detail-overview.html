@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>總覽 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -184,6 +184,7 @@ table.map td:nth-child(2){width:22%}
   </li>
 </ol>
 <p>共看派對見<a href="#watchparty">共看派對的總覽</a>。</p>
+<p class="note">依據：5.1.6.3 §2.3、§2.4、第 4 段「頁面狀態」。</p>
 
 <h2 id="screen"><span class="n"></span>功能與欄位</h2>
 <p>總覽由多個區塊組成，每個區塊回答一個問題；哪個階段看得到哪些區塊，見<a href="#stage-view">各階段總覽顯示什麼</a>。區塊如下：</p>
@@ -209,6 +210,30 @@ table.map td:nth-child(2){width:22%}
     <tr><td>已撤銷票券</td><td>本活動累計已撤銷的票券數，還沒有撤銷時顯示 0</td><td>同已報到數</td></tr>
   </tbody>
 </table></div>
+<p>四個指標依階段與數字換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">已售票數</td></tr>
+    <tr><td>有售出</td><td>活動發布後的每個階段</td><td>「已售／所有門票的張數合計」，例如「84 / 200」，下方附票種數，例如「跨 3 個票種」（數字為假設）</td></tr>
+    <tr><td>還沒賣出</td><td>已售是 0</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">活動收入</td></tr>
+    <tr><td>有收入</td><td>活動有收入</td><td>累計收入，旁邊另列門票收入</td></tr>
+    <tr><td>沒有收入</td><td>活動還沒有收入</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">已報到數</td></tr>
+    <tr><td>已排程</td><td>活動在已排程階段</td><td>這一格收起</td></tr>
+    <tr><td>開演前</td><td>售票中</td><td>顯示「開演當天才開放」</td></tr>
+    <tr><td>進行中</td><td>活動進行中</td><td>即時到場數與到場率</td></tr>
+    <tr><td>已結束</td><td>活動已結束</td><td>最終到場數與到場率</td></tr>
+    <tr><td>實際售出是 0</td><td>計算到場率的分母是 0</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>bookyay 已收到資料</td><td>bookyay 匯入的活動，已收到掃描回傳</td><td>顯示入場人數</td></tr>
+    <tr><td>bookyay 還沒收到資料</td><td>bookyay 匯入的活動，還沒收到掃描回傳</td><td>顯示「暫無資料」</td></tr>
+    <tr class="grp"><td colspan="3">已撤銷票券</td></tr>
+    <tr><td>已排程</td><td>活動在已排程階段</td><td>這一格收起</td></tr>
+    <tr><td>有撤銷</td><td>售票中以後，已撤銷至少一張票</td><td>顯示累計已撤銷的票券數</td></tr>
+    <tr><td>沒有撤銷</td><td>售票中以後，還沒撤銷任何票</td><td>顯示 0</td></tr>
+  </tbody>
+</table></div>
 <h4 id="kpi-revenue">活動收入與門票收入</h4>
 <p>兩個加總都含組合包訂單，怎麼算見售票與名單的<a href="event-detail-sales.html#sales-tx-sum">活動收入與門票收入</a>。</p>
 <p class="note">依據：5.1.6.3 §2.3；D188、D407、D408、D409、D410。</p>
@@ -218,17 +243,33 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>取消與撤銷政策</td><td>已排程<br>售票中</td><td>待辦項目，帶「缺失」或「未確認」徽章<br>未確認前，粉絲端顯示「請聯絡主辦方」<br>退款由 Admin 在平台外（Stripe）處理</td></tr>
+    <tr><td>取消與撤銷政策</td><td>已排程<br>售票中</td><td>待辦項目，帶「缺失」或「未確認」徽章<br>未確認前，粉絲端顯示「請聯絡主辦方」<br><span class="tag adm">Admin</span> 退款：只有 Admin 能按，在平台外（Stripe）處理</td></tr>
     <tr><td>現場人力</td><td>已排程<br>售票中<br>共看派對沒有這一項</td><td>待辦項目，顯示尚有幾個崗位未確認，例如驗票、攤位人力</td></tr>
     <tr><td>完成</td><td>每個待辦項目一個<br>只在已排程與售票中</td><td>把這一項標成完成<br>全部完成時整份清單標示「已就緒」</td></tr>
     <tr><td>剩餘項目數</td><td>—</td><td>以畫面上實際未完成的項目計算</td></tr>
   </tbody>
 </table></div>
-<p>活動進入進行中或已結束後，整份清單收起，因為開演前已經過去。</p>
+<p>活動進入進行中或已結束後，整份清單收起，因為開演前已經過去。各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">取消與撤銷政策</td></tr>
+    <tr><td>還沒確認</td><td>已排程、售票中，政策還沒確認</td><td>待辦項目帶「缺失」或「未確認」徽章，哪個情形對哪個徽章<span class="tag wait">尚待確認</span><br>粉絲端顯示「請聯絡主辦方」，直到確認</td></tr>
+    <tr><td>已確認</td><td>創作者按「完成」</td><td>這一項標成完成；完成後的樣子<span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">現場人力</td></tr>
+    <tr><td>有崗位未確認</td><td>已排程、售票中</td><td>待辦項目顯示尚有幾個崗位未確認，例如驗票、攤位人力</td></tr>
+    <tr><td>共看派對</td><td>活動是共看派對</td><td>沒有這一項</td></tr>
+    <tr class="grp"><td colspan="3">整份清單</td></tr>
+    <tr><td>還有未完成</td><td>有項目沒標成完成</td><td>顯示剩餘項目數，以畫面上實際未完成的項目計算</td></tr>
+    <tr><td>全部完成</td><td>所有項目都標成完成</td><td>整份清單標示「已就緒」</td></tr>
+    <tr><td>開演之後</td><td>進行中、已結束</td><td>整份清單收起</td></tr>
+  </tbody>
+</table></div>
+
 <p class="note">依據：5.1.6.3 §2.4.1；D188、D253、D361、D390、D413。</p>
 
 <h3 id="details">活動詳情列</h3>
-<p>活動詳情列呈現這場活動的靜態基本資訊，每個階段都在；列下方有一行提示文字，說明階段只會單向前進、活動沒有取消動作（要讓活動從前台消失用下架，要歸檔用封存），仍有效的票券由 Admin 逐票或整場撤銷，見<a href="event-rules.html#stage">活動的階段</a>。</p>
+<p>活動詳情列呈現這場活動的靜態基本資訊，每個階段都在；列下方有一行提示文字，說明階段只會單向前進、活動沒有取消動作（要讓活動從前台消失用下架，要歸檔用封存），撤銷仍有效的票券只有 Admin 能按，見<a href="event-rules.html#stage">活動的階段</a>與<a href="event-detail-sales.html#sales-void">撤銷紀錄</a>。</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:22%">項目</th><th>內容</th></tr></thead>
   <tbody>
@@ -244,12 +285,17 @@ table.map td:nth-child(2){width:22%}
 
 <h3 id="snapshot">報到快照卡</h3>
 <p>報到快照卡在開演前與結束後，讓創作者看到已掃描、未掃描的統計。</p>
-<ul class="plain">
-  <li>開演前顯示「開演當天才開放」的占位徽章</li>
-  <li>進行中由<a href="#desk">現場報到台</a>取代，兩者不同時出現：進行中要看的是「現在多少人到了」，不是靜態摘要</li>
-  <li>已結束後改回這張卡，呈現該場次的最終報到統計</li>
-  <li>共看派對沒有現場報到，不顯示這張卡，改顯示<a href="#room">線上房間</a></li>
-</ul>
+<p>進行中由現場報到台取代，因為進行中要看的是「現在多少人到了」，不是靜態摘要。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>開演前</td><td>已排程、售票中</td><td>顯示「開演當天才開放」的占位徽章</td></tr>
+    <tr><td>進行中</td><td>活動進行中</td><td>這張卡由<a href="#desk">現場報到台</a>取代，兩者不同時出現</td></tr>
+    <tr><td>已結束</td><td>活動已結束</td><td>改回這張卡，呈現該場次的最終報到統計，標示「最終」</td></tr>
+    <tr><td>共看派對</td><td>活動是共看派對</td><td>不顯示這張卡，改顯示<a href="#room">線上房間</a></td></tr>
+  </tbody>
+</table></div>
+
 <p class="note">依據：5.1.6.3 §2.4、§4；D188、D399。</p>
 
 <h3 id="desk">現場報到台</h3>
@@ -279,6 +325,19 @@ table.map td:nth-child(2){width:22%}
     <tr><td>掃描紀錄</td><td>以次級資訊列在已掃描旁：重複掃描次數、無效掃描次數<br>無效掃描指掃描器顯示「查無此領取碼」的那些掃描<br>這兩項是紀錄，不是狀態，不計入已掃描與未掃描的張數</td></tr>
     <tr><td>淨收入</td><td>已付款交易的毛額扣平台費與支付費，算法同售票與名單分頁的<a href="event-detail-sales.html#sales-tx">售票紀錄</a>，這裡不重算</td></tr>
     <tr><td>結算狀態</td><td>已結束：顯示已結算</td></tr>
+  </tbody>
+</table></div>
+<p>結案的數字依活動有沒有現場報到換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">已掃描與到場率</td></tr>
+    <tr><td>有現場報到</td><td>已結束，活動有現場報到</td><td>最終已掃描張數／實際售出張數，附到場率</td></tr>
+    <tr><td>沒有現場報到</td><td>線上活動、共看派對</td><td>顯示無資料並說明原因</td></tr>
+    <tr><td>實際售出是 0</td><td>已結束，實際售出 0 張</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">結算狀態</td></tr>
+    <tr><td>已結算</td><td>已結束</td><td>顯示已結算</td></tr>
+    <tr><td>其他情形</td><td>已結束以外，或已結束但尚未結算</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table class="fields">
@@ -324,33 +383,46 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:26%">階段</th><th>掃碼連結在哪裡</th></tr></thead>
   <tbody>
     <tr><td>已排程<br>售票中</td><td>在總覽</td></tr>
-    <tr><td>進行中</td><td>由現場報到台提供同一份，總覽不再重複放一份</td></tr>
+    <tr><td>進行中</td><td>由現場報到台提供同一份，總覽不再重複放一份（推導）</td></tr>
     <tr><td>已結束</td><td>見頁尾尚待確認</td></tr>
   </tbody>
 </table></div>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>請由 bookyay App 掃碼</td><td>bookyay 匯入的活動</td><td>提示現場人員門票由 bookyay App 掃碼，附一顆按鈕，另開分頁到 bookyay 商戶 App 的 App Store 頁<br>不顯示掃描器網址，也沒有複製鈕<br>bookyay 建立活動時產生的掃描器連結，匯入時仍保存（唯讀，一場活動只有一條），只是這張卡不顯示<br>目前只有 iOS 連結，Android 之後補</td></tr>
-    <tr><td>組合包取貨掃碼器網址</td><td>bookyay 匯入的活動<br>有取貨場次才顯示網址</td><td>用取貨場次的掃碼器網址，不另做新的掃碼器，可以複製，不必進場次詳情就能交給取貨現場人員<br>只有一個取貨場次：顯示該場次的網址<br>沒有取貨場次：不顯示網址，提示先到取貨管理建立取貨場次<br>有多個取貨場次時怎麼列，見頁尾尚待確認<br>場次的密碼在取貨場次詳情管理，這裡不顯示</td></tr>
+    <tr><td>請由 bookyay App 掃碼</td><td>bookyay 匯入的活動</td><td>提示現場人員門票由 bookyay App 掃碼，附一顆按鈕，另開分頁到 bookyay 商戶 App 的 App Store 頁<br>不顯示掃描器網址，也沒有複製鈕<br>bookyay 建立活動時產生的掃描器連結，匯入時仍保存（唯讀，一場活動只有一條），只是這張卡不顯示<br>目前只有 iOS 連結</td></tr>
+    <tr><td>組合包取貨掃碼器網址</td><td>bookyay 匯入的活動</td><td>用取貨場次的掃碼器網址，不另做新的掃碼器，可以複製，不必進場次詳情就能交給取貨現場人員<br>取貨場次有一個、多個或沒有時怎麼顯示，見頁尾尚待確認<br>場次的密碼在取貨場次詳情管理，這裡不顯示</td></tr>
     <tr><td>前往領取場次</td><td>bookyay 匯入的活動</td><td>開啟這場活動的組合包商品所在的<a href="pickup-detail.html">取貨場次詳情</a>，要看網址、密碼與核銷紀錄時從這裡進<br>組合包的每個成員，照所在商品綁定的取貨場次，用 ztor 的掃描器核銷</td></tr>
+  </tbody>
+</table></div>
+<p>組合包取貨掃碼器網址依取貨場次的數量換樣子，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>只有一個取貨場次</td><td>bookyay 匯入的活動，組合包商品綁定一個取貨場次</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>沒有取貨場次</td><td>bookyay 匯入的活動，沒有取貨場次</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>有多個取貨場次</td><td>bookyay 匯入的活動，組合包商品綁定多個取貨場次</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
 <ul class="plain">
   <li>ztor 的掃描器密碼與開啟掃描器不適用，門票由 bookyay App 掃碼</li>
   <li>現場報到台的其他部分不跟著提前，仍只在進行中</li>
   <li>即時到場統計與到場率停用</li>
-  <li>ztor 自建的活動不提前顯示，掃描器連結照舊只在進行中由<a href="#desk">現場報到台</a>提供</li>
+  
 </ul>
 <p class="note">依據：5.1.6.3 §2.4、§2.5；5.1.5.15 F2；5.1.6.1 F21；D375、D394、D397、D401、D453、D454。</p>
 
 <h3 id="entry-list">入場名單</h3>
 <p>bookyay 匯入的活動，門票入場由 bookyay Organizer App 掃票，總覽顯示唯讀的已入場、未入場名單，資料來自 bookyay。</p>
-<ul class="plain">
-  <li>已報到數來自 bookyay 掃描回傳的入場紀錄，收到資料就顯示</li>
-  <li>還沒收到資料時，已報到數顯示「暫無資料」</li>
-  <li>入場人數看這份名單</li>
-</ul>
+<p>入場人數看這份名單，各狀態如下。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:22%">狀態</th><th style="width:30%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>已收到資料</td><td>bookyay 匯入的活動，收到 bookyay 的掃描回傳</td><td>顯示唯讀的已入場、未入場名單，已報到數照回傳顯示</td></tr>
+    <tr><td>還沒收到資料</td><td>bookyay 匯入的活動，還沒收到回傳</td><td>已報到數顯示「暫無資料」</td></tr>
+  </tbody>
+</table></div>
+
 <p class="note">依據：5.1.6.3 §2.3、§2.5；D375、D410。</p>
 
 <h3 id="pickup">票務商品取貨</h3>
@@ -375,7 +447,7 @@ table.map td:nth-child(2){width:22%}
     <tr><td>活動詳情列與提示文字</td><td>顯示</td><td>顯示</td><td>顯示</td><td>顯示</td></tr>
     <tr><td>報到快照卡</td><td>顯示</td><td>顯示</td><td>由現場報到台取代</td><td>顯示最終統計</td></tr>
     <tr><td>現場報到台</td><td>—</td><td>—</td><td>顯示</td><td>—</td></tr>
-    <tr><td>掃碼連結（bookyay 匯入的活動）</td><td>顯示</td><td>顯示</td><td>在現場報到台</td><td>見尚待確認</td></tr>
+    <tr><td>掃碼連結（bookyay 匯入的活動）</td><td>顯示</td><td>顯示</td><td>在現場報到台（推導）</td><td>見尚待確認</td></tr>
     <tr><td>結案</td><td>—</td><td>—</td><td>—</td><td>顯示</td></tr>
   </tbody>
 </table></div>
@@ -398,24 +470,28 @@ table.map td:nth-child(2){width:22%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v71；§2.5 掃碼連結存取對照 v93）§2.3、§2.4、§2.5、§2.7、§2.8、§2.12、§3、§4</li>
-    <li>規格：<code>5.1.6-活動.md</code> F5</li>
-    <li>規格：<code>5.1.6.1-建立活動流程.md</code> F21</li>
-    <li>規格：<code>5.1.5.11-取貨管理.md</code>（對照 v2.8）、<code>5.1.5.14-手機Scanner.md</code>、<code>5.1.5.15-取貨場次詳情.md</code>（對照 v1.13）</li>
-    <li>決策：D149、D188、D253、D282、D294、D340、D361、D375、D390、D393、D394、D397、D399、D401、D407、D408、D409、D410、D413、D416、D418、D453、D454、D457</li>
+    <li>規格：<code>5.1.6.3-活動詳情.md</code>（v109）§2.3、§2.4、§2.5、§2.7、§2.8、§2.12、§3、§4；<code>5.1.6-活動.md</code> F5；<code>5.1.6.1-建立活動流程.md</code>（v3.14）F21；<code>5.1.5.11-取貨管理.md</code>（v2.12）、<code>5.1.5.14-手機Scanner.md</code>（v1.16）、<code>5.1.5.15-取貨場次詳情.md</code>（v1.20）</li>
+    <li>決策：D149、D188、D253、D282、D294、D340、D361、D375、D390、D393、D394、D397、D399、D401、D407、D408、D409、D410、D413、D416、D418、D453、D454、D457、D510</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
     <li>結案要不要成為正式階段，以及結案後多久仍可匯出</li>
     <li>共看派對的線上房間要不要加控場（開始、結束、踢人）與觀看名單，以及開播前後的畫面</li>
     <li>bookyay 匯入的活動，掃碼連結放在總覽的哪裡（推導為報到快照卡旁），以及已結束是否不顯示（推導為不顯示）</li>
-    <li>bookyay 匯入的活動，現場報到台的即時到場數與到場率是否維持停用</li>
+    <li>bookyay 匯入的活動，入場數字是否看唯讀的已入場、未入場名單（推導）</li>
+    <li>ztor 自建的活動不提前顯示掃碼連結，掃描器連結照舊只在進行中由現場報到台提供（推導）</li>
+    <li>bookyay 匯入的活動進行中，掃碼連結由現場報到台承接同一份、總覽不再重複放（推導）</li>
     <li>ztor 自建活動的現場報到台，是否不放 bookyay 掃碼連結的三部分（推導為不放）</li>
-    <li>「前往領取場次」在這場活動的組合包商品分屬多個取貨場次（每個單售商品只屬於一個場次，但不同成員商品可能在不同場次，組合包也可能另設場次），或還沒有取貨場次時怎麼處理（推導：多個時進取貨管理並預先篩出相關場次，沒有時提示先建立取貨場次）</li>
-    <li>「組合包取貨掃碼器網址」在組合包商品分屬多個取貨場次時怎麼列（推導：逐場列出場次名稱與各自網址，各自可以複製）</li>
+    <li>「前往領取場次」在這場活動的組合包商品分屬多個取貨場次，或還沒有取貨場次時怎麼處理（推導：多個時進取貨管理並預先篩出相關場次，沒有時提示先建立取貨場次）</li>
+    <li>「組合包取貨掃碼器網址」在取貨場次只有一個、有多個、沒有時怎麼顯示（推導：一個時顯示該場次的網址；多個時逐場列出場次名稱與各自網址，各自可以複製；沒有時不顯示網址，提示先建立取貨場次）</li>
+    <li>bookyay 匯入的活動的「請由 bookyay App 掃碼」按鈕，Android 連結之後是否補上（推導）</li>
+    <li>起飛前檢核的取消與撤銷政策，「缺失」與「未確認」兩個徽章各在什麼情形出現，規格沒寫</li>
     <li>系列的建立方式與資料模型</li>
+    <li>KPI 的活動收入是 0、已售是 0，以及已報到數的分母是 0（實際售出 0）時，各指標的樣子，規格沒寫</li>
+    <li>起飛前檢核的項目標成完成後，徽章與說明的樣子，規格沒寫</li>
+    <li>結案的已掃描在實際售出 0 張時，以及結算狀態在已結束但尚未結算時的樣子，規格沒寫</li>
   </ul>
-  <p class="k">最近同步：2026-10-22（尚待確認的「前往領取場次」與掃碼器網址改寫成組合包商品分屬多個取貨場次，與一個單售商品只屬於一個場次一致（D471），推導不變）；2026-10-20（D457 拿掉已取消階段，區塊與階段對照改四個階段；已封存的活動照原階段顯示、整頁唯讀；對照 5.1.6.3 v96）；2026-10-19（D454 bookyay 匯入活動的掃碼器卡，第一部分改提示請由 bookyay App 掃碼並附前往 App Store 的按鈕，不再顯示掃描器網址；對照 5.1.6.3）；2026-10-19（前往領取場次與票務商品取貨改連到取貨場次詳情、取貨規則）；2026-10-19（D453 bookyay 匯入活動的掃碼連結改三部分，新增組合包取貨掃碼器網址）；2026-10-15（D418 結案的淨收入改扣平台費與支付費；其餘至 D416）</p>
+  <p class="k">最近同步：2026-11-05（逐條對照：移出取貨場次數量與掃碼連結落點的推導項；5.1.6.3 v109）</p>
 </details>
 </div>
 </body>

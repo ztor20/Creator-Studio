@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>申請提款 — ztor Creator Studio 規則手冊</title>
 <script>try{var t=localStorage.getItem("rb-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="stylesheet" href="shell.css?v=20261019a">
-<script src="shell.js?v=20261019a" defer></script>
+<link rel="stylesheet" href="shell.css?v=20261105a">
+<script src="shell.js?v=20261105a" defer></script>
 <style>
 :root{
   --bg:#faf9f7; --surface:#ffffff; --surface-sunken:#f3f1ee;
@@ -90,7 +90,7 @@ tr:last-child td{border-bottom:0}
 <h2 id="wd-intro" class="no-num">概述</h2>
 <ul class="plain">
   <li>申請提款是提款管理裡開啟的視窗，不是獨立頁面，創作者不用離開收入管理</li>
-  <li>視窗有兩個畫面：申請提款主畫面與新增銀行畫面；確認資訊直接放在主畫面，不另開確認步驟</li>
+  <li>確認資訊直接放在主畫面，不另開確認步驟</li>
   <li>只有已結算的可提領金額能提，見<a href="#wd-amount-rule">哪些錢可以提</a></li>
 </ul>
 
@@ -133,7 +133,6 @@ tr:last-child td{border-bottom:0}
 </ol>
 <ul class="plain">
   <li>頁首或可提領卡的申請提款入口，先帶到提款管理選銀行</li>
-  <li>關閉視窗時，若已填了金額或銀行資料，先問要不要離開</li>
 </ul>
 <p class="note">依據：5.1.8.1 §1、§2、§3；5.1.8 F1、F8。</p>
 
@@ -152,8 +151,13 @@ tr:last-child td{border-bottom:0}
     <tr><td>快速選項</td><td>—</td><td>例如全額、固定金額、清除</td></tr>
     <tr><td>確認摘要</td><td>放在申請提款按鈕前</td><td>見<a href="#wd-summary">確認摘要</a></td></tr>
     <tr><td>不可逆確認</td><td>必勾</td><td>例如「我已確認上述金額與明細，且了解提款不可逆」；沒勾不能送出</td></tr>
-    <tr><td>申請提款（Request Payout）</td><td>—</td><td>按鈕文字可以帶本次金額，金額用創作者幣別顯示，例如創作者幣別是港幣時「Request payout · HK$8,940」<br>送出前檢查銀行狀態、提款金額、最低提款金額與可提領金額<br>送出時可提領金額或銀行狀態已經變了，中止送出，要創作者重新確認<br>可提領金額為 0、低於最低提款金額，或銀行不可用時，不能送出並顯示原因<br>送出後不能重複送出<br>身分驗證（KYC）沒通過或碰到合規上限時不能送出，並顯示原因</td></tr>
-    <tr><td>關閉</td><td>—</td><td>已填了金額或銀行資料時，先問要不要離開</td></tr>
+    <tr><td>申請提款（Request Payout）</td><td>Admin 代管時不能申請提款，見<a href="#wd-admin">Admin 代管時</a></td><td>按鈕文字可以帶本次金額，金額用創作者幣別顯示，例如創作者幣別是港幣時「Request payout · HK$8,940」</td></tr>
+    <tr><td>送出前檢查</td><td>按下申請提款時</td><td>檢查銀行狀態、提款金額、最低提款金額與可提領金額是否有效</td></tr>
+    <tr><td>送出時狀態已變</td><td>檢查時發現可提領金額或銀行狀態已經變了</td><td>中止送出，要創作者重新確認</td></tr>
+    <tr><td>不能送出</td><td>可提領金額為 0、低於最低提款金額，或銀行不可用</td><td>申請提款不能按，並顯示原因</td></tr>
+    <tr><td>不能送出（身分驗證與合規）</td><td>身分驗證（KYC）沒通過，或碰到合規上限</td><td>申請提款不能按，並顯示原因</td></tr>
+    <tr><td>重複送出</td><td>送出之後</td><td>不能重複送出</td></tr>
+    <tr><td>關閉</td><td>—</td><td>已填了金額或銀行資料時，先問要不要離開；視窗一定要有關閉操作</td></tr>
   </tbody>
 </table></div>
 
@@ -173,6 +177,22 @@ tr:last-child td{border-bottom:0}
   </tbody>
 </table></div>
 
+<p>主畫面的欄位依條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">提款金額</td></tr>
+    <tr><td>預設</td><td>剛進主畫面</td><td>預設帶入可提領全額，創作者也可以自己輸入</td></tr>
+    <tr><td>高於可提領金額、低於最低提款金額</td><td>創作者輸入的金額不合規則</td><td>不能送出；欄位上提示的樣子 <span class="tag wait">尚待確認</span></td></tr>
+    <tr class="grp"><td colspan="3">匯率</td></tr>
+    <tr><td>幣別相同</td><td>提款帳戶幣別跟收入幣別一樣</td><td>匯率不出現</td></tr>
+    <tr><td>幣別不同</td><td>兩者不同</td><td>顯示目前採用的匯率與預估換算後金額</td></tr>
+    <tr class="grp"><td colspan="3">提款銀行</td></tr>
+    <tr><td>可用、預設</td><td>帳戶可用</td><td>可以送出</td></tr>
+    <tr><td>驗證中、不可用</td><td>帳戶需要後續驗證，或不可用</td><td>不能送出；驗證完成前申請提款不能按</td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="wd-bank">新增銀行</h3>
 <p>從「新增提款銀行」或「新增新的銀行」卡片點進來；是主畫面的次畫面，不顯示步驟線。</p>
 <div class="tablewrap"><table class="fields">
@@ -184,7 +204,8 @@ tr:last-child td{border-bottom:0}
     <tr><td>銀行帳號（Bank Account Number）</td><td>必填</td><td>輸入時可以看到完整內容；儲存後只顯示遮蔽的帳號</td></tr>
     <tr><td>再次確認銀行帳號（Confirm Bank Account Number）</td><td>必填</td><td>要跟銀行帳號一致</td></tr>
     <tr><td>設為預設收款帳戶（Set as Default Account）</td><td>—</td><td>—</td></tr>
-    <tr><td>新增帳戶（Add Account）</td><td>必填欄位都完成才能按</td><td>新增成功後回到主畫面，並選中剛新增的銀行<br>需要後續驗證的帳戶顯示驗證中，驗證完成前主畫面的申請提款不能送出</td></tr>
+    <tr><td>返回主畫面、取消</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>新增帳戶（Add Account）</td><td>必填欄位都完成才能按；Admin 代管時不能新增帳戶（推導）</td><td>新增成功後回到主畫面，並選中剛新增的銀行<br>需要後續驗證的帳戶顯示驗證中，驗證完成前主畫面的申請提款不能送出</td></tr>
   </tbody>
 </table></div>
 <p>這裡新增銀行是為了完成這一次提款；銀行帳戶的長期管理、預設帳戶、刪除與驗證狀態在設定的付款與收款設定。</p>
@@ -193,6 +214,7 @@ tr:last-child td{border-bottom:0}
 <div class="tablewrap"><table>
   <thead><tr><th style="width:24%">結果</th><th>畫面</th></tr></thead>
   <tbody>
+    <tr><td>身分驗證沒通過或碰到合規上限</td><td>不會走到送出：申請提款不能按，並顯示原因</td></tr>
     <tr><td>成功</td><td>在視窗內顯示成功，或關閉視窗回到提款管理並顯示成功提示<br>內容：狀態提款申請中（Payout Requested）、提款金額、預估到帳時間、提款帳戶摘要<br>附查看提款紀錄的入口</td></tr>
     <tr><td>銀行帳戶資料錯誤</td><td>回到新增銀行畫面，或提示更新資料</td></tr>
     <tr><td>帳戶驗證還沒完成</td><td>提示驗證完成後再申請</td></tr>
@@ -211,22 +233,37 @@ tr:last-child td{border-bottom:0}
 </ul>
 <p class="note">依據：5.1.8.1 §4.3、§7；主規格 §7.3；D253、D452。</p>
 
-<h2 id="wd-after"><span class="n"></span>送出成功後的連動</h2>
+<h2 id="wd-after"><span class="n"></span>提款的階段與送出成功後的連動</h2>
+<p>一筆提款從送出申請開始，之後的狀態是已付款（Paid）或失敗（Failed），詞彙見<a href="common-status.html#revenue">收入與提款的狀態</a>。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>提款申請中（Payout Requested）</td><td>送出成功之後</td><td><a href="revenue.html#rev-history">提款紀錄</a>新增一筆提款申請中<br><a href="revenue.html#rev-transactions">交易明細</a>新增對應的提款交易<br>可提領金額扣掉這次申請的金額，不能重複申請</td></tr>
+    <tr><td>已付款（Paid）</td><td>提款成功入帳</td><td>提款紀錄顯示實際到帳日與手續費<br>由誰、什麼時候把申請中轉成已付款 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>提款失敗（Failed）</td><td>例如被銀行退回</td><td>提款紀錄顯示失敗，提供查看原因、更新付款資訊、重新申請<br>失敗後可提領金額有沒有還原 <span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
 <ul class="plain">
-  <li>提款管理的<a href="revenue.html#rev-history">提款紀錄</a>新增一筆提款申請中</li>
-  <li><a href="revenue.html#rev-transactions">交易明細</a>新增對應的提款交易</li>
-  <li>可提領金額扣掉這次申請的金額，不能重複申請</li>
-  <li>之後的狀態是已付款（Paid）或失敗（Failed），見<a href="common-status.html">狀態語言</a></li>
   <li>提款紀錄只能新增，不能編輯或刪除，更正用沖銷分錄</li>
 </ul>
-<p class="note">依據：5.1.8.1 §6.1、§7；主規格 §7.2。</p>
+<p class="note">依據：5.1.8.1 §6.1、§6.2、§7；5.1.8 F8；主規格 §7.2。</p>
+
+<h2 id="wd-admin"><span class="n"></span>Admin 代管時</h2>
+<p>Admin 代管時不能替創作者提款，Admin 代管時不能新增提款銀行（推導：新增銀行屬更改收款帳戶），見<a href="admin-actions.html#limits">Admin 代管不能做的事</a>。提款與新增銀行由創作者本人做。</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>Admin 代管</td><td>Admin 選定一位創作者後進入</td><td>Admin 代管時不能申請提款、不能新增銀行，入口不能按，並說明原因，不能只隱藏入口</td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：5.1.8.1 §1（D510）；主規格 §4.1 第 6 項、§4.4。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.8.1-申請提款流程.md</code>（最後更新 2026-10-19）§1～§7；<code>5.1.8-收入管理.md</code> F1、F8；<code>0-設計規格書.md</code> §7.2、§7.3、§7.6</li>
-    <li>決策：D043、D253、D452、D466</li>
+    <li>規格：<code>5.1.8.1-申請提款流程.md</code>（最後更新 2026-11-05）§1～§7；<code>5.1.8-收入管理.md</code>（2026-11-05）F1、F8；<code>0-設計規格書.md</code>（v5.41）§4.1、§4.4、§7.2、§7.3、§7.6</li>
+    <li>決策：D043、D253、D452、D466、D510、D513</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -235,9 +272,13 @@ tr:last-child td{border-bottom:0}
     <li>身分驗證（KYC）與合規上限在哪裡設定、門檻是多少</li>
     <li>提款手續費各項的金額或比例</li>
     <li>帳戶持有人姓名對不上時的額外審核怎麼進行</li>
+    <li>Admin 代管時不能新增提款銀行，算不算更改收款帳戶（目前是推導）；D510 沒列到的帳號操作代管時能不能做</li>
+    <li>輸入的提款金額高於可提領金額或低於最低提款金額時，欄位上的提示</li>
+    <li>新增銀行畫面的返回或取消</li>
+    <li>提款從申請中轉成已付款或失敗，由誰、什麼時候轉換；失敗後金額有沒有還原到可提領</li>
     <li>視窗載入中與送出中的畫面</li>
   </ul>
-  <p class="k">最近同步：2026-10-22（D466：申請提款按鈕的金額用創作者幣別顯示）；2026-10-19（新頁，對照 5.1.8.1 最後更新 2026-10-19、D452）</p>
+  <p class="k">最近同步：2026-11-05（D513 規格只寫最終版，提款由創作者本人做；對照規格 v5.41）</p>
 </details>
 </div>
 </body>

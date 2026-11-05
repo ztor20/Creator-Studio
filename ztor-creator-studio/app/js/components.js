@@ -544,7 +544,7 @@
      不用 item.src 當 fallback：那是路由用的內部字串（e-shop、fan-analytics），
      露出來就是把程式的內部命名端到畫面上。真正的譯文走 item.srcKey。 */
   var ISSUE_SRC_LABEL = {
-    'my-ip':         'My IP',
+    'my-ip':         'IP Assets',
     'e-shop':        'E-Shop',
     'events':        'Events',
     'settings':      'Settings',
@@ -1751,7 +1751,7 @@
        兩者的字串都走 i18n key；細項名稱在 persona=nick 時另有覆寫（PERSONA_DICT），
        否則面板會唸預設世界觀的品名、上面那行 desc 卻是周湯豪的作品。 */
     'dash-alerts': { items: [
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Dragon Tiger Gate key art</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · My IP · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html?ip=neon-tide#rented', id: 'ip-rental', kind: 'expiring', src: 'my-ip', srcKey: 'nav.my-ip',
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Dragon Tiger Gate key art</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · IP Assets · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html?ip=neon-tide#rented', id: 'ip-rental', kind: 'expiring', src: 'my-ip', srcKey: 'nav.my-ip',
         agoKey: 'issue.ago.yesterday', ago: 'Yesterday',
         details: [
           { nameKey: 'alert.ip-rental.d1.name', name: 'Dragon Tiger Gate key art — brand license', subKey: 'alert.ip-rental.d1.sub', sub: 'Expires May 25' }
@@ -1790,7 +1790,7 @@
     'dash-activity': { table: true, rows: [
       { icon: 'check-circle', iconVariant: 'success', titleKey: 'dash.recent.row1.title', title: '<em>帥到分手</em> MV published',               img: 'images/projects/nick-sdfs.jpg', metaKey: 'dash.recent.row1.meta', meta: 'Content · Projects · Nov 23', modKey: 'dash.recent.row1.mod', mod: 'Projects', dateKey: 'dash.recent.row1.date', date: 'Nov 23', status: { key: 'status.published', fallback: 'Published', variant: 'success' } },
       { icon: 'award',        iconVariant: 'info',    titleKey: 'dash.recent.row2.title', title: 'Fan milestone — Inner Circle reached 10',      img: 'images/products/inner-circle-membership.webp', metaKey: 'dash.recent.row2.meta', meta: 'Fans · Fans CRM · Nov 21', modKey: 'dash.recent.row2.mod', mod: 'Fans CRM', dateKey: 'dash.recent.row2.date', date: 'Nov 21',   status: { key: 'status.reached',   fallback: 'Reached',   variant: 'success' } },
-      { icon: 'refresh-ccw',                          titleKey: 'dash.recent.row3.title', title: 'Expiring IP renewed — NICKTHEREAL likeness',   img: 'images/ip/nick-portrait.jpg', metaKey: 'dash.recent.row3.meta', meta: 'IP · My IP · Nov 19', modKey: 'dash.recent.row3.mod', mod: 'My IP', dateKey: 'dash.recent.row3.date', date: 'Nov 19',        status: { key: 'status.updated',   fallback: 'Updated',   variant: 'neutral' } },
+      { icon: 'refresh-ccw',                          titleKey: 'dash.recent.row3.title', title: 'Expiring IP renewed — NICKTHEREAL likeness',   img: 'images/ip/nick-portrait.jpg', metaKey: 'dash.recent.row3.meta', meta: 'IP · IP Assets · Nov 19', modKey: 'dash.recent.row3.mod', mod: 'IP Assets', dateKey: 'dash.recent.row3.date', date: 'Nov 19',        status: { key: 'status.updated',   fallback: 'Updated',   variant: 'neutral' } },
       { icon: 'file-text',                            titleKey: 'dash.recent.row4.title', title: 'Brand partnership signed — Cypress Audio',     img: 'images/products/vintage-synth.webp', metaKey: 'dash.recent.row4.meta', meta: 'Income · Earnings · Nov 17', modKey: 'dash.recent.row4.mod', mod: 'Earnings', dateKey: 'dash.recent.row4.date', date: 'Nov 17', status: { key: 'status.signed',    fallback: 'Signed',    variant: 'neutral' } },
       { icon: 'ticket',       iconVariant: 'success', titleKey: 'dash.recent.row5.title', title: 'Ticket sales opened — <em>REALIVE (R2)</em>',  img: 'images/projects/nick-r2.jpg', metaKey: 'dash.recent.row5.meta', meta: 'Event · Events · Nov 16', modKey: 'dash.recent.row5.mod', mod: 'Events', dateKey: 'dash.recent.row5.date', date: 'Nov 16', status: { key: 'status.on-sale', fallback: 'On sale', variant: 'success' } },
       { icon: 'package',                              titleKey: 'dash.recent.row6.title', title: 'Restocked — <em>WYAGL</em> hoodie',            img: 'images/products/nick-hoodie.webp', metaKey: 'dash.recent.row6.meta', meta: 'Store · E-Shop · Nov 15', modKey: 'dash.recent.row6.mod', mod: 'E-Shop', dateKey: 'dash.recent.row6.date', date: 'Nov 15', status: { key: 'status.updated', fallback: 'Updated', variant: 'neutral' } },
@@ -1804,7 +1804,7 @@
     'activity-module-href': {
       'Projects':  'projects.html',
       'Fans CRM':  'fans-crm.html',
-      'My IP':     'my-ip.html',
+      'IP Assets': 'my-ip.html',
       'Earnings':  'earnings.html',
       'E-Shop':    'e-shop.html',
       'Events':    'events.html',

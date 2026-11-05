@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-05 D513 原型同步（UI-CHANGES 四百六十六、ASSUMPTIONS UIA-333；release2.3，不進 release2.2）**：組合包販售上限退場——5.1.5.4 F4、5.1.5.9 §2.3、5.1.6.1 F20、5.1.6.3 §2.6.1 對應 `create-bundle.html`、`bundle-detail.html`（庫存設定三開關、組合庫存分頁）、`js/bundle-editor.js`（`layout:'split'`）、`event-detail.html`（`setBundleSetsZeroNow`，庫存設為 0＝鎖定收到保留）、`js/listing-state.js`（`bundleQty`、`bundleLockSets`）、`js/events-store.js`（`bundleLeft`、`bundleLockOf`、`bundleZeroLock`、`bundleCapRetire`）、`e-shop.html`。本檔既有段落提到 `bd.stockonly.*`、`ed.stockonly.body`、`bd.members.locked`、`cb.cap.*`、`capOver` 的地方以這則為準。5.1.2.2 §2.2.4「未達標時自動全額退款」開關退場 → `project-detail.html` 排程卡與編輯彈窗移除、`project-detail.schedule.autonote` 改寫。規格本體由規格線同步（本輪不動 `documents/`）。
+>
+> **2026-11-05 D510 原型同步（UI-CHANGES 四百六十四；release2.3）**：5.1.0 Creator 管理的返回鈕文案、Admin 頂欄標示、5.1.4 IP 資產頁名（原「我的 IP」）、§6.4 未選創作者空狀態；對應 `js/sidebar.js`、`js/i18n.js`、`js/components.js`、`my-ip.html` 等。
+>
 > **2026-11-02 示範資料一致與平台設定連動（UI-CHANGES 四百六十、ASSUMPTIONS UIA-332；🟣 release2.4）**：5.1.0.8 F10 分級顯示名稱「全站同步」→ `js/loyalty-settings.js` 的 i18n 掛勾；F10 S_floor、前 % 名 → `js/fans-roster.js` 分級與 `progress()`、分級設定彈窗；F11 KPI 視窗 → 名冊 KPI、流失風險、粉絲詳情近 N 天入帳；F6 計分類不回算 → 明細點數照入帳當時的預設算。5.1.7 F2 四張 KPI、F3 分級分布（活躍粉絲）、F4 流失風險、F5 排行榜（全部粉絲、25 列分頁）→ `fans-crm.html` 由 `summary()` 算；5.1.7.7 §2.3 近 N 天入帳、最近活躍、§2.4 明細（P0 事件、已達上限、活動報到 A6）→ `fan-detail.html` `renderLedger()`／`paintActivity()`；5.1.7.3 媒體庫分級人數 → `js/tier-population.js`。§7.5 計分（K_A × γ × 金額、B1 150、B3 400、B4 5、B5 10）→ 明細點數。
 
 > **2026-11-02 D507 原型同步（UI-CHANGES 四百五十五、ASSUMPTIONS UIA-330；🟣 release2.4）**：5.1.7 F1 頁首「認識粉絲系統」入口恢復 → `fans-crm.html` `.page-intro__help`（i18n `fans.btn.explain`）；5.1.7.5 F4 常駐入口只在名冊 → `media-vault.html`、`media-vault-popup.html`、`tier-settings.html`、`tier-benefits.html`、`brand-campaigns.html`、`brand-campaign-detail.html`、`fan-analytics.html`、`audience-report.html` 移除同一顆；5.1.7.7 §2.2 系統說明不設 → `fan-detail.html` 本來就沒有，維持。
