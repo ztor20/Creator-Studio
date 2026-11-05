@@ -15,6 +15,12 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-05（四百七十八）· 版本切換改成跳到各版本的獨立網址（D infra）
+
+- 範圍：`js/devtools.js`、新增 `js/release-links.js`、`feature-scope-map.md` 開發版本配置。
+- 動機：使用者要 release2.3 凍結、release2.4 起各自獨立，切換版本要看到不同版本的檔案，不是同一份檔案藏功能。
+- 做法：面板新增「其他版本（另開網址）」，選了跳到該版網址的同一頁；清單只有一份，放在完整版的 `js/release-links.js`。`main` 的面板拿掉 release2.3、release2.4 兩個 tier 預覽。分支上只改 `devtools.js` 的 `RELEASE_LOCK` 一行就鎖版，其餘程式與 `main` 相同，修正比較好搬。
+
 ## 2026-11-05（四百七十七）· 建立商品閘門只剩一張卡時，卡片與標題同寬（B 反饋）
 
 **標籤**：release2.2、release2.3
