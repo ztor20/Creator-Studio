@@ -45,18 +45,11 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 | 鍵 | 顯示名 | 類型 | 規則 | 說明 |
 |---|---|---|---|---|
 | `full` | 最終版 | 開發 | `all` | 全部功能（預設）；日常編修都改這一版 |
-| `release2.3` | release2.3 | 開發 | `tier:release2.2,release2.3` | 已交付（🟢 release2.2）＋下一版（🔵 release2.3）；⚪ 未排定、`full` 保留 gate 與未標記的新功能都隱藏 |
-| `release2.4` | release2.4 | 開發 | `tier:release2.2,release2.3,release2.4` | 已交付（🟢 release2.2）＋ release2.3（🔵）＋粉絲管理與媒體庫（🟣 release2.4）；⚪ 未排定、`full` 保留 gate 與未標記的新功能都隱藏 |
 | `funding-test` | funding-test | 測試 | `route:create-project.html=funding-test/create-campaign.html` | 建立專案改接募資建立流程（create-campaign 部署複本），其餘同最終版 |
 | `deck-for-sony` | Deck for Sony | Demo | `route:earnings.html=earnings-sony.html` | 收入管理改接 Sony 簡報版（earnings-sony.html），其餘同最終版 |
 | `stock-ui-test` | 庫存UI測試 | 測試 | `route:create-product.html=lab-stock-settings.html` | 建立商品改接庫存設定 demo（lab-stock-settings.html：庫存量＋不限量／限量標籤／鎖定庫存），其餘同最終版 |
 
-**交付輪替（2026-09-23 起；2026-10-07 改用 release 編號）**：已交付的版本不留在 `main` 的面板上，改由 monorepo 的凍結分支代表——release2.2＝`release2.2` 分支（原名 `phase1`；版本鎖死、獨立網址、只收明確要進 release2.2 的修正，升版記在該分支的 `RELEASE2.2-CHANGES.md`）。下一期範圍確定時：
-1. 把要做的功能標 `🔵 release2.3`
-2. 用面板的「release2.3」確認畫面
-3. 從 `main` 切 `release2.3` 分支鎖定並開新網址
-4. 交付後把那批功能改標 `🟢 release2.3`
-5. 本表的開發版本配置拿掉已交付的那一列（例如交付 release2.3 後刪 `release2.3` 列），同步 `js/devtools.js` 的 `VERSIONS` 後備；`TIER_EMOJI` 的 🔵／🟣 照「下一版、再下一版」往前對：🔵 改對到原本 🟣 那一版、🟣 改對到再下一版，並把原 🟣 的功能改標 🔵；新標的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.3` 值不用改
+**交付版（2026-11 起）**：每個 release 都是 monorepo 的獨立分支＋獨立網址，切換版本＝跳到另一個網址、看另一份檔案，本表不再列交付版。面板上的「其他版本」讀完整版網址的 `js/release-links.js`，新版本在那裡加一筆。切版用專案根的 `release-cut.sh`，它會把分支上 `js/devtools.js` 的 `RELEASE_LOCK` 那一行設成該版，版本與 tier 範圍就鎖死；Tier 欄（🟢 🔵 🟣 ⚪）仍決定切版時哪些功能在範圍內，所以新功能照舊要掛 `data-feat` 並登記。流程見 `site/WORKFLOW.md`。
 
 **兩個未來版本並存（2026-10-23 起）**：release2.3（🔵，活動）還沒交付時，粉絲管理與媒體庫先排進 release2.4（🟣）。面板同時有「release2.3」「release2.4」兩個預覽：release2.3 規則不變（看不到 🟣），release2.4 規則 `tier:release2.2,release2.3,release2.4`（含 release2.3 的活動功能）。🟣 功能在 release2.3 的連結與頁面都會收起或導回 E-Shop。
 

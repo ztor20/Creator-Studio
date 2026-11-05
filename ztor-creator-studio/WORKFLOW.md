@@ -149,6 +149,12 @@ flowchart TD
 
 ## 5. 交付版凍結（release）
 
+2026-11 起每個交付版都是獨立分支＋獨立網址，切換版本＝跳到另一個網址。各版本的狀態與目前開發版本記在維護者的專案 `CLAUDE.md`，清單在 `app/js/release-links.js`。
+
+- 切新版本：`release-cut.sh`（只改 `RELEASE_LOCK` 一行並新增改版紀錄檔）→ 建部署 repo 與 Vercel 專案 → `deploy-release.sh` 補一筆 → `release-links.js` 加一筆。
+- 目前開發版本：`release-ship.sh` 一次發 `main`、完整版、該版網址。
+- 已凍結版本：照下方流程逐筆搬。
+
 已交給開發的階段不留在 `main` 的切換面板上，改成 monorepo 裡一條**凍結分支**：版本鎖死、有自己的網址、只收明確要進去的修正。目前只有 release2.2（E-Shop 交付範圍，原名 Phase 1），下一版是 release2.3。「release2.2」是交付版，跟設計換裝世代「r2.3」是兩回事，別混用。
 
 | 項目 | release2.2（E-Shop） |

@@ -50,12 +50,7 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
   - `release-port.sh <release> <commit> --check` 先試套；ASSUMPTIONS／UI-CHANGES／requirements-map 三份已分歧的紀錄檔內建排除，只搬程式與設計系統文件。
   - `deploy-release.sh <release>` 部署。
 - 凍結分支上的鎖版本改動要保留：`app/js/devtools.js` 標 `★ RELEASE2.2 FROZEN` 的段落、`app/feature-scope-map.md` 開發版本配置表只留 `release2.2` 一列。套修正時不要被 `main` 的內容蓋掉；試套失敗代表兩邊已分歧，手動改寫那筆修正，不要硬套。
-- `main` 的版本切換面板有五個選項（2026-10-23 起多 release2.4）：
-  - 最終版
-  - release2.3（版本鍵 `release2.3`，規則 `tier:release2.2,release2.3`）
-  - release2.4（版本鍵 `release2.4`，規則 `tier:release2.2,release2.3,release2.4`）
-  - funding-test
-  - Deck for Sony
+- 交付版都是獨立分支＋獨立網址（2026-11 起）：`main` 的面板不再用 tier 預覽交付版，切換版本＝跳到該版網址，清單在 `app/js/release-links.js`。分支與 `main` 只差 `app/js/devtools.js` 的 `RELEASE_LOCK` 一行與 `RELEASE*-CHANGES.md`。
 - 功能表 tier（`app/feature-scope-map.md` 的 Tier 欄）：
   - `🟢 release2.2`：已交付
   - `🔵 release2.3`：下一版（活動）
@@ -63,13 +58,7 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
   - `⚪ TBD`：未排定
   - `⚫ 退場`
 - 新功能做出來就掛 `data-feat` 標記並登記在 `feature-scope-map.md`（預設 ⚪ 未排定），否則 `main` 的 release2.3 預覽會多顯示不在範圍的東西。
-- 每期輪替：
-  1. 把要做的功能在 `feature-scope-map.md` 標 `🔵 release2.3`。
-  2. 用面板的「release2.3」確認畫面。
-  3. 從 `main` 切 `release2.3` 分支鎖版本。
-  4. 開部署 repo 與 Vercel 專案，在 `deploy-release.sh` 的 `release_target` 補一筆，開新網址。
-  5. 交付後把那批功能改標 `🟢 release2.3`，`feature-scope-map.md` 開發版本配置表與 `devtools.js` 的 `VERSIONS` 後備拿掉 `release2.3` 列；`TIER_EMOJI` 往前對（🔵 改對到 release2.4、🟣 改對到再下一版），原 🟣 的功能改標 🔵；新標的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.3` 值不用改。
-  - **兩個未來版本並存**（2026-10-23 起）：release2.3（🔵，活動）＝下一版、release2.4（🟣，粉絲管理＋媒體庫）＝再下一版，各自照上面 1–4 步走：要進 release2.4 的功能標 `🟣 release2.4`、用面板的「release2.4」確認，切分支時從 `main` 切 `release2.4`。release2.4 的規則含 release2.3（`tier:release2.2,release2.3,release2.4`），release2.3 預覽看不到 🟣。整頁屬 🟣 的頁要在 `js/devtools.js`／`js/sidebar.js` 兩份 `FULL_ROUTES` 改成「依功能放行」（devtools 那份的值寫功能 ID、sidebar 那份同步列進 `TIER_ROUTES`），只在 release2.3 收起。
+- 切新版本：維護者本機用 `release-cut.sh`，流程見 [WORKFLOW.md](WORKFLOW.md) §5。
 - 完整流程圖見 [WORKFLOW.md](WORKFLOW.md) §5 與 [WORKFLOW-DIAGRAM.md](WORKFLOW-DIAGRAM.md) 線 4。
 
 ## 變更紀錄的交付版標籤（2026-10-07 起）
