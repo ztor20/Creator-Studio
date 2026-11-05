@@ -155,7 +155,7 @@ flowchart TD
 - 目前開發版本：`release-ship.sh` 一次發 `main`、完整版、該版網址。
 - 已凍結版本：照下方流程逐筆搬。
 
-已交給開發的階段不留在 `main` 的切換面板上，改成 monorepo 裡一條**凍結分支**：版本鎖死、有自己的網址、只收明確要進去的修正。目前只有 release2.2（E-Shop 交付範圍，原名 Phase 1），下一版是 release2.3。「release2.2」是交付版，跟設計換裝世代「r2.3」是兩回事，別混用。
+凍結分支版本鎖死、有自己的網址、只收明確要進去的修正。下表以 release2.2 為例；release2.3 同樣凍結（`ztor-cs-rel23.vercel.app`），release2.4 開發中（`ztor-cs-rel24.vercel.app`）。
 
 | 項目 | release2.2（E-Shop） |
 |---|---|
@@ -192,27 +192,22 @@ flowchart TD
 
 ### 版本切換面板與功能表 tier
 
-`main` 的版本切換面板只有四個選項：
+`main` 的版本切換面板有最終版、測試版與 Demo，交付版列在「其他版本（另開網址）」，選了跳到該版網址的同一頁。清單在 `app/js/release-links.js`。
 
-- 最終版
-- release2.3（版本鍵 `release2.3`，規則 `tier:release2.2,release2.3`）
-- funding-test
-- Deck for Sony
+`app/feature-scope-map.md` 的 Tier 欄決定切版時哪些功能在範圍內：
 
-`app/feature-scope-map.md` 的 Tier 欄分四種：
-
-- `🟢 release2.2`：已交付
-- `🔵 release2.3`：下一版
+- `🟢 release2.2`
+- `🔵 release2.3`
+- `🟣 release2.4`
 - `⚪ TBD`：未排定
 - `⚫ 退場`
 
-### 每期輪替步驟
+### 切新版本的步驟
 
-1. 把要做的功能在 `app/feature-scope-map.md` 標 `🔵 release2.3`。
-2. 用面板的「release2.3」確認畫面。
-3. 從 `main` 切 `release2.3` 分支鎖版本。
-4. 開部署 repo 與 Vercel 專案，在 `deploy-release.sh` 的 `release_target` 補一筆，開新網址。
-5. 交付後把那批功能改標 `🟢 release2.3`；`main` 的下一版改成 release2.4（`feature-scope-map.md` 開發版本配置表，加上 `devtools.js` 的 `VERSIONS` 後備、`TIER_EMOJI` 的 🔵 改對到 release2.4；新標 🔵 的功能在 `FEAT_TIER` 後備補一筆，已交付的 `release2.3` 值不用改）。
+1. 把要做的功能在 `app/feature-scope-map.md` 標好 Tier。
+2. 跑 `release-cut.sh` 切分支鎖版。
+3. 開部署 repo 與 Vercel 專案，在 `deploy-release.sh` 的 `release_target` 補一筆。
+4. 在 `app/js/release-links.js` 加一筆，部署完整版。
 
 ### 新功能的規則
 
