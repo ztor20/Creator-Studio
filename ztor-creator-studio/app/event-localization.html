@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2"><!-- 票券頁／票務商品頁的視圖切換（畫在預覽外） -->
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- D390：已結束／已取消的唯讀說明 -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 兩張表沿用 .pp-table／.pp-cell 家族 -->
 <link rel="stylesheet" href="ds-components/rich-body.css?v=r2.2"><!-- D340：partials/rich-body.js 帶進來的 class（本頁只用它的靜態工具；check_ds_sync 檢查 15 要求連入） -->
 <link rel="stylesheet" href="ds-components/venue-map.css?v=r2.2"><!-- D369：粉絲頁「活動地點」一節的地圖（partials/venue-map.js） -->
@@ -99,9 +99,9 @@
        D334 刪去活動須知類兩份清單；2026-10-05 D354 說明區塊的標題與內文、D353 門票簡介一併退場）
      prices＝每個票種的票價＋含本活動票券的組合包售價 × 五幣別；基準＝ev.currency（沒寫＝預設幣別）。
        bookyay 帶入者（2026-09-29 D330，取代「基準 HKD 且鎖」）：基準價＝港幣原價換算成創作者幣別、鎖定；
-       priceObj 帶 pin（港幣欄＝bookyay 原價、鎖定、無重設）與 baseOpen（基準欄也可覆寫、可重設），由 events-store 的
+       priceObj 帶 pin（港幣價＝bookyay 原價、鎖定，D514 決定四），由 events-store 的
        priceOf／bundlePriceOf 給（墓碑 2026-10-16 D429：「自動建立的組合包港幣欄＝bookyay 現價」隨自動組合包退場）。2026-09-29 D331：創作者自建、成員含 bookyay 票券的組合包
-       港幣欄同樣鎖定，值由 bundlePriceOf 內的 bkyBundleHkd 依公式算出（本頁不另算）。 */
+       港幣價同樣鎖定，值由 bundlePriceOf 內的 bkyBundleHkd 依公式算出（本頁不另算）。 */
   /* 描述的區塊（D354）：store 的 descBlocks（或純文字 desc）＋舊資料的說明區塊，由 migrate() 收成一串區塊 */
   function descBlocksOf() {
     return window.ztorRichBody ? window.ztorRichBody.migrate(ev.descBlocks || ev.desc || '', ev.infoSections) : (ev.desc ? [{ type: 'text', text: ev.desc }] : []);
@@ -149,14 +149,6 @@
     /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
     return f;
   }
-  function locPrices() {
-    const out = [];
-    edTiers.forEach(t => out.push({ key: 'tier:' + t.id, label: t.name || T('ce.tier.untitled', 'Untitled tier'),
-      groupKey: 'pp.price.tiers', groupFallback: 'Ticket types', priceObj: S.priceOf(ev, t), locked: ev.source === 'bookyay' }));
-    (ev.bundles || []).forEach(b => { const po = S.bundlePriceOf(ev, b); out.push({ key: 'bundle:' + b.id, label: b.name,
-      groupKey: 'pp.price.bundles', groupFallback: 'Ticket bundles', priceObj: po, locked: !!po.locked }); });
-    return out;
-  }
   function locModel() {
     const first = edSessions[0] || {};
     const start = first.start || ev.start || '', end = first.end || ev.end || '';
@@ -183,12 +175,12 @@
       const bpo = S.bundlePriceOf(ev, b);
       /* D443：成員的單買價＝單價（商品＝定價；票券＝允許門票裡最低的票價，多種時加「起」），票券另帶第一場的日期時間 · 場館 */
       const goods = (b.products || []).map(x => ({ name: (x && x.name) || String(x), img: (x && x.img) || '', spec: false, qty: 1,
-        unitPriceObj: x && x.price != null ? { base: bpo.base, amount: Number(x.price) || 0, override: {} } : null }));
+        unitPriceObj: x && x.price != null ? { base: bpo.base, amount: Number(x.price) || 0 } : null }));
       const tixT = tk.tierIds.map(x => edTiers.find(y => y.id === x)).filter(Boolean);
       const tixLow = tixT.length ? tixT.reduce((lo, t) => (Number(t.price) || 0) < (Number(lo.price) || 0) ? t : lo) : null;
       const listAmt = S.bundleListAmount(ev, b);
       return { name: { key: 'bundle-name-' + b.id }, priceObj: bpo, priceKey: 'bundle:' + b.id, soldOut: S.bundleLeft(ev, b) === 0,   /* D447：組合實際可售量 0（含限量剩餘 0）＝完售 */   /* D445：名稱與描述吃譯文 */
-        listPriceObj: listAmt > Number(b.price) ? { base: bpo.base, amount: listAmt, override: {} } : null,
+        listPriceObj: listAmt > Number(b.price) ? { base: bpo.base, amount: listAmt } : null,
         tickets: names.length ? { names, qty: Number(tk.qty) || 1, unitFrom: tixT.length > 1, unitPriceObj: tixLow ? S.priceOf(ev, tixLow) : null,
           whenBase: [fmtDate(first.date || ev.date), first.start || ev.start].filter(Boolean).join(' ') } : null,   /* D445：場地名稱（譯文）由渲染器接上 */
         goods, imgs: (b.media || []).filter(x => x && x.src && x.kind !== 'video').map(x => x.src), img: (goods[0] && goods[0].img) || '',
@@ -248,14 +240,14 @@
     const t = lf ? new Date(String(lf).replace(' ', 'T')).getTime() : NaN;
     return !(!isNaN(t) && t > Date.now());
   })();
-  /* 已下架的組合包才可改翻譯與價格（D455 B15）：判斷交給 ListingState.isUnlisted（手動下架、封存、定時上架未到、定時下架已過都算），
+  /* 已下架的組合包才可改翻譯（D455 B15）：判斷交給 ListingState.isUnlisted（手動下架、封存、定時上架未到、定時下架已過都算），
      與 bundle-detail 的 bdStockOnly() 同一個判準；欄位照 bundle-detail 的 bundleModel 取（listed 缺值＝上架）。 */
   const LSt = window.ListingState;
   const bundleOff = b => LSt
     ? LSt.isUnlisted({ listed: b.listed !== false, listAt: b.listAt || null, unlistAt: b.unlistAt || null, archived: !!b.archived })
     : b.listed === false;
   const openBundles = (ev.bundles || []).filter(bundleOff).map(b => String(b.id));
-  /* 這個欄位或價格列鍵（翻譯表 data-pp-row-field、預覽 data-pp-field-key、價格表 data-pp-price-key）是否鎖住 */
+  /* 這個欄位鍵（翻譯表 data-pp-row-field、預覽 data-pp-field-key）是否鎖住 */
   function keyLocked(key) {
     if (readOnly) return true;
     if (!listedLock) return false;
@@ -267,18 +259,15 @@
     const scope = [host].concat(Array.from(document.querySelectorAll('.drawer')));
     scope.forEach(root => {
       root.querySelectorAll('input, textarea').forEach(el => {
-        const k = el.getAttribute('data-pp-row-field') || el.getAttribute('data-pp-price-key');
+        const k = el.getAttribute('data-pp-row-field');
         if (keyLocked(k) && !el.readOnly) el.readOnly = true;
       });
-      root.querySelectorAll('[data-pp-price-reset]').forEach(b => { if (keyLocked(b.getAttribute('data-pp-price-reset')) && !b.hidden) b.hidden = true; });
     });
     host.querySelectorAll('[contenteditable="true"]').forEach(el => { if (keyLocked(el.getAttribute('data-pp-field-key'))) el.setAttribute('contenteditable', 'false'); });
     if (!partial) host.querySelectorAll('[data-stage-primary], .pstage-edit').forEach(b => { if (!b.hidden) b.hidden = true; });
   }
   window.ztorPublishStage.mount(host, {
     fields: locFields(),
-    prices: locPrices(),
-    currencies: S.CURRENCIES.slice(),
     baseCurrency: ev.currency || S.DEFAULT_CURRENCY,
     /* 墓碑 2026-10-16（D443 決定一）：views（票券頁／票務商品頁）不再傳——門票與套組合成同一頁 */
     mode: 'save',
@@ -287,16 +276,8 @@
     previewRender: (h, api) => {
       if (window.ztorFanEventPage) window.ztorFanEventPage.render(h, locModel(), api);
     },
-    /* 儲存：逐幣別覆寫寫回 events-store（localStorage），翻譯草稿留在 publish-stage 的模組
-       變數（原型無後端，UIA-165）。存完回詳情頁——那裡的票種卡重新讀 store 就會反映。 */
+    /* 儲存：翻譯草稿留在 publish-stage 的模組變數（原型無後端，UIA-165）。存完回詳情頁。 */
     onPrimary: result => {
-      const data = { tiers: {}, bundles: {} };
-      Object.keys(result.prices || {}).forEach(k => {
-        const parts = k.split(':');
-        if (parts[0] === 'tier') data.tiers[parts[1]] = result.prices[k];
-        else if (parts[0] === 'bundle') data.bundles[parts[1]] = result.prices[k];
-      });
-      S.setOverrides(ev.id, data);
       window.__evLocalization = result;
       location.href = backHref + (backHref.indexOf('?') >= 0 ? '&' : '?') + 'saved=loc';
     },
@@ -307,15 +288,15 @@
     const bar = document.createElement('div');
     bar.className = 'info-banner';
     const roKey = readOnly ? 'evloc.ro' : (partial ? 'evloc.listed.partial' : 'evloc.listed');
-    const roFb = readOnly ? 'This event has ended or is archived — translations and prices are view-only.'
-      : (partial ? 'This event is listed — its translations and ticket prices are view-only. Unlisted bundles can still be edited. To edit the rest, unlist the event first, then relist it after you save.'
-        : 'This event is listed — translations and prices are view-only. To edit them, unlist the event first, then relist it after you save.');
+    const roFb = readOnly ? 'This event has ended or is archived — translations are view-only.'
+      : (partial ? 'This event is listed — its translations are view-only. Unlisted bundles can still be edited. To edit the rest, unlist the event first, then relist it after you save.'
+        : 'This event is listed — translations are view-only. To edit them, unlist the event first, then relist it after you save.');
     bar.innerHTML = '<i data-lucide="lock" class="ztor-icon info-banner__icon"></i><span data-i18n="' + roKey + '">' + T(roKey, roFb) + '</span>';
     host.parentNode.insertBefore(bar, host);
     if (window.ztorIcons) window.ztorIcons.applyIcons(bar);
     lockAll();
     new MutationObserver(lockAll).observe(host, { childList: true, subtree: true, attributes: true, attributeFilter: ['contenteditable', 'hidden'] });
-    /* 抽屜（翻譯表／價格表）掛在 body 底下，一樣要鎖（鍵級：只鎖 keyLocked 的格） */
+    /* 抽屜（翻譯表）掛在 body 底下，一樣要鎖（鍵級：只鎖 keyLocked 的格） */
     new MutationObserver(lockAll).observe(document.body, { childList: true, subtree: true });
   }
 })();

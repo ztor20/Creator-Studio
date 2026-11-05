@@ -46,8 +46,8 @@
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 專案側），留著是因為全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 專案側），留著是因為全頁畫面的翻譯表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表（整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D310 專案側：最後一步的粉絲視角專案頁（前台 cocreate-project／title 鏡像，第 6 段；只給 js/fan-project-page.js 用） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310 專案側：最後一步「預覽與發布」的全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -791,7 +791,7 @@
            右軌的教練行離它太遠。內容由 JS 依當步驟填，可按時整行清空。 -->
       <p class="wizard__bottom-hint hidden" data-next-hint></p>
       <button class="btn btn--outline" data-action="back" data-i18n="wiz.back">Back</button>
-      <button class="btn btn--primary" data-action="next">Continue</button>
+      <button class="btn btn--primary" data-action="next">Next</button>
     </div>
   </footer>
 
@@ -809,7 +809,7 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <!-- partials/publish-preview.js 已移除（2026-09-23）：最後一步改成全頁「預覽與發布」，本頁不再開浮層。 -->
-<!-- 匯率與金額格式（window.ztorEvents 的 fx／priceIn／fmtMoney）：publish-stage 的幣別段與價格表靠它換算。 -->
+<!-- 匯率與金額格式（window.ztorEvents 的 fx／priceIn／fmtMoney）：publish-stage 的幣別段靠它換算。 -->
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/publish-stage.js?v=r2.2"></script>
 <script src="js/fan-project-page.js?v=r2.2"></script>
@@ -1007,7 +1007,7 @@
     const next = document.querySelector('[data-action=next]');
     if (idx < f.length - 1) {
       next.removeAttribute('data-i18n');
-      next.textContent = T('cpp.next.continue') + ' ' + T(stepLabelKey(f[idx + 1]));
+      next.textContent = T('wiz.next');
     }
     /* D322：最後一步的主動作（發布項目／送出審核）與上一步都在側欄，底部動作列整條收起；
        還沒進流程（閘門畫面）時不動它——閘門自己管 footer 的顯示（見 showGate／enterWizard）。 */
@@ -1552,9 +1552,9 @@
 
   /* ══ 最後一步「預覽與發布／預覽與送審」全頁畫面（D322 · 5.1.2.1 §4.3；比照 create-event 第 8 步 D310）══════════
      宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核同步（stage.syncChecks）。
-     版型、語言／幣別兩軸、兩張表與主鈕都在 js/publish-stage.js；主區畫面在 js/fan-project-page.js。
+     版型、語言／幣別兩軸、翻譯表與主鈕都在 js/publish-stage.js；主區畫面在 js/fan-project-page.js。
      翻譯模式不傳：建立專案不受 D312 活動例外影響，仍自動翻譯（§4.3 側欄第一段）。
-     幣別不傳 priceOverrides：建立專案不在 D318 判準內，維持 D306 通則＝可逐幣別覆寫（§4.3 側欄第二段）。 */
+     幣別段只看不改（D514）：其他幣別一律依匯率換算（§4.3 側欄第二段）。 */
   let stage = null;            // publish-stage 的 handle（只有停在最後一步時是非 null）
   /* publish-stage 的 step 是 1 起算的數字（0＝不跳），本頁的步驟是 flow() 裡的代號：兩邊在這裡換算。 */
   const stepNum = key => { const i = flow().indexOf(key); return i >= 0 ? i + 1 : 0; };
@@ -1612,27 +1612,6 @@
       });
     }
     return fields;
-  }
-
-  /* 價格表的列：一方案一列（共創／預購）、直接發佈的單一價格、影片路徑的逐畫質租賃價。 */
-  function stagePrices() {
-    const base = cppBaseCurrency();
-    const out = [];
-    if (isFilmFlow()) {
-      const w = window.ZtorWorkFields ? window.ZtorWorkFields.collect() : null;
-      if (w && w.paid) w.qualities.forEach(q => out.push({
-        key: 'q:' + q.name, label: q.name, groupKey: 'pw.price.title', groupFallback: 'Pricing',
-        priceObj: { base, amount: numVal(q.price), override: {} }, locked: false }));
-    } else if (type === 'golive') {
-      if (accessMode() !== 'free') out.push({
-        key: 'price', label: T('cpp.s4.price'), groupKey: 'cpp.step.money', groupFallback: 'Monetization',
-        priceObj: { base, amount: numVal(fieldVal('price')), override: {} }, locked: false });
-    } else {
-      stageTiers().forEach(t => out.push({
-        key: t.pk, label: tierName(t), groupKey: type === 'fund' ? 'cpp.step.tiers' : 'cpp.step.pretiers', groupFallback: 'Tiers',
-        priceObj: { base, amount: Math.round(t.ed.finalPrice(t.b) * 100) / 100, override: {} }, locked: false }));
-    }
-    return out;
   }
 
   /* 發布前檢核（§4.3 F12，D322 起在側欄第三段）：每項 { key, label, ok, step }，step 是可點回去的步驟。
@@ -1837,8 +1816,6 @@
     const S = window.ztorEvents;
     return {
       fields: stageFields(),
-      prices: stagePrices(),
-      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
       baseCurrency: cppBaseCurrency(),
       mode: 'publish',
       /* D322 主鈕：直接發佈 × 影片家族＝送出審核，其餘＝發布項目；按下即執行原本的跳轉／送審 */

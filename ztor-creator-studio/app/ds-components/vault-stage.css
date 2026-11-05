@@ -7,6 +7,7 @@
                    右側動作：分享（彈窗）、依狀態的主要動作、⋯（只剩刪除）。
      .vault-bento  成效三格：現在打得開、累計解開過、目前看得到（未上架寫「上架後」）。
      .vault-pool   灰底容器，裡面固定三欄直式（2:3，Q39）內容卡片；最後一張是「添加」卡。
+                   空庫房加 --empty：沒有灰底容器，只有一塊投放區 .vault-drop（外觀沿用 Upload tile；大加號＋一行類型，與添加卡同一套語彙）。
                    不分組、沒有篩選、沒有批次。
    卡片只回答兩件事：這是什麼、誰拿得到。整張卡就是按鈕（點開單件設定抽屜）。
    ============================================================ */
@@ -79,6 +80,8 @@
   background: var(--clickable-card-hover-bg);
 }
 .vault-bento__tile--open:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* 上浮的 transform 讓成效格自成一層，提示框會被後面的內容卡蓋住，開著時把整格抬到內容卡之上。 */
+.vault-bento__tile.is-open { z-index: 2; }
 .vault-bento__go { margin-inline-start: var(--sp-4); vertical-align: middle; color: var(--muted-foreground); }
 @media (prefers-reduced-motion: reduce) {
   .vault-bento__tile--open { transition: none; }
@@ -160,9 +163,26 @@
 .vault-card__task-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vault-card__n { display: inline-flex; align-items: center; gap: var(--sp-4); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
-/* 「添加」卡：同尺寸、同圓角，虛線外框 */
-.vault-card--add { border-style: dashed; background: transparent; color: var(--muted-foreground); }
-.vault-card--add .vault-card__thumb { background: transparent; }
-.vault-card--add .vault-card__name { color: var(--muted-foreground); font-weight: var(--fw-regular); }
+/* 「添加」卡（已有內容時）：同尺寸、虛線外框。縮圖與內文兩塊只用來撐出跟內容卡相同的高度，
+   真正的內容疊在正中央：加號、添加、一行檔案類型。 */
+.vault-card--add { position: relative; border-style: dashed; background: transparent; color: var(--muted-foreground); }
+.vault-card--add .vault-card__thumb { background: transparent; visibility: hidden; }
+.vault-card--add .vault-card__body { visibility: hidden; }
+.vault-card__addin { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--sp-6); padding: var(--sp-12); text-align: center; }
+.vault-card__addico { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin-bottom: var(--sp-4); border-radius: var(--radius-pill); border: 1px solid var(--border); color: var(--foreground-muted); }
+.vault-card__addname { font-size: var(--fs-14); color: var(--foreground-muted); }
+.vault-card__addtypes { font-size: var(--fs-12); color: var(--muted-foreground); }
 .vault-card--add:hover { background: var(--accent); color: var(--foreground); box-shadow: none; }
-.vault-card--add.is-over { background: var(--accent); color: var(--foreground); }
+.vault-card--add:hover .vault-card__addname { color: var(--foreground); }
+.vault-pool__grid.is-dropping .vault-card--add { background: var(--selected-surface); border-color: var(--primary); }
+
+/* 空庫房：沒有灰底容器，只有一塊投放區。外觀沿用 Upload tile，這裡只管高度與內容排法。
+   三種檔案各一個圖示，先讓人看到能放什麼；整塊都能點、能拖，按鈕只是把「能點」講清楚。 */
+.vault-pool--empty { padding: 0; background: transparent; border: 0; }
+.vault-pool--empty .vault-pool__grid { display: block; }
+.vault-pool--empty .vault-pool__grid.is-dropping { outline: none; }
+.vault-drop { min-height: 16rem; gap: var(--sp-10); padding: var(--sp-32) var(--sp-24); }
+.vault-drop__plus { display: grid; place-items: center; width: 4rem; height: 4rem; margin-bottom: var(--sp-6); border-radius: var(--radius-pill); border: 1px solid var(--border); color: var(--foreground); }
+.vault-drop__title { font-size: var(--fs-15); color: var(--foreground); }
+.vault-drop__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-pool__grid.is-dropping .vault-drop { background: var(--selected-surface); border-color: var(--primary); }

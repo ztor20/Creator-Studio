@@ -42,8 +42,7 @@
  *     related: true | false | [{ name, cat, priceObj|price, img }]   // true＝四張佔位卡（標「非本商品」）
  *   }
  *
- * 價格節點帶 `data-fep-price-key`（沿用活動頁的屬性名：宿主 js/publish-stage.js 認這個屬性把價格表滑出來，
- * D310「價格不就地改」）；另掛 `data-fpp-price-key` 標明是商品頁的價格節點（editZones 可選）。
+ * 價格節點帶 `data-fpp-price-key` 標明是商品頁的價格節點（editZones 可選）。墓碑 2026-11-05（D514）：點價格開價格表（`data-fep-price-key`）退場。
  * 單一選項給該價格的 key；多選項的「最低價起」不對應單一列，給空字串＝開表但不聚焦。
  * 其他可給 editZones 選的區塊：[data-fpp-gallery]、.pdp-buy__title、[data-fpp-price]、[data-fpp-variants]、
  * [data-fpp-stock]、[data-fpp-delivery]、.pdp-details__lead、[data-fpp-specs]、[data-fpp-returns]。
@@ -235,8 +234,6 @@
       nowEl.textContent = fmtNum(api, 0);
     } else {
       nowEl.textContent = fromTag ? T('fpp.price.from', 'From {price}').replace('{price}', nowStr) : nowStr;
-      /* D310：點價格開右側價格表（價格不就地改）；publish-stage 認 data-fep-price-key */
-      nowEl.setAttribute('data-fep-price-key', priceKey);
       nowEl.setAttribute('data-fpp-price-key', priceKey);
     }
     priceBox.appendChild(nowEl);

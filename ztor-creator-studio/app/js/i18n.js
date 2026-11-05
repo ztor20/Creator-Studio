@@ -746,7 +746,7 @@
     'pprom.records.pc.col.total': { en: 'Discount absorbed (period)', zh: '期間累計折抵' },
     'pprom.records.pc.col.orders': { en: 'Orders', zh: '訂單數' },
 
-    'fees.lede':          { en: 'Two fees here: the payment fee (one rate site-wide) and the platform fee (set per transaction type). Saving creates a new version that applies to future sales only — existing sales keep their frozen rate.', zh: '這頁設兩種費率：支付手續費（全站共用一個）與平台費（依交易類型分別設）。儲存即產生新版本、只對之後的交易生效；既有交易沿用凍結費率。' },
+    'fees.lede':          { en: 'Three fees here: the payment fee (one rate site-wide), the currency swap fee (set per payment currency) and the platform fee (set per transaction type). Saving creates a new version that applies to future sales only — existing sales keep their frozen rate.', zh: '這頁設三種費率：支付手續費（全站共用一個）、換匯手續費（依粉絲付款幣別分別設）與平台費（依交易類型分別設）。儲存即產生新版本、只對之後的交易生效；既有交易沿用凍結費率。' },
     'fees.tab.settings':  { en: 'Basic settings', zh: '基本設定' },
     'fees.tab.history':   { en: 'Activity log', zh: '操作紀錄' },
     'fees.tab.exceptions': { en: 'Exceptions', zh: '例外設定' },
@@ -808,6 +808,19 @@
     /* D316（2026-09-23）：每筆固定額改以平台基準幣別記錄，套用到創作者時依當時匯率換算。 */
     'fees.payment.fixed.base': { en: 'The fixed amount is recorded in the platform base currency and converted at the prevailing rate when it applies to a creator.', zh: '每筆固定額以平台基準幣別記錄，套用到創作者時依當時匯率換算。' },
     'fees.payment.sub':     { en: 'Each payment provider has its own rate — a percentage plus a fixed amount per transaction, applied to every transaction (OTT excluded; its rate is already all-in).', zh: '每個金流商各自的費率——百分比＋每筆固定金額，套用所有交易（OTT 線上影音除外，其費率已含金流）。' },
+    /* D514（2026-11-05）：換匯手續費。粉絲付款幣別與品項基準幣別不同時向粉絲加收，歸平台。 */
+    'fees.swap.title':      { en: 'Currency swap fee', zh: '換匯手續費' },
+    'fees.swap.sub':        { en: 'Added to what the fan pays when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.', zh: '粉絲付款幣別和商品基準幣別不同時，向粉絲加收；同幣別不收。這筆費用歸平台，不計入創作者收入。' },
+    'fees.swap.sample':     { en: 'Sample rates', zh: '示意值' },
+    'fees.swap.col.cur':    { en: 'Fan pays in', zh: '粉絲付款幣別' },
+    'fees.swap.col.rate':   { en: 'Fee rate', zh: '費率' },
+    'fees.swap.exc-hint':   { en: 'Leave blank to use the default; enter a value to override just that payment currency.', zh: '留空＝沿用預設；填數值只覆寫該付款幣別。' },
+    'fees.swap.clear':      { en: 'Clear override', zh: '清除覆寫' },
+    'fees.leaf.swap.USD':   { en: 'USD · US dollar', zh: 'USD · 美元' },
+    'fees.leaf.swap.TWD':   { en: 'TWD · New Taiwan dollar', zh: 'TWD · 新台幣' },
+    'fees.leaf.swap.HKD':   { en: 'HKD · Hong Kong dollar', zh: 'HKD · 港幣' },
+    'fees.leaf.swap.SGD':   { en: 'SGD · Singapore dollar', zh: 'SGD · 新加坡幣' },
+    'fees.leaf.swap.JPY':   { en: 'JPY · Japanese yen', zh: 'JPY · 日圓' },
     'fees.version.title': { en: 'Rate version & effective scope', zh: '費率版本與生效範圍' },
     'fees.version.current': { en: 'Current version', zh: '目前版本' },
     'fees.version.effective': { en: 'Effective from', zh: '生效時間' },
@@ -5164,18 +5177,7 @@
     'pp.modal-title-save':  { en: 'Preview & localization',          zh: '預覽與在地化' },
     'pp.save':              { en: 'Save',                             zh: '儲存' },
     'pp.back-save':         { en: 'Cancel',                           zh: '取消' },
-    'pp.currency-label':    { en: 'Currency',                         zh: '幣別' },
     'pp.table.translations':{ en: 'Translations',                     zh: '翻譯' },
-    'pp.table.prices':      { en: 'Prices',                           zh: '價格' },
-    'pp.table.prices-hint': { en: 'Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override.', zh: '基準幣別唯讀，要改回原欄位改。其餘幣別是換算值，直接輸入數字即覆寫。' },
-    'pp.table.item':        { en: 'Item',                             zh: '項目' },
-    'pp.price.bkylock': { en: 'Locked by bookyay', zh: 'bookyay 鎖定' },   // 2026-10-28 #382 價格表表頭附註
-    'pp.price.base':        { en: 'Base',                             zh: '基準' },
-    'pp.price.locked':      { en: 'Set by bookyay',                   zh: '由 bookyay 決定' },
-    /* D330：bookyay 帶入者的價格表——港幣欄＝bookyay 原價、鎖定；其他幣別（含可覆寫的基準欄）輸入即覆寫。 */
-    'pp.table.prices-hint.bky': { en: 'HKD is the bookyay price and stays locked. Other currencies start converted — type a number to override one.', zh: '港幣是 bookyay 原價，已鎖定。其他幣別預設為換算值，直接輸入數字即覆寫。' },
-    'pp.price.overridden':  { en: 'Overridden',                       zh: '已覆寫' },
-    'pp.price.reset':       { en: 'Reset to converted',               zh: '重設為換算值' },
     'pp.price.tiers':       { en: 'Ticket types',                     zh: '票種' },
     'pp.price.bundles':     { en: 'Ticket bundles',                   zh: '票務商品' },
     'pp.field.highlight':   { en: 'Highlight',                        zh: '亮點' },
@@ -5201,10 +5203,9 @@
     /* 墓碑 2026-10-05（D353）：pp.field.tier-desc（門票簡介在翻譯表的分組名，D328）隨欄位整欄移除 */
     /* ─── js/publish-stage.js — D310（2026-09-22）發布前預覽確認的**全頁**版 ───
        浮層（pp.*）在活動側退場：建立活動第 8 步「預覽與發布」與活動詳情的「預覽與在地化」
-       全頁版（event-localization.html）都走這一組。兩張表的表格文案沿用 pp.table.*／pp.price.*，
-       不另開一份；這裡只新增全頁版才有的側欄三段、狀態徽章與主鈕。 */
+       全頁版（event-localization.html）都走這一組。翻譯表的表格文案沿用 pp.table.*，
+       不另開一份；這裡只新增全頁版才有的側欄兩段、狀態徽章與主鈕。 */
     'pstage.sec.lang':      { en: 'Language',                         zh: '語言' },
-    'pstage.sec.currency':  { en: 'Currency',                         zh: '幣別' },
     'pstage.sec.checks':    { en: 'Pre-publish checks',               zh: '發布前檢核' },
     'pstage.sec.changes':   { en: 'Unsaved changes',                  zh: '未儲存的變更' },
     'pstage.lang.default':  { en: 'Default',                          zh: '預設' },
@@ -5215,21 +5216,10 @@
     'pstage.lang.translated':   { en: '{n} of {total} translated',    zh: '已翻譯 {n}／{total} 欄' },
     'pstage.lang.clear':    { en: 'Clear translation',                zh: '清除譯文' },
     'pstage.lang.table':    { en: 'Field-by-field',                   zh: '逐欄位對照' },
-    'pstage.cur.base':      { en: 'Base',                             zh: '基準' },
-    'pstage.cur.converted': { en: 'Converted',                        zh: '換算' },
-    'pstage.cur.pinned':    { en: 'bookyay price',                    zh: 'bookyay 原價' },
-    'pstage.cur.overridden':{ en: '{n} overridden',                   zh: '已覆寫 {n} 項' },
-    'pstage.cur.table':     { en: 'Price table',                      zh: '價格表' },
     'pstage.changes.none':  { en: 'Nothing changed yet',              zh: '還沒有變更' },
     'pstage.changes.fields':{ en: 'Text fields',                      zh: '文案欄位' },
-    'pstage.changes.prices':{ en: 'Price overrides',                  zh: '覆寫的價格' },
     'pstage.drawer.trans':  { en: 'Translations',                     zh: '翻譯表' },
-    'pstage.drawer.price':  { en: 'Prices',                           zh: '價格表' },
     'pstage.drawer.trans-hint': { en: 'The default language is read-only — edit it in the form.', zh: '預設語言那一欄是來源，要改回原本的欄位改。' },
-    /* 2026-09-23 產品負責人裁示（修訂 D306）：電子商店的價格表非基準幣別改唯讀（只顯示
-       換算值），這句取代 pp.table.prices-hint 在「全部唯讀」時的提示；活動側維持可覆寫、
-       沿用舊句。決策編號 D318。 */
-    'pstage.drawer.price-hint-readonly': { en: 'Other currencies convert automatically at the exchange rate — the store can’t adjust them individually.', zh: '其他幣別依匯率自動換算，電子商店不可個別調整。' },
     'pstage.edit':          { en: 'Edit',                             zh: '編輯' },
     'pstage.publish':       { en: 'Publish event',                    zh: '發布活動' },
     'pstage.save':          { en: 'Save',                             zh: '儲存' },
@@ -5237,9 +5227,9 @@
     'pstage.cancel':        { en: 'Cancel',                           zh: '取消' },
     /* D390 稽核第一節原型第 6 條：已結束、已取消時在地化頁唯讀 */
     'evloc.back.ro':        { en: 'Back',                             zh: '返回' },
-    'evloc.ro':             { en: 'This event has ended or is archived — translations and prices are view-only.', zh: '活動已結束或已封存，翻譯與價格只能檢視。' },
-    'evloc.listed':         { en: 'This event is listed — translations and prices are view-only. To edit them, unlist the event first, then relist it after you save.', zh: '活動上架中，翻譯與價格只能檢視。要修改請先下架活動，儲存後再自行重新上架。' },   // D455
-    'evloc.listed.partial': { en: 'This event is listed — its translations and ticket prices are view-only. Unlisted bundles can still be edited. To edit the rest, unlist the event first, then relist it after you save.', zh: '活動上架中，活動的翻譯與票價只能檢視；已下架的組合包仍可修改。其他要修改請先下架活動，儲存後再自行重新上架。' },   // D455：組合包看自己的上架狀態
+    'evloc.ro':             { en: 'This event has ended or is archived — translations are view-only.', zh: '活動已結束或已封存，翻譯只能檢視。' },
+    'evloc.listed':         { en: 'This event is listed — translations are view-only. To edit them, unlist the event first, then relist it after you save.', zh: '活動上架中，翻譯只能檢視。要修改請先下架活動，儲存後再自行重新上架。' },   // D455
+    'evloc.listed.partial': { en: 'This event is listed — its translations are view-only. Unlisted bundles can still be edited. To edit the rest, unlist the event first, then relist it after you save.', zh: '活動上架中，活動的翻譯只能檢視；已下架的組合包仍可修改。其他要修改請先下架活動，儲存後再自行重新上架。' },   // D455：組合包看自己的上架狀態
     /* event-localization.html（活動詳情「預覽與在地化」的全頁版，5.1.6.3 §2.13） */
     'evloc.title':          { en: 'Preview & localization',           zh: '預覽與在地化' },
     'evloc.back':           { en: 'Back to event',                    zh: '返回活動' },
@@ -5466,11 +5456,10 @@
     'fpj.field.budget':     { en: 'Category {n}',                     zh: '分類 {n}' },
     /* 活動詳情頁「預覽與在地化」入口（5.1.6.3 §2.13） */
     'ed.loc.btn':           { en: 'Preview & localization',           zh: '預覽與在地化' },
-    'ed.loc.saved':         { en: 'Saved — prices and translations are live.', zh: '已儲存，翻譯與幣別價已生效。' },
+    'ed.loc.saved':         { en: 'Saved — translations are live.', zh: '已儲存，翻譯已生效。' },
     /* D453（2026-10-19）墓碑：設定分頁「在地化」卡拿掉，ed.loc.title／langs／langs.val／base／overrides／overrides.none／overrides.n／locked（D330 港幣鎖定說明）不再有消費者，已刪；入口只剩頁首 ed.loc.btn。 */
     'ed.tix.other-cur':     { en: 'Other currencies',                 zh: '其他幣別' },
     'ed.tix.bky-price':     { en: 'bookyay price',                    zh: 'bookyay 原價' },
-    'ed.tix.overrides':     { en: 'Overridden',                       zh: '已覆寫' },
     /* 動態欄位分組（使用者 2026-08-24 追加裁示）——create-product 的詳細規格列與
        多選項商品的選項組是列數不定的清單，每列的名稱/值都要能翻譯。這組 key 是
        列表檢視分組小標與逐列標籤共用的組字，不是某一列的固定文案，故用「組字＋
@@ -5527,7 +5516,7 @@
     'pstage.device.mobile': { en: 'Mobile',                           zh: '手機' },
     'wiz.preview':          { en: 'Preview',                          zh: '預覽' },
     'wiz.preview.close':    { en: 'Close preview',                    zh: '關閉預覽' },
-    'wiz.continue':         { en: 'Continue',                         zh: '下一步' },
+    'wiz.continue':         { en: 'Next',                             zh: '下一步' },
     'wiz.next':             { en: 'Next',                             zh: '下一步' },   // 2026-10-21 D464：建立商品／建立組合包步驟 1、2 的主按鈕一律只寫「下一步」
     /* 返回離開確認彈窗 */
     'wiz.leave.title.edited': { en: 'Save before you leave?',         zh: '要先儲存再離開嗎？' },
@@ -5809,10 +5798,10 @@
     'ce.wp.qc.ticket':      { en: 'Admission set',                    zh: '已設入場券' },
     'ce.wp.qc.banner':      { en: '7 items needed before publishing', zh: '還差 7 項才能發布' },
     /* Footer · nav */
-    'ce.next.1':            { en: 'Next: Details',                    zh: '下一步：細節' },
-    'ce.next.2':            { en: 'Next: Venue & Time',               zh: '下一步：場地與時間' },
-    'ce.next.3':            { en: 'Next: Tickets',                    zh: '下一步：票種' },
-    'ce.next.4':            { en: 'Next: Review',                     zh: '下一步：確認' },
+    'ce.next.1':            { en: 'Next',                    zh: '下一步' },
+    'ce.next.2':            { en: 'Next',               zh: '下一步' },
+    'ce.next.3':            { en: 'Next',                    zh: '下一步' },
+    'ce.next.4':            { en: 'Next',                     zh: '下一步' },
     'ce.publish':           { en: 'Publish event',                    zh: '發布活動' },
     'ce.publish-alert':     { en: 'Event would be published here. (Prototype)', zh: '這裡會發布活動。（原型）' },
     'ce.draft-alert':       { en: 'Draft saved. Return from Events → Drafts.', zh: '草稿已儲存，可從 活動 → 草稿 返回。' },
@@ -6287,7 +6276,7 @@
     'cp.ready.banner.step': { en: '{n} required items left in this step', zh: '這一步還有 {n} 項必填' },
     'cp.ready.banner.stepdone': { en: 'This step is done',            zh: '這一步都填好了' },
     'cp.ready.banner.prev': { en: '{step}: {n} required items left',  zh: '「{step}」還有 {n} 項必填' },
-    'cp.next-preview':      { en: 'Next: Preview',                    zh: '下一步：預覽' },
+    'cp.next-preview':      { en: 'Next',                    zh: '下一步' },
     /* §4.5 編輯態（標題／主動作／刪除）*/
     'cp.h1.edit':           { en: 'Edit product',                     zh: '編輯商品' },
     'cp.h1.edit.pre':       { en: 'Edit',                             zh: '編輯' },
@@ -6623,7 +6612,7 @@
     'cb.step.listing':      { en: 'Listing & sales',                  zh: '上架與販售' },   // 2026-10-21 D464 使用者裁決
     'cb.step.preview':      { en: 'Preview & publish',                zh: '預覽與發布' },
     'cb.why.step1':         { en: '{step} isn’t finished',            zh: '「{step}」還沒填完' },   // 2026-10-21 D464：第二步自己齊了、第一步還有缺時的停用理由
-    'cb.next-preview':      { en: 'Next: Preview',                    zh: '下一步：預覽' },
+    'cb.next-preview':      { en: 'Next',                    zh: '下一步' },
     'cb.stage.back':        { en: 'Back to form',                     zh: '返回表單' },
     'cb.qc.members':        { en: 'At least 1 item or ticket',        zh: '至少 1 項內容物' },
     'cb.qc.name':           { en: 'Name',                             zh: '名稱' },
@@ -6698,9 +6687,9 @@
     'cpp.optional':         { en: '· optional',                       zh: '· 選填' },
     'cpp.upload':           { en: 'Upload',                           zh: '上傳' },
     'cpp.edit':             { en: 'Edit',                             zh: '編輯' },
-    'cpp.next.1':           { en: 'Continue to Showcase',             zh: '繼續設定作品呈現' },
-    'cpp.next.2':           { en: 'Continue to Monetization',         zh: '繼續設定變現方式' },
-    'cpp.next.3':           { en: 'Continue to Review',               zh: '繼續確認發布' },
+    'cpp.next.1':           { en: 'Next',             zh: '下一步' },
+    'cpp.next.2':           { en: 'Next',         zh: '下一步' },
+    'cpp.next.3':           { en: 'Next',               zh: '下一步' },
     'cpp.next.4':           { en: 'Publish project',                  zh: '發布項目' },
     'cpp.publish-alert':    { en: 'Project would be published here. (Prototype)', zh: '項目會在這裡發布。（原型示意）' },
     /* 發布後的跨頁提示（2026-07-30）：按下發布 → 導向專案詳情頁 → 在該頁跳這一句。
@@ -6877,7 +6866,6 @@
     /* 預購的第 4 步（2026-08-03 D166）。與共創的 cpp.step.tiers（回饋套組）分開命名：
        同一個能力、兩型的名字在規格裡本來就不同（共創方案／預購方案）。 */
     'cpp.step.pretiers':    { en: 'Plans',                            zh: '預購方案' },
-    'cpp.next.continue':    { en: 'Continue to',                      zh: '繼續：' },
     'cpp.next.publish':     { en: 'Publish project',                  zh: '發布項目' },
     'cpp.next.submit':      { en: 'Send for review',                  zh: '送出審核' },
     'cpp.s2.story.ok':      { en: '✓ 100 character minimum met',      zh: '✓ 已達 100 字下限' },
@@ -7936,6 +7924,9 @@
     'csv.h.discount': { en: 'Total discounts', zh: '折扣合計' },
     'csv.h.shipping': { en: 'Shipping', zh: '運費' },
     'csv.h.paid': { en: 'Buyer paid', zh: '買家實付' },
+    'csv.h.paycur': { en: 'Payment currency', zh: '付款幣別' },
+    'csv.h.swap': { en: 'Currency swap fee', zh: '換匯手續費' },
+    'csv.h.paidfx': { en: 'Fan paid (payment currency)', zh: '粉絲實付（付款幣別）' },
     'csv.h.platform': { en: 'Platform fee', zh: '平台費' },
     'csv.h.payfee': { en: 'Payment fee', zh: '支付費' },
     'csv.h.net': { en: 'Net to creator', zh: '創作者淨額' },
@@ -8178,6 +8169,13 @@
     'od.amt.threshold':     { en: 'Platform threshold discount', zh: '平台滿額折抵' },
     'od.amt.net':           { en: 'Net to you',              zh: '淨額' },
     'od.amt.fxpaid':        { en: 'Buyer paid',              zh: '買家實付' },
+    /* D514（2026-11-05）：換匯手續費列。匯率與時點是這筆訂單結帳時鎖定的值。 */
+    'od.amt.swap':          { en: 'Currency swap fee',       zh: '換匯手續費' },
+    'od.amt.swap.rate':     { en: 'Rate {rate} · locked {at}', zh: '匯率 {rate} · {at} 鎖定' },
+    'od.amt.swap.note':     { en: 'Paid by the fan to the platform. Not part of your earnings.', zh: '由粉絲支付給平台，不計入你的收入。' },
+    'od.amt.swap.back':     { en: '{amt} goes back with the voided items', zh: '其中 {amt} 隨撤銷品項退回' },
+    'od.amt.fxpaid.sum':    { en: 'Items and shipping {sum} + swap fee {fee}', zh: '品項與運費 {sum} ＋ 換匯手續費 {fee}' },
+    'od.amt.fxpaid.bky':    { en: 'bookyay price in HKD, no currency swap fee', zh: 'bookyay 港幣原價，不收換匯手續費' },
     'od.amt.cta':           { en: 'View in Earnings →',      zh: '在收入管理查看 →' },
     /* 右欄「訂單資訊」（2026-08-07）：只放規格 §2.2 已有的下單時間一列。
        標籤寫「下單時間」而不是「建立於」——日期擺在這個標籤底下本來就是那個意思。 */
@@ -9012,7 +9010,7 @@
     'ce.bky.h':          { en: 'Import from bookyay',              zh: '從 bookyay 帶入' },
     'ce.bky.sub':        { en: 'Already selling this event on bookyay? Pull it in instead of typing it again.', zh: '這場活動已經在 bookyay 上賣了？帶進來就不用重打一次。' },
     'ce.bky.ph':         { en: 'Search your bookyay events…',      zh: '搜尋你在 bookyay 的活動…' },
-    'ce.next.5':         { en: 'Next: Review',                     zh: '下一步：確認' },
+    'ce.next.5':         { en: 'Next',                     zh: '下一步' },
     'ce.s6.h1':          { en: 'Ticket sales',                     zh: '票券銷售' },
     'ce.s6.sub':         { en: 'Design the ticket fans receive, and package tickets with products.', zh: '設計粉絲收到的那張票，並把票與商品打包成套組。' },
     'ce.sales.design':   { en: 'Ticket design',                    zh: '票券設計' },
@@ -10720,9 +10718,9 @@
     'ri.qc.banner': { en: 'Complete the required items to register', zh: '完成必填項目即可登錄' },
     'ri.legal': { en: 'A Ztor IP record is not a formal legal contract. It documents the rights you declare; settle binding agreements separately.', zh: 'Ztor IP 紀錄並非正式法律契約。它記錄你聲明的權利；具約束力的協議請另行簽訂。' },
     'ri.saveexit': { en: 'Save & exit', zh: '儲存並離開' },
-    'ri.next.1': { en: 'Next: Usage Rules', zh: '下一步：使用規則' },
-    'ri.next.2': { en: 'Next: Pricing & Earnings', zh: '下一步：定價與收益' },
-    'ri.next.3': { en: 'Next: Review', zh: '下一步：檢視' },
+    'ri.next.1': { en: 'Next', zh: '下一步' },
+    'ri.next.2': { en: 'Next', zh: '下一步' },
+    'ri.next.3': { en: 'Next', zh: '下一步' },
     'ri.register': { en: 'Register IP', zh: '登錄 IP' },
     'ri.proof.uploaded': { en: 'Uploaded', zh: '已上傳' },
     'ri.rev.royalty.suffix': { en: '% of gross revenue', zh: '% 總營收' },
@@ -10804,7 +10802,6 @@
     'ed.bd.menu.manage':           { en: 'Manage in e-shop', zh: '在電子商店管理' },   // 組合包卡「⋯」（三百五十九）
     'tc.left':                     { en: '{n} left', zh: '剩 {n} 張' },   // 摘要卡銷售區（ticket-tier-card.css .tier-card__sales）
     'tc.left.sets':                { en: '{n} left', zh: '剩 {n} 組' },
-    'tc.ovr':                      { en: '{n} set separately', zh: '{n} 幣別另設' },   // 票價旁「其他幣別另設價格」小標記，滑過列出幣別
     'event-detail.scanner.bky.tix': { en: 'Ticket scanning', zh: '門票掃碼' },   // 2026-10-27 掃碼器卡（bookyay 活動）第一組小標（三百六十）
     'event-detail.more':           { en: 'More actions', zh: '更多動作' },   // 2026-10-27 設定分頁工具列「⋯」下拉（下架／重新上架、封存）
     'event-detail.unlist.btn':     { en: 'Unlist event', zh: '下架活動' },
@@ -11108,9 +11105,6 @@
     /* D392（2026-10-10）：門票、預設購票規則改成套用到頁面草稿，按「儲存」才寫入 */
     'ed.tm.apply': { en: 'Apply', zh: '套用' },
     'ed.tm.applied': { en: 'Applied — save the event to keep it', zh: '已套用，儲存活動後才會生效' },
-    'ed.tm.applied.recheck': { en: 'Applied — save the event to keep it. {list} keep their manual prices; recheck them in Preview & localization.', zh: '已套用，儲存活動後才會生效。{list} 有手動改價、不會跟著換算，請到「預覽與在地化」重新確認。' },   // D455：基準價改變後列出手動改價的幣別
-    'ed.tm.applied.recheck.bd': { en: 'Applied — save the event to keep it. Bundles with this ticket have manual prices that won\'t be recalculated: {bundles}. Recheck them in Preview & localization.', zh: '已套用，儲存活動後才會生效。含這張票的組合包有手動改價、不會跟著換算：{bundles}，請到「預覽與在地化」重新確認。' },   // D455 B14 第 6 條：含這張票的組合包
-    'ed.tm.applied.recheck.both': { en: 'Applied — save the event to keep it. Manual prices won\'t be recalculated. This ticket: {list}. Bundles with this ticket: {bundles}. Recheck them in Preview & localization.', zh: '已套用，儲存活動後才會生效。手動改價不會跟著換算——這張票：{list}；含這張票的組合包：{bundles}，請到「預覽與在地化」重新確認。' },   // D455 B14 第 6 條：門票與組合包都有手動改價
     'ed.tm.removed': { en: 'Ticket removed — save the event to keep it', zh: '已移除門票，儲存活動後才會生效' },
     /* D392 補充二（2026-10-10）：套用後還沒儲存的標記 */
     'ed.staged.changed': { en: 'Edited', zh: '已修改' },
@@ -11130,14 +11124,14 @@
     'sd.confirm.body.listed': { en: 'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.', zh: '下面 {n} 場上架中，不會套用這次變更；要先下架這些場次才能同步，同步後再自行重新上架。' },
     'sd.sync.listed.n': { en: '{n} of these dates are listed — they won’t be synced', zh: '其中 {n} 場上架中，儲存時不會同步' },
     'sd.sync.listed.meta': { en: 'Unlist those dates first to sync them, then relist them yourself.', zh: '要先下架這些場次才能同步，同步後再自行重新上架。' },
-    'ed.loc.listed': { en: 'This event is listed — translations and prices are view-only until you unlist it.', zh: '活動上架中，翻譯與價格只能檢視，要先下架才能修改。' },   // D455
+    'ed.loc.listed': { en: 'This event is listed — translations are view-only until you unlist it.', zh: '活動上架中，翻譯只能檢視，要先下架才能修改。' },   // D455
     'ed.notif.listed.title': { en: "This event is listed — notification settings can't change", zh: '活動上架中，通知設定不能修改' },   // D455
     'ed.notif.listed.body': { en: 'To change them, unlist the event first. After you save, relist it yourself.', zh: '要修改請先下架活動；改完儲存後，再自行重新上架。' },
     'event-detail.relist.dirty': { en: 'Save or discard your changes first, then relist the event.', zh: '請先儲存或捨棄變更，再重新上架。' },
     'bd.stockonly.title': { en: 'This bundle is listed — only stock settings and listing and sale times can change', zh: '組合包上架中，只能改庫存設定與上架、開賣時間' },
     'bd.stockonly.body': { en: 'Change locked sets in the Stock tab: they can’t go below the sets reserved, and raising them needs enough member stock. Under Edit bundle you can change stock settings and listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.', zh: '鎖定套數在「組合庫存」分頁改：不得低於保留中的套數，調高要成員還鎖得到。按「編輯組合」可改庫存設定與上架、下架、開賣、停售時間。其他資料（內容、售價、購買條件、翻譯）要先下架這個組合包才能修改，儲存後再自行重新上架。' },
     'bd.tix.min1': { en: 'Keep at least one ticket.', zh: '至少要留一種門票。' },
-    'bd.loc.listed': { en: 'This bundle is listed — its translations and prices are view-only until you unlist it.', zh: '組合包上架中，翻譯與價格只能檢視，要先下架這個組合包才能修改。' },   // D455
+    'bd.loc.listed': { en: 'This bundle is listed — its translations are view-only until you unlist it.', zh: '組合包上架中，翻譯只能檢視，要先下架這個組合包才能修改。' },   // D455
     'bd.stockonly.go': { en: 'Unlist bundle', zh: '下架組合包' },
     'event-detail.att.undo': { en: 'Mark not arrived', zh: '改回未報到' },
     'event-detail.att.undo.title': { en: 'Mark as not arrived?', zh: '要改回未報到嗎？' },
@@ -11935,6 +11929,12 @@
     'vault.open.confirm.title': { en: 'Open this vault to all fans?', zh: '要開放給所有粉絲嗎？' },
     'vault.open.confirm.li1':   { en: 'This is the last condition. Once it’s removed, the vault has no entry methods, so every fan can unlock it.', zh: '這是最後一個條件。移除後庫房沒有任何進庫方法，所有粉絲都能解鎖。' },
     'vault.open.confirm.li2':   { en: 'The vault is listed, so this takes effect right away.', zh: '庫房上架中，移除後立即生效。' },
+    'vault.open.confirm.now': { en: 'The vault is listed, so this takes effect right away.', zh: '庫房上架中，會立即生效。' },
+    'vault.open.confirm.keyonly.title': { en: 'Limit this vault to key holders?', zh: '要改成只有拿到鑰匙的人能開嗎？' },
+    'vault.open.confirm.keyonly': { en: 'Fans without a key won’t be able to get in.', zh: '開啟後，沒有鑰匙的粉絲就進不來了。' },
+    'vault.open.confirm.condoff': { en: 'Fans who got in by meeting a condition won’t be able to get in. Only key holders can.', zh: '靠條件進來的粉絲會進不來，只有拿到鑰匙的人能開。' },
+    'vault.open.confirm.keyoff': { en: 'With no entry method and no key access, every fan can unlock the vault.', zh: '關閉後庫房沒有進庫方法也不用鑰匙，所有粉絲都能解鎖。' },
+    'vault.open.confirm.off':   { en: 'This removes every entry method, so every fan can unlock the vault.', zh: '關閉後庫房沒有進庫方法，所有粉絲都能解鎖。' },
     'vault.open.confirm.ok':    { en: 'Confirm', zh: '確認' },
     'vault.unlist.title':      { en: 'Unlist “{n}”?', zh: '要下架「{n}」嗎？' },
     'vault.unlist.li1':        { en: 'Fans can’t see this vault any more — including fans who already unlocked items.', zh: '粉絲看不到這座庫房，已經解開過內容的粉絲也看不到。' },
@@ -12029,7 +12029,9 @@
     'vault.bento.tier': { en: '{who} can open it', zh: '{who}打得開' },
     'vault.pool.add': { en: 'Add', zh: '添加' },
     'vault.pool.add.aria': { en: 'Add media (photos, clips, audio)', zh: '添加內容（照片、影片、音檔）' },
-    'vault.open.aria': { en: 'Ways to open', zh: '開啟方式' },
+    'vault.pool.add.types': { en: 'Photos, clips, audio', zh: '照片、影片、音檔' },
+    'vault.pool.drop.title': { en: 'Add media', zh: '添加內容' },
+    'vault.pool.drop.hint': { en: 'Photos, clips and audio. You can drag them straight in.', zh: '照片、影片、音檔，可以直接拖進來' },
     'vault.open.cond': { en: 'By condition', zh: '條件開啟' },
     'vault.open.key': { en: 'By key', zh: '鑰匙開啟' },
     'vault.open.cond.desc': { en: 'Meet any one way to get in', zh: '達成任一種方法就進得來' },   // 2026-11-02 D497 存取權限固定文案
@@ -12037,6 +12039,7 @@
     'vault.open.cond.add': { en: 'Add condition', zh: '加條件' },
     'vault.open.key.desc': { en: 'Holding a key opens it, no conditions checked', zh: '拿到鑰匙就能開，不看條件' },
     'vault.open.key.n': { en: '{n} fans claimed', zh: '已領 {n} 人' },
+    'vault.open.key.lock': { en: 'Revoke every key to turn this off', zh: '全部撤銷後才能關閉' },
     'vault.key.claimed': { en: 'Claimed {c} / {u}', zh: '已領 {c} / {u}' },
     'vault.wiz.title': { en: 'Create vault', zh: '建立庫房' },
     'vault.wiz.back': { en: 'Back to Media Vault', zh: '回到媒體庫' },
@@ -12051,25 +12054,23 @@
     'vault.wiz.h1': { en: 'Name your vault', zh: '幫庫房取個名字' },
     'vault.wiz.sub1': { en: 'Fans see this name. You can change it later.', zh: '粉絲會看到這個名字，之後可以改。' },
     'vault.wiz.h2': { en: 'Add what fans will get', zh: '放進要給粉絲的內容' },
-    'vault.wiz.sub2': { en: 'Photos, clips and audio all work. You can give each item a task now or later.', zh: '照片、影片、音檔都可以。每件可以順手設任務，也可以之後再設。' },
+    'vault.wiz.sub2': { en: 'You can give each item a task now or later.', zh: '每件可以順手設任務，也可以之後再設。' },
     'vault.wiz.h3': { en: 'Who can open this vault', zh: '誰開得了這座庫房' },
     'vault.wiz.sub3': { en: 'Fans who meet any one way in, or hold a key, can open it. Once they’re in, each item’s task still applies.', zh: '符合任一種進庫方法、或拿到鑰匙，就能打開。打開之後，每件內容的任務照常。' },
     'vault.wiz.sub3.nk': { en: 'Fans who meet any one way in can open it. Once they’re in, each item’s task still applies.', zh: '符合任一種進庫方法，就能打開。打開之後，每件內容的任務照常。' },
     'vault.wiz.name': { en: 'Name', zh: '名稱' },
     'vault.wiz.name.ph': { en: 'e.g. Unreleased demos and stems', zh: '例如：未發行 Demo 與分軌' },
     'vault.wiz.name.req': { en: 'Give it a name first', zh: '先取個名字' },
-    'vault.wiz.next1': { en: 'Next: add media', zh: '繼續：放內容' },
-    'vault.wiz.next2': { en: 'Next: who can open', zh: '繼續：誰開得了' },
     'vault.wiz.skip': { en: 'Skip for now', zh: '先跳過' },
     'vault.wiz.prev': { en: 'Back', zh: '上一步' },
-    'vault.wiz.draft': { en: 'Save as draft', zh: '存成草稿' },
     'vault.wiz.publish': { en: 'List…', zh: '上架…' },
-    'vault.wiz.hint.empty': { en: 'Nothing added yet, so it can’t be listed. Save it as a draft for now.', zh: '還沒放內容，不能上架；可以先存成草稿。' },
+    'vault.wiz.hint.empty': { en: 'Nothing added yet, so it can’t be listed. It stays a draft if you leave.', zh: '還沒放內容，不能上架；離開後會留在草稿。' },
     'vault.wiz.hint.noway': { en: 'Nobody can open it yet: no way in and no key. You can still list it.', zh: '還沒設誰開得了：沒有進庫方法、也沒有鑰匙。仍然可以上架。' },
     'vault.wiz.hint.noway.nk': { en: 'Nobody can open it yet: no way in. You can still list it.', zh: '還沒設誰開得了：沒有進庫方法。仍然可以上架。' },
     /* 2026-11-02 D497 對齊需求站 Dev 規格：數量上限、無條件、內容組成、已解鎖人數、查看／播放人數 */
     'vault.ac.limit.items': { en: 'Up to {n} conditions per way', zh: '一種方法最多 {n} 個條件' },
     'vault.ac.limit.methods': { en: 'Up to {n} ways per vault', zh: '一座庫房最多 {n} 種方法' },
+    'vault.open.cond.keyonly': { en: 'Only fans with a key can open it', zh: '只有拿到鑰匙的人進得來' },
     'vault.open.cond.none': { en: 'No condition — all {n} fans can unlock it', zh: '無條件：{n} 位粉絲全都能解鎖' },
     'vault.pub.check.open.t': { en: 'All fans will be able to unlock it', zh: '上架後所有粉絲都能解鎖' },
     'vault.pub.check.open.d': { en: 'No way in is set, so there’s no condition. Add a way in first to limit who can unlock it.', zh: '沒有設進庫方法，就是無條件；要限定誰能解鎖，先加進庫方法。' },

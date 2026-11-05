@@ -88,13 +88,15 @@ tr:last-child td{border-bottom:0}
 .wrap p a,.wrap li a,.wrap td a{color:inherit;text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
 .wrap p a:hover,.wrap li a:hover,.wrap td a:hover{text-decoration-color:var(--text-3);color:var(--text)}
 table.cmp td:nth-child(1){width:20%}
+.ex{margin:10px 0 6px;padding:11px 14px;border:1px solid var(--border);border-left:3px solid var(--wait-key);border-radius:var(--radius);background:var(--surface);font-size:13px}
+.ex p{margin:0}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <h1 id="overview">定價幣別</h1>
-<p class="lede">創作者用自己的幣別填一個價格，其他幣別自動換算；平台設定的金額（支付費固定額、滿額折扣門檻）用平台基準幣別記錄，套用到創作者時再換算。粉絲用哪一種幣別看價與付款由粉絲端決定，不在這頁範圍。</p>
+<p class="lede">創作者用自己的幣別填一個價格，其他幣別依匯率自動換算；粉絲用基準幣別以外的幣別付款時，另付換匯手續費。平台設定的金額（支付費固定額、滿額折扣門檻）用平台基準幣別記錄，套用到創作者時再換算。</p>
 
 <div class="toc"></div>
 
@@ -127,122 +129,143 @@ table.cmp td:nth-child(1){width:20%}
       <li>平台滿額折扣的門檻金額，見<a href="admin-promotions.html#threshold-edit">平台優惠設定的滿額折扣</a></li>
     </ul>
   </li>
-  <li>套用到某位創作者或某張訂單時，依當時的匯率換算成該創作者的幣別再判定與計算；畫面同時顯示換算後的金額與匯率時點</li>
+  <li>套用到某位創作者或某張訂單時，依<a href="#rate">匯率</a>換算成該創作者的幣別再判定與計算；畫面同時顯示換算後的金額與匯率時點</li>
   <li>跨創作者的報表：每一列顯示那一筆自己的原幣別金額；合計換算成平台基準幣別並標出匯率時點；不同幣別的數字不直接相加</li>
   <li>忠誠點數的購買類計分，先把消費金額換成平台基準幣別再算分，見粉絲分級的<a href="fans-tiers.html#buy">購買怎麼換算成點數</a></li>
 </ul>
 <p class="note">依據：主規格 §7.15「平台基準幣別」；D316、D347。</p>
 
-<h2 id="base"><span class="n"></span>基準幣別與換算價</h2>
-<p>每個可販售的對象（活動票種、組合包、商品）有一個基準幣別（Base currency），就是建立當下的創作者幣別，建立後固定；金額欄只填基準幣別一個值，其他四種幣別的價格（換算價，Converted price）依匯率自動算出。幣別之間的關係見下圖。</p>
+<h2 id="base"><span class="n"></span>基準幣別與換算價<span id="override"></span></h2>
+<p>每個可販售的對象有一個基準幣別（Base currency），就是建立當下的創作者幣別，建立後固定；金額欄只填基準幣別一個值，其他四種幣別的價格（換算價，Converted price）依<a href="#rate">匯率</a>自動算出，創作者與 Admin 都不能改。幣別之間的關係見下圖。</p>
 <ul class="plain">
-  <li>各頁的金額欄只收基準幣別一個值，不另開逐幣別輸入的欄位</li>
+  <li>適用的金額欄：
+    <ul class="plain">
+      <li>活動票種的票價</li>
+      <li>商品定價（單一選項、逐選項、數位商品）</li>
+      <li>組合包售價：成員原價合計與售價的其他幣別都是換算價</li>
+      <li>項目的價格</li>
+      <li>作品定價：作品的基準幣別是<a href="project-publish-step3.html">作品上架步驟 3</a> 選的幣別</li>
+    </ul>
+  </li>
+  <li>各頁的金額欄只收基準幣別一個值，沒有其他幣別的輸入欄位，也沒有修改換算價的入口</li>
+  <li>預覽與發布、預覽與在地化畫面沒有幣別區塊與切換，只用創作者幣別顯示價格；其他幣別的換算價在粉絲端才出現，見語言與在地化的<a href="common-i18n.html#preview-layout">畫面的組成</a></li>
   <li>Creator Studio 內的清單、摘要、KPI、收入一律用基準幣別顯示，不混用幣別</li>
-  <li>例外：從 bookyay 帶入、創作者幣別不是港幣的活動，創作者幣別那一欄覆寫過時，清單、摘要、KPI 顯示覆寫值（粉絲實際付的價）；沒覆寫過的照基準價</li>
   <li>換算價的小數位照該金額欄自己的規則（例如票價是整數），四捨五入</li>
   <li>折扣百分比這類欄位沒有幣別，各幣別套同一個百分比</li>
 </ul>
-<div class="dg" role="img" aria-label="幣別關係示意圖：創作者幣別在建立創作者時選定，是每個可販售對象的基準幣別並固定；其他四種幣別預設是跟著基準價換算的換算價，活動才可以改成覆寫值">
+<div class="dg" role="img" aria-label="幣別關係示意圖：創作者幣別在建立創作者時選定，是每個可販售對象的基準幣別並固定；其他四種幣別一律依匯率從基準價換算，不能改；只有 bookyay 帶入的活動，港幣價鎖定 bookyay 原價">
 <div class="dg-inh">
   <div class="dg-node">創作者幣別 = 基準幣別<small>建立創作者時選定，建立後固定；金額欄只填這一個值</small></div>
   <div class="dg-inh__kids">
-    <div class="dg-inh__kid"><span class="dg-inh__rel">跟隨換算（預設）</span><div class="dg-node">其他四種幣別：換算價<small>依匯率從基準價算出</small></div></div>
-    <div class="dg-inh__kid own"><span class="dg-inh__rel">活動才有，手動改過</span><div class="dg-node">其他幣別：覆寫值<small>粉絲用該幣別購買時實付的價</small></div></div>
+    <div class="dg-inh__kid"><span class="dg-inh__rel">自動換算</span><div class="dg-node">其他四種幣別：換算價<small>依當日匯率從基準價算出，不能改</small></div></div>
+    <div class="dg-inh__kid own"><span class="dg-inh__rel">只有 bookyay 帶入的活動</span><div class="dg-node">港幣：bookyay 原價<small>鎖定，不跟基準價換算</small></div></div>
   </div>
 </div>
 </div>
-<p class="dg-cap">示意圖：實線是跟著基準價換算的幣別，虛線是活動裡手動改過、自己一組的幣別；平台基準幣別是平台自己的記帳幣別，與這張圖無關，見<a href="#platform-currency">平台基準幣別</a>。</p>
-<p class="note">依據：主規格 §7.15「基準幣別」「換算價」「本輪納入的金額欄」「使用限制」；D306、D316、D331。</p>
+<p class="dg-cap">示意圖：實線是跟著基準價換算的幣別，虛線是 bookyay 帶入活動的港幣價，見<a href="#bookyay">bookyay 帶入的活動</a>；平台基準幣別是平台自己的記帳幣別，與這張圖無關，見<a href="#platform-currency">平台基準幣別</a>。</p>
+<p class="note">依據：主規格 §7.15「基準幣別」「換算價」「適用的金額欄」「使用限制」；§7.4「發布前預覽確認」第 3 點；D306、D316、D514。</p>
 
-<h2 id="override"><span class="n"></span>逐幣別覆寫</h2>
-<p>電子商店的換算價唯讀；活動的票價與含活動門票的組合包售價可以逐幣別覆寫（Currency override），改成創作者要的數字。</p>
+<h2 id="rate"><span class="n"></span>匯率</h2>
+<p>平台每天更新一次匯率；畫面上的換算價用當日匯率，粉絲結帳時鎖定當下匯率並記進訂單。</p>
+<ul class="plain">
+  <li>非基準幣別的價格會隨每日匯率浮動</li>
+  <li>訂單鎖定匯率之後，匯率再變，這張訂單不受影響</li>
+</ul>
+<p class="note">依據：主規格 §7.15「匯率」；D514。</p>
+
+<h2 id="swap-fee"><span class="n"></span>換匯手續費</h2>
+<p>換匯手續費（Currency swap fee）是粉絲付款幣別與品項基準幣別不同時，平台向粉絲加收的費用；兩者相同時不收。</p>
 <div class="tablewrap"><table class="cmp">
-  <thead><tr><th>事項</th><th>電子商店</th><th>活動與含門票的組合包</th></tr></thead>
+  <thead><tr><th>事項</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>哪些金額</td><td>商品定價（單一選項、逐選項、數位商品）<br>只含商品成員的組合包售價</td><td>活動票種的票價<br>成員含活動門票的組合包售價</td></tr>
-    <tr><td>其他四種幣別</td><td>依匯率自動換算，唯讀，不能覆寫，也沒有「重設為換算值」</td><td>可以改寫成創作者要的數字，例如換算出 NT$1,547，改成 NT$1,500<br>每一格可以「重設為換算值」</td></tr>
-    <tr><td>基準幣別那一欄</td><td>唯讀</td><td>唯讀，要改基準價回原本的欄位改；bookyay 帶入的活動例外，見<a href="#bookyay">bookyay 帶入的活動</a></td></tr>
-    <tr><td>覆寫值的意思</td><td>—</td><td>粉絲用該幣別購買時實際付的價，不再套匯率換算</td></tr>
-    <tr><td>在哪裡看或改</td><td>商品細節頁、只含商品的組合包細節頁、預覽與在地化畫面的價格表，一律唯讀</td><td>建立活動最後一步與活動詳情「預覽與在地化」的價格表，見<a href="event-create-step8.html#preview-currency">步驟 7 的幣別</a><br>組合包細節頁「預覽與在地化」的價格表</td></tr>
+    <tr><td>誰付</td><td>粉絲，加在換算後金額之外<br>結帳與訂單都列成獨立一筆明細，見訂單詳情的<a href="order-detail.html#fields-amount">金額拆解</a></td></tr>
+    <tr><td>歸誰</td><td>平台，不是創作者收入，也不從創作者收入扣</td></tr>
+    <tr><td>怎麼算</td><td>品項實付（折後）換算成付款幣別後 × 費率<br>與平台費各自計算，不疊加</td></tr>
+    <tr><td>費率</td><td>由 Admin 在<a href="admin-fees.html#swap-fee">平台費率設定</a>依粉絲付款幣別各設一個百分比<br>成交當下記進訂單，調費率不改既有訂單</td></tr>
+    <tr><td>粉絲實付</td><td>品項金額＋運費＋換匯手續費，品項金額指折後的品項實付</td></tr>
+    <tr><td>適用範圍</td><td>建立商品、建立組合包、建立活動、建立項目、作品上架賣出的品項</td></tr>
   </tbody>
 </table></div>
-<ul class="plain">
-  <li>組合包售價可以覆寫時，只覆寫組合包本身的售價；成員原價合計的各幣別仍是換算值、唯讀</li>
-</ul>
-<p class="note">依據：主規格 §7.15「逐幣別覆寫」「本輪納入的金額欄」「使用限制」；§7.4「發布前預覽確認」第 3 點；D305、D306、D318、D455。</p>
-
-<h2 id="recalc"><span class="n"></span>重算規則</h2>
-<p>基準價改了，沒手動改過的幣別價格跟著重新換算，手動改過的保留。</p>
-<div class="dg" role="img" aria-label="重算示意：基準價改變時，跟隨換算的幣別價格跟著重新換算；覆寫過的幣別價格保留不變">
-<div class="dg-inh">
-  <div class="dg-node">基準價<small>假設 1,000 改成 1,100</small></div>
-  <div class="dg-inh__kids">
-    <div class="dg-inh__kid"><span class="dg-inh__rel">跟隨換算（預設）</span><div class="dg-node">其他幣別：換算值<small>跟著重新換算</small></div></div>
-    <div class="dg-inh__kid own"><span class="dg-inh__rel">手動改過</span><div class="dg-node">其他幣別：覆寫值<small>保留不變</small></div></div>
-  </div>
+<div class="ex">
+  <p>範例（數字皆為假設）：基準幣別是港幣，品項實付 HK$1,000，匯率 1 港幣＝4 新台幣，粉絲用新台幣付款，新台幣的費率 2%。換算後 NT$4,000，換匯手續費 NT$80，粉絲付 NT$4,080（運費另計）。</p>
 </div>
-</div>
-<p class="dg-cap">繼承圖：實線是跟著基準價換算的格子，虛線是覆寫過、自己一組的格子；數字是假設。</p>
-<ul class="plain">
-  <li>創作者在 ztor 改基準價、bookyay 同步改價都照這條</li>
-  <li>「重設為換算值」讓某一格回到跟隨，之後基準價再改就跟著重新換算</li>
-  <li>基準價改了之後，有保留下來的手動改價時，列出有手動改價的幣別，提示創作者重新確認</li>
-  <li>組合包售價由成員原價合計 ×（1 − 折扣%）算出；成員價或折扣改了，沒手動改過的幣別跟著重新換算，手動改過的保留，並同樣提示重新確認</li>
-  <li>電子商店的換算價沒有手動改的情形，一律跟著基準價重新換算</li>
-  <li>活動的譯文也是改過的保留；電子商店的翻譯則在原文改了就重新產生，兩者不是同一套，見<a href="common-i18n.html#auto-vs-manual">自動翻譯與活動的手動翻譯</a></li>
-</ul>
-<p>非基準幣別的價格依條件換樣子，各狀態如下：</p>
+<p>換匯手續費依付款幣別換樣子，各狀態如下：</p>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
   <tbody>
-    <tr class="grp"><td colspan="3">活動與含門票的組合包</td></tr>
-    <tr><td>換算值</td><td>沒手動改過</td><td>價格表顯示換算值；基準價改了跟著重新換算</td></tr>
-    <tr><td>覆寫值</td><td>創作者手動改過</td><td>價格表顯示覆寫值；基準價改了仍保留，並列出有手動改價的幣別，提示重新確認</td></tr>
-    <tr><td>重設為換算值之後</td><td>創作者按「重設為換算值」</td><td>回到換算值，之後基準價再改就跟著重新換算</td></tr>
-    <tr><td>基準幣別那一欄</td><td>—</td><td>唯讀，要改基準價回原本的欄位改</td></tr>
-    <tr class="grp"><td colspan="3">電子商店</td></tr>
-    <tr><td>換算值</td><td>一律</td><td>唯讀，沒有覆寫入口，也沒有「重設為換算值」</td></tr>
-    <tr class="grp"><td colspan="3">bookyay 帶入的活動</td></tr>
-    <tr><td>港幣欄</td><td>—</td><td>鎖定 bookyay 原價，不能覆寫，也沒有「重設為換算值」</td></tr>
-    <tr><td>創作者幣別欄被覆寫過</td><td>創作者幣別不是港幣，且覆寫過</td><td>Creator Studio 的清單、摘要、KPI 顯示覆寫值；沒覆寫過的顯示基準價</td></tr>
-    <tr class="grp"><td colspan="3">匯率</td></tr>
-    <tr><td>匯率來源與時點</td><td>—</td><td>建立當下鎖定、每日更新或結帳當下 <span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>收</td><td>粉絲付款幣別與品項基準幣別不同</td><td>結帳與訂單列成獨立一筆明細</td></tr>
+    <tr><td>不收</td><td>粉絲付款幣別與品項基準幣別相同</td><td>不收這筆費用</td></tr>
+    <tr><td>bookyay 活動用港幣付款</td><td>創作者幣別不是港幣，粉絲用港幣買 bookyay 帶入活動的門票</td><td><span class="tag wait">尚待確認</span></td></tr>
+    <tr><td>含 bookyay 票券的組合包用港幣付款</td><td>組合包的成員含 bookyay 匯入的門票，粉絲用港幣付款</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：主規格 §7.15「重算規則」；D306、D312、D415、D455。</p>
+<p class="note">依據：主規格 §7.15「換匯手續費」、§7.3、§7.6；5.1.0.3 F6；5.1.5.3.1 §2.3.2；D514。</p>
+
+<h2 id="recalc"><span class="n"></span>重算規則</h2>
+<p>基準價改了，其他四種幣別的換算價一律跟著重新換算。</p>
+<ul class="plain">
+  <li>創作者在 ztor 改基準價、bookyay 同步改價都照這條</li>
+  <li>組合包售價由成員原價合計 ×（1 − 折扣%）算出；成員價或折扣改了，各幣別售價跟著重新換算</li>
+  <li>匯率每日更新時，換算價跟著當日匯率變動</li>
+  <li>活動的譯文是改過的保留，電子商店的翻譯則在原文改了就重新產生，見<a href="common-i18n.html#auto-vs-manual">自動翻譯與活動的手動翻譯</a></li>
+</ul>
+<p>各幣別的價格依條件換樣子，各狀態如下：</p>
+<div class="tablewrap"><table>
+  <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="3">一般項目</td></tr>
+    <tr><td>基準幣別</td><td>—</td><td>要改回原本的金額欄改</td></tr>
+    <tr><td>換算價</td><td>其他四種幣別</td><td>創作者與 Admin 都不能改，由粉絲端呈現；基準價改了或匯率更新時跟著變</td></tr>
+    <tr class="grp"><td colspan="3">bookyay 帶入的活動</td></tr>
+    <tr><td>基準價</td><td>—</td><td>鎖定，要調價回 bookyay 改</td></tr>
+    <tr><td>港幣價</td><td>—</td><td>鎖定 bookyay 原價，創作者不能改</td></tr>
+    <tr><td>其他幣別</td><td>—</td><td>由基準價自動換算，不能改</td></tr>
+    <tr class="grp"><td colspan="3">匯率</td></tr>
+    <tr><td>匯率資料來源</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
+  </tbody>
+</table></div>
+<p class="note">依據：主規格 §7.15「重算規則」「匯率」；D306、D312、D514。</p>
 
 <h2 id="bookyay"><span class="n"></span>bookyay 帶入的活動</h2>
-<p>bookyay 帶入的金額一律是港幣：換算成創作者幣別當基準價並鎖定，價格表的港幣欄固定是 bookyay 原價，港幣以外的幣別可以覆寫。換算與鎖定的完整規則，見 bookyay 匯入與對照的<a href="event-bookyay.html#import-currency">金額與幣別</a>。</p>
-<p class="note">依據：主規格 §7.15「bookyay 帶入的活動」；D328、D330、D331、D429。</p>
+<p>bookyay 帶入的金額一律是港幣：換算成創作者幣別當基準價並鎖定，港幣價固定等於 bookyay 原價並鎖定，其他幣別一律由基準價自動換算。換算與鎖定的完整規則，見 bookyay 匯入與對照的<a href="event-bookyay.html#import-currency">金額與幣別</a>。</p>
+<p class="note">依據：主規格 §7.15「bookyay 帶入的活動」；D328、D330、D331、D429、D514。</p>
 
 <h2 id="fan-pay"><span class="n"></span>粉絲付款與收款</h2>
 <ul class="plain">
   <li>粉絲用哪一種幣別看價與付款，由粉絲端決定</li>
   <li>創作者收款的換匯在交易當下進行</li>
-  <li>收入事件記原幣（粉絲實付的幣別與金額）與換算幣（基準幣別），見財務術語與收入事件的<a href="common-finance.html#revenue-event">收入事件</a></li>
-  <li>粉絲用覆寫價付款時，原幣金額就是覆寫價</li>
-  <li>覆寫值或基準價變更只影響之後的購買，已售出的票與訂單不追溯</li>
+  <li>收入事件記原幣（粉絲付款幣別與品項金額，不含換匯手續費）與換算幣（基準幣別），換算用結帳鎖定的匯率，見財務術語與收入事件的<a href="common-finance.html#revenue-event">收入事件</a></li>
+  <li>基準價或匯率變更只影響之後的購買，已售出的票與訂單不追溯</li>
 </ul>
-<p class="note">依據：主規格 §7.15「粉絲端與收款」「已售出後改價」；5.1.9 F5；D306。</p>
+<p class="note">依據：主規格 §7.15「粉絲端與收款」「已售出後改價」；5.1.9 F5；D306、D514。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>0-設計規格書.md §7.15</code>（v5.39）、<code>§8.28</code></li>
-    <li>決策：D305、D306、D312、D316、D318、D326、D328、D330、D331、D347、D415、D429、D455、D466</li>
+    <li>規格：<code>0-設計規格書.md §7.3、§7.4、§7.6、§7.15</code>（v5.42）、<code>§8.28</code>；<code>5.1.0.3-平台費率設定.md</code>（v1.12）F6；<code>5.1.5.3.1-訂單詳情.md</code>（v2.35）§2.3.2</li>
+    <li>決策：D306、D312、D316、D326、D328、D330、D331、D347、D429、D466、D514</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
-    <li>建立項目與作品上架的定價幣別，是否比照電子商店改成唯讀</li>
-    <li>匯率的來源與時點（建立當下鎖定、每日更新或結帳當下），以及進位方式</li>
-    <li>創作者幣別日後是否開放 Admin 代改，開放後既有項目的基準幣別與覆寫值怎麼處理</li>
+    <li>匯率的資料來源</li>
+    <li>換算價與換匯手續費的進位方式（目前寫四捨五入）</li>
+    <li>換匯手續費各付款幣別的預設百分比，以及費率可以設到小數幾位</li>
+    <li>創作者幣別日後是否開放 Admin 代改，開放後既有項目的基準幣別怎麼處理、要不要留稽核紀錄</li>
     <li>平台基準幣別由誰在哪一頁設定、能不能改，改了之後既有的支付費固定額與滿額折扣門檻怎麼處理</li>
-    <li>排程特價的特價價格、共看派對自訂票價、拍賣起標價與保留價、運費、限時折扣後的價，何時納入逐幣別規則</li>
-    <li>含 bookyay 票券的組合包，票券原價換算成基準幣別再加總時用哪個時點的匯率</li>
+    <li>含 bookyay 票券的組合包，粉絲用港幣付款時收不收換匯手續費</li>
+    <li>含 bookyay 票券的組合包，商品成員依當日匯率換算時，鎖定的港幣價要不要跟著每日匯率變動</li>
     <li>粉絲端付款幣別怎麼決定，以及結算幣別與付款幣別的關係</li>
+    <li>排程特價的特價價格、共看派對自訂票價、拍賣起標價與保留價、運費、限時折扣後的價，同樣只有基準幣別一個值，其他幣別自動換算（推導）</li>
+    <li>含 bookyay 票券的組合包，票券成員用帶入時鎖定的基準價加總（推導）</li>
+    <li>運費不計入換匯手續費的基準，比照平台費（推導）</li>
+    <li>優惠碼、滿額折扣、粉絲分級折扣都先算完，再算換匯手續費（推導）</li>
+    <li>bookyay 活動用港幣付款時不收換匯手續費，因為港幣價沒有經過換算（推導）</li>
+    <li>退款時換匯手續費隨品項一起退：整筆撤銷全退，部分撤銷依該品項占比退（推導）</li>
+    <li>換匯手續費那部分產生的金流費由平台吸收，支付費的基準不含這筆（推導）</li>
+    <li>一張訂單含多種基準幣別時逐品項判斷，訂單明細合併成一筆顯示（推導）</li>
   </ul>
-  <p class="k">最近同步：2026-11-05（V38 逐條對照：Admin 寫法改為固定寫法、基準幣別欄補 bookyay 例外；對照主規格 v5.39）</p>
+  <p class="k">最近同步：2026-11-05（D514 其他幣別一律自動換算，新增匯率與換匯手續費；對照主規格 v5.42）</p>
 </details>
 </div>
 </body>

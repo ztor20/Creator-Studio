@@ -58,8 +58,8 @@
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 商品側），留著是因為全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 浮層已退場（D310 商品側），留著是因為全頁畫面的翻譯表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- D310 商品側：發布前預覽的粉絲視角商品頁（前台 shop-item 鏡像，只給 js/fan-product-page.js 用） -->
 <link rel="stylesheet" href="ds-components/preview-dock.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- UI-CHANGES 397：右欄的粉絲頁手機版鏡像 -->
@@ -1814,11 +1814,11 @@
     if (isMulti()) {
       return activeCombos().map(k => ({
         key: 'var:' + k, label: k, groupKey: 'cp.stage.price.variants', groupFallback: 'Variations',
-        priceObj: { base, amount: numVal((varData[k] || {}).price), override: {} }
+        priceObj: { base, amount: numVal((varData[k] || {}).price) }
       }));
     }
     return [{ key: 'price', labelKey: 'cp.price', label: 'Price',
-              priceObj: { base, amount: numVal(fPrice && fPrice.value), override: {} } }];
+              priceObj: { base, amount: numVal(fPrice && fPrice.value) } }];
   }
   /* 折扣（F13）：開著才算。單一選項由特價價格／定價推出 %（兩欄雙向連動，以特價價格為準）；多選項只有折扣 %。 */
   function stageDiscountPct() {
@@ -1982,12 +1982,8 @@
     const prices = stagePrices();
     const S = window.ztorEvents;
     return {
-      fields, prices,
-      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      fields,
       baseCurrency: cpBaseCurrency(),
-      /* 2026-09-23 產品負責人裁示（修訂 D306）：電子商店的非基準幣別是預算的、不可個別
-         調整——關掉 publish-stage.js 的價格覆寫（活動側維持可覆寫，不傳這個選項）。 */
-      priceOverrides: false,
       mode: 'publish',
       editZones: stageEditZones(),
       onEdit: step => exitStage(step),
@@ -1998,7 +1994,7 @@
       },
       primaryKey: 'cp.start.selling',
       secondaryKey: 'cp.stage.back',
-      /* 翻譯與逐幣別覆寫的落地是後端的事（原型沒有後端）：先掛在 window 上給之後的頁讀，再走原本的上架路徑 */
+      /* 翻譯的落地是後端的事（原型沒有後端）：先掛在 window 上給之後的頁讀，再走原本的上架路徑 */
       onPrimary: result => { window.__cpLocalization = result; doPublishNew(); },
       onSecondary: () => exitStage(0)
     };

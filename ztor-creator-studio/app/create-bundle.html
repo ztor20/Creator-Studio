@@ -64,8 +64,8 @@
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2"><!-- 頁首進度條；2026-10-28 起四段（選擇組合商品／組合包設定／上架與販售／預覽與發布） -->
 <link rel="stylesheet" href="ds-components/form-steps.css?v=r2.2"><!-- 2026-10-21 起分步（2026-10-28 改四步驟）：同一張表單依步驟顯示節（data-form-step） -->
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2"><!-- 全頁畫面側欄的發布前檢核清單 -->
-<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表／價格表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表的滑出面板 -->
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 全頁畫面的翻譯表沿用它的 .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表的滑出面板 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角組合包頁（前台 shop-item 組合分支鏡像，第 5 段；只給 js/fan-bundle-page.js 用） -->
 <link rel="stylesheet" href="ds-components/preview-dock.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- UI-CHANGES 397：右欄的粉絲頁手機版鏡像 -->
@@ -2256,9 +2256,9 @@
      第 1 步「內容」＝上面整張表單；第 2 步「預覽與發布」＝建立活動第 8 步／建立商品同一個組件（js/publish-stage.js）：
      主區由 js/fan-bundle-page.js 畫前台組合包頁的鏡像，側欄三段（語言／幣別／發布前檢核）＋主鈕「建立組合」。
      表單主鈕改成「下一步」（D464）：擋關照舊（gateWhy()），通過才進預覽與發布（2026-10-28 起第 4 步；表單分三步、見 cbGoStep）；真正存檔搬到側欄主鈕（onPrimary → doCreate()）。
-     本頁只負責備料（buildStageOpts）、進出（enterStage／exitStage）；版型、兩軸、兩張表都在 publish-stage.js。
+     本頁只負責備料（buildStageOpts）、進出（enterStage／exitStage）；版型、兩軸、翻譯表都在 publish-stage.js。
      翻譯模式不傳：電子商店的多語規則是自動翻譯（主規格 §7.4 通則；D312 只把活動改成手動），用元件預設值。
-     幣別覆寫依 D318：組合成員含活動票券時可覆寫、只含商品時唯讀——用 prices[i].overridable 列級旗標，不傳全域 priceOverrides。
+     幣別只看不改（D514）：其他幣別一律依匯率換算，不再依成員有無票券分流（D318 決定四退場）。
      本頁沒有編輯態／嵌入態（沒有 ?edit／?embed 分支），進度條一律顯示。 */
   const CB_STEP = { content: 1, price: 2, name: 3, qty: 4, media: 5, desc: 6, listing: 7, rules: 8, offers: 9, limits: 10 };   /* 4 原為 perks（D402 移除），改給數量卡；9／10＝2026-10-21 三步驟拆出的「優惠」「限購」兩節 */
   const stageBody = document.querySelector('.wizard__body');
@@ -2311,22 +2311,20 @@
     if (descEl && descEl.value.trim()) out.push({ key: 'desc', el: descEl, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' });
     return out;
   }
-  /* 價格：組合售價一列（＝表單「售價」：原價合計最低組合 × (1 − 組合折扣 %)）。
-     D318：含活動票券成員＝其他幣別可覆寫（overridable:true）；只含商品＝唯讀換算（overridable:false）。 */
+  /* 價格：組合售價一列（＝表單「售價」：原價合計最低組合 × (1 − 組合折扣 %)）。 */
   function stagePrices() {
-    const po = { base: cbBaseCurrency(), amount: finalPrice(), override: {} };
-    /* 成員含 bookyay 匯入票券（2026-09-29 D331 決定六，5.1.5.4 F3、主規格 §7.15）：港幣欄以 bookyay 原價計算並鎖定——
+    const po = { base: cbBaseCurrency(), amount: finalPrice() };
+    /* 成員含 bookyay 匯入票券（2026-09-29 D331 決定六，5.1.5.4 F3、主規格 §7.15）：港幣價以 bookyay 原價計算並鎖定——
        （bookyay 票券港幣原價 × 張數 ＋ 商品成員合計換算成港幣）×（1 − 組合折扣%），算法在 events-store bkyBundleHkd（與活動詳情、
-       建立活動同一套）；港幣以外（含基準欄）可覆寫（baseOpen，同 D330）。沒有 bookyay 票＝照舊。 */
+       建立活動同一套）；其他幣別照基準價換算（D514 決定四）。沒有 bookyay 票＝照舊。 */
     const ev = tix.event && ticketMember() && EV ? (EV.get(tix.event.id) || tix.event) : null;
     const hk = ev && EV.bkyBundleHkd ? EV.bkyBundleHkd(ev, {
       tickets: { tierIds: tix.tierIds.slice(), qty: tix.qty },
       products: productMembers().map(m => ({ price: itemMin(products[m.productId]), qty: m.qty > 0 ? m.qty : 1 })),
       disc: discInfo().pct
     }, po.base) : null;
-    if (hk != null) { po.pin = { HKD: hk }; po.baseOpen = true; po.locked = true; }
-    return [{ key: 'bundle', labelKey: 'cpp.bd.sp.sell', label: 'Selling price', priceObj: po,
-              overridable: !!ticketMember() }];
+    if (hk != null) { po.pin = { HKD: hk }; po.locked = true; }
+    return [{ key: 'bundle', labelKey: 'cpp.bd.sp.sell', label: 'Selling price', priceObj: po }];
   }
   /* 素材：封面＋附圖十格（同建立商品 tileMedia：影片格給 video、圖片格給 img） */
   function tileMedia(tile) {
@@ -2361,7 +2359,7 @@
       const evTiers = (tix.event && tix.event.tiers) || [];
       members.push({ kind: 'ticket', qty: tix.qty, tiers: tixLines().map(l => {
         const src = evTiers.find(t => t.id === l.id) || {};
-        return { id: l.id, name: l.name, left: l.left, qty: Number(src.qty) || null, priceObj: { base, amount: l.price, override: {} } };
+        return { id: l.id, name: l.name, left: l.left, qty: Number(src.qty) || null, priceObj: { base, amount: l.price } };
       }) });
     }
     productMembers().forEach(m => {
@@ -2369,7 +2367,7 @@
       const opts = itemOptions(p);
       members.push({ kind: 'product', name: p.name || '', qty: m.qty > 0 ? m.qty : 1,
         img: p.imgSrc || (p.img ? 'images/products/' + p.img : ''),
-        priceObj: { base, amount: itemMin(p), override: {} }, from: itemRange(p),
+        priceObj: { base, amount: itemMin(p) }, from: itemRange(p),
         options: opts ? opts.map(o => ({ name: optName(o.name), values: (o.values || []).slice() })) : [] });
     });
     const persona = (function () {
@@ -2384,7 +2382,7 @@
       shop: persona ? { name: persona.name, avatar: persona.avatar || '' } : null,
       event: stageEvent(),
       members,
-      price: { priceObj: prices[0].priceObj, priceKey: prices[0].key, wasObj: { base, amount: baseTotal(), override: {} },
+      price: { priceObj: prices[0].priceObj, priceKey: prices[0].key, wasObj: { base, amount: baseTotal() },
                from: priceRange(), pct: discInfo().pct },
       stock: sellableSets(),
       limitedTag: !!bundleDraft.limitedTag   /* 前台 .pdp-buy__badge「限量」 */
@@ -2450,8 +2448,7 @@
     const prices = stagePrices();
     const S = window.ztorEvents;
     return {
-      fields: stageFields(), prices,
-      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
+      fields: stageFields(),
       baseCurrency: cbBaseCurrency(),
       mode: 'publish',
       editZones: stageEditZones(),
@@ -2463,7 +2460,7 @@
       },
       primaryKey: 'cb.create',
       secondaryKey: 'cb.stage.back',
-      /* 翻譯與逐幣別覆寫的落地是後端的事（原型沒有後端）：先掛在 window 上給之後的頁讀，再走原本的建立路徑 */
+      /* 翻譯的落地是後端的事（原型沒有後端）：先掛在 window 上給之後的頁讀，再走原本的建立路徑 */
       onPrimary: result => { window.__cbLocalization = result; doCreate(); },
       onSecondary: () => exitStage(0)
     };

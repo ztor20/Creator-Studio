@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>媒體庫進庫方法比較 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/media-vault.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/vault-open.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-vault-methods 第四版 — 進庫方法的排法比較頁（2026-11-05）。不改正式頁；樣式 lab- 前綴＋token。
+     使用者選了第三版的 C（每種方法一張橫卡），說左欄「方法 1、2、3」太寬，也想看更多整體風格。
+     這一版五個方案都是橫卡、左欄縮窄；「再加一種方法」是同形虛線卡，左欄只放加號、文字放右欄。
+     差別在左欄怎麼收窄、卡片怎麼上色與分隔。選定後才搬進 vault-open.css。 */
+  html::before, html::after, body::before, body::after { display: none; }
+  html body { background: var(--background) !important; }
+  .lab-page { max-width: 58rem; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-72); display: grid; gap: var(--sp-48); }
+  .lab-h1 { margin: 0; font-size: var(--fs-24); font-weight: var(--fw-semibold); }
+  .lab-lead { margin: var(--sp-6) 0 0; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-opt { display: grid; gap: var(--sp-12); }
+  .lab-opt__head { display: flex; align-items: baseline; gap: var(--sp-10); }
+  .lab-opt__n { font-size: var(--fs-18); font-weight: var(--fw-semibold); color: var(--brand-ink); }
+  .lab-opt__t { font-size: var(--fs-15); font-weight: var(--fw-medium); }
+  .lab-opt__why { margin: 0; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-n { font-size: var(--fs-11); color: var(--muted-foreground); white-space: nowrap; }
+  .lab-n b { color: var(--foreground); font-weight: var(--fw-medium); }
+  .lab-name { font-size: var(--fs-13); font-weight: var(--fw-medium); white-space: nowrap; }
+  .lab-add { display: inline-flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-13); }
+  .lab-add .ztor-icon { width: 14px; height: 14px; }
+  .lab-hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-or { text-align: center; font-size: var(--fs-11); color: var(--muted-foreground); }
+
+  /* 共用：一個條件一行 */
+  /* 條件分欄（第三版 D 的做法）：「且」｜條件類型｜內容｜移除，每一列對齊同一條欄線 */
+  .lab-cr { display: grid; grid-template-columns: 1.25rem 9rem minmax(0, 1fr) auto; align-items: center; column-gap: var(--sp-8); min-height: 2.5rem; padding: 0 var(--sp-8) 0 var(--sp-12); }
+  .lab-cr__and { font-size: var(--fs-11); color: var(--muted-foreground); }
+  .lab-cr__type { display: flex; align-items: center; gap: var(--sp-8); min-width: 0; font-size: var(--fs-13); color: var(--muted-foreground); white-space: nowrap; }
+  .lab-cr__type .ztor-icon { width: 14px; height: 14px; flex: none; }
+  .lab-cr__text { min-width: 0; font-size: var(--fs-13); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lab-cr--add .lab-add { grid-column: 2 / 4; }
+  .lab-cr--add { color: var(--foreground-muted); cursor: pointer; }
+  .lab-cr--add:hover { color: var(--foreground); }
+
+  /* 共用：橫卡骨架。--w 是左欄寬度 */
+  .lab-card { display: grid; grid-template-columns: var(--w) minmax(0, 1fr); border-radius: var(--radius-lg); overflow: hidden; }
+  .lab-who { display: grid; align-content: start; gap: var(--sp-2); }
+  .lab-cond { display: grid; gap: var(--sp-4); align-content: start; }
+  .lab-card--add { cursor: pointer; }
+  .lab-card--add .lab-who { align-content: center; justify-items: center; color: var(--foreground-muted); }
+  .lab-card--add .lab-who .ztor-icon { width: 16px; height: 16px; }
+  .lab-card--add .lab-cond { align-content: center; color: var(--foreground-muted); font-size: var(--fs-13); }
+  .lab-card--add:hover, .lab-card--add:hover .lab-who { color: var(--foreground); }
+  .lab-stack { display: grid; gap: var(--sp-8); }
+
+  /* 1 窄左欄，實線分隔（把第三版的 C 單純縮窄） */
+  .lab-s1 { --w: 6rem; }
+  .lab-s1 .lab-card { border: 1px solid var(--border); }
+  .lab-s1 .lab-who { padding: var(--sp-12); border-right: 1px solid var(--border-soft); }
+  .lab-s1 .lab-cond { padding: var(--sp-8); }
+  .lab-s1 .lab-cond .lab-cr:not(.lab-cr--add) { border-radius: var(--radius-md); background: var(--layer-2-surface); }
+  .lab-s1 .lab-card--add { border: 1px dashed var(--border); }
+  .lab-s1 .lab-card--add .lab-who { border-right: 1px dashed var(--border); }
+  .lab-s1 .lab-card--add:hover { border-color: var(--primary); }
+
+  /* 2 只有編號：左欄 3.5rem，圓形數字加人數 */
+  .lab-s2 { --w: 3.75rem; }
+  .lab-s2 .lab-card { border: 1px solid var(--border); }
+  .lab-s2 .lab-who { padding: var(--sp-12) var(--sp-4); justify-items: center; text-align: center; gap: var(--sp-4); border-right: 1px solid var(--border-soft); }
+  .lab-s2 .lab-dot { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: var(--radius-pill); border: 1px solid var(--border); font-size: var(--fs-13); font-weight: var(--fw-medium); }
+  .lab-s2 .lab-cond { padding: var(--sp-8); }
+  .lab-s2 .lab-cond .lab-cr:not(.lab-cr--add) { border-radius: var(--radius-md); background: var(--layer-2-surface); }
+  .lab-s2 .lab-card--add { border: 1px dashed var(--border); }
+  .lab-s2 .lab-card--add .lab-who { border-right: 1px dashed var(--border); }
+  .lab-s2 .lab-card--add:hover { border-color: var(--primary); }
+
+  /* 3 左欄貼邊的淺底標籤條，右邊條件用細線分隔 */
+  .lab-s3 { --w: 5.5rem; }
+  .lab-s3 .lab-card { border: 1px solid var(--border); }
+  .lab-s3 .lab-who { padding: var(--sp-12); background: var(--layer-2-surface); }
+  .lab-s3 .lab-cond { gap: 0; padding: var(--sp-4) var(--sp-8) var(--sp-4) var(--sp-4); }
+  .lab-s3 .lab-cond .lab-cr + .lab-cr { border-top: 1px solid var(--border-soft); }
+  .lab-s3 .lab-card--add { border: 1px dashed var(--border); }
+  .lab-s3 .lab-card--add .lab-who { background: transparent; }
+  .lab-s3 .lab-card--add:hover { border-color: var(--primary); }
+
+  /* 4 整張填色、沒有外框；左欄靠留白分開 */
+  .lab-s4 { --w: 5rem; }
+  .lab-s4 .lab-card { background: var(--layer-2-surface); border: 1px solid transparent; }
+  .lab-s4 .lab-who { padding: var(--sp-12) var(--sp-4) var(--sp-12) var(--sp-16); }
+  .lab-s4 .lab-cond { padding: var(--sp-6) var(--sp-8) var(--sp-6) 0; }
+  .lab-s4 .lab-cond .lab-cr:not(.lab-cr--add) { border-radius: var(--radius-md); background: var(--layer-1-surface); border: 1px solid var(--border-soft); }
+  .lab-s4 .lab-card--add { background: transparent; border: 1px dashed var(--border); }
+  .lab-s4 .lab-card--add:hover { border-color: var(--primary); }
+
+  /* 5 品牌色細條當左緣，左欄窄，條件列有框 */
+  .lab-s5 { --w: 5rem; }
+  .lab-s5 .lab-card { border: 1px solid var(--border); border-left: 3px solid var(--primary); }
+  .lab-s5 .lab-who { padding: var(--sp-12) var(--sp-8) var(--sp-12) var(--sp-12); }
+  .lab-s5 .lab-cond { padding: var(--sp-8) var(--sp-8) var(--sp-8) 0; }
+  .lab-s5 .lab-cond .lab-cr:not(.lab-cr--add) { border: 1px solid var(--border-soft); border-radius: var(--radius-md); }
+  .lab-s5 .lab-card--add { border: 1px dashed var(--border); border-left: 3px dashed var(--border); }
+  .lab-s5 .lab-card--add:hover { border-color: var(--primary); }
+</style>
+</head>
+<body>
+<main class="lab-page">
+  <header>
+    <h1 class="lab-h1">進庫方法的排法：選一個（第四版）</h1>
+    <p class="lab-lead">以你選的橫卡為底，五個方案的左欄都縮窄了，整體風格各不同；條件也照你說的拆成「類型｜內容」兩欄（第三版 D 的做法）。「再加一種方法」是同形的虛線卡，左欄只放加號。同一個情境：方法 1 一個條件，方法 2 兩個條件（要一起達成）。回我編號，也可以混搭，或說哪裡還要調。</p>
+  </header>
+  <div id="lab-root" style="display:grid;gap:var(--sp-48)"></div>
+</main>
+<script src="js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  function ic(n) { return '<i data-lucide="' + n + '" class="ztor-icon"></i>'; }
+  var RM = '<button type="button" class="btn btn--icon btn--ghost btn--sm" aria-label="移除條件">' + ic("x") + "</button>";
+  function cr(c, i) {
+    return '<div class="lab-cr"><span class="lab-cr__and">' + (i ? "且" : "") + '</span><span class="lab-cr__type">' + ic(c.i) + c.type + '</span><span class="lab-cr__text">' + c.text + "</span>" + RM + "</div>";
+  }
+  function addCond() { return '<div class="lab-cr lab-cr--add"><span class="lab-cr__and"></span><span class="lab-add">' + ic("plus") + "加條件</span></div>"; }
+  var M = [
+    { n: 1, reach: 128, items: [{ i: "chart-column", type: "分級 ≥", text: "超級粉絲" }] },
+    { n: 2, reach: 21, items: [{ i: "shopping-bag", type: "購買過", text: "LOVE RAGE HOPE 限量黑膠 1/500" }, { i: "heart", type: "支持過", text: "曾支持過這位創作者" }] }
+  ];
+  function reach(m) { return '<span class="lab-n"><b>' + m.reach + "</b> 人符合</span>"; }
+  function frame(cls, inner) { return '<div class="vault-open" style="padding:var(--sp-4) 0"><div class="vault-open__row"><div class="vault-open__rowhead"><div class="vault-open__rowtext"><span class="vault-open__title">條件開啟</span><p class="vault-way__desc">達成任一種方法就進得來</p></div><span class="vault-way__n">128 人符合任一種</span><button type="button" class="switch switch--on" role="switch" aria-checked="true" aria-label="條件開啟"></button></div><div class="lab-stack ' + cls + '">' + inner + "</div></div></div>"; }
+  function cards(who) {
+    return M.map(function (m) {
+      return '<div class="lab-card"><div class="lab-who">' + who(m) + '</div><div class="lab-cond">' + m.items.map(cr).join("") + addCond() + "</div></div>";
+    }).join("") + '<div class="lab-card lab-card--add"><div class="lab-who">' + ic("plus") + '</div><div class="lab-cond">再加一種方法</div></div>';
+  }
+  var nameWho = function (m) { return '<span class="lab-name">方法 ' + m.n + "</span>" + reach(m); };
+  var dotWho = function (m) { return '<span class="lab-dot">' + m.n + "</span>" + reach(m); };
+  var V = [
+    { c: "lab-s1", t: "窄左欄，實線分隔", why: "把上一版的 C 單純縮窄（10rem → 6rem），其他不變，是最保守的版本；「方法 1」和人數上下排。", who: nameWho },
+    { c: "lab-s2", t: "只有編號：左欄是圓形數字，更窄", why: "左欄最窄（約 3.75rem），不寫「方法」兩個字，只有編號和人數；右欄空間最大。代價是少了「方法」這個詞，要靠上下文知道 1、2 是什麼。", who: dotWho },
+    { c: "lab-s3", t: "左欄是貼邊的淺底標籤條，右邊用細線分條件", why: "左欄像側邊標籤，條件之間用細線而不是一條一個框，整體最輕、最像表單。代價是淺底在深色背景下對比低。", who: nameWho },
+    { c: "lab-s4", t: "整張填色、沒有外框，條件是卡中卡", why: "不靠外框，靠底色分層；條件列是比卡更亮的小框，層次最清楚。代價是色塊多，一張張連在一起比較厚。", who: nameWho },
+    { c: "lab-s5", t: "品牌色細條當左緣", why: "方法卡左邊一條品牌色細線，一眼分出「一種方法」的範圍；「再加一種方法」是同形的虛線。代價是品牌色用在非主要動作上，要小心別搶過上架按鈕。", who: nameWho }
+  ];
+  document.getElementById("lab-root").innerHTML = V.map(function (v, i) {
+    return '<section class="lab-opt"><div class="lab-opt__head"><span class="lab-opt__n">' + (i + 1) + '</span><span class="lab-opt__t">' + v.t + '</span></div><p class="lab-opt__why">' + v.why + "</p>" + frame(v.c, cards(v.who)) + "</section>";
+  }).join("");
+  if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(document.body);
+})();
+</script>
+</body>
+</html>

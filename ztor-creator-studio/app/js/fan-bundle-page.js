@@ -42,7 +42,7 @@
  *         options:[{ name:'尺寸', values:['S','M'] }] }                   // options＝多選項商品的選項組（粉絲購買時選）
  *     ],
  *     price: {
- *       priceObj, priceKey,                       // 組合售價（最低組合的售價）；priceKey 讓點價格開價格表
+ *       priceObj, priceKey,                       // 組合售價（最低組合的售價）
  *       wasObj,                                   // 原價合計（單買加總，最低組合）；只換算、不可覆寫
  *       from: false,                              // 粉絲的選擇會改變價格（多票種或多規格價差）→ 加「起」
  *       pct: 0                                    // 組合折扣 %（票種價差也照這個 % 打折，見 tierRows）
@@ -51,8 +51,7 @@
  *     perks: [{ key:'perk-0' }, …]                // 組合專屬權益（每行一項，可翻譯）（D402 已移除，fan-bundle-page 不再讀）
  *   }
  *
- * 價格節點帶 `data-fep-price-key`（沿用活動頁的屬性名：js/publish-stage.js 認這個屬性把價格表滑出來，
- * D310「價格不就地改」），另掛 `data-fbp-price-key` 標明是組合頁的價格節點。
+ * 價格節點帶 `data-fbp-price-key` 標明是組合頁的價格節點。墓碑 2026-11-05（D514）：點價格開價格表（`data-fep-price-key`）退場。
  * 可給 editZones 選的區塊：[data-fbp-gallery]、.pdp-buy__title、[data-fbp-meta]、[data-fbp-price]、
  * [data-fbp-stock]、[data-fbp-picker]、[data-fbp-tiers]、[data-fbp-members]、[data-fbp-desc]（[data-fbp-perks] 依 D402 退場）。
  *
@@ -80,7 +79,7 @@
   function numOf(api, po, key) { return api.priceIn ? api.priceIn(po, key || null) : 0; }
   function fmtNum(api, n) { return spaced(api.fmt ? api.fmt(n) : String(n)); }
   /* 基準幣別的一筆差額換成當前幣別（票種價差用）：不掛 key＝只換算、不吃覆寫 */
-  function convert(api, base, amount) { return numOf(api, { base: base, amount: amount, override: {} }, null); }
+  function convert(api, base, amount) { return numOf(api, { base: base, amount: amount }, null); }
 
   /* 可翻譯 slot：同 fan-event-page.js／fan-product-page.js */
   function slot(api, tag, cls, field, placeholder) {
@@ -223,8 +222,6 @@
       else {
         var s = fmtNum(api, nowN);
         now.textContent = P.from ? T('fpp.price.from', 'From {price}').replace('{price}', s) : s;
-        /* D310：點價格開右側價格表（價格不就地改）；publish-stage 認 data-fep-price-key */
-        now.setAttribute('data-fep-price-key', P.priceKey || '');
         now.setAttribute('data-fbp-price-key', P.priceKey || '');
       }
       box.appendChild(now);

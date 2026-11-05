@@ -50,11 +50,16 @@
    #ZT-10482 原本寫死的支付費是 −$1.30（＝2.32%，與 2.4% 對不上），本輪一併更正為
    −$1.34、淨額 $51.26，讓 12 筆共用同一條算式。
 
-   ── 買家付款幣別 fx（2026-08-07）─────────────────────────────────
-   商店結算幣別是 USD。買家用別的幣別付款時 fx 帶原幣金額與匯率，明細頁的金額拆解
-   就多出「買家實付」一列（§2.3.2「跨幣別需顯示原幣、換算幣、匯率與時點」）；同幣別
-   訂單 fx 為 null，那一列整條不產生（規格明文：同幣別訂單不顯示此列）。
-   12 筆裡只有 #ZT-10482 是跨幣別（TWD），其餘 11 筆同幣別——兩種情況都看得到。
+   ── 買家付款幣別 fx（2026-08-07 建立，2026-11-05 D514 改寫）─────────────
+   訂單金額記在品項的基準幣別（＝創作者幣別，D514）。粉絲用別的幣別付款時 fx 帶付款幣別、
+   結帳鎖定的匯率與時點，明細頁的金額拆解多出「換匯手續費」與「買家實付」兩列（§2.3.2）；
+   同幣別訂單 fx 為 null，兩列都不產生。
+
+   ── 換匯手續費 fx.swap（2026-11-05 D514 決定六、八）────────────────────
+   粉絲付款幣別與基準幣別不同時由粉絲加付、歸平台。基準＝品項折後實付換算成付款幣別（運費不計入，
+   〔推導〕2；折扣先算完，〔推導〕6），乘成交當下凍結的費率。粉絲實付＝品項＋運費＋換匯手續費。
+   淨額、平台費、支付費一律不看這筆（不是創作者收入；支付費基準不變，〔推導〕4），所以 amounts 不動。
+   bookyay 活動以港幣付款不收（〔推導〕1）：fx.pinned 為真、fx.swap 為 null。費率 2.5% 是示意值（ASSUMPTIONS UIA-334）。
 
    ── 領取單位（Pickup unit）資料層（2026-09-03，使用者裁決 D240）─────────────
    定義權威在 documents/0-設計規格書.md §7.2「領取單位（Pickup unit）的正式定義」，
@@ -162,11 +167,12 @@
     return { code: u.session, nameKey: s.nameKey, name: s.name, href: s.href };
   }
 
-  /* 幣別模型（2026-08-07 使用者裁決 A）：商店結算幣別＝USD，買家在台灣、以 TWD 付款，
-     所以跨幣別是常態而非例外——12 筆裡 11 筆有 fx。刻意留兩個對照：
+  /* 幣別模型（D514，取代 2026-08-07 的「商店結算幣別＝USD」）：金額記在基準幣別（＝創作者幣別）。
+     這批電子商店示範訂單的創作者幣別是 USD（與創作者預設 TWD 不同，只是示範資料沿用，ASSUMPTIONS UIA-334），
+     買家在台灣、以 TWD 付款，所以跨幣別是常態。刻意留兩個對照：
        ZT-10470 買家在舊金山（USD）＝同幣別，fx 為 null，驗證「同幣別不產生換算列」（§2.3.2）
        ZT-10469 純數位、無寄送地址的海外買家（JPY），讓幣別不只一種
-     fx.paid ＝（商品金額＋運費）× 匯率，與該筆 amounts 自洽。 */
+     下方資料裡的 fx.paid ＝（商品金額＋運費）× 匯率；applySwap() 再加上換匯手續費。 */
   var ORDERS = [
     {
       /* 混合費率（2026-09-29 D333）：同一張單裡有三個費率葉節點——實體 T 恤、數位下載、
@@ -1182,6 +1188,42 @@
   }
   ORDERS.forEach(refreshDerived);
 
+  /* 換匯手續費（D514）。示範費率與 admin-platform-fees.html 的示意值同一個；訂單上是成交當下凍結的值。 */
+  var SWAP_PCT = 2.5;
+  var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
+  function numOf(str) { return Number(String(str || '').replace(/[^0-9.]/g, '')) || 0; }
+  function payMoney(cur, n) {
+    var dec = cur === 'JPY' ? 0 : 2;
+    return PAY_SYMBOL[cur] + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function roundPay(cur, n) { return cur === 'JPY' ? Math.round(n) : Math.round(n * 100) / 100; }
+  function applySwap(o) {
+    var f = o.fx;
+    if (!f || f.swap !== undefined) return;
+    var rate = Number((String(f.rate).match(/=\s*([\d.]+)/) || [])[1]) || 1;
+    var sum = numOf(f.paid);                                   // 品項＋運費（付款幣別）
+    var items = sum - numOf(o.amounts && o.amounts.shipping) * rate;   // 運費不計入基準
+    var fee = roundPay(f.currency, items * SWAP_PCT / 100);
+    f.sum = f.paid;
+    f.at = (o.payment && o.payment.paidAt) || o.date;
+    f.swap = { pct: SWAP_PCT, amount: payMoney(f.currency, fee), n: fee };
+    f.paid = payMoney(f.currency, roundPay(f.currency, sum + fee));
+  }
+  ORDERS.forEach(applySwap);
+  /* 撤銷的品項，換匯手續費依占比跟著退（〔推導〕3）。回格式化金額；沒有撤銷回空字串。 */
+  function swapBack(o) {
+    var f = o && o.fx;
+    if (!f || !f.swap) return '';
+    var all = 0, off = 0;
+    (o.items || []).forEach(function (it) {
+      var a = Number(it.amt) || 0;
+      all += a;
+      if (voidState(it, o) === 'voided') off += a;
+    });
+    if (!off || !all) return '';
+    return payMoney(f.currency, roundPay(f.currency, f.swap.n * off / all));
+  }
+
   /* ── F1 訂單摘要的四張 KPI 卡（5.1.5.3 F1）──────────────────────
      一樣由同一份資料算，不寫死數字——寫死的話補一筆訂單就會跟清單對不上。
        待出貨（To ship）    ＝履約軸有「待出貨」的訂單數。現場 QR 領取品項不列入
@@ -1553,6 +1595,22 @@
     }
     var payFee = ticketPayFee(tx.gross);
     var first = String(tx.buyer || '').split(' ');
+    /* 跨幣別示範（D514）：每三筆一筆用別的幣別付款。bookyay 帶入的票以港幣付＝原價、不收換匯手續費（〔推導〕1）；
+       其他情況換算後加收。港幣價取自 priceObj 的 pin，不另算一份。 */
+    var fxOf = function () {
+      var E = window.ztorEvents;
+      if (!E || !(tx.gross > 0) || nth % 3 !== 0) return null;
+      var base = (ev && ev.currency) || 'TWD';
+      var po = tx.kind === 'bundle' ? E.bundlePriceOf(ev, (ev.bundles || []).filter(function (x) { return x.id === tx.bundleId; })[0]) : E.priceOf(ev, tierOf(tx.tierId));
+      var F = E.FX_PER_USD, cur = po.pin && po.pin.HKD != null && base !== 'HKD' ? 'HKD' : (base === 'USD' ? 'TWD' : 'USD');
+      var rate = cur === 'USD' || base === 'USD' ? '1 USD = ' + (cur === 'USD' ? F[base] : F[cur]) + ' ' + (cur === 'USD' ? base : cur)
+        : '1 ' + cur + ' = ' + (Math.round(F[base] / F[cur] * 100) / 100) + ' ' + base;
+      if (cur === 'HKD') {
+        return { currency: 'HKD', paid: payMoney('HKD', roundPay('HKD', po.pin.HKD * tx.qty)), rate: rate, swap: null, pinned: true, at: tx.paidAt || tx.orderDate };
+      }
+      return { currency: cur, paid: payMoney(cur, E.fx(base, cur, tx.gross)), rate: rate };
+    };
+
     var o = {
       id: tx.orderId, date: tx.orderDate, kind: kind, pay: 'paid', fulfil: fulfil,
       text: (tx.orderId + ' ' + tx.buyer + ' ' + ev.name + ' ' + tx.tier + ' ticket 門票' + (tx.kind === 'bundle' ? ' bundle 組合包' : '')).toLowerCase(),
@@ -1560,12 +1618,13 @@
                contact: (first[0] || 'fan').toLowerCase() + '.' + ((first[1] || 'x').charAt(0)).toLowerCase() + '@example.com' },
       items: items, tickets: tickets,
       amounts: { goods: fmt(tx.gross), shipping: '', platform: '\u2212' + fmt(tx.fee), payment: '\u2212' + fmt(payFee), net: fmt(tx.gross - tx.fee - payFee) },
-      total: fmt(tx.gross), totalAmt: tx.gross, fx: null, cur: cur, dec: 0,
+      total: fmt(tx.gross), totalAmt: tx.gross, fx: fxOf(), cur: cur, dec: 0,
       /* D414：金額 0 的免費訂單不經金流，沒有付款資訊（清單與詳情顯示「—」） */
       payment: tx.gross > 0 ? { paidAt: tx.paidAt, provider: tx.provider || 'Stripe', method: TX_METHOD[tx.method] || 'card', paymentId: tx.paymentId } : null,
       shippedAt: '', source: 'ztor',
       event: { id: ev.id, name: ev.name, bky: ev.source === 'bookyay' }
     };
+    applySwap(o);
     return refreshDerived(o);
   }
   var evOrders = null, evById = {};
@@ -1626,6 +1685,7 @@
       H('paystatus', 'Payment status'), H('fulstatus', 'Fulfilment status'),
       H('cur', 'Currency'), H('subtotal', 'Items subtotal'), H('discount', 'Total discounts'), H('shipping', 'Shipping'),
       H('paid', 'Buyer paid'), H('platform', 'Platform fee'), H('payfee', 'Payment fee'), H('net', 'Net to creator'),
+      H('paycur', 'Payment currency'), H('swap', 'Currency swap fee'), H('paidfx', 'Fan paid (payment currency)'),
       H('paidat', 'Paid at'), H('provider', 'Payment provider'), H('method', 'Payment method'), H('payid', 'Payment ID'),
       H('shippedat', 'Shipped at'), H('carrier', 'Carrier'), H('tracking', 'Tracking number'), H('summary', 'Items'), H('voidn', 'Voided items'),
       H('buyer', 'Buyer name'), H('email', 'Buyer email')
@@ -1639,6 +1699,9 @@
       var discC = toCents(d.tierAmount) + toCents(d.codeAmount) + toCents(d.thresholdAmount);
       var f = function (c) { return (c / 100).toFixed(dec); };
       var pm = o.payment;
+      /* D514：前面的金額欄都是基準幣別；跨幣別訂單另列付款幣別、換匯手續費、粉絲實付，同幣別留空 */
+      var num = function (v) { return v ? String(v).replace(/[^\d.]/g, '') : ''; };
+      var FX = o.fx;
       /* 訂單日期含時分秒：付款時間與下單同一天時取它的時分，其餘只有日期 */
       var orderAt = pm && String(pm.paidAt).slice(0, 10) === o.date ? pm.paidAt + ':00' : o.date;
       var types = typesOf(o).map(function (t) { return T('csv.type.' + t, t); }).join(' / ');
@@ -1654,6 +1717,7 @@
         payLabel(o), fulfil,
         cur, f(goodsC), f(discC), f(shipC), f(goodsC - discC + shipC),
         f(toCents(A.platform)), f(toCents(A.payment)), f(toCents(A.net)),
+        FX ? FX.currency : '', FX && FX.swap ? num(FX.swap.amount) : '', FX ? num(FX.paid) : '',
         pm ? pm.paidAt : '', pm ? pm.provider : '', pm ? T(METHOD_KEY[pm.method] || '', METHOD_EN[pm.method] || pm.method) : '', pm ? pm.paymentId : '',
         o.shippedAt || '', sh.carrier || '', sh.tracking || '', summary, voidN,
         o.buyer ? o.buyer.name : '', o.buyer ? o.buyer.contact : ''
@@ -1726,6 +1790,7 @@
     voidWholeOrder: voidWholeOrder,
     returnTarget: returnTarget,                        /* D465：撤銷退回原本賣出的那個鎖定 */
     isCancelled: isCancelled,
+    swapBack: swapBack,                                /* D514：撤銷品項隨品項退回的換匯手續費 */
     platformLines: platformLines,
     payFee: ticketPayFee,                              /* D418：門票／活動組合包訂單的支付費（活動詳情交易明細共用同一支） */
     typesOf: typesOf,                                   /* D411：訂單類型（product／ticket／bundle） */

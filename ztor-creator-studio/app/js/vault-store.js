@@ -186,15 +186,22 @@
     for (var j = 0; j < items.length; j++) if (!matches(items[j], fan)) return false;
     return true;
   }
-  /* 無條件（D497，2026-11-02）：一種進庫方法都沒設＝全員可解。注意分辨「一種方法都沒有」（無條件）與
-     「有方法、但每一種都還沒放條件」（沒有路進來，空的方法不算達成）。 */
-  function noCondition(vault) { return !((vault && vault.rules) || []).length; }
+  /* 鑰匙開啟（D515）：庫房開不開放用鑰匙進庫。有未撤銷鑰匙時一定開；沒存過設定的庫房，發過鑰匙就算開，
+     所以撤銷最後一把不會讓庫房變回全員可解。鑰匙（S123）不在版本內時一律關。 */
+  function keyWay(vault) {
+    if (!vault || !keysOn()) return false;
+    if (keyStats(vault).live) return true;
+    return vault.keyWay === undefined ? (vault.keys || []).length > 0 : !!vault.keyWay;
+  }
+  /* 無條件（D497，D515 收窄）：一種進庫方法都沒設、鑰匙開啟也關著＝全員可解。注意分辨「一種方法都沒有」（無條件）與
+     「有方法、但每一種都還沒放條件」（沒有路進來，空的方法不算達成）；沒有方法但鑰匙開啟開著是只靠鑰匙。 */
+  function noCondition(vault) { return !((vault && vault.rules) || []).length && !keyWay(vault); }
   /* 數量上限（D497）：一種方法最多 10 個條件、一座庫房最多 5 種方法；到上限就不能再加。 */
   var LIMITS = { items: 10, methods: 5 };
-  /* 整座庫房：任何一種方法達成就算數；沒有任何方法＝無條件，人人都算。 */
+  /* 整座庫房：任何一種方法達成就算數；無條件時人人都算。 */
   function ruleMatches(vault, fan) {
     var gs = vault.rules || [];
-    if (!gs.length) return true;
+    if (noCondition(vault)) return true;
     for (var i = 0; i < gs.length; i++) if (groupMatches(gs[i], fan)) return true;
     return false;
   }
@@ -866,7 +873,7 @@
   /* 排程中＝不在上架中、但排了上架時間（從沒上架過的算草稿、下架後再排的算已下架）。 */
   function isScheduled(v) { return !!v && schedOn() && v.status !== "listed" && !!v.listAt; }
   /* 「沒有路進來」（F2 其他狀態）＝設了進庫方法、但沒有任何含條件的方法，也沒有任何未撤銷鑰匙。
-     無條件（一種方法都沒設，D497）不算「沒有路」——人人都進得來。 */
+     無條件（D497）不算「沒有路」——人人都進得來。只開鑰匙開啟、一把鑰匙都沒有的算「沒有路」（D515）。 */
   function hasWayIn(v) { return noCondition(v) || ruleCount(v) > 0 || keyStats(v).live > 0; }
   /* 發布前檢查（F10）：沒有內容不能發布；沒有路進來、無條件都只提醒、不擋（D497 推導：無條件提醒「發布後所有粉絲都能解鎖」）。 */
   function publishCheck(v) { return { empty: !(v.items || []).length, noWay: !hasWayIn(v), open: noCondition(v) }; }
@@ -1014,6 +1021,7 @@
     ruleMatches: ruleMatches,
     ruleCount: ruleCount,
     noCondition: noCondition,
+    keyWay: keyWay,
     limits: LIMITS,
     shopProducts: shopProducts,
     itemPlays: itemPlays,

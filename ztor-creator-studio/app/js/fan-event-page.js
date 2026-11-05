@@ -79,8 +79,7 @@
  *     related: true | [{ name, cat, price:'NT$ 1,200 起', img }] | false
  *   }
  *
- * 價格節點帶 `data-fep-price-key`（票價、組合價、彈窗裡的價格、購買區的價格區間；區間給空字串＝不聚焦單列）：
- * D310 起「價格不就地改」，宿主（js/publish-stage.js）接這個屬性把價格表滑出來。
+ * 墓碑 2026-11-05（D514）：價格節點的 `data-fep-price-key`（點價格開價格表）退場；價格不可點、不可改。
  *
  * api（由 js/publish-stage.js 的 previewRender 提供）：
  *   lang；getValue(key) → 當前語系的值；bindEditable(el, key) → 掛 inline 編輯；
@@ -245,7 +244,7 @@
       out.push({
         name: e.name || '', img: (e.images && e.images.keyvisual) || '',
         cat: [e.date, e.venue].filter(Boolean).join(' · '),
-        priceObj: prices.length ? { base: e.currency || S.DEFAULT_CURRENCY, amount: Math.min.apply(null, prices), override: {} } : null
+        priceObj: prices.length ? { base: e.currency || S.DEFAULT_CURRENCY, amount: Math.min.apply(null, prices) } : null
       });
     });
     return out.length ? out : true;
@@ -305,7 +304,7 @@
   /* ── 看詳情彈窗（前台 #pdpSetView：.ds-modal.pdp-peek.pdp-setview）──────────────────
      掛在 .fep-shop 裡、只蓋預覽區；.fep-modal__stage 是鏡像唯一加的殼——跟著捲動黏在可視範圍
      （fan-shop.css 第 7 段），面板照前台：寬版置中 720、窄版由下往上的面板（有抓柄、沒有 ✕）。
-     「購買套組」「查看單品 ›」保留外觀、不動作；價格點了開價格表（宿主認 data-fep-price-key）。 */
+     「購買套組」「查看單品 ›」保留外觀、不動作。 */
   function setViewEl(api, b, i, instant) {
     var p = setPrice(api, b);
     var imgs = setImgs(b);
@@ -326,7 +325,7 @@
     var info = '<div class="pdp-setview__info"><div class="pdp-setview__head">' +
       '<span class="pdp-rec-card__kind" data-i18n="fep.set.kind">' + esc(T('fep.set.kind', 'Set')) + '</span>' +
       '<h2 class="ds-modal__title pdp-peek__name">' + esc(b.name || T('cpp.bd.untitled', 'Untitled bundle')) + (p.timed ? dealTag() : '') + '</h2>' +
-      '<p class="pdp-peek__price pdp-setview__total" data-fep-price-key="' + esc(b.priceKey || '') + '">' +
+      '<p class="pdp-peek__price pdp-setview__total"">' +
         esc(multiTix(b) ? T('fep.bd.from', 'From {price}').replace('{price}', fmtNum(api, p.now)) : fmtNum(api, p.now)) +
         (p.was ? ' <s>' + esc(fmtNum(api, p.was)) + '</s> <span class="price-pct">−' + pctOff(p.now, p.was) + '%</span>' : '') + '</p>' +
       (p.timed && p.to ? dealEnds(p.to) : '') +
@@ -545,8 +544,6 @@
     var rangeSrc = tierPs.length ? tierPs : setPs;
     if (rangeSrc.length) {
       pv.textContent = rangeText(api, rangeSrc.map(function (p) { return p.now; }));
-      /* D310：區間不對應單一列，key 給空字串＝開表但不聚焦任何一格 */
-      pv.setAttribute('data-fep-price-key', '');
     } else { pv.classList.add('is-empty'); pv.textContent = T('ce.pv.tickets', 'Tickets coming soon'); }
     price.appendChild(pk); price.appendChild(pv);
     if (tierPs.concat(setPs).some(function (p) { return !!p.was; })) {
@@ -647,7 +644,6 @@
       /* 墓碑 2026-10-16（D443 決定三）：D367 的兩段價說明行（「限時 {p}（至 {to}）· 之後 {p}」）不再畫——預覽只畫開賣當下的價 */
       tr.appendChild(mainEl);
       var tprice = el('span', 'pdp-tier__price' + (p.was ? ' pdp-tier__price--sale' : ''), priceHtml(api, p, false));
-      tprice.setAttribute('data-fep-price-key', t.priceKey || '');   /* D310：點價格開價格表 */
       tr.appendChild(tprice);
       var b = el('button', 'btn btn--yellow-ghost btn--sm pdp-tier__buy'); b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
       var tn = valueOf(api, t.name);
@@ -690,7 +686,7 @@
             '<span class="pdp-tier__label">' + esc(bn) + (p.timed ? dealTag() : '') + '</span>' +
             partsHtml(b) +
             (p.timed && p.to ? dealEnds(p.to) : '') +
-            '<span class="pdp-tier__price' + (p.was ? ' pdp-tier__price--sale' : '') + '" data-fep-price-key="' + esc(b.priceKey || '') + '">' + priceHtml(api, p, multiTix(b)) + '</span>' +
+            '<span class="pdp-tier__price' + (p.was ? ' pdp-tier__price--sale' : '') + '">' + priceHtml(api, p, multiTix(b)) + '</span>' +
             '<button class="pdp-bundle-item__link pdp-tier__more" type="button" data-set-view="' + i + '"><span data-i18n="fep.set.more">' + esc(T('fep.set.more', 'Details')) + '</span><span aria-hidden="true"> ›</span></button>' +
           '</span>' +
           (b.soldOut
@@ -750,7 +746,7 @@
       function cardPrice(api2, p, from, key) {
         var nowStr = fmtNum(api2, p.now);
         if (from) nowStr = T('fep.bd.from', 'From {price}').replace('{price}', nowStr);
-        return '<span class="shop-card__price" data-fep-price-key="' + esc(key || '') + '">' + (p.was ? '<s>' + esc(fmtNum(api2, p.was)) + '</s>' : '') + esc(nowStr) +
+        return '<span class="shop-card__price">' + (p.was ? '<s>' + esc(fmtNum(api2, p.was)) + '</s>' : '') + esc(nowStr) +
           (p.was ? '<span class="price-pct">−' + pctOff(p.now, p.was) + '%</span>' : '') + '</span>';
       }
       if (tiers.length) {
@@ -842,7 +838,7 @@
       escWired = true;
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
-        /* 價格表開著時 Esc 先關抽屜（publish-stage）、彈窗留著。用 capture 階段：publish-stage 的 Esc 在 bubble 階段先登記、
+        /* 翻譯表開著時 Esc 先關抽屜（publish-stage）、彈窗留著。用 capture 階段：publish-stage 的 Esc 在 bubble 階段先登記、
            會先把抽屜關掉，bubble 階段再判斷就看不到抽屜、兩層一起關 */
         if (document.querySelector('.drawer.is-open')) return;
         document.querySelectorAll('[data-fep-setview]').forEach(function (x) {
@@ -853,7 +849,7 @@
       }, true);
     }
     host.appendChild(root);
-    /* 宿主重畫（切語言／幣別、改價格表；create-event 切語言會整個重掛預覽區）時，原本開著的那一組
+    /* 宿主重畫（切語言／幣別；create-event 切語言會整個重掛預覽區）時，原本開著的那一組
        （以價格鍵認，不靠位置）照樣開著、不播動畫 */
     if (anchor.__fepOpenKey != null) {
       var reIdx = -1;

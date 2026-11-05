@@ -1346,8 +1346,7 @@
                欄位 id（ed-pub-url、ed-pub-qr）沒變，renderPublish() 照常填。 -->
 
           <!-- D453（2026-10-19）：設定分頁的「在地化」子分頁與卡（翻譯／基準幣別／幣別覆寫三格摘要、bookyay 港幣鎖定說明、卡內按鈕）整張拿掉；
-               要翻譯、改幣別或覆寫價格，一律從頁首的「預覽與在地化」按鈕進 event-localization.html（5.1.6.3 §2.13，D305／D306／D310）。
-               bookyay 港幣價格鎖定的說明由預覽與在地化頁價格表的港幣欄鎖頭承擔。 -->
+               要翻譯或看其他幣別的換算價，一律從頁首的「預覽與在地化」按鈕進 event-localization.html（5.1.6.3 §2.13，D305／D306／D310；D514 起價格只看不改）。 -->
 
 
           <!-- 墓碑 2026-10-27：「上架／下架」與「封存」兩個區塊自設定分頁底部拿掉（使用者指示），入口改在分頁工具列右側的「⋯」下拉（#ed-more）。
@@ -3750,7 +3749,7 @@
     const settledBadge = '<span class="badge badge--success"><span data-i18n="event-detail.fin.st.settled">' +
       T('event-detail.fin.st.settled', 'Settled') + '</span></span>';
     const rows = tiers.filter(t => (Number(t.sold) || 0) > 0).map((t, i) => {
-      /* D331：粉絲實付價（基準欄覆寫優先）；D408：只算直接買票的部分，經組合包賣出的另列在組合包那一行 */
+      /* D408：只算直接買票的部分，經組合包賣出的另列在組合包那一行 */
       const amt = txAll.filter(x => x.status === 'paid' && x.tier === t.name).reduce((a, x) => a + x.gross, 0);
       return '<tr class="ztor-table__row"><td><code>rev_' + esc(t.id || ('tier' + i)) + '</code></td>' +
         '<td>' + esc(t.name) + '</td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
@@ -4297,12 +4296,12 @@
     });
     document.querySelectorAll('[data-ed-stockonly-note]').forEach(n => { n.hidden = !lock; });
     /* 翻譯（預覽與在地化）屬其他資料（D455 定案，5.1.6.3 §2.13 編輯時機）：活動上架中「唯讀並說明要先下架」。
-       2026-10-20 起入口不停用：照樣能進去看預覽，event-localization.html 自己依上架狀態把翻譯格與價格格鎖成唯讀、頁頂說明要先下架；
+       2026-10-20 起入口不停用：照樣能進去看預覽，event-localization.html 自己依上架狀態把翻譯格鎖成唯讀、頁頂說明要先下架；
        這裡只用 title 預告。墓碑 2026-10-20（D455）：上架中停用入口（b.disabled）。 */
     const locOff = edStockOnly();
     document.querySelectorAll('[data-ed-localize]').forEach(b => {
       b.disabled = false; b.removeAttribute('aria-disabled');
-      if (locOff) b.title = T('ed.loc.listed', 'This event is listed — translations and prices are view-only until you unlist it.');
+      if (locOff) b.title = T('ed.loc.listed', 'This event is listed — translations are view-only until you unlist it.');
       else b.removeAttribute('title');
     });
     /* 通知開關（D455 定案）：上架中要先下架才能切換——售票與名單分頁的通知設定就地說明＋下架入口（編輯中才出現，同上方說明） */
@@ -5313,12 +5312,6 @@
     const S = window.ztorEvents, po = S.priceOf(ev, t);
     return (po.pin && po.pin.HKD != null && po.base !== 'HKD') ? S.fmtMoney('HKD', po.pin.HKD) : '';
   }
-  /* 有覆寫的幣別才列（US$135 · HK$1,050）；沒有回空字串 */
-  function overrideLine(po) {
-    const S = window.ztorEvents;
-    return Object.keys(po.override || {}).filter(c => po.override[c] != null && po.override[c] !== '' && S.CURRENCIES.indexOf(c) >= 0)
-      .map(c => S.fmtMoney(c, po.override[c])).join(' · ');
-  }
   /* ── 獨立票（D380 決定五，2026-10-09）──────────────────────────────
      獨立票＝不掛任何票種、只屬於一場的門票（資料 `standalone: true`，多場活動另帶 `sess`＝所屬場次 id）。
      與票種門票排在同一張清單、不另分區，名稱後掛「獨立票」標籤；多場活動補一列「場次」寫出它屬於哪一場，
@@ -5382,15 +5375,11 @@
         (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
       /* 摘要卡（2026-10-27，UI-CHANGES 三百五十九；lab-event-cards.html 第二版）：縮圖直式在上 → 名稱＋徽章 → 事實列 → 底部銷售區；
          動作收進右上「⋯」：編輯門票（開門票彈窗）、隱藏／顯示（D422，toggleTierVisNow）、庫存設為 0（D447）。
-         張數與銷量兩列收成銷售區（數字＋量條）；「已覆寫」不自佔一列，併進票價左邊的小標記（滑過列出幣別）。 */
+         張數與銷量兩列收成銷售區（數字＋量條）。墓碑 2026-11-05（D514）：票價左邊的「n 幣別另設」小標記隨逐幣別覆寫退場。 */
       const S = window.ztorEvents;
       const qty = Number(t.qty) || 0;
       const stock = S.tierStock(ev, t);
-      const ovr = overrideLine(S.priceOf(ev, t));
-      const ovrN = ovr ? ovr.split(' · ').length : 0;
       const priceVal = Number(t.price) === 0 ? tixEsc(T('ce.tier.free', 'Free')) : tixEsc(S.moneyIn(S.priceOf(ev, t)));
-      const ovrMark = ovr ? '<span class="tier-card__ovr" title="' + tixEsc(ovr) + '"><i data-lucide="globe" class="ztor-icon"></i>' +
-        tixEsc(T('tc.ovr', '{n} set separately').replace('{n}', ovrN)) + '</span>' : '';
       const visWhy = tierVisBlock(t), zeroWhy = ev.status === 'draft' ? 'draft' : tierZeroBlock(t);
       const menu = removed ? '' :
         '<details class="dropdown tier-card__more"><summary class="btn btn--ghost btn--icon btn--sm" aria-label="' + tixEsc(T('event-detail.more', 'More actions')) + '"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>' +
@@ -5421,8 +5410,8 @@
         '<dl class="tier-card__facts">' +
           /* D380：多場活動的獨立票寫出所屬場次（單場不寫——只有一場，沒有「哪一場」要分） */
           (soloSessText(t) ? fact(T('ed.tix.sess', 'Date'), tixEsc(soloSessText(t))) : '') +
-          /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6）；有覆寫時價格左邊一枚「n 幣別另設」小標記（原「其他幣別／已覆寫」一列，UIA-165） */
-          fact(T('ee.tix.price', 'Price'), ovrMark + priceVal) +
+          /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6） */
+          fact(T('ee.tix.price', 'Price'), priceVal) +
           /* bookyay 帶入者（D330）：基準價是港幣原價換算來的——多一列「bookyay 原價 HK$300」 */
           (bkyPinText(t) ? fact(T('ed.tix.bky-price', 'bookyay price'), tixEsc(bkyPinText(t))) : '') +
           /* D465：鎖給單售（可賣/配額）與保留中；沒鎖單售、也沒有保留時不加列 */
@@ -5988,7 +5977,7 @@
     del.title = sold > 0 ? T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold)) : '';
     /* 2026-08-18：票種在子場也可以改（在這裡改＝只改這一場）。 */
     ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty'].forEach(id => { tmEl(id).readOnly = false; });
-    if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（改價走在地化的逐幣別覆寫）
+    if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（D514：沒有其他改價入口）
     /* 張數（5.1.6.1 F21「票種名稱與預設價格與張數」鎖定；2026-10-07 補）＋
        票價與張數的來源標記（同票名那一枚） */
     const pqLock = isBkyTier(t);
@@ -6124,18 +6113,8 @@
       syncTmFoot(); return; }   // 沒過驗證就不關，理由留在頁尾
     /* 墓碑 2026-09-23（D315）：儲存時不再寫回 `feeException`（D311 的逐門票例外費率）。 */
     tmTier.name = tmEl('ed-tm-name').value.trim();
-    /* D455（主規格 §7.15、5.1.6.3 §2.13）：基準價改變後，有手動改價的幣別保留不換算（D415），列出那些幣別、提示創作者重新確認 */
-    const priceWas = Number(tmTier.price) || 0;
-    const ovCurs = tmNew ? [] : Object.keys((window.ztorEvents.priceOf(ev, tmTier) || {}).override || {})
-      .filter(c => { const o = window.ztorEvents.priceOf(ev, tmTier).override[c]; return o != null && o !== '' && window.ztorEvents.CURRENCIES.indexOf(c) >= 0; });
+    /* 墓碑 2026-11-05（D514）：基準價改變後提示已改幣別（D455）退場——沒有手動改價的幣別了，其他幣別一律跟著換算。 */
     tmTier.price = tmEl('ed-tm-price').value;
-    const recheckCurs = (ovCurs.length && (Number(tmTier.price) || 0) !== priceWas) ? ovCurs : [];
-    /* D455 B14 第 6 條（§7.15）：含這張票、且有手動改價的組合包也一起列出（組合包的換算價跟著門票基準價走） */
-    const recheckBds = (tmNew || (Number(tmTier.price) || 0) === priceWas) ? [] : (ev.bundles || [])
-      .filter(b => window.ztorEvents.bundleTickets(b).tierIds.indexOf(tmTier.id) >= 0)
-      .map(b => ({ b, curs: Object.keys(b.override || {}).filter(c => { const o = b.override[c]; return o != null && o !== '' && window.ztorEvents.CURRENCIES.indexOf(c) >= 0; }) }))
-      .filter(x => x.curs.length)
-      .map(x => x.b.name + ' (' + x.curs.join(', ') + ')');
     const sold = Number(tmTier.sold) || 0;
     tmTier.qty = Math.max(sold, Number(tmEl('ed-tm-qty').value) || 0);
     /* D465：鎖給單售——空白或 0＝不鎖定（它還在保留的量改記到未鎖定格，D465 補充二）；正整數＝鎖定配額 */
@@ -6173,10 +6152,7 @@
     closeTierModal();
     refreshTix();
     syncDirty();
-    if (window.ztorToast && recheckCurs.length && recheckBds.length) window.ztorToast.show(T('ed.tm.applied.recheck.both', 'Applied — save the event to keep it. Manual prices won\'t be recalculated. This ticket: {list}. Bundles with this ticket: {bundles}. Recheck them in Preview & localization.').replace('{list}', recheckCurs.join(', ')).replace('{bundles}', recheckBds.join('; ')));
-    else if (window.ztorToast && recheckBds.length) window.ztorToast.show(T('ed.tm.applied.recheck.bd', 'Applied — save the event to keep it. Bundles with this ticket have manual prices that won\'t be recalculated: {bundles}. Recheck them in Preview & localization.').replace('{bundles}', recheckBds.join('; ')));
-    else if (window.ztorToast && recheckCurs.length) window.ztorToast.show(T('ed.tm.applied.recheck', 'Applied — save the event to keep it. {list} keep their manual prices; recheck them in Preview & localization.').replace('{list}', recheckCurs.join(', ')));
-    else if (window.ztorToast) window.ztorToast.show(T('ed.tm.applied', 'Applied — save the event to keep it'), { tone: 'success' });
+    if (window.ztorToast) window.ztorToast.show(T('ed.tm.applied', 'Applied — save the event to keep it'), { tone: 'success' });
   });
   tmEl('ed-tm-delete')?.addEventListener('click', () => {
     if (!tmTier || (Number(tmTier.sold) || 0) > 0 || tmRO()) return;
@@ -6861,7 +6837,7 @@
         : '';
       const num = withProgress
         ? '<b>' + fmtNum(sold) + '</b> / ' + fmtNum(qty) + (thumbFn ? '' : ' · ' + leftTxt)
-        : esc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t))) + ' · <b>' + fmtNum(qty) + '</b> ' + T('event-detail.sales.tickets', 'tickets');   // D331：覆寫值優先、基準幣別符號
+        : esc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t))) + ' · <b>' + fmtNum(qty) + '</b> ' + T('event-detail.sales.tickets', 'tickets');
       return '<div class="meter-list__row">' +
           (thumbFn ? thumbFn(t) : '') +
           '<span class="meter-list__name"><span>' + esc(t.name || '') + '</span>' +
@@ -7477,7 +7453,7 @@
       const lo = prices.length ? Math.min.apply(null, prices) * tk.qty + prodSum : 0;
       const hi = prices.length ? Math.max.apply(null, prices) * tk.qty + prodSum : 0;
       if (prices.length < 2 || !(hi > lo) || !(lo > 0)) return esc(Z.moneyIn(po));
-      const k = po.amount / lo, plain = Object.assign({}, po, { override: {} });
+      const k = po.amount / lo, plain = po;
       return esc(T('cpp.bd.price.from', 'from {sum}').replace('{sum}', Z.moneyIn(po))) +
         '<small class="text-sub tier-card__line" data-ed-bundle-range>' + esc(Z.moneyIn(plain) + '–' + Z.moneyIn(Object.assign({}, plain, { amount: Math.round(hi * k) }))) + '</small>';
     };
@@ -7930,7 +7906,7 @@
     const room = ev.room || {};
     const url = room.url || ('ztor.live/' + (ev.type === 'virtual' ? 'v/' : 'w/') + ev.id);
     $('#ed-room-url').textContent = url;
-    const prices = (ev.tiers || []).map(t => window.ztorEvents.effAmount(window.ztorEvents.priceOf(ev, t)));   // D331：覆寫值優先
+    const prices = (ev.tiers || []).map(t => window.ztorEvents.effAmount(window.ztorEvents.priceOf(ev, t)));
     const lo = prices.length ? Math.min.apply(null, prices) : 0;
     const hi = prices.length ? Math.max.apply(null, prices) : 0;
     $('#ed-room-entry').textContent = !prices.length || !hi
@@ -8135,20 +8111,14 @@
   /* ── 預覽與在地化（5.1.6.3 §2.13；D305／D306 建立、D310 改全頁、D453 拿掉設定分頁的摘要卡）──────────
      入口只剩頁首的 [data-ed-localize] 按鈕，導去 `event-localization.html?id=`；
      那一頁用同一支 js/publish-stage.js（mode:'save'）與同一份粉絲視角預覽，存完回本頁。
-     墓碑：設定分頁「在地化」卡的 renderLocSummary()（翻譯語系／基準幣別／覆寫格數／港幣鎖定說明）與其 #ed-loc-* 欄位，D453 整張拿掉。 */
+     墓碑：設定分頁「在地化」卡的 renderLocSummary()（翻譯語系／基準幣別／港幣鎖定說明）與其 #ed-loc-* 欄位，D453 整張拿掉。 */
   function openLocalization() {
     leaveTo('event-localization.html?id=' + encodeURIComponent(ev.id || ''));   // D392 補充二：有未儲存的變更先問
   }
   document.querySelectorAll('[data-ed-localize]').forEach(b => b.addEventListener('click', openLocalization));
-  /* 從全頁版存完回來（event-localization.html 帶 ?saved=loc）：覆寫已經在 events-store 裡，
-     本頁的 ev／edTiers 是載入時從 store 取的副本，重新套一次再重畫票種卡。 */
+  /* 從全頁版存完回來（event-localization.html 帶 ?saved=loc）：只提示已存（D514 起這一頁只存翻譯）。 */
   if (new URLSearchParams(location.search).get('saved') === 'loc') {
-    const fx = (window.ztorEvents.getOverrides(ev.id)) || { tiers: {}, bundles: {} };
-    edTiers.forEach(t => { t.override = (fx.tiers || {})[t.id] || {}; });
-    (ev.tiers || []).forEach(t => { t.override = (fx.tiers || {})[t.id] || {}; });
-    (ev.bundles || []).forEach(b => { b.override = (fx.bundles || {})[b.id] || {}; });
-    renderEdTiers();
-    if (window.ztorToast) window.ztorToast.show(T('ed.loc.saved', 'Saved — prices and translations are live.'));
+    if (window.ztorToast) window.ztorToast.show(T('ed.loc.saved', 'Saved — translations are live.'));
   }
 })();
 </script>
