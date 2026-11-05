@@ -124,8 +124,6 @@
      2026-10-23 起兩個未來版本並存：release2.3（🔵，活動）＋ release2.4（🟣，粉絲管理與媒體庫，規則含 release2.3）。 */
   var VERSIONS = [
     ['full', '最終版', '開發', 'all', '全部功能（預設）'],
-    ['release2.3', 'release2.3', '開發', 'tier:release2.2,release2.3', '已交付（🟢 release2.2）＋下一版（🔵 release2.3）；未排定與未標記者隱藏'],
-    ['release2.4', 'release2.4', '開發', 'tier:release2.2,release2.3,release2.4', '已交付（🟢 release2.2）＋ release2.3（🔵）＋粉絲管理與媒體庫（🟣 release2.4）；未排定與未標記者隱藏'],
     ['funding-test', 'funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
     ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同最終版'],
     ['stock-ui-test', '庫存UI測試', '測試', 'route:create-product.html=lab-stock-settings.html', '建立商品改接庫存設定 demo，其餘同最終版'],
@@ -133,7 +131,38 @@
   /* 舊瀏覽器的 devstate 可能還存著已退場的版本鍵（p1／p1-next／p1-next-tbd／golive-4step／home-canvas）。
      未知鍵一律回到 full：否則 isFullBaseVersion() 判 false，會被當成限縮版、導覽少一半。
      例外：2026-10-07 改名的 next 直接對到活動那一版的鍵（2026-10-27 起叫 release2.3，VERSION_ALIAS），不退回 full。 */
-  var VERSION_ALIAS = { next: 'release2.3' };
+  var VERSION_ALIAS = {};
+  /* RELEASE_LOCK（2026-11 起）：各交付版是獨立分支＋獨立網址，切換版本＝跳到另一個網址、看另一份檔案（下方 go: 列）。
+     main 這裡是 null；release-cut.sh 切分支時只改這一行，其餘程式與 main 完全相同，修正搬進分支才不會卡在鎖定段落。
+     有值時：版本鎖死在這一版，網址參數與瀏覽器記憶都無效，也不跳首次選版本的 popup。 */
+  var RELEASE_LOCK = null;
+  if (RELEASE_LOCK) VERSIONS = [[RELEASE_LOCK.key, RELEASE_LOCK.name, '開發', RELEASE_LOCK.rule, RELEASE_LOCK.desc]];
+  /* 版本清單放在完整版網址的 js/release-links.js（只有一份），舊分支也讀得到之後新增的版本。
+     用 script 載入，跨網域不需要另外設定；讀不到（離線）時面板就只少這幾列。 */
+  var RELEASE_LINKS_URL = 'https://ztor-v2-creator-studio.vercel.app/js/release-links.js';
+  function mergeReleaseRows() {
+    var list = window.ZTOR_RELEASES;
+    if (!list) return;
+    var own = RELEASE_LOCK ? RELEASE_LOCK.key : 'full';
+    VERSIONS = VERSIONS.filter(function (v) { return v[0].indexOf('go:') !== 0; });
+    list.forEach(function (r) {
+      if (r.key !== own) VERSIONS.push(['go:' + r.key, r.name, '版本', 'go:' + r.url, r.desc]);
+    });
+  }
+  /* 選到另一個版本：跳到該版網址的同一頁，帶著目前的查詢參數（version 參數除外）。回傳 true＝已處理。 */
+  function goRelease(key) {
+    if (String(key).indexOf('go:') !== 0) return false;
+    var list = window.ZTOR_RELEASES || [], id = key.slice(3);
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].key === id) {
+        var q = new URLSearchParams(location.search); q.delete('version');
+        var qs = q.toString();
+        location.href = list[i].url + location.pathname + (qs ? '?' + qs : '') + location.hash;
+        return true;
+      }
+    }
+    return false;
+  }
   function knownVersion(v) { for (var i = 0; i < VERSIONS.length; i++) if (VERSIONS[i][0] === v) return true; return false; }
   /* `full` 是版本 gate 的保留 tier，不是 feature-scope-map 的產品 ID。
      必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
@@ -236,7 +265,7 @@
         if (m && m[1] !== '鍵' && !/^-+$/.test(m[1])) vs.push([m[1], m[2], m[3], m[4], m[5]]);
       }
     });
-    if (vs.length) VERSIONS = vs;
+    if (vs.length && !RELEASE_LOCK) { VERSIONS = vs; mergeReleaseRows(); }
     lines.forEach(function (ln) {
       var idm = ln.match(/\|\s*`([SOEB]\d{2,3}(?:\.\d+)?)`\s*\|/);
       if (!idm) return;
@@ -313,8 +342,8 @@
   /* 版本依「類型」欄（v[2]）分組：已知類型給友善標題與固定排序，未知類型
      照其在 VERSIONS 中首次出現的順序接在已知組之後。加新組只要在
      feature-scope-map 的「開發版本配置」表填新類型即可，不必再動這裡。 */
-  var VER_GROUP_LABEL = { '開發': '開發版本', '測試': '測試版', 'Demo': 'Presentation demo' };
-  var VER_GROUP_ORDER = ['開發', '測試', 'Demo'];
+  var VER_GROUP_LABEL = { '開發': '開發版本', '版本': '其他版本（另開網址）', '測試': '測試版', 'Demo': 'Presentation demo' };
+  var VER_GROUP_ORDER = ['開發', '版本', '測試', 'Demo'];
   function verRows(current, mode) {
     /* 依類型分組＋排序（面板 dropdown 與首次 popup 大卡片共用同一份分組）*/
     var groups = {}, seen = [];
@@ -521,6 +550,12 @@
   }
   function loadVersions() {
     try {
+      var rl = document.createElement('script');
+      rl.src = RELEASE_LINKS_URL; rl.async = true;
+      rl.onload = function () { mergeReleaseRows(); if (root.classList.contains('is-open')) paint(); };
+      document.head.appendChild(rl);
+    } catch (e) {}
+    try {
       fetch(SITE_ROOT + 'feature-scope-map.md').then(function (r) { return r.ok ? r.text() : null; })
         .then(function (t) { if (t) { parseScopeMd(t); if (root.classList.contains('is-open')) paint(); applyVersion(); } })
         .catch(function () {});
@@ -574,7 +609,8 @@
     if (q.has('version')) s.version = q.get('version');
     if (q.has('future')) s.showFuture = q.get('future') === '1' || q.get('future') === 'true';
     if (VERSION_ALIAS[s.version]) s.version = VERSION_ALIAS[s.version];   // 改名過的鍵 → 新鍵
-    if (!knownVersion(s.version)) s.version = 'full';   // 已退場或打錯的版本鍵 → 最終版
+    if (!knownVersion(s.version) || String(s.version).indexOf('go:') === 0) s.version = 'full';   // 已退場或打錯的版本鍵 → 最終版
+    if (RELEASE_LOCK) s.version = RELEASE_LOCK.key;   // 交付版分支：無視網址參數與瀏覽器記憶
     return s;
   }
   var state = load();
@@ -593,7 +629,7 @@
     q.set('data', state.data);
     q.set('event', state.eventDay);
     if (state.skipValidation) q.set('skip', '1'); else q.delete('skip');
-    if (state.version && state.version !== 'full') q.set('version', state.version); else q.delete('version');
+    if (state.version && state.version !== 'full' && !RELEASE_LOCK) q.set('version', state.version); else q.delete('version');
     if (state.showFuture) q.set('future', '1'); else q.delete('future');
     history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
   }
@@ -1052,6 +1088,7 @@
   root.addEventListener('change', function (e) {
     var sel = e.target.closest('select[data-ver-select]');
     if (!sel) return;
+    if (goRelease(sel.value)) return;
     state.version = sel.value; update();
   });
 
@@ -1148,12 +1185,13 @@
       var opt = e.target.closest('[data-onb]');
       if (opt) { sel = opt.getAttribute('data-onb'); draw(); return; }
       if (e.target.closest('.ztd-onb__ok')) {
-        state.version = sel; update();
         try { localStorage.setItem(ONBOARD_LS, '1'); } catch (e) {}
+        if (goRelease(sel)) return;
+        state.version = sel; update();
         ov.remove();
       }
     });
     document.body.appendChild(ov);
   }
-  try { if (!localStorage.getItem(ONBOARD_LS)) showOnboarding(); } catch (e) {}
+  try { if (!RELEASE_LOCK && !localStorage.getItem(ONBOARD_LS)) showOnboarding(); } catch (e) {}
 })();
