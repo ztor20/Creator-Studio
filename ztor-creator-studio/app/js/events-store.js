@@ -116,12 +116,11 @@
          墓碑 2026-10-16（D429）：hideFix（bookyay 套票轉出的 1 人票、鎖定為隱藏）與組合包的 fix（bookyay 自動建立、整組鎖定）兩欄退場——
          bookyay 的「每張門票人數」不帶入，套票帶入後就是一張普通門票，不再拆票、不再自動建組合包。 */
       tiers: [
-        /* override（2026-09-22 D306）＝創作者在價格表手動改過的幣別：USD 換算值是 133（4200 ÷ 31.5），
-           創作者覆寫成 135 讓數字好看；其餘幣別沒改＝顯示換算值。 */
+        /* 墓碑 2026-11-05（D514）：逐幣別覆寫 `override` 退場，示範資料全數拿掉；其他幣別一律依匯率換算。 */
         /* 墓碑 2026-09-23（D315）：`feeException`（D311 的逐門票例外平台費率，這一筆原本
            示範「Admin 為這張票談了 3%」）隨例外整組退場——平台費只剩 Admin 在費率設定頁
            設的兩層（General 預設 × 逐 creator 覆寫），門票資料不再帶自己的費率。 */
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, override: { USD: 135 } },
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100 },
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
@@ -146,7 +145,7 @@
       bundles: [
         { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', desc: '一張 VIP 票加一件巡演官方 Tee，現場憑票一併領取。', tickets: { tierIds: ['tier-vip'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600 }],
-          price: 4800, sold: 12, lockSets: 0, override: { HKD: 1188 } }   // HKD 換算 1,189 → 覆寫 1,188（D306 示範）；D513（2026-11-05）：VIP 已賣完、沒有可鎖的票，鎖定 0 套（鎖定庫存開著、可售 0）
+          price: 4800, sold: 12, lockSets: 0 }   // D513（2026-11-05）：VIP 已賣完、沒有可鎖的票，鎖定 0 套（鎖定庫存開著、可售 0）
       ],
       /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／顯示（D341：可見性用詞統一為顯示／隱藏）。
          2026-09-29（D327）：電子門票底下的附屬設定值整組清掉——那組設定已刪除。 */
@@ -524,8 +523,8 @@
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       series: null,
       /* bookyay 帶入的活動示範（2026-09-29 D330 改寫，取代 D306 起的「票種基準幣別強制港幣」）：
-         帶入金額一律是港幣，基準價換算成創作者幣別（示範創作者＝TWD）後鎖定；價格表的港幣欄＝bookyay 原價（`hkd`）、
-         鎖定，港幣以外——含創作者幣別欄 TWD——都可覆寫。所以本筆不再寫 `currency`（＝DEFAULT_CURRENCY 'TWD'），
+         帶入金額一律是港幣，基準價換算成創作者幣別（示範創作者＝TWD）後鎖定；港幣價＝bookyay 原價（`hkd`）、
+         鎖定，其他幣別自動換算（D514 決定四）。所以本筆不再寫 `currency`（＝DEFAULT_CURRENCY 'TWD'），
          票種 `price` 是換算後的 TWD 基準價、`hkd` 是 bookyay 原價。這一筆是站上唯一的 source:'bookyay'。 */
       source: 'bookyay',
       /* bookyay 掃描器連結（2026-10-12 D394；D401 決定一：bookyay 建立活動時產生、匯入時直接帶入的欄位）：活動詳情的掃碼器卡顯示這條連結＋複製。
@@ -578,7 +577,7 @@
          補上票種。票種是建立流程的必填，已排程卻沒有票種的活動在產品上生不出來。） */
       tiers: [
         /* D330：`hkd`＝bookyay 原價（港幣，可有小數）、鎖定；`price`＝換算成創作者幣別 TWD 的基準價（§7.15 票價整數、四捨五入）、鎖定。
-           HK$300 → NT$1,212（示範匯率）；創作者幣別欄可覆寫——示範覆寫成整數好看的 NT$1,200（覆寫值＝粉絲以 TWD 買的實付價）。
+           HK$300 → NT$1,212（示範匯率）。
            2026-10-16（D429 示範資料）：bookyay 二人套票帶入後就是一張普通門票——票價照 bookyay 現價 HK$550 → NT$2,221（HK$ ÷ 7.8 × 31.5，四捨五入）、
            張數照 bookyay 時段上限 400、本門票限購每人 2 張（鎖定，rulesFix）；ztor 一票一碼，這張在 ztor 算 1 張、1 個 QR。
            墓碑：原本拆成隱藏且鎖定的 1 人票（HK$275 × 400 張，hideFix）＋自動組合包 bd-nye-duo（D328／D329）。 */
@@ -587,7 +586,7 @@
         /* 購買條件（2026-10-09 D385 決定一示範；形狀同 create-event 的門票規則 { conds }，bky:true＝由 bookyay 帶入、鎖定）：
            本門票限購（每人 4 張；D417 起限購次數、折扣優惠、早鳥都不帶入，D427 起每次交易也不帶入）。有 bookyay 門票層條件＝這張票用自己那一組、整組鎖定（rulesFix，D367 決定五）。
            活動詳情單張門票彈窗唯讀呈現、掛 From bookyay。 */
-        { id: 'tier-ga',    name: 'General admission', price: 1212, hkd: 300, qty: 1600, sold: 0, override: { TWD: 1200, USD: 38 }, img: 'images/projects/nick-baipa-goods.jpg',
+        { id: 'tier-ga',    name: 'General admission', price: 1212, hkd: 300, qty: 1600, sold: 0, img: 'images/projects/nick-baipa-goods.jpg',
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
@@ -603,14 +602,13 @@
          套票限購改落在門票 tier-duo 本身。下面創作者自建的組合包保留。 */
       bundles: [
         /* 創作者自建、成員含 bookyay 匯入票券的組合包（2026-09-29 D331 決定六示範）：欄位照一般組合包
-           可編輯；只有價格表港幣欄依公式鎖定——（GA 港幣原價 HK$300 × 1 ＋ 手環 NT$400 換算 HK$99）×（1 − 10%）＝HK$359.10
-           （events-store bkyBundleHkd）。基準價＝（NT$1,212 ＋ NT$400）× 0.9＝NT$1,450.8 → NT$1,451；創作者把 TWD 欄覆寫成 NT$1,450，
-           清單、摘要、KPI 顯示 NT$1,450（D331 決定一）。disc＝組合折扣 %（本輪新欄，見 bkyBundleHkd 說明）。 */
+           可編輯；只有港幣價依公式鎖定——（GA 港幣原價 HK$300 × 1 ＋ 手環 NT$400 換算 HK$99）×（1 − 10%）＝HK$359.10
+           （events-store bkyBundleHkd）。基準價＝（NT$1,212 ＋ NT$400）× 0.9＝NT$1,450.8 → NT$1,451。disc＝組合折扣 %（本輪新欄，見 bkyBundleHkd 說明）。 */
         { id: 'bd-nye-ga-band', name: 'GA + countdown wristband', tickets: { tierIds: ['tier-ga'], qty: 1 },
           /* pickup（D401 決定四，原型示意欄位，ASSUMPTIONS UIA-248）：這個商品在哪個取貨場次領取——s＝pickup-detail.html 的示範狀態、
              nameKey＝場次名稱（pickup.html 的示範列）。活動詳情「前往領取場次」依綁到的場次數分三種去處。 */
           products: [{ name: 'Countdown night wristband', img: 'images/products/wristband.webp', price: 400, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 1451, sold: 0, lockSets: 300, override: { TWD: 1450 },
+          disc: 10, price: 1451, sold: 0, lockSets: 300,
           /* 2026-10-16 示範資料補齊（note/release2.4 假資料覆蓋稽核 E6、E8；不是產品規則）：
              · sched.saleStart：開賣「另設」、早於活動開賣 11/01（仍在上架區間 10/25 起之內）——上架、下架、停售跟隨活動（S62）。
              · rules.conds.cap：組合包限購「覆寫」每人 1 組（S94，獨立計算；門票 tier-ga 換算上限 4 組）。活動組合包的
@@ -733,8 +731,8 @@
         { id: 'tier-tc-duo', name: 'Duo pass', price: 3554, hkd: 880, qty: 301, sold: 60, img: 'images/projects/nick-i.jpg',
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true },
         /* 單人票：本門票限購（每人 4；D427 起每次交易不帶入）；整組鎖定（rulesFix）。D417：折扣與早鳥不帶入（原示範的折扣 NT$1,938、早鳥 NT$1,777 移除）。
-           門票圖片換成自己的圖（D383 決定五）；美元覆寫成 US$65（在地化覆寫，港幣欄鎖 HK$520）。 */
-        { id: 'tier-tc-ga', name: 'General admission', price: 2100, hkd: 520, qty: 500, sold: 160, override: { USD: 65 }, img: 'images/projects/nick-lwh.jpg',
+           門票圖片換成自己的圖（D383 決定五）；港幣鎖 HK$520。 */
+        { id: 'tier-tc-ga', name: 'General admission', price: 2100, hkd: 520, qty: 500, sold: 160, img: 'images/projects/nick-lwh.jpg',
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
@@ -773,10 +771,10 @@
         { id: 'bd-tc-floor-zine', name: 'Standing zone ＋ 巡演精裝寫真誌', desc: '站區票加一本巡演精裝寫真誌，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
           products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000, listed: false }],
           disc: 10, price: 3773, sold: 0, lockSets: 50, listed: false, stopped: true },
-        /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200、美元覆寫 */
+        /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200 */
         { id: 'bd-tc-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 2430, sold: 25, lockSets: 175, override: { USD: 76 } }
+          disc: 10, price: 2430, sold: 25, lockSets: 175 }
       ],
       sold: 406,   // D429：原 460（套票 1 人票 120 張 → 套票門票 60 張）；收入不變。2026-10-16 ＋6（免費陪同票 tier-tc-companion）
       revenue: 1013260,
@@ -875,7 +873,7 @@
         /* 二人套票（D429 示範資料）：一張普通門票 HK$880、張數照時段上限 400、賣出 200 張（＝原自動組合包 200 組）。 */
         { id: 'tier-ty-duo', name: 'Duo pass', price: 3554, hkd: 880, qty: 400, sold: 400, img: 'images/projects/nick-i.jpg',
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true },
-        { id: 'tier-ty-ga', name: 'General admission', price: 2100, hkd: 520, qty: 700, sold: 700, override: { USD: 65 }, img: 'images/projects/nick-lwh.jpg',
+        { id: 'tier-ty-ga', name: 'General admission', price: 2100, hkd: 520, qty: 700, sold: 700, img: 'images/projects/nick-lwh.jpg',
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
@@ -891,7 +889,7 @@
         { id: 'bd-ty-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-ty-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           /* 2026-10-16 示範資料補齊（稽核 E2；不是產品規則）：這組設為隱藏（S99，卡上「隱藏」徽章）——營運動作，sold 照算 */
-          disc: 10, price: 2430, sold: 120, lockSets: 0, override: { USD: 76 }, shown: false }
+          disc: 10, price: 2430, sold: 120, lockSets: 0, shown: false }
       ],
       /* 2026-10-16 示範資料補齊（稽核 E4）：全部門票賣完＝「完售」徽章（S85）；組合包也賣到上限 120。
          原 1,304（D429：原 1,504，套票 1 人票 400 張 → 套票門票 200 張）。 */
@@ -944,7 +942,7 @@
         /* 二人套票（D429 示範資料）：一張普通門票 HK$880、張數照時段上限 400、賣出 190 張（＝原自動組合包 190 組）。 */
         { id: 'tier-kh-duo', name: 'Duo pass', price: 3554, hkd: 880, qty: 400, sold: 190, img: 'images/projects/nick-i.jpg',
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true },
-        { id: 'tier-kh-ga', name: 'General admission', price: 2100, hkd: 520, qty: 900, sold: 800, override: { USD: 65 }, img: 'images/projects/nick-lwh.jpg',
+        { id: 'tier-kh-ga', name: 'General admission', price: 2100, hkd: 520, qty: 900, sold: 800, img: 'images/projects/nick-lwh.jpg',
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
@@ -959,7 +957,7 @@
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-kh-duo（賣出 190 組）刪除，銷量改記在門票 tier-kh-duo。 */
         { id: 'bd-kh-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-kh-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 2430, sold: 90, lockSets: 30, override: { USD: 76 } }
+          disc: 10, price: 2430, sold: 90, lockSets: 30 }
       ],
       sold: 1590,   // D429：原 1,780（套票 1 人票 380 張 → 套票門票 190 張）；收入不變
       revenue: 3926820,
@@ -1010,7 +1008,7 @@
         /* 二人套票（D429 示範資料）：一張普通門票 HK$400 → NT$1,615、張數照時段上限 200、賣出 30 張（＝原自動組合包 30 組）。 */
         { id: 'tier-pt-duo', name: 'Duo pass', price: 1615, hkd: 400, qty: 200, sold: 30, img: 'images/projects/nick-i.jpg',
           rules: { conds: { cap: { person: '2', bky: true } } }, rulesFix: true },
-        { id: 'tier-pt-ga', name: 'General admission', price: 1615, hkd: 400, qty: 450, sold: 240, override: { USD: 50 }, img: 'images/projects/nick-lwh.jpg',
+        { id: 'tier-pt-ga', name: 'General admission', price: 1615, hkd: 400, qty: 450, sold: 240, img: 'images/projects/nick-lwh.jpg',
           rules: { conds: { cap: { person: '4', bky: true } } },
           rulesFix: true },
         /* D414 示範資料裁決（2026-10-14）：一場 bookyay 演唱會可以放多種門票（不改 D328 產品規則）。下面兩種是 bookyay 時段裡的其他票種，
@@ -1026,7 +1024,7 @@
         /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動下架一併下架（D457：原「取消」連動改為下架） */
         { id: 'bd-pt-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-pt-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          disc: 10, price: 1994, sold: 12, lockSets: 88, listed: false, override: { USD: 62 } }
+          disc: 10, price: 1994, sold: 12, lockSets: 88, listed: false }
       ],
       sold: 451,   // D429：原 481（套票 1 人票 60 張 → 套票門票 30 張）
       revenue: 777798,   // D457：bookyay 沒有取消活動，原「取消後票券全撤銷、收入 0」退場；示範改為已結束＋已下架＋已封存，收入依四種票價與張數重算
@@ -1194,7 +1192,7 @@
            兩張條件刻意不同，好示範票務商品「預設取最嚴」：一樓限超級粉絲以上、每人 4 張；
            二樓限時間 10/10 12:00–11/30 23:59（早於活動 10/15 開賣的預售，仍在上架區間內）、每人 6 張。
            D427（2026-10-16）：限購只留每人總限購，原示範的「每次 2 張」「限 3 次」移除。 */
-        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0, override: { JPY: 13900 }, hidden: true,   // JPY 換算 13,956 → 覆寫 13,900（D306）
+        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0, hidden: true,
           rules: { conds: { buyTier: { tier: 'superfan' }, cap: { person: '4' } } } },
         { id: 'tier-upper', name: 'Upper level', price: 1800, qty: 200, sold: 0,
           rules: { conds: { buyTime: { from: '2026-10-10T12:00', to: '2026-11-30T23:59' }, cap: { person: '6' } } } }
@@ -2094,7 +2092,7 @@
            D410 示範：商品成員綁取貨場次（前往領取場次）。D429：成員由「1 人票 × 2」改成「二人套票門票 × 1」；售價＝NT$2,221 ＋ NT$600＝NT$2,821（原 NT$2,822，差 1 是 1 人票換算取整的殘差）。 */
         { id: 'bd-khh-duo-tee', name: 'Duo pass ＋ 紀念 T 恤', tickets: { tierIds: ['tier-khh-duo'], qty: 1 },
           products: [{ name: '九龍夜行 紀念 T 恤', img: 'images/products/coastline-tee.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
-          price: 2821, sold: 0, override: { USD: 90 },
+          price: 2821, sold: 0,
           /* 2026-10-16 示範資料補齊（稽核 E5、E7；不是產品規則）：草稿裡存過、不在 bookyay 鎖定範圍的組合包欄位——續填時照樣保留（D386 決定二）。
              · films：電影關聯（S97，建立活動第 6 步票務商品）。
              · sched.saleStart：開賣另設 11/12 12:00，早於活動正式開賣 11/15、在上架 11/10 之後——第 7 步「其他售票時間」摘要（S83）列出這一組。 */
@@ -2397,7 +2395,7 @@
       while (left > 0) {
         var qty = (seq % 3 === 0 && left >= 2) ? 2 : 1;      // 每三筆有一筆是兩張
         if (qty > left) qty = left;
-        var gross = effAmount(priceOf(ev, t)) * qty;   // D331：收入用粉絲實付價（基準欄覆寫優先）
+        var gross = effAmount(priceOf(ev, t)) * qty;   // D331：收入用基準價
         var fee = Math.round(gross * 0.10);
         var atMin = (10 * 60 + (seq * 37) % 720);
         out.push(withPay({
@@ -2694,29 +2692,27 @@
     return { tierIds: [], qty: 1 };
   }
 
-  /* ── 定價幣別（2026-09-22 D306，主規格 §7.15）────────────────────
-     基準幣別（base）＝建立當下創作者的預設幣別；其他四種幣別由系統依匯率換算；創作者可在
-     發布前預覽確認畫面／活動詳情「預覽與在地化」的價格表逐幣別覆寫；基準價一改，沒覆寫的幣別跟著重新換算、
-     手動覆寫過的幣別保留，「重設為換算值」讓該幣別回到跟隨（2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則）。
+  /* ── 定價幣別（2026-09-22 D306 建立，2026-11-05 D514 改寫；主規格 §7.15）────────
+     基準幣別（base）＝建立當下創作者的預設幣別。金額只有基準幣別一個值，其他四種幣別一律由系統依匯率換算，
+     創作者與 Admin 都不能改（D514 決定一）。
      資料怎麼放：
        · 活動層 `currency`（沒寫＝'TWD'，示範資料的創作者預設幣別）＝該活動票種的基準幣別。
-       · bookyay 帶入的活動 `source:'bookyay'`（2026-09-29 D330 改寫，取代「`currency:'HKD'`、港幣當基準」）：
-         基準幣別＝創作者幣別（同一般活動）；票種 `price`＝bookyay 港幣原價換算後的基準價（鎖定）、`hkd`＝港幣原價
-         （可有小數）。價格表港幣欄＝`hkd`、鎖定、沒有重設；港幣以外的欄——含基準幣別欄（創作者幣別非港幣時）——可覆寫、
-         可重設。priceObj 因此多兩個欄位：`pin`（`{ HKD: 原價 }`，鎖定的那一欄）與 `baseOpen`（基準欄可覆寫）。
-         （墓碑 2026-10-16 D429：「自動建立的組合包 `hkd`＝bookyay 現價」隨自動組合包退場。）創作者幣別本身是港幣時 pin 落在基準欄上＝基準欄鎖定、保留小數。
-         Creator Studio 的清單、摘要、KPI 用覆寫值（粉絲實付；沒覆寫＝基準價）——2026-09-29 D331 決定一，moneyIn 無 cur／effAmount。
-       · 票種 `price` 仍是**基準幣別的整數金額**（既有讀取端 event-detail／e-shop／bundle-detail／
-         check_events_store 全部照舊讀這個數字，不改形狀）；逐幣別覆寫放同一筆的 `override`
-         `{ USD: 135 }`——只記「創作者手動改過的幣別」，換算值不落地（示範匯率固定，算得出來就不存）。
-       · 組合包 `price`／`override` 同理；組合包是 ztor 端建立，基準幣別＝創作者預設幣別（'TWD'），
+       · bookyay 帶入的活動 `source:'bookyay'`（D330 建立，D514 決定四收窄）：基準幣別＝創作者幣別（同一般活動）；
+         票種 `price`＝bookyay 港幣原價換算後的基準價（鎖定）、`hkd`＝港幣原價（可有小數）。港幣價固定等於 `hkd`，
+         由系統鎖定；其他幣別照基準價自動換算。priceObj 因此多一個欄位 `pin`（`{ HKD: 原價 }`）。
+         （墓碑 2026-10-16 D429：「自動建立的組合包 `hkd`＝bookyay 現價」隨自動組合包退場。）
+         創作者幣別本身是港幣時 pin 落在基準幣別上、保留小數。
+       · 票種 `price` 是**基準幣別的整數金額**（既有讀取端 event-detail／e-shop／bundle-detail／
+         check_events_store 全部照舊讀這個數字，不改形狀）。
+       · 組合包 `price` 同理；組合包是 ztor 端建立，基準幣別＝創作者預設幣別（'TWD'），
          即使活動本身是 bookyay 帶入（§7.15「含 bookyay 票券的組合包」）。
-       · `priceOf(ev, tier)`／`bundlePriceOf(ev, b)` 把上述三樣收成一個 priceObj
-         `{ base, amount, override, locked }`，`priceIn(priceObj, cur)` 依「覆寫優先、否則換算」取價。
+       · `priceOf(ev, tier)`／`bundlePriceOf(ev, b)` 收成一個 priceObj `{ base, amount, locked, pin }`，
+         `priceIn(priceObj, cur)` 依「鎖定價優先、否則換算」取價。
      匯率是**固定示範值**（ASSUMPTIONS PG-035：1 USD = 31.5 TWD／157 JPY；本輪補 7.8 HKD／1.35 SGD），
-     不隨時間變；匯率來源與時點上游待確認（§7.15）。取整：票價整數、四捨五入（§7.15）。
-     覆寫值的持久化：活動詳情頁「儲存」後寫進 localStorage `ztor.event-fx`（同 stage 覆寫的做法），
-     `get()`／`list()` 讀出時合併到 `tier.override`／`bundle.override`；沒有後端，清鍵即回 mock 原值。 */
+     不隨時間變。D514 決定五定案的時點：平台每天更新一次、畫面用當日匯率、粉絲結帳時鎖定並記進訂單；
+     資料來源待工程確認（ASSUMPTIONS UIA-334）。取整：票價整數、四捨五入（§7.15）。
+     墓碑 2026-11-05（D514）：逐幣別覆寫（`override`）、基準欄可覆寫（`baseOpen`）、基準價變更保留已改幣別（D415）
+     與本機覆寫持久化全部退場；舊的本機覆寫不再讀取。 */
   var CURRENCIES = ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
   var FX_PER_USD = { USD: 1, TWD: 31.5, HKD: 7.8, SGD: 1.35, JPY: 157 };
   var SYMBOL = { USD: 'US$', TWD: 'NT$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
@@ -2733,28 +2729,16 @@
     var v = po && po.pin && po.pin[cur];
     return (v != null && v !== '' && !isNaN(Number(v))) ? round2(v) : null;
   }
-  /* 取某幣別的價（粉絲以該幣別看到、付的價）：鎖定欄（pin）優先 → 覆寫 → 基準價／換算值。
-     基準幣別欄只有 baseOpen（bookyay 帶入者，D330）才吃覆寫；一般活動的基準欄唯讀、永遠回基準價。 */
+  /* 取某幣別的價（粉絲以該幣別看到、付的價）：鎖定價（pin，bookyay 港幣原價）優先 → 基準價／換算值（D514）。 */
   function priceIn(po, cur) {
     if (!po) return 0;
     cur = cur || po.base;
     var pin = pinOf(po, cur);
     if (pin != null) return pin;
-    var ov = po.override && po.override[cur];
-    var hasOv = ov != null && ov !== '' && !isNaN(Number(ov));
-    if (cur === po.base) return (hasOv && po.baseOpen) ? Math.round(Number(ov)) : round2(po.amount);
-    if (hasOv) return Math.round(Number(ov));
+    if (cur === po.base) return round2(po.amount);
     return fx(po.base, cur, po.amount);
   }
-  /* 基準價變更（2026-10-14 D415 決定六）：沒覆寫的幣別依新基準價重新換算（換算值不落地，priceIn 即時算）、
-     手動覆寫過的幣別保留不覆寫。回新物件、不改原本；鎖定欄（pin）行為不變。 */
-  function recalc(po, amount) {
-    return { base: po.base, amount: amount == null ? po.amount : amount, override: JSON.parse(JSON.stringify(po.override || {})), locked: !!po.locked,
-             pin: po.pin || null, baseOpen: !!po.baseOpen };
-  }
-  /* 不帶 cur＝Creator Studio 清單／摘要／KPI 用的價，以基準幣別顯示。2026-09-29 D331 決定一（關閉 D330 待確認）：
-     一律用粉絲實際付的價——基準欄被覆寫（只有 baseOpen 的 bookyay 帶入者吃得到）就顯示覆寫值，沒覆寫沿用基準價。
-     所以直接走 priceIn()：pin → 覆寫 → 基準價，與價格表、粉絲視角預覽同一支，不另寫一份。 */
+  /* 不帶 cur＝Creator Studio 清單／摘要／KPI 用的價，以基準幣別顯示；與粉絲視角預覽同一支 priceIn()。 */
   function moneyIn(po, cur) {
     var c = cur || (po && po.base) || DEFAULT_CURRENCY;
     return fmtMoney(c, priceIn(po, c));
@@ -2767,25 +2751,22 @@
     if (Math.abs(a - Math.round(a)) < 0.005) return SYMBOL[cur] + Math.round(a).toLocaleString('en-US');
     return SYMBOL[cur] + a.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
-  /* bookyay 帶入者（D330）：pin＝{ HKD: bookyay 原價 }、baseOpen＝基準欄可覆寫。沒有 `hkd` 的票（創作者在 ztor 自己加的）照一般活動。 */
+  /* bookyay 帶入者（D330；D514 決定四）：pin＝{ HKD: bookyay 原價 }。沒有 `hkd` 的票（創作者在 ztor 自己加的）照一般活動。 */
   function bkyPin(ev, row) {
     var bky = !!(ev && ev.source === 'bookyay') && row && row.hkd != null && row.hkd !== '';
-    return bky ? { pin: { HKD: round2(row.hkd) }, baseOpen: true } : { pin: null, baseOpen: false };
+    return bky ? { HKD: round2(row.hkd) } : null;
   }
   function priceOf(ev, tier) {
     var base = (tier && tier.currency) || (ev && ev.currency) || DEFAULT_CURRENCY;
-    var k = bkyPin(ev, tier);
-    return { base: base, amount: Number(tier && tier.price) || 0, override: (tier && tier.override) || {},
-             locked: !!(ev && ev.source === 'bookyay'), pin: k.pin, baseOpen: k.baseOpen };
+    return { base: base, amount: Number(tier && tier.price) || 0,
+             locked: !!(ev && ev.source === 'bookyay'), pin: bkyPin(ev, tier) };
   }
   function bundlePriceOf(ev, b) {
     var base = (b && b.currency) || (ev && ev.bundleCurrency) || DEFAULT_CURRENCY;
     var hk = bkyBundleHkd(ev, b, base);
-    var k = hk != null ? { pin: { HKD: hk }, baseOpen: true } : { pin: null, baseOpen: false };
-    return { base: base, amount: Number(b && b.price) || 0, override: (b && b.override) || {}, locked: !!k.pin,
-             pin: k.pin, baseOpen: k.baseOpen };
+    return { base: base, amount: Number(b && b.price) || 0, locked: hk != null, pin: hk != null ? { HKD: hk } : null };
   }
-  /* 含 bookyay 票券的組合包，價格表港幣欄鎖定的值（2026-09-29 D331 決定六，主規格 §7.15、5.1.5.4 F3）：
+  /* 含 bookyay 票券的組合包，鎖定的港幣價（2026-09-29 D331 決定六，主規格 §7.15、5.1.5.4 F3）：
        · 墓碑 2026-10-16（D429）：「自動建立的（`hkd` 有值）＝bookyay 現價（D330；D417／D424 再乘組合折扣）」一支隨自動組合包退場。
        · 創作者自建、成員含 bookyay 匯入票券的（沒有 `hkd`，但允許票種裡有帶 `hkd` 的票）：
          港幣欄＝（bookyay 票券港幣原價 × 張數 ＋ 商品成員換算成港幣的價）×（1 − 組合折扣%）。
@@ -2795,7 +2776,7 @@
        · 商品成員先加總（基準幣別）再整筆換算成港幣（fx 取整＝§7.15「換算價」）；結果保留到分（bookyay 港幣可有小數，D330）。
          建立活動第 8 步（create-event bdPriceObj）用同一套算法。
        · `disc`＝組合折扣 %（活動資料的組合包原本沒有這一欄，售價直接寫在 price；本輪起創作者自建的示範組合包帶 disc）。
-     不是 bookyay 帶入的活動、或成員沒有 bookyay 票＝null（照一般活動組合包，港幣是換算值、可覆寫）。 */
+     不是 bookyay 帶入的活動、或成員沒有 bookyay 票＝null（照一般活動組合包，港幣是換算值）。 */
   function bkyBundleHkd(ev, b, base) {
     if (!b || !ev || ev.source !== 'bookyay') return null;
     var tk = bundleTickets(b), tiers = ev.tiers || [];
@@ -2880,25 +2861,6 @@
     }, Infinity);
     var tix = (unit === Infinity ? 0 : unit) * (tk.tierIds.length ? tk.qty : 0);
     return tix + ((b && b.products) || []).reduce(function (n, x) { return n + (Number(x && x.price) || 0) * (Number(x && x.qty) > 0 ? Number(x.qty) : 1); }, 0);
-  }
-  var FX_KEY = 'ztor.event-fx';
-  function fxMap() {
-    try { return JSON.parse(localStorage.getItem(FX_KEY) || '{}') || {}; }
-    catch (e) { return {}; }
-  }
-  function writeFx(id, data) {
-    var m = fxMap();
-    if (data) m[id] = data; else delete m[id];
-    try { localStorage.setItem(FX_KEY, JSON.stringify(m)); } catch (e) {}
-  }
-  /* 把本機儲存的覆寫合併進活動副本（tiers[].override／bundles[].override），沒有存過就原樣回傳。 */
-  function applyFx(ev) {
-    if (!ev) return ev;
-    var m = fxMap(), d = m[ev.id];
-    if (!d) return ev;
-    (ev.tiers || []).forEach(function (t) { if (d.tiers && d.tiers[t.id]) t.override = d.tiers[t.id]; });
-    (ev.bundles || []).forEach(function (b) { if (d.bundles && d.bundles[b.id]) b.override = d.bundles[b.id]; });
-    return ev;
   }
   /* 刪除（2026-09-29 D331）：草稿活動刪除（活動清單草稿列，D294）與活動組合包刪除（組合商品細節頁，D307 零成交）
      記在 sessionStorage `ztor.events.removed`＝本分頁這一趟的工作階段（同 products-store 的刪除做法），
@@ -3036,14 +2998,13 @@
     SYMBOL: SYMBOL,
     fx: fx,
     priceIn: priceIn,
-    recalc: recalc,
     moneyIn: moneyIn,
     fmtMoney: fmtMoney,
     priceOf: priceOf,
     bundlePriceOf: bundlePriceOf,
     bundleListAmount: bundleListAmount,   /* D330 同批：組合包原價合計（票券成員先換算成組合包基準幣別） */
-    effAmount: effAmount,                 /* D331：清單／KPI 用的單價（基準幣別，覆寫優先） */
-    bkyBundleHkd: bkyBundleHkd,           /* D331：含 bookyay 票券的自建組合包港幣欄（公式；D429 起沒有自動建立的） */
+    effAmount: effAmount,                 /* D331：清單／KPI 用的單價（基準幣別） */
+    bkyBundleHkd: bkyBundleHkd,           /* D331：含 bookyay 票券的自建組合包鎖定的港幣價（公式；D429 起沒有自動建立的） */
     bundleSelling: bundleSelling,         /* D331／D340：組合包「仍在販售」（上架＋顯示＋開賣或預告期，未刪除／封存） */
     goneTiersOf: goneTiersOf,             /* D391 第 13 題：組合包允許清單裡已隨場次刪除的門票 */
     goneAllOf: goneAllOf,                 /* D391 第 13 題：允許清單的門票全部被刪＝整組不能賣 */
@@ -3147,11 +3108,6 @@
     },
     isRemoved: isRemoved,
     round2: round2,
-    /* 詳情頁「預覽與在地化」儲存覆寫：`{ tiers: { tierId: { USD: 135 } }, bundles: { bundleId: {…} } }`；
-       只存有值的幣別，空物件＝該列沒有覆寫。傳 null 清掉。 */
-    setOverrides: function (id, data) { if (id) writeFx(id, data); },
-    getOverrides: function (id) { return (fxMap()[id]) || null; },
-    resetOverrides: function (id) { if (id) writeFx(id, null); },
     list: function () {
       var m = stageMap();
       /* 2026-10-09 D383：release2.3 沒有多場次活動（S87 ⚪）——版本切換不含 S87 時，多場的示範活動（album-signing-taipei）
@@ -3169,7 +3125,7 @@
       }).map(function (e) {
         applyEdits(e);                       // D390：活動詳情的編輯結果
         if (m[e.id]) e.status = m[e.id];
-        return applyUnlist(applyRm(applyFx(e)));
+        return applyUnlist(applyRm(e));
       });
     },
     /* bookyay 匯入、尚未首次儲存的活動（D361 決定六）不在這份清單裡：它們只住在 js/sidebar.js 的
@@ -3200,7 +3156,7 @@
       applyEdits(ev);                        // D390：活動詳情的編輯結果（門票逐筆編輯、頁面儲存、發布設定）
       if (isRemoved(ev.id)) return null;     // 這一趟刪掉的草稿活動（D331）＝查不到
       if (m[ev.id]) ev.status = m[ev.id];    // 本機改過階段的活動以覆寫值為準
-      return applyUnlist(applyRm(applyFx(ev)));   // 本機存過的逐幣別覆寫（D306）一併合併；刪掉的組合包濾掉（D331）；已下架（D361）
+      return applyUnlist(applyRm(ev));   // 刪掉的組合包濾掉（D331）；已下架（D361）
     },
     /* 下架／重新上架（D361 決定五 → D371 決定一：創作者與 Admin 都能做）：只寫上架記號，不改階段 */
     setUnlisted: function (id, on) {

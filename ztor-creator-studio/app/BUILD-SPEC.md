@@ -1,5 +1,9 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-11-05 · D514 決定三 預覽與發布拿掉幣別段與幣別切換（C 撤除；UI-CHANGES 四百七十三、ASSUMPTIONS UIA-336）**：`js/publish-stage.js` 側欄只剩兩段（語言、發布前檢核或未儲存的變更），預覽價格固定用創作者幣別（宿主給的 `baseCurrency`），`currencies`／`prices` 選項、`.pstage-row__name--code`、`.pp-currency` 與相關 i18n 鍵退場。下方舊條目提到的側欄幣別段、預覽幣別切換與五幣別軸一律以本條為準。資料層換算不動。
+
+> **2026-11-05 · D514 移除價格表與覆寫、新增換匯手續費（UI-CHANGES 四百六十九、ASSUMPTIONS UIA-334）**：沒有新元件；下方舊條目提到的價格表、`priceOverrides`、`overridable`、`baseOpen`、`data-fep-price-key` 全部退場。`publish-stage` 的幣別段只看不改，`prices[]` 只用來判斷狀態字；`priceObj` 收成 `{ base, amount, locked, pin }`。翻譯表鎖頭改名 `.pp-field-lock`。換匯手續費表沿用 `.fee-tree__panel`、`.amount-field` 與來源徽章；訂單列沿用 `.od-amt__stack`／`.od-amt__hint`。
+
 > **2026-11-05 · D513 組合包販售上限退場（UI-CHANGES 四百六十六、ASSUMPTIONS UIA-333）**：沒有新元件。`bundle-detail.html`、`js/bundle-editor.js`（`layout:'split'`）的庫存節改成 `.control-group`＋`.control-row`＋`.switch` 三開關，同 `create-bundle.html`；`.form-ask` 問句二選一退場，`__body`／`__row`／`.form-tally` 留用。下方 D480、capOver 等段落是歷史紀錄。
 
 > **⚠ 2026-10-29 已被 D488／D489 取代（UI-CHANGES 四百一十一）：重新上架不再詢問，改為檢查保存的時間（有已過的擋下並提示、都沒過直接恢復）；下方 `ask`／`bindChoice`／`skipOf` 與「恢復／不恢復」選擇區已退場，只留歷史說明。**
@@ -561,12 +565,14 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **呈現假設與缺口**：ASSUMPTIONS UIA-230（含示意的指定貼文／影片清單、N 預設值、沒有逐人解開紀錄等）；三分頁版面的呈現假設（頂端人數條、每種方法符合人數、「方法 N」編號、鑰匙清單欄位與「有效」狀態名、無條件但有鑰匙時的提示句、待補數字的佔位）見 UIA-235。功能標記 S86（第二層）、S93（三分頁新增讀數）、S106（D475 單件預覽與分享連結；示意性質見 UIA-295）。
 
 - **2026-11-02 改版（UI-CHANGES 四百三十九、UIA-322；`note/媒體庫UX重新規劃.md`）**：本節上面關於「清單與詳情並排」「三分頁」「右側庫房清單」「`.vault-track` 一列一件」「`.vault-tile`／`.vault-keys` 晶片」的描述是 2026-10-09 版，已被取代，現況如下（第二層任務、解開紀錄、庫房狀態與排程、上鎖、release2.4 範圍切分的邏輯不變）。
-  - **版面**：`.vault-shell` 兩欄——左 `aside.vault-list`（庫房列，第一列虛線「新增庫房」），右 `.vault-stage`：`.vault-bar` 標頭（名稱就地改名、狀態、排程、分享・主要動作・⋯刪除）→ `.vault-bento` 成效三格（S93、S114）→ 檢視身分提示／上鎖卡（S113，沿用）→ `.vault-pool` 灰底容器內三欄直式卡片 `.vault-card`（末張「添加」）→ `.vault-open` 開啟方式分頁（條件開啟｜鑰匙開啟；鑰匙屬 S123）。窄於 900px 左欄變橫向捲動，窄於 640px 卡片兩欄。
+  - **版面**：`.vault-shell` 兩欄——左 `aside.vault-list`（庫房列，第一列虛線「新增庫房」），右 `.vault-stage`：`.vault-bar` 標頭（名稱就地改名、狀態、排程、分享・主要動作・⋯刪除）→ `.vault-bento` 成效三格（S93、S114）→ 檢視身分提示／上鎖卡（S113，沿用）→ `.vault-pool` 灰底容器內三欄直式卡片 `.vault-card`（末張「添加」）→ `.vault-open` 開啟方式開關（條件開啟、鑰匙開啟；鑰匙屬 S123）。窄於 900px 左欄變橫向捲動，窄於 640px 卡片兩欄。
+  - **添加入口兩種（2026-11-05，UI-CHANGES 四百六十七）**：空庫房拿掉 `.vault-pool` 灰底（`--empty`），只留滿版投放區 `.upload-tile.vault-drop`（大加號、「添加內容」、一行檔案類型，UI-CHANGES 四百六十八）；已有內容時 `.vault-card--add` 是卡片牆最後一張，與內容卡同高，正中央寫「添加」與一行檔案類型。庫房頁與建立流程第 2 步共用 `poolHtml`。
   - **卡片**：縮圖 2:3（`--img-portrait`）、名稱、一行任務（S86）＋看得到的人數；檢視身分開著時人數換成已解開／需要條件／未解開／上鎖小標；點整張卡開單件設定抽屜（原型原有，預覽加 `.mpreview--portrait`）。
-  - **建立流程**：左欄「新增庫房」開全畫面 `.wizard.vault-wizard`（取名 → 放內容 → 誰開得了）；第 1 步繼續＝建立草稿；第 2、3 步與頁面共用 `poolHtml`／`openHtml`；發布走頁面同一個發布彈窗。
+  - **建立流程**：左欄「新增庫房」開全畫面 `.wizard.vault-wizard`（取名 → 放內容 → 誰開得了）；第 1 步繼續＝建立草稿；第 2、3 步與頁面共用 `poolHtml`／`openHtml`；發布走頁面同一個發布彈窗。第 3 步底列只有上一步與上架，草稿自動存（UI-CHANGES 四百七十）。
+  - **開啟方式開關（2026-11-05，UI-CHANGES 四百七十、UIA-335）**：`openHtml` 由分頁改成兩列 `.vault-open__row`，每列一個 `.switch[data-vault-way]`；`toggleWay` 處理。`state.wayOpen` 記條件開關，`state.rulesOff` 收著關掉時的方法；鑰匙開關是庫房欄位 `keyWay`（`V.keyWay`，D515）。
   - **分享連結**：標頭「分享」開 `[data-vault-sharepop]` 彈窗（Link field，草稿與已下架停用），取代存取權限分頁的分享卡。
   - **檢視身分**：仍在頁首下拉（`lens()`、`renderGate`、`renderViewAs` 不變）；左欄人數、成效第一格、卡片小標跟著換。
-  - **JS**：`renderRail`／`renderHead`／`renderBento`／`renderMain`（含 `cardHtml`、`openHtml`）／`renderWizard`；事件委派在 document（`data-vault-act`、`data-vault-opentab`、`data-rule-add`、`data-wiz*`），因為頁面與建立流程畫的是同一份。`renderDoor`、總覽與存取權限分頁、`startDraft`、`askDelete`／`startRename` 已撤除（墓碑註解留在檔內）。
+  - **JS**：`renderRail`／`renderHead`／`renderBento`／`renderMain`（含 `cardHtml`、`openHtml`）／`renderWizard`；事件委派在 document（`data-vault-act`、`data-vault-way`、`data-rule-add`、`data-wiz*`），因為頁面與建立流程畫的是同一份。`renderDoor`、總覽與存取權限分頁、`startDraft`、`askDelete`／`startRename` 已撤除（墓碑註解留在檔內）。
   - **樣式**：新 `vault-list.css`（§4.245）、`vault-stage.css`（§4.246）、`vault-open.css`（§4.247）、`vault-wizard.css`（§4.248）；`vault-overview.css`、`vault-access.css` 等這頁不再連結，退場待元件巡檢。
   - **文案**：新字進 i18n `vault.*`（見 UI-CHANGES 四百三十九），JS 用 `L(key, vars)`。
 - **2026-11-02 D497 對齊（UI-CHANGES 四百四十、UIA-323）**：

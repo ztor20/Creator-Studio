@@ -11,7 +11,7 @@
        .pstage__main              粉絲視角前台預覽（js/fan-event-page.js 畫進來）
          .pstage-edit             浮動「編輯」鈕（hover 某個預覽區塊才出現，跳回對應步驟）
        .pstage__side              sticky 側欄
-         .pstage__side-inner      三段（語言／幣別／發布前檢核或未儲存的變更）可捲動
+         .pstage__side-inner      兩段（語言／發布前檢核或未儲存的變更）可捲動
            .pstage-sec            一段
              .pstage-sec__title   段標題（群組小字標配方，Q123 補句）
              .pstage-list         列清單
@@ -23,7 +23,7 @@
    wizard 的獨立頁也要成立。sticky 的位移靠 `--pstage-top`，wizard 宿主把它設成
    頂列高度、獨立頁用預設值，不寫死數字。
 
-   翻譯表與價格表的滑出面板用站上既有 `.drawer`（`--wide` 變體，D310 指定「右側
+   翻譯表的滑出面板用站上既有 `.drawer`（`--wide` 變體，D310 指定「右側
    滑出」）；表格本身沿用 publish-preview.css 的 `.pp-table`／`.pp-cell` 家族——
    同一張表只是換了殼，不重寫一份。**消費頁要一併連 `publish-preview.css`。**
 
@@ -111,7 +111,7 @@
   gap: var(--sp-2);
 }
 
-/* ── 可點的一列（語系／幣別）──────────────────────────────────── */
+/* ── 可點的一列（語系）──────────────────────────────────── */
 .pstage-row {
   display: flex;
   align-items: center;
@@ -139,8 +139,7 @@
   font-variant-numeric: tabular-nums;
 }
 .pstage-row--active .pstage-row__state { color: inherit; }
-/* 幣別代碼等寬，五列上下對齊 */
-.pstage-row__name--code { font-family: var(--font-mono); font-size: var(--fs-12); }
+/* 墓碑 2026-11-05（D514 決定三）：`.pstage-row__name--code`（幣別代碼等寬）隨側欄「幣別」段退場。 */
 
 /* ── 發布前檢核（沿用 .readiness 的列與 banner，只補「可點跳回」的按鈕）── */
 .pstage-check .readiness__item { align-items: flex-start; }
@@ -192,9 +191,6 @@
   box-shadow: 0 0 0 var(--sp-6) var(--selected-surface);
 }
 
-/* 預覽裡的價格可點（開價格表）：只加游標與底線提示，不改前台的字級與顏色 */
-.pstage__main [data-fep-price-key] { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
-
 /* ── 抽屜裡的表 ───────────────────────────────────────────────── */
 .pstage-drawer__hint { margin: 0 0 var(--sp-12); }
 /* 翻譯表是「欄位 × 四語系」五欄：`.pp-cell-field` 的 min-width 200 是浮層版（一次只看一個
@@ -217,30 +213,11 @@
    （field-pill／picker／header search 都是 --muted-foreground），避免看起來像已經填好的值。 */
 [data-stage-drawer="trans"] .pp-cell-field::placeholder { color: var(--muted-foreground); }
 
-/* 價格表（整頁，2026-09-23 與翻譯表統一）：原本為了塞進 880 的 --wide 抽屜，把輸入框收到 96、
-   「已覆寫」徽章與「重設為換算值」鈕上下疊、儲存格限寬 112。整頁之後六欄攤得開，改回一般尺度：
-   項目欄固定窄寬、五個幣別平分其餘，輸入框跟欄寬、高度與翻譯表同一階（--control-h-md），
-   徽章與鈕維持上下疊（兩者都靠右，疊著比並排好掃）。 */
-[data-stage-drawer="price"] .pp-table { table-layout: fixed; }
-[data-stage-drawer="price"] .pp-table th:first-child { width: 200px; }
-[data-stage-drawer="price"] .pp-table td { vertical-align: top; }
-/* 項目名與基準幣別（唯讀）對齊輸入框裡的數字，同翻譯表的上內距算法。 */
-[data-stage-drawer="price"] .pp-table td.ztor-table__feature,
-[data-stage-drawer="price"] .pp-cell--base { padding-top: calc(var(--sp-16) + var(--sp-12)); }
-[data-stage-drawer="price"] .pp-price-input { width: 100%; min-width: 0; height: var(--control-h-md); }
-[data-stage-drawer="price"] .pp-price-meta {
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--sp-2);
-}
-[data-stage-drawer="price"] .pp-price-reset { font-size: var(--fs-11); padding-inline: 0; text-align: right; }
-/* 表頭固定（2026-10-28，#381，使用者：「表頭在滾動時要固定在上面，價格表的次級表頭（票種／票務商品）也要跟著固定」）：
+/* 表頭固定（2026-10-28，#381，使用者：「表頭在滾動時要固定在上面」）：
    捲動的是抽屜的 .drawer__body；中間兩層（.ztor-table-scroll 的 overflow-x:auto、.ztor-table 的 overflow:hidden）都會變成
    sticky 的參考框，表頭只會黏在自己的表裡、等於沒黏。兩層改 overflow:clip——照樣裁圓角與溢出，但不算捲動容器——
-   表頭 th 就能黏在抽屜頂端；價格表的分組列（.pp-group-row）黏在表頭正下方（--pp-head-h＝表頭高，約 46px）。
+   表頭 th 就能黏在抽屜頂端；分組列（.pp-group-row）黏在表頭正下方（--pp-head-h＝表頭高，約 46px）。
    底色用抽屜面板同一色（--card），捲上來的列不會從表頭底下透出來。 */
-/* 表頭幣別下方的附註行（#382）：例「bookyay 鎖定」——換行、小一級、淡色 */
-.pp-th-sub { display: block; margin-top: var(--sp-2); font-size: var(--fs-11); font-weight: var(--fw-regular); color: var(--faint-ink); }
 [data-stage-drawer] .ztor-table-scroll,
 [data-stage-drawer] .pp-table { overflow: clip; }
 /* top 取負的抽屜內距（.drawer__body 上內距 --sp-24）：sticky 會停在「捲動區扣掉內距」的位置，不扣的話表頭上方留 24px 縫、列會從縫裡透出來 */

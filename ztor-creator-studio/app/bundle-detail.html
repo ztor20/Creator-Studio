@@ -2226,21 +2226,7 @@
     const bdSellEl = document.getElementById('bd-sellprice');
     const bdHint = document.getElementById('bd-disc-hint');
     const bdHeroPrice = document.querySelector('[data-bd-hero-price]');
-    /* 頁首摘要價（2026-09-29 D331 決定一）：活動組合包的基準欄被覆寫過（只有含 bookyay 票券者吃得到，baseOpen）時，
-       摘要顯示覆寫值＝粉絲實付價；覆寫存在 events-store（在地化頁儲存）。成員價或折扣 % 改了，手動覆寫過的幣別保留不覆寫
-       （2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則），所以摘要照樣顯示覆寫值；「重設為換算值」（在地化頁）才回到算出來的售價。
-       下方價格階梯仍是算式結果（基準價），不換。 */
-    const bdOv = (() => {
-      const EVS = window.ztorEvents, ev0 = bundle && bundle.event;
-      if (!EVS || !ev0 || !bundle.evBase) return null;
-      const b0 = (ev0.bundles || []).find(x => x.id === bundle.id); if (!b0) return null;
-      const po = EVS.bundlePriceOf(ev0, b0);
-      const v = po.baseOpen && po.override ? po.override[po.base] : null;
-      return (v != null && v !== '' && !isNaN(Number(v))) ? { amount: Number(v), sig: null } : null;
-    })();
-    function bdHeroAmount(base, pct, final) {
-      return bdOv ? bdOv.amount : final;              // D415：覆寫過就一直用覆寫值，成員價或折扣改了也不作廢
-    }
+    /* 墓碑 2026-11-05（D514）：頁首摘要價讀覆寫值（D331 決定一、D415）退場，一律是算式結果。 */
     /* 組合折扣開關（2026-10-12 改版）：開＝露出 % 欄；關＝不打折（% 欄的值保留、不參與計算，同建立組合包 discInfo） */
     let bdDiscOn = !!(detail.discountPct != null && detail.discountPct !== '' && Number(detail.discountPct) > 0);
     function bdDiscInfo() {
@@ -2293,7 +2279,7 @@
       const totalSub = q('[data-bd-total-sub]'); if (totalSub) totalSub.textContent = bdSaleOn() ? T('cb.pl.total.both', 'Usual / during the discount') : T('cb.pl.total.usual', 'Usual');
       const during = q('[data-bd-total-during]');
       if (during) { during.hidden = !saleLive; during.textContent = saleLive ? T('cb.pl.total.during', 'During the discount: {p}').replace('{p}', bdMoneyFrom(final * k2)) : ''; }
-      if (bdHeroPrice) bdHeroPrice.textContent = bdMoneyFrom(bdHeroAmount(base, pct, final));
+      if (bdHeroPrice) bdHeroPrice.textContent = bdMoneyFrom(final);
       if (window.bdRenderSettingsOverview) window.bdRenderSettingsOverview();
     }
     if (bdDisc) bdDisc.addEventListener('input', bdRecalc);
@@ -2490,7 +2476,7 @@
       rows.push({ g: 'pricing', go: 'members', key: 'cb.items', fb: 'Contents', v: T('product-detail.kpi.links-meta-items', '{n} items').replace('{n}', bundleModel.members.length) });
       /* 墓碑 2026-10-12（D402，UI-CHANGES 一百八十八）：額外權益那一列退場（組合包不再有這一格） */
       const disc = on('bd-disc-toggle') ? v('bd-discount') : '';   /* 2026-10-12：組合折扣開關關著＝不打折 */
-      /* 摘要列跟頁首同一個數（D331 決定一：基準欄被覆寫時顯示覆寫值＝粉絲實付價）；定價段的售價欄仍是算式結果 */
+      /* 摘要列跟頁首同一個數；D514 起都是算式結果 */
       const ovPrice = bdHeroPrice ? bdHeroPrice.textContent : (bdSellEl ? bdSellEl.textContent : '');
       rows.push({ g: 'pricing', go: 'price', key: 'cb.pricing', fb: 'Bundle price', v: ovPrice + (disc && Number(disc) > 0 ? ' · −' + disc + '%' : '') });
       const salePct = v('bd-sale-percent');
@@ -2857,12 +2843,12 @@
            看組合包自己的上架狀態——上架中停用入口並用 title 寫原因，比照 event-detail 活動上架中停用在地化入口
            （[data-ed-localize]）。入口是 <a>：停用時把 href 收進 data-bd-href、拿掉 tab 焦點，下架後還原。 */
         /* 2026-10-20（D455 定案，5.1.5.9 §2.8「唯讀並說明要先下架」）：入口不再停用——照樣能進去看預覽，
-           event-localization.html 依本組合自己的上架狀態（b.listed）把它的名稱、描述、售價鎖成唯讀並在頁頂說明；這裡只用 title 預告。
+           event-localization.html 依本組合自己的上架狀態（b.listed）把它的名稱、描述鎖成唯讀並在頁頂說明；這裡只用 title 預告。
            墓碑 2026-10-20：上架中把 href 收進 data-bd-href、aria-disabled 停用入口（UIA-268）。 */
         document.querySelectorAll('[data-bd-localize]').forEach(a => {
           if (a.hasAttribute('data-bd-href')) { a.setAttribute('href', a.getAttribute('data-bd-href')); a.removeAttribute('data-bd-href'); }
           a.removeAttribute('aria-disabled'); a.removeAttribute('tabindex');
-          if (on) a.title = T('bd.loc.listed', 'This bundle is listed — its translations and prices are view-only until you unlist it.');
+          if (on) a.title = T('bd.loc.listed', 'This bundle is listed — its translations are view-only until you unlist it.');
           else a.removeAttribute('title');
         });
       }

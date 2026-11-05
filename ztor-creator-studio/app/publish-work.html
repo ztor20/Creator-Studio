@@ -34,14 +34,14 @@
 <!-- 送出後回項目詳情頁才顯示成功提示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <!-- 原為發布前預覽確認層（D223）的彈窗殼＋語言分頁＋列表。浮層已於 2026-09-23 退場（最後一步改全頁
-     「預覽與送審」，見頁尾 buildStageOpts）；publish-preview.css 仍要留著——全頁畫面的翻譯表／價格表沿用它的
+     「預覽與送審」，見頁尾 buildStageOpts）；publish-preview.css 仍要留著——全頁畫面的翻譯表沿用它的
      .pp-table／.pp-cell 家族（見 publish-stage.css 檔頭）。其餘三支本輪不動，是否還有消費者留待元件巡檢。 -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 2026-09-23：最後一步的翻譯表／價格表（整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 2026-09-23：最後一步的翻譯表（整頁 .drawer--full） -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 2026-09-23：最後一步的粉絲視角作品頁（前台 title.html 鏡像，第 6 段；js/fan-project-page.js 作品模式） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 2026-09-23：最後一步「預覽與送審」的全頁版型（主區預覽＋右側側欄） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -160,7 +160,7 @@
         </span>
       </span>
       <button class="btn btn--outline" type="button" data-action="back" data-i18n="wiz.back">Back</button>
-      <button class="btn btn--primary" type="button" data-action="next" data-i18n="wiz.continue">Continue</button>
+      <button class="btn btn--primary" type="button" data-action="next" data-i18n="wiz.continue">Next</button>
     </div>
   </footer>
 </div>
@@ -175,7 +175,7 @@
 <script src="js/toast.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <!-- partials/publish-preview.js 已移除（2026-09-23）：最後一步改成全頁「預覽與送審」，本頁不再開浮層。 -->
-<!-- 匯率與金額格式（window.ztorEvents 的 fx／priceIn／fmtMoney）：publish-stage 的幣別段與價格表靠它換算。 -->
+<!-- 匯率與金額格式（window.ztorEvents 的 fx／priceIn／fmtMoney）：publish-stage 的幣別段靠它換算。 -->
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/publish-stage.js?v=r2.2"></script>
 <!-- 粉絲視角作品頁：前台作品上線後就是 title.html，與建立專案直接發行 × 影片同一支渲染器（作品模式）。 -->
@@ -350,7 +350,7 @@
   function syncPrimary() {
     const last = idx === FLOW.length - 1;
     let key = last ? 'pw.submit' : 'wiz.continue';
-    let fb = last ? 'Send for review' : 'Continue';
+    let fb = last ? 'Send for review' : 'Next';
     if (last && editMode) {
       const resubmit = impact().resubmit;
       key = resubmit ? 'pw.edit.save-review' : 'pw.edit.save';
@@ -483,9 +483,9 @@
 
   /* ══ 最後一步「預覽與送審」全頁畫面（2026-09-23，比照建立專案 D322／建立活動第 8 步 D310）══════════
      宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核同步（stage.syncChecks）。
-     版型、語言／幣別兩軸、兩張表與主鈕都在 js/publish-stage.js；主區畫面在 js/fan-project-page.js（作品模式）。
+     版型、語言／幣別兩軸、翻譯表與主鈕都在 js/publish-stage.js；主區畫面在 js/fan-project-page.js（作品模式）。
      翻譯模式不傳：作品上架不受 D312 活動例外影響，仍自動翻譯。
-     幣別不傳 priceOverrides：維持 D306 通則＝可逐幣別覆寫；基準＝作品自己的定價幣別（F14，HKD／TWD）。 */
+     幣別段只看不改（D514）；基準＝作品自己的定價幣別（F14，HKD／TWD）。 */
   let stage = null;            // publish-stage 的 handle（只有停在最後一步時是非 null）
   let stageBusy = false;       // 掛載期間 applyI18n 丟出的 i18n:applied 不回頭 render（見頁尾監聽）
   /* publish-stage 的 step 是 1 起算的數字（0＝不跳），本頁的步驟是 FLOW 裡的代號：兩邊在這裡換算。 */
@@ -502,16 +502,6 @@
       { key: 'name', el: document.getElementById('pw-title') || blank, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
       { key: 'desc', el: document.getElementById('pw-desc') || blank, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
     ];
-  }
-
-  /* 價格表的列：付費作品的逐畫質租賃價（F14），基準幣別跟著作品自己的幣別欄。免費作品沒有價格列。 */
-  function stagePrices() {
-    const w = window.ZtorWorkFields.collect();
-    const base = pwBaseCurrency();
-    if (!w.paid) return [];
-    return w.qualities.map(q => ({
-      key: 'q:' + q.name, label: q.name, groupKey: 'pw.price.title', groupFallback: 'Pricing',
-      priceObj: { base, amount: numVal(q.price), override: {} }, locked: false }));
   }
 
   /* 發布前檢核（側欄第三段）：就是原本底部 readiness chip 那一份清單（規格 §8，readinessItems()），
@@ -585,8 +575,6 @@
     const S = window.ztorEvents;
     return {
       fields: stageFields(),
-      prices: stagePrices(),
-      currencies: S ? S.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'],
       baseCurrency: pwBaseCurrency(),
       mode: 'publish',
       /* 主鈕＝原本最後一步的最終動作「送出審核」（D179：送出＝送審，不是上線）；按下即執行原本的送審邏輯 */

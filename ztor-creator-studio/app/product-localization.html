@@ -11,9 +11,7 @@
        · 主鈕是「儲存」，存完回細節頁；不改上架狀態（D319 決定一）
      一頁吃兩種：?id=<productId> ＝單售商品、?type=bundle&id=<bundleId> ＝組合包（理由見 ASSUMPTIONS UIA-175）。
      入口在 product-detail.html 與 bundle-detail.html 的 [data-pd-localize]／[data-bd-localize]。
-     幣別軸：電子商店的非基準幣別唯讀、不可逐幣別覆寫（D318 決定 2），故一律 priceOverrides:false；
-     成員含活動票券的組合包比照活動可覆寫（D318 決定 3／4），本頁依成員組成分流，但 products-store 的
-     示範組合包目前全是純商品成員，實際只會走唯讀那一支（見 ASSUMPTIONS UIA-175）。 -->
+     幣別軸：只看不改（D514）。其他幣別一律依匯率換算，側欄切換幣別看粉絲看到的換算價。 -->
 <title>Preview &amp; localization · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
@@ -25,7 +23,7 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表／價格表（.drawer--full） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- 翻譯表（.drawer--full） -->
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2"><!-- 兩張表沿用 .pp-table／.pp-cell 家族 -->
 <link rel="stylesheet" href="ds-components/fan-shop.css?v=r2.2"><!-- 粉絲視角商品頁（前台 shop-item 鏡像；只給 js/fan-product-page.js 用） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- 全頁版型（主區預覽＋右側側欄） -->
@@ -93,15 +91,12 @@
   document.getElementById('pdloc-subtitle').textContent = item.name || '';
   document.title = (item.name ? item.name + ' · ' : '') + 'Preview & localization · Ztor Creator Studio';
 
-  /* ── 幣別軸 ────────────────────────────────────────────────────────────
+  /* ── 預覽幣別（固定＝創作者幣別，D514 決定三）────────────────────────────────────────────────────────────
      基準＝創作者幣別（D316，同 create-product 的 cpBaseCurrency）；五幣別清單沿用 events-store 那一份。
-     覆寫能力（D318）：電子商店唯讀；組合包成員含活動票券時比照活動可覆寫——判準看成員有沒有票券
-     （kind==='ticket' 或帶 tierId／eventId），不另訂規則。 */
+     墓碑 2026-11-05（D514）：依成員有無票券分流幣別覆寫（D318 決定 3／4）退場。 */
   const ES = window.ztorEvents;
-  const CURRENCIES = ES ? ES.CURRENCIES.slice() : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
   const BASE = window.ztorCurrency ? window.ztorCurrency.CREATOR : ((ES && ES.DEFAULT_CURRENCY) || 'TWD');
   const seed = isBundle && window.ProductsStore && window.ProductsStore.getBundle ? window.ProductsStore.getBundle(id) : null;
-  const hasTicketMember = isBundle && ((seed && seed.members) || []).some(m => m && (m.kind === 'ticket' || m.tierId || m.eventId));
 
   const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
   const isMulti = () => !isBundle && item.variant === 'multiple' && (item.variants || []).length > 0;
@@ -143,21 +138,21 @@
     return f;
   }
 
-  /* ── 價格列（§2.18／§2.8 的價格表）────────────────────────────────────
+  /* ── 價格列（幣別段與預覽用）────────────────────────────────────
      單售：單一選項一列＝定價；多選項每個選項組合一列（沒自己填價的沿用商品定價）
      組合包：一列＝組合售價（priceAmount，成員原價合計 ×(1−折扣%)，見 products-store 的 ztorGetBundle） */
   function locPrices() {
     if (isBundle) {
       return [{ key: 'price', labelKey: 'cp.price', label: 'Price',
-        priceObj: { base: BASE, amount: Number(item.priceAmount) || 0, override: {} }, overridable: hasTicketMember }];
+        priceObj: { base: BASE, amount: Number(item.priceAmount) || 0 } }];
     }
     if (isMulti()) {
       return (item.variants || []).map(v => ({ key: 'var:' + comboOf(v), label: comboOf(v),
         groupKey: 'cp.stage.price.variants', groupFallback: 'Variations',
-        priceObj: { base: BASE, amount: num(v.price || item.price), override: {} } }));
+        priceObj: { base: BASE, amount: num(v.price || item.price) } }));
     }
     return [{ key: 'price', labelKey: 'cp.price', label: 'Price',
-      priceObj: { base: BASE, amount: num(item.price), override: {} } }];
+      priceObj: { base: BASE, amount: num(item.price) } }];
   }
 
   /* ── 粉絲視角頁的 model（結構見 js/fan-product-page.js 檔頭）─────────────
@@ -244,13 +239,9 @@
   const prices = locPrices();
   window.ztorPublishStage.mount(host, {
     fields: locFields(),
-    prices: prices,
-    currencies: CURRENCIES,
     baseCurrency: BASE,
     mode: 'save',
     /* 電子商店照通則自動翻譯（D312 只把活動改成手動），不傳 translation。 */
-    /* D318 決定 2：電子商店的非基準幣別唯讀；成員含票券的組合包由 prices[].overridable 個別放行（決定 3／4）。 */
-    priceOverrides: false,
     previewRender: (h, api) => {
       if (!window.ztorFanProductPage) return;
       window.ztorFanProductPage.render(h, isBundle ? bundleModel(prices) : productModel(prices), api);
@@ -265,7 +256,7 @@
   });
 
   /* 已封存＝只可查看（5.1.5.1 §2.18／5.1.5.9 §2.8）：沿用細節頁同一支事件層閘門——
-     凡會改資料的控件（就地編輯的 contenteditable、翻譯表與價格表的輸入框）一律攔下，
+     凡會改資料的控件（就地編輯的 contenteditable、翻譯表的輸入框）一律攔下，
      導覽與查看類（連結、抽屜開關）照舊；側欄主鈕「儲存」沒有對象可存，收起。 */
   if (item.archived) {
     host.setAttribute('data-archived', '');

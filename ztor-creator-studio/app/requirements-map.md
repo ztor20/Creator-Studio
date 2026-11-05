@@ -25,6 +25,9 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-05 D514 原型同步（UI-CHANGES 四百六十九、ASSUMPTIONS UIA-334；release2.3，不進 release2.2）**：§7.15 單一基準價、價格表與覆寫退場 → `js/publish-stage.js`、`js/events-store.js`（`priceIn`）、`create-product.html`／`create-bundle.html`／`create-event.html`／`create-project.html`／`publish-work.html`、`product-localization.html`／`event-localization.html`、`event-detail.html`、`bundle-detail.html`；5.1.0.3 換匯手續費 → `admin-platform-fees.html`、`partials/fee-exception-modal.js`（S134）；5.1.5.3.1 §2.3.2 換匯手續費明細 → `order-detail.html`、`js/orders-store.js`（O41）。
+> **2026-11-05 D514 決定三原型同步（UI-CHANGES 四百七十三、ASSUMPTIONS UIA-336；release2.3，不進 release2.2）**：預覽與發布的「幣別」演示退場，預覽只用創作者幣別 → `js/publish-stage.js`、`partials/publish-preview.js`、`create-product.html`／`create-bundle.html`／`create-event.html`／`create-project.html`／`publish-work.html`、`product-localization.html`／`event-localization.html`。
+>
 > **2026-11-05 D513 原型同步（UI-CHANGES 四百六十六、ASSUMPTIONS UIA-333；release2.3，不進 release2.2）**：組合包販售上限退場——5.1.5.4 F4、5.1.5.9 §2.3、5.1.6.1 F20、5.1.6.3 §2.6.1 對應 `create-bundle.html`、`bundle-detail.html`（庫存設定三開關、組合庫存分頁）、`js/bundle-editor.js`（`layout:'split'`）、`event-detail.html`（`setBundleSetsZeroNow`，庫存設為 0＝鎖定收到保留）、`js/listing-state.js`（`bundleQty`、`bundleLockSets`）、`js/events-store.js`（`bundleLeft`、`bundleLockOf`、`bundleZeroLock`、`bundleCapRetire`）、`e-shop.html`。本檔既有段落提到 `bd.stockonly.*`、`ed.stockonly.body`、`bd.members.locked`、`cb.cap.*`、`capOver` 的地方以這則為準。5.1.2.2 §2.2.4「未達標時自動全額退款」開關退場 → `project-detail.html` 排程卡與編輯彈窗移除、`project-detail.schedule.autonote` 改寫。規格本體由規格線同步（本輪不動 `documents/`）。
 >
 > **2026-11-05 D510 原型同步（UI-CHANGES 四百六十四；release2.3）**：5.1.0 Creator 管理的返回鈕文案、Admin 頂欄標示、5.1.4 IP 資產頁名（原「我的 IP」）、§6.4 未選創作者空狀態；對應 `js/sidebar.js`、`js/i18n.js`、`js/components.js`、`my-ip.html` 等。

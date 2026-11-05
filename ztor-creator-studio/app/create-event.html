@@ -89,7 +89,7 @@
 <link rel="stylesheet" href="ds-components/preview-dock.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-phone.css?v=r2.2"><!-- UI-CHANGES 394：第 2／3／4／7 步右欄的手機版活動頁鏡像 -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2"><!-- D310：第 8 步「預覽與發布」的全頁版型（主區預覽＋右側側欄） -->
-<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表／價格表（2026-09-23 起整頁 .drawer--full） -->
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.2"><!-- D310：翻譯表（2026-09-23 起整頁 .drawer--full） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
@@ -1957,7 +1957,7 @@
     /* 墓碑 2026-09-29（D327）：取票說明 250 字元的發布守門隨欄位退場。 */
     /* 墓碑 2026-09-30（D340，5.1.6.1 F8／F9.1）：「票種數量加總超過容量」的發布阻擋隨容量刪除——每張門票的張數本身就是硬庫存。 */
     /* D310：五項硬閘與彙整阻擋都過了就直接發布——第 8 步本身已經是發布前預覽確認畫面，
-       再彈一層浮層等於同一件事問兩遍（D223／D305 的浮層在本頁退場）。翻譯與逐幣別覆寫的
+       再彈一層浮層等於同一件事問兩遍（D223／D305 的浮層在本頁退場）。翻譯的
        草稿由側欄主鈕帶進來，原型沒有後端可落，留在記憶體供 cheat code／驗收讀（UIA-165）。 */
     doPublish();
   }
@@ -1971,19 +1971,19 @@
      prices：步驟 4 每個票種的票價＋步驟 6 每個組合包的售價；基準幣別＝創作者幣別
        （D316 window.ztorCurrency.CREATOR，示範值 TWD，ASSUMPTIONS PG-035／UIA-165）。
        bookyay 帶入者（2026-09-29 D330，取代「票種基準＝HKD 且鎖」）：基準幣別照樣是創作者幣別，基準價＝港幣原價換算值、鎖定；
-       priceObj 另帶 pin＝{ HKD: 原價 }（價格表港幣欄鎖定、可有小數、無重設）與 baseOpen（基準欄也可覆寫、可重設，
-       創作者幣別＝港幣時 pin 落在基準欄上＝基準欄鎖定）。活動側維持可覆寫（D306），不動 priceOverrides。 */
+       priceObj 另帶 pin＝{ HKD: 原價 }（港幣價固定等於 bookyay 原價、可有小數，D514 決定四；
+       創作者幣別＝港幣時 pin 落在基準幣別上）。其他幣別一律換算、不能改（D514 決定一）。 */
   const CE_BASE_CURRENCY = window.ztorCurrency ? window.ztorCurrency.CREATOR : "TWD";
   /* 價格物件（D330）：票種基準價＝ty.price（bookyay 帶入者是港幣原價換算後的值）；ty.hkd／b.hkd 有值＝bookyay 帶入，
-     港幣欄鎖在原價（pin）、基準欄也可覆寫（baseOpen）。第 8 步價格表、預覽模型兩處共用，不各寫一份。 */
-  const pinOf = v => (v != null && v !== "") ? { pin: { HKD: Math.round(Number(v) * 100) / 100 }, baseOpen: true } : { pin: null, baseOpen: false };
+     港幣價鎖在原價（pin）。第 8 步幣別段、預覽模型兩處共用，不各寫一份。 */
+  const pinOf = v => (v != null && v !== "") ? { pin: { HKD: Math.round(Number(v) * 100) / 100 } } : { pin: null };
   function tyPriceObj(ty) {
-    return Object.assign({ base: CE_BASE_CURRENCY, amount: Number(ty.price) || 0, override: ty.override || {} }, pinOf(ty.hkd));
+    return Object.assign({ base: CE_BASE_CURRENCY, amount: Number(ty.price) || 0 }, pinOf(ty.hkd));
   }
   function bdPriceObj(b) {
-    return Object.assign({ base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)), override: b.override || {} }, pinOf(bdBkyHkd(b)));
+    return Object.assign({ base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.finalPrice(b)) }, pinOf(bdBkyHkd(b)));
   }
-  /* 含 bookyay 票券的組合包，港幣欄鎖定的值（2026-09-29 D331 決定六；算法同 events-store bkyBundleHkd）：
+  /* 含 bookyay 票券的組合包，鎖定的港幣價（2026-09-29 D331 決定六；算法同 events-store bkyBundleHkd）：
      創作者在第 6 步自己建、允許票種裡有 bookyay 帶入的票（票種帶 hkd）＝
      （bookyay 港幣原價 × 張數 ＋ 商品成員合計換算成港幣）×（1 − 組合折扣%）。允許多種票種時取最低那張的港幣原價（區間下界，UIA-183）。
      商品成員合計＝原價 − 票券那一段（最低允許票價 × 張數）；（1 − 折扣%）＝售價 ÷ 原價——都讀編輯器既有的 listPrice／finalPrice，不另算一份。
@@ -2007,7 +2007,7 @@
 
   /* ── 第 8 步「預覽與發布」的全頁畫面（D310 · 5.1.6.1 §4.8）────────────────────
      宿主只負責三件事：備料（buildStageOpts）、掛畫面（mountStage）、檢核狀態同步
-     （stageSyncChecks）。版型、語言／幣別兩軸、兩張表與主鈕都在 js/publish-stage.js。 */
+     （stageSyncChecks）。版型、語言／幣別兩軸、翻譯表與主鈕都在 js/publish-stage.js。 */
   const CE_EDIT_ZONES = [
     { sel: ".pdp-buy__title", step: 2 },                              // 活動名稱
     { sel: ".pdp-buy__highlight", step: 2 },                          // 亮點（D300）
@@ -2068,7 +2068,7 @@
     stage.unmount();
     stage = null;
     /* 離開預覽步驟（側欄「上一步」、預覽區的「編輯」跳步）就忘掉看詳情彈窗開著哪一組（js/fan-event-page.js 記在
-       [data-pstage-host] 上）；只有切語言／幣別的原地重畫才要照樣打開 */
+       [data-pstage-host] 上）；只有切語言的原地重畫才要照樣打開 */
     const host = document.querySelector("[data-ce-stage]");
     if (host) host.__fepOpenKey = null;
   }
@@ -2124,23 +2124,10 @@
       labelKey: null, labelFallback: T("pp.field.tier-name", "Ticket type name"), group: tierGroup, locked: !!ty.fix }));   // D445：bookyay 票種名稱原文鎖定（D410）
     /* 墓碑 2026-10-05（D353）：門票簡介（tdesc-<id>，D328）隨欄位整欄移除，不再列入翻譯表。 */
 
-    /* 價格：票種（基準＝創作者幣別；bookyay 帶入者另帶港幣鎖定欄，D330）＋組合包（基準＝創作者幣別，售價＝finalPrice）。
-       墓碑 2026-10-16（D429）：「自動建立的組合包港幣欄＝bookyay 現價」隨自動組合包退場。 */
-    const S = window.ztorEvents;
-    const prices = [];
-    types.forEach(ty => {
-      prices.push({ key: "tier:" + ty.id, label: (ty.name || "").trim() || T("ce.tier.untitled", "Untitled tier"),
-                    groupKey: "pp.price.tiers", groupFallback: "Ticket types",
-                    priceObj: tyPriceObj(ty), locked: !!ty.fix });
-    });
+    /* 價格不經翻譯台：預覽一律用創作者幣別即時換算（D514 決定三），不再傳 prices 給 publish-stage。 */
     const bundles = bundleEd ? bundleEd.getBundles().filter(b => !b.fresh || bundleEd.isValid(b)) : [];
-    bundles.forEach(b => {
-      prices.push({ key: "bundle:" + b.id, label: (b.name || "").trim() || bundleEd.suggestName(b) || T("cpp.bd.untitled", "Untitled bundle"),
-                    groupKey: "pp.price.bundles", groupFallback: "Ticket bundles",
-                    priceObj: bdPriceObj(b), locked: bdBkyHkd(b) != null });   // D331：自建含 bookyay 票者港幣欄同樣鎖定
-    });
 
-    /* D445：組合包名稱與描述（價格表另列售價）——每組一列名稱、有描述才加一列描述，歸在「Ticket bundles」分組；
+    /* D445：組合包名稱與描述——每組一列名稱、有描述才加一列描述，歸在「Ticket bundles」分組；
        隨場次刪除而整組不能賣的組合包粉絲端不出現，這裡也不列。 */
     const bdGroup = T("pp.price.bundles", "Ticket bundles");
     bundles.filter(b => !(bundleEd && bundleEd.goneAll && bundleEd.goneAll(b))).forEach(b => {
@@ -2150,8 +2137,7 @@
 
     /* 墓碑 2026-10-16（D443 決定一）：views（票券頁／票務商品頁兩個視圖）不再傳——門票與套組合成同一頁 */
     return {
-      fields, prices,
-      currencies: S ? S.CURRENCIES.slice() : ["USD", "TWD", "HKD", "SGD", "JPY"],
+      fields,
       baseCurrency: CE_BASE_CURRENCY,   // D330：bookyay 帶入者的基準幣別也是創作者幣別（不再改成港幣）
       mode: "publish",
       /* D312：活動的多語內容不自動翻譯，改手動——見 js/publish-stage.js 檔頭 translation 選項。 */
@@ -2266,7 +2252,7 @@
       const goods = (b.items || []).map(it => ({
         name: it.name, img: it.img || "", qty: 1,
         spec: it.variant === "multiple" && Array.isArray(it.options) && it.options.length > 0,
-        unitPriceObj: { base: CE_BASE_CURRENCY, amount: goodsUnit(it), override: {} }
+        unitPriceObj: { base: CE_BASE_CURRENCY, amount: goodsUnit(it) }
       }));
       /* 票券成員：單買價＝允許門票裡最低的票價（多種時加「起」）；日期時間 · 場館取第一場 */
       const tyOfInst = id => { const inst = savedTiers().find(x => x.id === id); return inst ? types.find(x => x.id === inst.type) : types.find(x => x.id === id); };
@@ -2278,7 +2264,7 @@
         /* D445：名稱與描述改給 { key }，吃翻譯表的譯文（key 同 buildStageOpts 的 bundle-name-／bundle-desc-<id>） */
         name: { key: "bundle-name-" + b.id },
         priceObj: bdPriceObj(b),
-        listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)), override: {} } : null,
+        listPriceObj: bundleEd.listPrice(b) > bundleEd.finalPrice(b) ? { base: CE_BASE_CURRENCY, amount: Math.round(bundleEd.listPrice(b)) } : null,
         priceKey: "bundle:" + b.id,
         /* D443 決定三＋協調者補充（2026-10-16 使用者確認）：限時折扣看「這組的開賣時間」——組合包另設開賣時間時用它，否則跟隨活動 */
         offer: bundleOfferAtOpen(b, openAt),
@@ -5808,7 +5794,7 @@
      帶入成該場的開放入場（doorsMin＝分鐘、doors＝開始時間往前推算）與早於開放時間入場（s.early），鎖定。
      bky-5 刻意不設，示範 bookyay 沒設定時開放入場留空並鎖定（推導〔產品待確認〕）。
      票價幣別（D330，取代 D306 起的港幣基準）：bookyay 原幣港幣，`priceHkd` 帶入時換算成創作者幣別當基準價（`types[].price`、鎖），
-     港幣原值記在 `types[].hkd`（價格表港幣欄鎖定）。（墓碑 2026-10-16 D429：自動建立的組合包另記 `hkd` 的做法隨自動組合包退場。）
+     港幣原值記在 `types[].hkd`（港幣價鎖定）。（墓碑 2026-10-16 D429：自動建立的組合包另記 `hkd` 的做法隨自動組合包退場。）
      D417（2026-10-15）：bookyay 的活動限購（maxPurchaseCnt／maxPurchaseCntEachTime／maxPurchaseTime）、本門票限購的限購次數（limit.maxPurchaseTime）、
      折扣優惠（discount）、早鳥（early）一律不帶入——下面各筆仍保留這些欄位，示範「bookyay 有、ztor 不帶」；帶入只剩本門票限購的
      每人總限購（鎖定）。以下各筆註解凡寫到這四項「帶入／落在…」的，皆為 D417 前的示範說明。

@@ -39,7 +39,7 @@
 <div class="page-intro">
   <div>
     <h1 class="page-intro__title" data-i18n="admin.platform-fees">Platform Fee Settings</h1>
-    <p class="page-intro__sub" data-i18n="fees.lede">Two fees here: the payment fee (one rate site-wide) and the platform fee (set per transaction type). Saving creates a new version that applies to future sales only — existing sales keep their frozen rate.</p>
+    <p class="page-intro__sub" data-i18n="fees.lede">Three fees here: the payment fee (one rate site-wide), the currency swap fee (set per payment currency) and the platform fee (set per transaction type). Saving creates a new version that applies to future sales only — existing sales keep their frozen rate.</p>
   </div>
 </div>
 
@@ -101,6 +101,29 @@
       <span class="text-sub" data-currency-fx-for="fee-payment-stripe-fixed"></span>
     </div>
   </div>
+</section>
+
+<!-- 換匯手續費（D514 決定六、七；spec 5.1.0.3）：依粉絲付款幣別各一個百分比，由粉絲支付、歸平台。
+     版本與儲存跟平台費共用同一顆儲存鈕與版本歷史；逐創作者覆寫在「例外設定」的彈窗（下面的 #fee-swap-table 由頁面 clone 進去）。
+     2.5% 是示意值（ASSUMPTIONS UIA-334）。 -->
+<section class="form-section form-section--outlined" data-feat="S134">
+  <div class="form-section__head form-section__head--actions">
+    <div class="form-section__head-titles">
+      <h3 class="form-section__title" data-i18n="fees.swap.title">Currency swap fee</h3>
+    </div>
+    <span class="badge badge--neutral" data-i18n="fees.swap.sample">Sample rates</span>
+  </div>
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.swap.sub">Added to what the fan pays when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.</p>
+  <div class="fee-tree__panel"><div class="admin-table-wrap"><table class="ztor-table" id="fee-swap-table">
+    <thead><tr><th data-i18n="fees.swap.col.cur">Fan pays in</th><th data-i18n="fees.swap.col.rate">Fee rate</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
+    <tbody>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.USD">USD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="USD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.TWD">TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.HKD">HKD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="HKD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.SGD">SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.JPY">JPY</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="JPY"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+    </tbody>
+  </table></div></div>
 </section>
 
 <!-- F2 預設費率樹（全平台通用）＋F3 費率例外（逐 Creator 覆寫）（spec 5.1.0.3 F2–F3）-->
@@ -285,6 +308,7 @@
   (function () {
     'use strict';
     var tree = document.getElementById('fee-tree'),
+        swapTable = document.getElementById('fee-swap-table'),   // D514：換匯手續費（依粉絲付款幣別）
         excBody = document.getElementById('fee-exc-body');
     if (!tree || !excBody) return;
 
@@ -298,17 +322,23 @@
       return k.replace('fees.leaf.', '');
     }
     var LEAF = {};
-    Array.prototype.forEach.call(tree.querySelectorAll('tbody tr'), function (tr) {
+    var leafRows = Array.prototype.slice.call(tree.querySelectorAll('tbody tr'))
+      .concat(swapTable ? Array.prototype.slice.call(swapTable.querySelectorAll('tbody tr')) : []);
+    leafRows.forEach(function (tr) {
       var inp = tr.querySelector('.fee-rate-input'),
           cell = tr.querySelector('.ztor-table__feature');
       if (!inp || !cell) return;
       LEAF[leafKeyOf(tr)] = { i18nKey: cell.getAttribute('data-i18n'), def: inp.getAttribute('data-general') || inp.value || '' };
     });
-    function leafLabel(k) { return LEAF[k] ? t(LEAF[k].i18nKey, k) : k; }
+    /* 換匯手續費的葉節點（swap.USD…）名稱只有幣別，摘要要帶費用名才讀得懂 */
+    function leafLabel(k) {
+      if (k.indexOf('swap.') === 0) return t('fees.swap.title', 'Currency swap fee') + ' · ' + k.slice(5);
+      return LEAF[k] ? t(LEAF[k].i18nKey, k) : k;
+    }
 
     /* 種子例外資料（demo） */
     var state = [
-      { id: 'neon-harbor', name: 'Neon Harbor Studio', ov: { 'ip.licensing': '12' } },
+      { id: 'neon-harbor', name: 'Neon Harbor Studio', ov: { 'ip.licensing': '12', 'swap.TWD': '2' } },
       { id: 'aria-chen', name: 'Aria Chen', ov: { 'eshop.auction': '8', 'projects.funding': '12' } }
     ];
     function findIdx(id) { for (var i = 0; i < state.length; i++) { if (state[i].id === id) return i; } return -1; }
@@ -364,10 +394,19 @@
       var ov = inp.value.trim() !== '';
       badge.setAttribute('data-i18n', ov ? 'fees.source.override' : 'fees.source.inherit');
       badge.className = ov ? 'badge badge--brand fee-source' : 'badge badge--neutral fee-source';
+      var clear = tr.querySelector('[data-fx-swap-clear]');   // D514：換匯手續費有覆寫才露出「清除覆寫」
+      if (clear) clear.hidden = !ov;
       i18n(tr);
     }
     document.addEventListener('input', function (e) {
       if (e.target && e.target.classList && e.target.classList.contains('fee-exc-input')) setSource(e.target);
+    });
+    /* 清除覆寫（D514）：清空該幣別，回到沿用預設 */
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-fx-swap-clear]') : null;
+      if (!b) return;
+      var inp = b.closest('tr').querySelector('.fee-exc-input');
+      if (inp) { inp.value = ''; setSource(inp); inp.focus(); }
     });
 
     /* 覆寫摘要：≤2 項逐條列，>2 項顯示件數 */
@@ -407,7 +446,7 @@
 
     /* 把預設樹 clone 進指定容器（供彈窗）：顯示來源欄、輸入以 placeholder 帶預設、填入既有覆寫、
        自動展開有覆寫的維度。回傳 readOverrides() 供儲存時讀值。 */
-    function renderTreeInto(container, ov) {
+    function renderTreeInto(container, ov, swapHost) {
       container.innerHTML = '';
       var clone = tree.cloneNode(true);
       clone.removeAttribute('id');
@@ -450,11 +489,49 @@
       }
       container.appendChild(clone);
       i18n(container);
+      /* 換匯手續費（D514 決定七）：同一套「留空沿用、填值覆寫、翻來源徽章」，粒度是粉絲付款幣別，另多一顆清除覆寫 */
+      var swapClone = null;
+      if (swapHost && swapTable) {
+        swapHost.innerHTML = '';
+        swapClone = swapTable.cloneNode(true);
+        swapClone.removeAttribute('id');
+        Array.prototype.forEach.call(swapClone.querySelectorAll('.fee-src'), function (c) { c.hidden = false; });
+        Array.prototype.forEach.call(swapClone.querySelectorAll('tbody tr'), function (tr) {
+          /* 清除覆寫＝來源徽章旁一顆小圖示鈕：彈窗窄，多開一欄會撐出橫向捲軸 */
+          var src = tr.querySelector('td.fee-src');
+          src.style.whiteSpace = 'nowrap';
+          var btn = document.createElement('button');
+          btn.type = 'button'; btn.className = 'btn btn--ghost btn--icon btn--xs'; btn.hidden = true;
+          btn.style.marginLeft = 'var(--sp-4)';
+          btn.setAttribute('data-fx-swap-clear', '');
+          btn.setAttribute('aria-label', t('fees.swap.clear', 'Clear override')); btn.title = t('fees.swap.clear', 'Clear override');
+          btn.setAttribute('data-i18n-aria-label', 'fees.swap.clear');
+          btn.innerHTML = '<i data-lucide="x" class="ztor-icon"></i>';
+          src.appendChild(btn);
+          var inp = tr.querySelector('.fee-rate-input'), key = leafKeyOf(tr);
+          inp.classList.remove('fee-rate-input'); inp.classList.add('fee-exc-input');
+          inp.setAttribute('placeholder', inp.getAttribute('data-general') || '');
+          inp.value = (ov[key] != null) ? ov[key] : '';
+          setSource(inp);
+        });
+        var wrap = document.createElement('div');
+        wrap.className = 'admin-table-wrap';
+        wrap.appendChild(swapClone);
+        var panel = document.createElement('div');
+        panel.className = 'fee-tree__panel';
+        panel.appendChild(wrap);
+        swapHost.appendChild(panel);
+        i18n(swapHost);
+        if (window.ztorIcons) window.ztorIcons.applyIcons(swapHost);
+      }
       return function readOverrides() {
         var nov = {};
-        Array.prototype.forEach.call(clone.querySelectorAll('.fee-exc-input'), function (inp) {
-          var v = inp.value.trim();
-          if (v !== '') nov[leafKeyOf(inp.closest('tr'))] = v;
+        [clone, swapClone].forEach(function (root) {
+          if (!root) return;
+          Array.prototype.forEach.call(root.querySelectorAll('.fee-exc-input'), function (inp) {
+            var v = inp.value.trim();
+            if (v !== '') nov[leafKeyOf(inp.closest('tr'))] = v;
+          });
         });
         return nov;
       };
@@ -528,6 +605,7 @@
           suggestEl = root.querySelector('[data-fx-suggest]'),
           noneEl = root.querySelector('[data-fx-none]'),
           treeHost = root.querySelector('[data-fx-tree]'),
+          swapHost = root.querySelector('[data-fx-swap]'),
           saveEl = root.querySelector('[data-fx-save]');
       var mode = 'add', current = null, pickedId = null, pickedName = '', readOv = null;
 
@@ -569,12 +647,12 @@
         mode = m; current = ex || null; readOv = null; pickedId = null; pickedName = '';
         if (m === 'edit' && ex) {
           creatorField.hidden = true;
-          readOv = renderTreeInto(treeHost, ex.ov);
+          readOv = renderTreeInto(treeHost, ex.ov, swapHost);
         } else {
           creatorField.hidden = false;
           if (searchEl) searchEl.value = '';
           renderSuggest();
-          readOv = renderTreeInto(treeHost, {});
+          readOv = renderTreeInto(treeHost, {}, swapHost);
         }
         modal.hidden = false;
         i18n(modal);
@@ -615,17 +693,33 @@
     var saveNow = document.getElementById('fee-save-now'),
         saveDD = document.getElementById('fee-save-dd'),
         delayModal = document.getElementById('fee-delay-modal');
+    /* 換匯手續費的預設值改了哪些幣別（D514）：寫進版本歷史的「異動」欄，存完以新值為基準 */
+    var swapSaved = {};
+    function swapInputs() { return swapTable ? Array.prototype.slice.call(swapTable.querySelectorAll('.fee-rate-input')) : []; }
+    swapInputs().forEach(function (inp) { swapSaved[leafKeyOf(inp.closest('tr'))] = inp.value; });
+    function swapChange() {
+      var out = [];
+      swapInputs().forEach(function (inp) {
+        var k = leafKeyOf(inp.closest('tr'));
+        if (inp.value === swapSaved[k]) return;
+        out.push(leafLabel(k) + ' ' + swapSaved[k] + '% → ' + inp.value + '%');
+        swapSaved[k] = inp.value;
+        inp.setAttribute('data-general', inp.value);   // 例外彈窗的「沿用預設」跟著新值
+        if (LEAF[k]) LEAF[k].def = inp.value;
+      });
+      return out.join('、') || '—';
+    }
     function closeDelay() { if (delayModal) delayModal.hidden = true; }
     function openDelay() { if (delayModal) delayModal.hidden = false; }
     if (saveNow) saveNow.addEventListener('click', function () {
-      addHistory(t('fees.scope.default', 'Default rates'), '—', todayISO());   // 主鈕＝立即生效
+      addHistory(t('fees.scope.default', 'Default rates'), swapChange(), todayISO());   // 主鈕＝立即生效
     });
     if (saveDD) saveDD.addEventListener('click', function (e) {
       var it = e.target.closest ? e.target.closest('[data-save]') : null;
       if (!it) return;
       saveDD.open = false;   // 選完收下拉
       if (it.getAttribute('data-save') === 'now') {
-        addHistory(t('fees.scope.default', 'Default rates'), '—', todayISO());   // 立即：今天生效
+        addHistory(t('fees.scope.default', 'Default rates'), swapChange(), todayISO());   // 立即：今天生效
       } else {
         openDelay();   // 延遲：開生效日彈窗
       }
@@ -637,7 +731,7 @@
       var delayConfirm = document.getElementById('fee-delay-confirm');
       if (delayConfirm) delayConfirm.addEventListener('click', function () {
         var effEl = document.getElementById('fee-effective'), eff = effEl ? effEl.value : '';
-        addHistory(t('fees.scope.default', 'Default rates'), '—', eff || todayISO());
+        addHistory(t('fees.scope.default', 'Default rates'), swapChange(), eff || todayISO());
         closeDelay();
       });
     }

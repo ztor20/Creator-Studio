@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>媒體庫空畫面比較 · 設計探索 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* lab-vault-empty — 媒體庫空庫房的添加區比較頁（2026-11-05）。不改正式頁；樣式 lab- 前綴＋token。
+     每個方案都放在同一個情境：主欄寬度 866px，上面是三個成效數字，下面是開啟方式。選定後才搬進 vault-stage.css。 */
+  html::before, html::after, body::before, body::after { display: none; }
+  html body { background: var(--background) !important; }
+  .lab-page { max-width: 58rem; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-72); display: grid; gap: var(--sp-48); }
+  .lab-h1 { margin: 0; font-size: var(--fs-24); font-weight: var(--fw-semibold); }
+  .lab-lead { margin: var(--sp-6) 0 0; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-opt { display: grid; gap: var(--sp-12); }
+  .lab-opt__head { display: flex; align-items: baseline; gap: var(--sp-10); }
+  .lab-opt__n { font-size: var(--fs-18); font-weight: var(--fw-semibold); color: var(--brand-ink); }
+  .lab-opt__t { font-size: var(--fs-15); font-weight: var(--fw-medium); }
+  .lab-opt__why { margin: 0; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .lab-ctx { height: var(--sp-48); border-radius: var(--radius-xl); border: 1px solid var(--layer-line); background: var(--layer-1-surface); }
+  .lab-stage { display: grid; gap: var(--sp-16); }
+
+  /* 共用：三種檔案的小標 */
+  .lab-types { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .lab-title { font-size: var(--fs-15); color: var(--foreground); }
+
+  /* 1 現行 */
+  .lab-a { min-height: 18rem; gap: var(--sp-16); padding: var(--sp-32) var(--sp-24); }
+  .lab-a__row { display: flex; gap: var(--sp-24); }
+  .lab-a__t { display: grid; justify-items: center; gap: var(--sp-8); font-size: var(--fs-13); color: var(--foreground-muted); }
+  .lab-a__i { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: var(--radius-lg); background: var(--layer-1-surface); border: 1px solid var(--layer-line); color: var(--foreground); }
+
+  /* 2 矮橫條 */
+  .lab-b { flex-direction: row; justify-content: space-between; gap: var(--sp-16); min-height: 0; padding: var(--sp-20) var(--sp-24); text-align: left; }
+  .lab-b__l { display: flex; align-items: center; gap: var(--sp-14); min-width: 0; }
+  .lab-b__i { display: grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; border-radius: var(--radius-pill); background: var(--layer-1-surface); border: 1px solid var(--layer-line); color: var(--foreground); }
+  .lab-b__txt { display: grid; gap: var(--sp-2); }
+
+  /* 3 三張直式格 */
+  .lab-c { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
+  .lab-c__card { aspect-ratio: var(--img-portrait); gap: var(--sp-10); min-height: 0; }
+  .lab-c__card .ztor-icon { width: 28px; height: 28px; color: var(--foreground-muted); }
+
+  /* 4 第一張卡＋淡出的空位 */
+  .lab-d { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-16); }
+  .lab-d__first { aspect-ratio: var(--img-portrait); gap: var(--sp-8); min-height: 0; }
+  .lab-d__ghost { aspect-ratio: var(--img-portrait); border-radius: var(--radius-xl); border: 1px dashed var(--border-soft); }
+  .lab-d__ghost--2 { opacity: .55; }
+  .lab-d__ghost--3 { opacity: .25; }
+  .lab-plus { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: var(--radius-pill); border: 1px solid var(--border); color: var(--foreground); }
+
+  /* 5 大加號 */
+  .lab-e { min-height: 16rem; gap: var(--sp-10); }
+  .lab-e .lab-plus { width: 4rem; height: 4rem; margin-bottom: var(--sp-6); }
+
+  /* 6 左文右框 */
+  .lab-f { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-24); align-items: stretch; }
+  .lab-f__text { display: grid; align-content: center; gap: var(--sp-12); }
+  .lab-f__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-10); }
+  .lab-f__list li { display: flex; align-items: center; gap: var(--sp-10); font-size: var(--fs-14); color: var(--foreground-muted); }
+  .lab-f__drop { min-height: 14rem; gap: var(--sp-10); }
+
+  /* 7 無框，只有主按鈕 */
+  .lab-g { display: grid; justify-items: center; gap: var(--sp-10); padding: var(--sp-40) var(--sp-24); }
+
+  @media (max-width: 720px) {
+    .lab-b { flex-direction: column; align-items: flex-start; }
+    .lab-f { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<main class="lab-page">
+  <header>
+    <h1 class="lab-h1">媒體庫空畫面：選一個</h1>
+    <p class="lab-lead">同一個情境：上面是三個成效數字，下面是開啟方式。滑過可看互動狀態。回我編號就好，也可以混搭（例如「3 的版面配 2 的文字」）。</p>
+  </header>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">1</span><span class="lab-opt__t">現在這版：三圖示置中</span></div>
+    <p class="lab-opt__why">類型最清楚、也最完整；代價是元素多，三個圖示看起來像三顆可以分開按的按鈕。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="upload-tile lab-a" role="button" tabindex="0">
+        <div class="lab-a__row">
+          <span class="lab-a__t"><span class="lab-a__i"><i data-lucide="image" class="ztor-icon"></i></span>照片</span>
+          <span class="lab-a__t"><span class="lab-a__i"><i data-lucide="film" class="ztor-icon"></i></span>影片</span>
+          <span class="lab-a__t"><span class="lab-a__i"><i data-lucide="music" class="ztor-icon"></i></span>音檔</span>
+        </div>
+        <span class="lab-title">把檔案拖到這裡，一次可以放很多件</span>
+        <span class="btn btn--outline btn--sm">選擇檔案</span>
+      </div>
+    <div class="lab-ctx"></div></div>
+  </section>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">2</span><span class="lab-opt__t">矮橫條</span></div>
+    <p class="lab-opt__why">最省高度，下面的開啟方式不用捲就看得到；代價是存在感低，新建庫房時不夠像「下一步」。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="upload-tile lab-b" role="button" tabindex="0">
+        <div class="lab-b__l"><span class="lab-b__i"><i data-lucide="upload" class="ztor-icon"></i></span>
+          <span class="lab-b__txt"><span class="lab-title">把檔案拖到這裡</span><span class="lab-types">照片、影片、音檔，一次可以放很多件</span></span></div>
+        <span class="btn btn--outline btn--sm">選擇檔案</span>
+      </div>
+    <div class="lab-ctx"></div></div>
+  </section>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">3</span><span class="lab-opt__t">三張直式格</span></div>
+    <p class="lab-opt__why">一格一種類型，跟之後的內容卡同尺寸，上傳前後版面不跳；代價是佔高度，而且三格其實是同一個入口。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="lab-c">
+        <div class="upload-tile lab-c__card" role="button" tabindex="0"><i data-lucide="image" class="ztor-icon"></i><span class="lab-title">照片</span></div>
+        <div class="upload-tile lab-c__card" role="button" tabindex="0"><i data-lucide="film" class="ztor-icon"></i><span class="lab-title">影片</span></div>
+        <div class="upload-tile lab-c__card" role="button" tabindex="0"><i data-lucide="music" class="ztor-icon"></i><span class="lab-title">音檔</span></div>
+      </div>
+    <div class="lab-ctx"></div></div>
+  </section>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">4</span><span class="lab-opt__t">第一張卡＋淡出的空位</span></div>
+    <p class="lab-opt__why">先讓人看到放好之後的樣子，只有一個明確入口；代價同 3 佔高度，淡出的空位可能被當成能點。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="lab-d">
+        <div class="upload-tile lab-d__first" role="button" tabindex="0"><span class="lab-plus"><i data-lucide="plus" class="ztor-icon"></i></span><span class="lab-title">添加</span><span class="lab-types">照片、影片、音檔</span></div>
+        <div class="lab-d__ghost lab-d__ghost--2" aria-hidden="true"></div>
+        <div class="lab-d__ghost lab-d__ghost--3" aria-hidden="true"></div>
+      </div>
+    <div class="lab-ctx"></div></div>
+  </section>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">5</span><span class="lab-opt__t">大加號置中</span></div>
+    <p class="lab-opt__why">最單純，跟有內容時的添加卡是同一套語彙；代價是類型只有一行小字，比較不顯眼。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="upload-tile lab-e" role="button" tabindex="0"><span class="lab-plus"><i data-lucide="plus" class="ztor-icon"></i></span><span class="lab-title">添加內容</span><span class="lab-types">照片、影片、音檔，可以直接拖進來</span></div>
+    <div class="lab-ctx"></div></div>
+  </section>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">6</span><span class="lab-opt__t">左邊類型，右邊投放區</span></div>
+    <p class="lab-opt__why">類型清單和動作分開，讀起來最有條理；代價是版面最不像站上其他上傳區，窄畫面要疊成上下。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="lab-f">
+        <div class="lab-f__text"><span class="lab-title">可以放這三種</span>
+          <ul class="lab-f__list">
+            <li><i data-lucide="image" class="ztor-icon"></i>照片</li>
+            <li><i data-lucide="film" class="ztor-icon"></i>影片</li>
+            <li><i data-lucide="music" class="ztor-icon"></i>音檔</li>
+          </ul></div>
+        <div class="upload-tile lab-f__drop" role="button" tabindex="0"><i data-lucide="upload" class="ztor-icon"></i><span class="lab-title">把檔案拖到這裡</span><span class="btn btn--outline btn--sm">選擇檔案</span></div>
+      </div>
+    <div class="lab-ctx"></div></div>
+  </section>
+
+  <section class="lab-opt">
+    <div class="lab-opt__head"><span class="lab-opt__n">7</span><span class="lab-opt__t">沒有框，只有主按鈕</span></div>
+    <p class="lab-opt__why">最乾淨，動作最明確，跟開啟方式的空畫面一致；代價是看不出能拖檔案，要靠小字講。</p>
+    <div class="lab-stage"><div class="lab-ctx"></div>
+      <div class="lab-g"><button class="btn btn--primary" type="button"><i data-lucide="upload" class="ztor-icon"></i>上傳內容</button><span class="lab-types">照片、影片、音檔，也可以直接拖進來</span></div>
+    <div class="lab-ctx"></div></div>
+  </section>
+</main>
+<script src="js/icons.js?v=r2.2"></script>
+</body>
+</html>

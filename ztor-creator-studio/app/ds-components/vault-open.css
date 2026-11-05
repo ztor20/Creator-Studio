@@ -1,8 +1,8 @@
 /* ============================================================
-   Ztor — Vault open（媒體庫「開啟方式」：條件開啟｜鑰匙開啟 分頁）
+   Ztor — Vault open（媒體庫「開啟方式」：條件開啟、鑰匙開啟兩個開關）
    2026-11-02 · 媒體庫改版（note/媒體庫UX重新規劃.md 3.24–3.29）
 
-   開啟方式只有兩種，用站上的底線式分頁（tabs.css）切換，標題就是分頁本身，右邊 ⓘ 說明怎麼算：
+   開啟方式只有兩種，各一列：標題、一句現況、人數、開關（switch.css）；開了才展開下面的設定。
      條件開啟  一句說明＋「N 人符合任一種」；每種進庫方法一組（方法 N、符合人數、條件標籤、再加一個），
               方法之間用「或是」線；「再加一種方法」。還沒有條件時只有一顆「加條件」。
      鑰匙開啟  一句說明＋「已領 N 人」；已發鑰匙一把一列（代碼・用途、已領／總次數、複製連結、撤銷）；
@@ -12,19 +12,20 @@
 
 .vault-open {
   display: grid;
-  gap: var(--sp-14);
-  padding: var(--sp-18) var(--sp-20);
+  padding: var(--sp-4) 0;   /* 左右留白交給列自己，兩列中間的分隔線才能貼齊卡片左右邊 */
   border-radius: var(--radius-xl);
   border: 1px solid var(--layer-line);
   background: var(--layer-1-surface);
 }
-.vault-open__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-8); }
-.vault-open__tabs { margin-bottom: 0; flex: 1; }
+.vault-open__row { display: grid; gap: var(--sp-14); padding: var(--sp-16) var(--sp-20); }
+.vault-open__row + .vault-open__row { border-top: 1px solid var(--border-soft); }
+.vault-open__rowhead { display: flex; align-items: center; gap: var(--sp-12); }
+.vault-open__rowtext { display: grid; gap: var(--sp-2); flex: 1; min-width: 0; }
+.vault-open__title { display: flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-14); font-weight: var(--fw-medium); }
 
 .vault-way { display: grid; gap: var(--sp-12); align-content: start; min-width: 0; }
-.vault-way__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); }
 .vault-way__desc { margin: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
-.vault-way__n { font-size: var(--fs-12); color: var(--muted-foreground); }
+.vault-way__n { flex: none; font-size: var(--fs-12); color: var(--muted-foreground); }
 .vault-way__list { display: grid; gap: var(--sp-10); }
 .vault-way__item { display: grid; gap: var(--sp-8); }
 .vault-way__item-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-8); }

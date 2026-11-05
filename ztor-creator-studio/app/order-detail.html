@@ -50,8 +50,8 @@
   .od-amt__amt { display:inline-flex; align-items:center; gap:var(--sp-4); }
   .od-amt .rowdis__toggle { color: var(--muted-foreground); }
   .od-amt__neg { color: var(--foreground-muted); }
-  /* 匯率與時點：收在金額數字底下，hover／focus 才浮出（2026-08-07 使用者裁示，
-     12 筆帶 fx 的訂單一律套用）。金額本身永遠看得到，換算細節是想看才看的第二層。
+  /* 買家實付的組成：收在金額數字底下，hover／focus 才浮出（2026-08-07 使用者裁示；D514 起匯率與時點改寫在換匯手續費列）。
+     金額本身永遠看得到，換算細節是想看才看的第二層。
      用 position:absolute 而非撐開列高，避免 hover 時把下面「平台費」那幾列往下推；
      浮層補卡片底色＋陰影，否則文字會疊在下一列數字上。
      沿用站上既有的 hover 浮現慣例（readiness__pop 的 opacity／visibility／transform
@@ -998,23 +998,31 @@
   };
   var amtHtml = amtRow('od.amt.goods', 'Goods', A.goods, false);
   if (A.shipping) amtHtml += amtRow('od.amt.shipping', 'Shipping', A.shipping, false);
-  /* 跨幣別（§2.3.2／§7.3：原幣、換算幣、匯率、時點）＝拆解表裡的一列，不是表外註腳。
-     位置在「商品金額＋運費」之後、費用扣項之前：這一列講的是買家實際掏出多少，剛好
-     是上面兩列的合計、也是下面平台費／支付費的計算基礎，順著讀就是「買家付了多少 →
-     扣掉哪些費 → 你拿到多少」。擺在淨額之後會在結論後面又冒出一個新數字，也會把
-     淨額擠掉 :last-child 的收尾樣式（無下框線）。
-     匯率與時點是這一列的次要資訊，放左欄標籤下方的小字；換算後的金額不另寫一次——
-     商品金額那幾列本來就是換算幣。同幣別訂單（order.fx 為 null）整列不產生。 */
+  /* 跨幣別（§2.3.2／§7.3；D514 決定八）＝拆解表裡的兩列，不是表外註腳：換匯手續費（費率、金額、匯率時點）與買家實付。
+     位置在「商品金額＋運費」之後、費用扣項之前：順著讀就是「買家付了多少 → 扣掉哪些費 → 你拿到多少」。
+     換匯手續費歸平台，不進下面的平台費、支付費與淨額（D514 決定六）。金額是付款幣別，上面兩列是基準幣別。
+     同幣別訂單（order.fx 為 null）兩列都不產生；bookyay 活動以港幣付（fx.swap 為 null）只有買家實付、沒有手續費（〔推導〕1）。 */
   if (order.fx) {
+    var FX = order.fx, SW = FX.swap;
+    var swapBack = S.swapBack ? S.swapBack(order) : '';
+    if (SW) {
+      amtHtml += '<div class="od-amt" data-feat="O41">' +
+        '<span class="od-amt__stack">' +
+          '<span><span data-i18n="od.amt.swap">Currency swap fee</span> · ' + SW.pct + '%</span>' +
+          '<span class="od-amt__hint" data-od-swap-rate></span>' +
+          '<span class="od-amt__hint" data-i18n="od.amt.swap.note">Paid by the fan to the platform. Not part of your earnings.</span>' +
+          (swapBack ? '<span class="od-amt__hint" data-od-swap-back></span>' : '') +
+        '</span>' +
+        '<span>' + esc(SW.amount) + '</span>' +
+      '</div>';
+    }
     amtHtml += '<div class="od-amt">' +
       '<span data-i18n="od.amt.fxpaid">Buyer paid</span>' +
       '<span class="od-amt__value" tabindex="0">' +
         '<i data-lucide="info" class="ztor-icon ztor-icon--xs" aria-hidden="true"></i>' +
-        esc(order.fx.paid) +
-        /* 浮層只放匯率、不放時點（2026-08-07 使用者裁示）：規格 §2.3.2 要的「時點」
-           就是這筆訂單的成立時間，右欄「訂單資訊 · 下單時間」已經寫了一次，
-           同一個值在同一頁講兩遍是多的。 */
-        '<span class="od-amt__sub">' + esc(order.fx.rate) + '</span>' +
+        esc(FX.paid) +
+        /* 浮層講這個數字怎麼來的：有手續費寫品項與運費＋手續費；bookyay 港幣寫原價、不收，並帶匯率時點（沒有手續費列可放）。 */
+        '<span class="od-amt__sub" data-od-paid-sub></span>' +
       '</span></div>';
   }
   /* 平台費可展開（2026-09-29 D333，§2.3.2）：同一張單的品項可能落在不同費率葉節點，
@@ -1092,6 +1100,21 @@
   }
   var amtHost = $('[data-od-amounts]');
   amtHost.innerHTML = amtHtml;
+  /* 帶變數的字（D514）：掛不了 data-i18n，語言一換要自己重填 */
+  function paintFx() {
+    var F = order.fx; if (!F) return;
+    var tt = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb; };
+    var rateEl = amtHost.querySelector('[data-od-swap-rate]');
+    if (rateEl) rateEl.textContent = tt('od.amt.swap.rate', 'Rate {rate} · locked {at}').replace('{rate}', F.rate).replace('{at}', F.at);
+    var backEl = amtHost.querySelector('[data-od-swap-back]');
+    if (backEl) backEl.textContent = tt('od.amt.swap.back', '{amt} goes back with the voided items').replace('{amt}', S.swapBack(order));
+    var subEl = amtHost.querySelector('[data-od-paid-sub]');
+    if (subEl) subEl.textContent = F.swap
+      ? tt('od.amt.fxpaid.sum', 'Items and shipping {sum} + swap fee {fee}').replace('{sum}', F.sum).replace('{fee}', F.swap.amount)
+      : tt('od.amt.fxpaid.bky', 'bookyay price in HKD, no currency swap fee') + ' · ' + F.rate;
+  }
+  paintFx();
+  document.addEventListener('i18n:applied', paintFx);
   /* 金額拆解只畫一次（不像品項表會因作廢重畫），init 一次即可；點擊走 document 級委派。 */
   window.rowDisclosure.init(amtHost);
 

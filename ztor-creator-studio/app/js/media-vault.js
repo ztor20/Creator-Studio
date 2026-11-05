@@ -69,7 +69,7 @@
   var POPUP = document.documentElement.getAttribute("data-vault-view") === "popup";
 
   /* viewer ＝ "" 創作者本人｜分級 key｜"person" 指定一位粉絲（F6，D477；person 是選中的那一位） */
-  var state = { vaultId: V.vaults[0].id, viewer: "", person: null, itemId: null, openTab: "cond", renaming: false, wiz: null };
+  var state = { vaultId: V.vaults[0].id, viewer: "", person: null, itemId: null, wayOpen: {}, rulesOff: {}, renaming: false, wiz: null };
   var lastReach = null;
   var lastFocus = null;        /* 抽屜關掉之後焦點要回到打開它的那顆鈕 */
   var els = {};
@@ -689,9 +689,9 @@
   }
 
   /* ── 開啟方式（2026-11-02 改版，note/媒體庫UX重新規劃.md 3.24–3.29）──────────
-     只有兩種：條件開啟（符合任一種進庫方法就能開）｜鑰匙開啟（拿到鑰匙就能開，不看條件），用底線式分頁切換。
+     只有兩種：條件開啟（符合任一種進庫方法就能開）｜鑰匙開啟（拿到鑰匙就能開，不看條件），各一個開關，開了才展開設定。
      頁面與建立流程第 3 步畫的是同一份（openHtml），所以事件一律掛在 document、靠 .vault-open 認出來。
-     鑰匙（S123）不在版本內時只剩條件開啟，不出分頁列。 */
+     鑰匙（S123）不在版本內時只剩條件開啟一列。 */
   function methodHtml(g, gi) {
     var items = g.items || [];
     var n = methodReach(g);
@@ -710,24 +710,19 @@
   }
   function condWayHtml(f) {
     var gs = f.rules || [];
-    var nRules = V.ruleCount(f);
-    /* 無條件（D497）：一種進庫方法都沒設＝全員可解。寫出來，再給一顆加條件的按鈕。 */
+    /* 無條件（D497）：一種進庫方法都沒設＝全員可解，這句寫在開關那一列；開關打開後這裡給一顆加條件的按鈕。 */
     if (!gs.length) {
-      return '<div class="vault-way"><div class="vault-way__head"><p class="vault-way__desc">' + esc(L("vault.open.cond.none", { n: num(V.totalFans) })) + "</p></div>" +
-        '<div class="vault-way__empty"><button type="button" class="btn btn--outline" data-rule-add="0">' +
+      return '<div class="vault-way"><div class="vault-way__empty"><button type="button" class="btn btn--outline" data-rule-add="0">' +
         icon("plus") + "<span>" + esc(L("vault.open.cond.add")) + "</span></button></div></div>";
     }
     /* 一座庫房最多 5 種方法（D497）：到上限「再加一種方法」停用，旁邊一句說明上限。 */
     var full = gs.length >= V.limits.methods;
-    return '<div class="vault-way"><div class="vault-way__head"><p class="vault-way__desc">' + esc(L("vault.open.cond.desc")) + "</p>" +
-        (nRules ? '<span class="vault-way__n">' + esc(L("vault.open.cond.n", { n: num(V.reachSplit(f).byRule) })) + "</span>" : "") + "</div>" +
-      '<div class="vault-way__list">' + gs.map(methodHtml).join("") + "</div>" +
+    return '<div class="vault-way"><div class="vault-way__list">' + gs.map(methodHtml).join("") + "</div>" +
       '<div class="vault-way__actions"><button type="button" class="btn btn--ghost btn--sm vault-way__more"' + (full ? " disabled" : " data-group-add") + ">" + icon("plus") + "<span>" + esc(L("vault.ac.addway")) + "</span></button>" +
         (full ? '<span class="vault-way__note">' + esc(L("vault.ac.limit.methods", { n: V.limits.methods })) + "</span>" : "") + "</div></div>";
   }
   function keyWayHtml(f) {
     var keys = (f.keys || []).slice().reverse();
-    var stats = V.keyStats(f);
     var small = keys.length ? " btn--sm" : "";
     var gift = '<button type="button" class="btn btn--outline' + small + '" data-vault-share="new" data-share-intent="gift">' + icon("gift") + "<span>" + esc(L("vault.ac.direct.gift")) + "</span></button>";
     var nfc = '<button type="button" class="btn btn--outline' + small + '" data-vault-share="new" data-share-intent="nfc">' + icon("scan") + "<span>" + esc(L("vault.ac.direct.nfc")) + "</span></button>";
@@ -743,25 +738,34 @@
             '<button type="button" class="btn btn--ghost btn--sm" data-vkey-revoke="' + esc(k.id) + '">' + esc(L("vault.ac.keys.revoke")) + "</button>") +
         "</div>";
     }).join("");
-    return '<div class="vault-way"><div class="vault-way__head"><p class="vault-way__desc">' + esc(L("vault.open.key.desc")) + "</p>" +
-        (stats.live ? '<span class="vault-way__n">' + esc(L("vault.open.key.n", { n: num(V.reachSplit(f).byKey) })) + "</span>" : "") + "</div>" +
-      '<div class="vault-way__list">' + list + "</div>" +
+    return '<div class="vault-way"><div class="vault-way__list">' + list + "</div>" +
       '<div class="vault-way__actions">' + gift + nfc +
         '<button type="button" class="btn btn--ghost btn--sm vault-way__manage" data-vault-share="keys">' + icon("key") + "<span>" + esc(L("vault.btn.share-links")) + "</span></button></div></div>";
   }
+  /* 開關開著的條件：有進庫方法就一定開著；沒有方法時看創作者有沒有打開（開了才看得到「加條件」）。
+     鑰匙開關是庫房設定 V.keyWay（D515）：還有有效鑰匙就鎖在開，規格沒有整批停用鑰匙，要關得先逐把撤銷。 */
+  function condOn(f) { return (f.rules || []).length > 0 || !!state.wayOpen[f.id + ":cond"]; }
+  function wayRowHtml(id, title, help, desc, n, on, locked, body) {
+    return '<div class="vault-open__row"><div class="vault-open__rowhead"><div class="vault-open__rowtext">' +
+        '<span class="vault-open__title">' + esc(title) + help + "</span>" + desc + "</div>" + n +
+        '<button type="button" class="switch' + (on ? " switch--on" : "") + '" role="switch" aria-checked="' + on + '" aria-label="' + esc(title) + '"' +
+          (locked ? ' aria-disabled="true" disabled' : "") + ' data-vault-way="' + id + '"></button></div>' +
+      (on ? body : "") + "</div>";
+  }
   function openHtml(f) {
-    var keysOn = V.keysOn();
-    var tab = keysOn && state.openTab === "key" ? "key" : "cond";
-    var nCond = (f.rules || []).filter(function (g) { return (g.items || []).length; }).length;
-    var nKeys = V.keyStats(f).live;
-    function tabBtn(id, label, n) {
-      return '<button type="button" class="tabs__item' + (tab === id ? " tabs__item--active" : "") + '" role="tab" aria-selected="' + (tab === id) + '" data-vault-opentab="' + id + '">' +
-        esc(label) + (n ? ' <span class="tabs__item-count">' + n + "</span>" : "") + "</button>";
-    }
-    return '<div class="vault-open__head"><div class="tabs vault-open__tabs" role="tablist" aria-label="' + esc(L("vault.open.aria")) + '">' +
-        tabBtn("cond", L("vault.open.cond"), nCond) + (keysOn ? tabBtn("key", L("vault.open.key"), nKeys) : "") + "</div>" +
-        '<button class="explain-btn" type="button" data-explain="explain-vault-rules" aria-label="' + esc(L("vault.ac.rules.help")) + '">' + icon("info") + "</button></div>" +
-      '<div class="tab-panel tab-panel--active" role="tabpanel">' + (tab === "key" ? keyWayHtml(f) : condWayHtml(f)) + "</div>";
+    var help = '<button class="explain-btn" type="button" data-explain="explain-vault-rules" aria-label="' + esc(L("vault.ac.rules.help")) + '">' + icon("info") + "</button>";
+    var hasRules = (f.rules || []).length > 0;
+    var html = wayRowHtml("cond", L("vault.open.cond"), help,
+      '<p class="vault-way__desc">' + esc(hasRules ? L("vault.open.cond.desc") : V.keyWay(f) ? L("vault.open.cond.keyonly") : L("vault.open.cond.none", { n: num(V.totalFans) })) + "</p>",
+      V.ruleCount(f) ? '<span class="vault-way__n">' + esc(L("vault.open.cond.n", { n: num(V.reachSplit(f).byRule) })) + "</span>" : "",
+      condOn(f), false, condOn(f) ? condWayHtml(f) : "");
+    if (!V.keysOn()) return html;
+    var live = V.keyStats(f).live, on = V.keyWay(f);
+    return html + wayRowHtml("key", L("vault.open.key"), "",
+      '<p class="vault-way__desc">' + esc(L("vault.open.key.desc")) + "</p>" +
+        (live ? '<p class="vault-way__desc">' + esc(L("vault.open.key.lock")) + "</p>" : ""),
+      live ? '<span class="vault-way__n">' + esc(L("vault.open.key.n", { n: num(V.reachSplit(f).byKey) })) + "</span>" : "",
+      on, !!live, on ? keyWayHtml(f) : "");
   }
 
   /* ── 內容：灰底容器＋固定三欄直式卡片，最後一張是「添加」 ─────────────────────
@@ -790,12 +794,23 @@
         (it.grand ? '<span class="vault-card__grand" data-feat="S121" title="' + esc(tx("Grand surprise", "大彩蛋")) + '">' + icon("star", "ztor-icon--xs") + "</span>" : "") + "</div>" +
       '<div class="vault-card__body"><div class="vault-card__name">' + esc(V.t(it.name)) + '</div><div class="vault-card__line">' + taskLine + status + "</div></div></div>";
   }
+  /* 添加入口有兩種（2026-11-05 使用者）：
+     空庫房＝一整塊投放區，沒有灰底容器，大加號加一行檔案類型，主動作是把第一批放進來；
+     已有內容＝卡片牆最後一張，跟內容卡同尺寸，文字退到一行小字，不搶內容。
+     規格沒定格式白名單與容量（F5 待確認），這裡只講三種類型，不寫副檔名。 */
   function addCardHtml() {
     return '<div class="vault-card vault-card--add" data-vault-upload role="button" tabindex="0" aria-label="' + esc(L("vault.pool.add.aria")) + '">' +
-      '<div class="vault-card__thumb">' + icon("plus", "ztor-icon--lg") + '</div><div class="vault-card__body"><div class="vault-card__name">' + esc(L("vault.pool.add")) +
-      '</div><div class="vault-card__line">&nbsp;</div></div></div>';
+      '<div class="vault-card__thumb" aria-hidden="true"></div><div class="vault-card__body" aria-hidden="true"><div class="vault-card__name">&nbsp;</div><div class="vault-card__line">&nbsp;</div></div>' +
+      '<div class="vault-card__addin"><span class="vault-card__addico">' + icon("plus") + '</span><span class="vault-card__addname">' + esc(L("vault.pool.add")) + '</span><span class="vault-card__addtypes">' + esc(L("vault.pool.add.types")) + "</span></div></div>";
+  }
+  function dropHtml() {
+    return '<div class="upload-tile vault-drop" data-vault-upload role="button" tabindex="0" aria-label="' + esc(L("vault.pool.add.aria")) + '">' +
+      '<span class="vault-drop__plus">' + icon("plus") + "</span>" +
+      '<span class="upload-tile__title vault-drop__title">' + esc(L("vault.pool.drop.title")) + "</span>" +
+      '<span class="vault-drop__hint">' + esc(L("vault.pool.drop.hint")) + "</span></div>";
   }
   function poolHtml(f) {
+    if (!f.items.length) return dropHtml();
     var lz = lens(), items = [];
     GROUPS.forEach(function (g) { f.items.forEach(function (it) { if (it.kind === g.kind) items.push(it); }); });
     return items.map(function (it) { return cardHtml(f, it, lz); }).join("") + addCardHtml();
@@ -870,7 +885,7 @@
       plays = true;
     }
     function tile(feat, val, label, sub, more, open) {
-      var cls = "vault-bento__tile" + (more ? " stock-tip stock-tip--anchored" : "") + (open ? " vault-bento__tile--open" : "");
+      var cls = "vault-bento__tile" + (more ? " stock-tip stock-tip--anchored stock-tip--follow" : "") + (open ? " vault-bento__tile--open" : "");
       var attrs = (more ? ' tabindex="0" aria-describedby="vault-tier-tip"' : "") +
         (open ? ' role="button" aria-haspopup="dialog" data-vault-plays-open' : "");
       return '<div class="' + cls + '"' + attrs + ' data-feat="' + feat + '"><div class="vault-bento__v">' + val + '</div><div class="vault-bento__l">' + esc(label) +
@@ -892,13 +907,32 @@
 
   /* 成效格的滑過提示：滑鼠移入、鍵盤 focus（觸控點一下也會 focus）時打開，移出、失焦或按 Esc 收起。
      開向照商店設定那顆：觸發格在視窗下半就往上開（.stock-tip--up）。 */
+  /* 提示出現在滑鼠停留的位置（游標右下方 14／18px），靠右或靠下放不下就翻到另一側；座標相對觸發格，所以格子上浮也不會錯位。
+     鍵盤聚焦沒有游標：清掉座標，退回貼著格子的位置（.stock-tip--anchored，開向看格子在視窗上半或下半）。 */
   function wireTip(trigger) {
-    function open() {
-      trigger.classList.toggle("stock-tip--up", trigger.getBoundingClientRect().top > window.innerHeight / 2);
+    var pop = trigger.querySelector(".stock-tip__pop");
+    function place(e) {
+      var r = trigger.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+      var x = e.clientX + 14 + w > window.innerWidth - 8 ? e.clientX - w - 14 : e.clientX + 14;
+      var y = e.clientY + 18 + h > window.innerHeight - 8 ? e.clientY - h - 12 : e.clientY + 18;
+      pop.style.left = Math.max(8 - r.left, x - r.left) + "px";
+      pop.style.top = (y - r.top) + "px";
+      pop.style.bottom = "auto";
+    }
+    function open(e) {
+      if (e && e.clientX != null && e.type !== "focusin") {
+        trigger.classList.remove("stock-tip--up");
+        place(e);
+      } else {
+        if (trigger.matches(":hover")) return;
+        pop.style.left = pop.style.top = pop.style.bottom = "";
+        trigger.classList.toggle("stock-tip--up", trigger.getBoundingClientRect().top > window.innerHeight / 2);
+      }
       trigger.classList.add("is-open");
     }
     function close() { trigger.classList.remove("is-open"); }
     trigger.addEventListener("mouseenter", open);
+    trigger.addEventListener("mousemove", function (e) { if (trigger.classList.contains("is-open")) place(e); });
     trigger.addEventListener("mouseleave", function () { if (document.activeElement !== trigger) close(); });
     trigger.addEventListener("focusin", open);
     trigger.addEventListener("focusout", close);
@@ -945,6 +979,7 @@
     renderHead(f);
     renderBento(f);
     els.grid.innerHTML = poolHtml(f);
+    els.grid.parentNode.classList.toggle("vault-pool--empty", !f.items.length);
     els.open.innerHTML = openHtml(f);
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.main);
     if (state.wiz) renderWizard(true);
@@ -985,8 +1020,8 @@
 
   /* ── 新增庫房：三步建立流程（取名 → 放內容 → 誰開得了）────────────────────
      版型照站上的建立專案、建立活動（全畫面 .wizard）：頂列＝返回＋標題＋分段進度條＋已存草稿，
-     中間內容，底列放上一步／繼續（第 3 步放存成草稿與發布）；不放粉絲預覽。
-     第 1 步按「繼續」就建立草稿，之後隨時可以離開，庫房留在草稿。第 2、3 步畫的跟頁面是同一份。 */
+     中間內容，底列放上一步／下一步（第 3 步放上一步與發布；草稿自動存，不另放按鈕）；不放粉絲預覽。
+     第 1 步按「下一步」就建立草稿，之後隨時可以離開，庫房留在草稿。第 2、3 步畫的跟頁面是同一份。 */
   var WIZ_STEPS = ["name", "items", "open"];
   function openWizard() {
     state.wiz = { step: 1, vid: null };
@@ -1031,7 +1066,7 @@
       body = head + '<section class="form-section form-section--outlined"><div class="field"><label class="field__label" for="vault-wiz-name">' + esc(L("vault.wiz.name")) +
         ' <span class="field__req">*</span></label><input class="input" id="vault-wiz-name" data-wiz-name value="' + esc(w.draftName != null ? w.draftName : (f ? vaultName(f) : "")) + '" placeholder="' + esc(L("vault.wiz.name.ph")) + '"></div></section>';
     } else if (n === 2) {
-      body = head + '<section class="vault-pool"><div class="vault-pool__grid" data-wiz-grid>' + poolHtml(f) + "</div></section>";
+      body = head + '<section class="vault-pool' + (f.items.length ? "" : " vault-pool--empty") + '"><div class="vault-pool__grid" data-wiz-grid>' + poolHtml(f) + "</div></section>";
     } else {
       body = head + '<section class="vault-open" data-wiz-open>' + openHtml(f) + "</section>";
     }
@@ -1039,14 +1074,14 @@
 
     var hint = "", btns;
     function b(cls, attr, key, extra) { return '<button type="button" class="btn ' + cls + '" ' + attr + (extra || "") + ">" + esc(L(key)) + "</button>"; }
-    if (n === 1) btns = b("btn--primary", 'data-wiz="next"', "vault.wiz.next1");
-    else if (n === 2) btns = b("btn--outline", 'data-wiz-go="1"', "vault.wiz.prev") + (f.items.length ? b("btn--primary", 'data-wiz="next"', "vault.wiz.next2") : b("btn--outline", 'data-wiz="next"', "vault.wiz.skip"));
+    if (n === 1) btns = b("btn--primary", 'data-wiz="next"', "wiz.next");
+    else if (n === 2) btns = b("btn--outline", 'data-wiz-go="1"', "vault.wiz.prev") + (f.items.length ? b("btn--primary", 'data-wiz="next"', "wiz.next") : b("btn--outline", 'data-wiz="next"', "vault.wiz.skip"));
     else {
       var chk = V.publishCheck(f);
       if (chk.empty) hint = L("vault.wiz.hint.empty");
       else if (chk.noWay) hint = L(V.keysOn() ? "vault.wiz.hint.noway" : "vault.wiz.hint.noway.nk");
       else if (chk.open) hint = L("vault.wiz.hint.open");
-      btns = b("btn--outline", 'data-wiz-go="2"', "vault.wiz.prev") + b("btn--outline", 'data-wiz="draft"', "vault.wiz.draft") +
+      btns = b("btn--outline", 'data-wiz-go="2"', "vault.wiz.prev") +
         b("btn--primary", 'data-wiz="publish"', "vault.wiz.publish", chk.empty ? " disabled" : "");
     }
     q("[data-wiz-foot]").innerHTML = '<p class="wizard__bottom-hint' + (hint ? "" : " hidden") + '">' + esc(hint) + "</p>" + btns;
@@ -1720,6 +1755,45 @@
     return out;
   }
 
+  /* 開關：條件關掉＝拿掉全部進庫方法（D500：上架中先確認），方法先收著，再打開時放回去。
+     鑰匙開關改的是庫房設定（D515）：沒有進庫方法時，開＝只靠鑰匙、關＝無條件，都會改變全部粉絲進不進得來，上架中先確認。 */
+  function focusWay(id) {
+    var sw = (state.wiz && state.wiz.step === 3 ? els.wiz : els.main).querySelector('.vault-open [data-vault-way="' + id + '"]');
+    if (sw) sw.focus();
+  }
+  function toggleWay(id) {
+    var f = vault(), k = f.id + ":" + id;
+    var done = function () { renderRail(); renderGate(); renderMain(); focusWay(id); };
+    var ask = function (titleKey, liKey, onOk) {
+      openConfirm({ title: L(titleKey), body: listHtml([esc(L(liKey)), esc(L("vault.open.confirm.now"))]), ok: L("vault.open.confirm.ok"), onOk: onOk });
+    };
+    if (id === "key") {
+      var keyOn = V.keyWay(f);
+      var flip = function () { V.commitUnlocks(f); f.keyWay = !keyOn; done(); };
+      if (V.isListed(f) && !f.rules.length) {
+        if (keyOn) ask("vault.open.confirm.title", "vault.open.confirm.keyoff", flip);
+        else ask("vault.open.confirm.keyonly.title", "vault.open.confirm.keyonly", flip);
+        return;
+      }
+      flip();
+      return;
+    }
+    if (!condOn(f)) {
+      state.wayOpen[k] = true;
+      if (state.rulesOff[f.id]) { V.commitUnlocks(f); f.rules = state.rulesOff[f.id]; delete state.rulesOff[f.id]; }
+      done();
+      return;
+    }
+    state.wayOpen[k] = false;
+    if (!f.rules.length) { done(); return; }
+    var off = function () { V.commitUnlocks(f); state.rulesOff[f.id] = f.rules; f.rules = []; done(); };
+    if (V.isListed(f)) {
+      if (V.keyWay(f)) ask("vault.open.confirm.keyonly.title", "vault.open.confirm.condoff", off);
+      else ask("vault.open.confirm.title", "vault.open.confirm.off", off);
+      return;
+    }
+    off();
+  }
   function openRuleMenu(anchor) {
     els.menu.innerHTML = ruleMenuHtml();
     els.menu.hidden = false;
@@ -1826,8 +1900,8 @@
       var t = e.target.closest("[data-vault-act]");
       if (t && els.head.contains(t)) { headAct(t); return; }
       if (e.target.closest("[data-vault-upload]")) { els.file.click(); return; }
-      t = e.target.closest("[data-vault-opentab]");
-      if (t) { state.openTab = t.getAttribute("data-vault-opentab"); renderMain(); return; }
+      t = e.target.closest("[data-vault-way]");
+      if (t) { toggleWay(t.getAttribute("data-vault-way")); return; }
 
       var inOpen = e.target.closest(".vault-open");
       if (inOpen) {
@@ -1853,14 +1927,17 @@
             g.items.splice(ri, 1);
             /* 刪到空的方法自動消失（D497）：最後一種也拿掉，庫房回到「無條件」，畫面直接寫出全員可解並留一顆加條件的按鈕。 */
             if (!g.items.length) f.rules.splice(gi, 1);
+            if (!f.rules.length) state.wayOpen[f.id + ":cond"] = true;   /* 開關留在開，下面還有「加條件」 */
             renderRail(); renderGate(); renderMain();
           };
-          /* D500：這一刪會讓庫房變成無條件（一種方法都不剩）時，上架中先確認——確認後所有粉絲都能解鎖；
+          /* D500：這一刪會讓庫房變成無條件（一種方法都不剩、鑰匙開啟也關著）時，上架中先確認——確認後所有粉絲都能解鎖；
              取消就什麼都不動。草稿與已下架直接刪，畫面照「無條件」寫明全員可解，發布前提醒照舊。 */
           if (V.isListed(f) && f.rules.length === 1 && g.items.length === 1) {
+            /* 鑰匙開著時這一刪是變成只靠鑰匙（D515），同樣先確認，跟關條件開關一致。 */
+            var toKey = V.keyWay(f);
             openConfirm({
-              title: L("vault.open.confirm.title"),
-              body: listHtml([esc(L("vault.open.confirm.li1")), esc(L("vault.open.confirm.li2"))]),
+              title: L(toKey ? "vault.open.confirm.keyonly.title" : "vault.open.confirm.title"),
+              body: listHtml([esc(L(toKey ? "vault.open.confirm.condoff" : "vault.open.confirm.li1")), esc(L(toKey ? "vault.open.confirm.now" : "vault.open.confirm.li2"))]),
               ok: L("vault.open.confirm.ok"),
               onOk: doRemove
             });
@@ -1901,7 +1978,6 @@
       if (t && state.wiz) {
         var a = t.getAttribute("data-wiz");
         if (a === "next") wizNext();
-        else if (a === "draft") closeWizard();
         else if (a === "publish") openPublish();
         return;
       }
@@ -1935,7 +2011,7 @@
       }
       if (t.matches && t.matches("[data-wiz-name]") && e.key === "Enter") { e.preventDefault(); wizNext(); return; }
       /* role="button" 的卡片與進度標籤要像按鈕：Enter／空白鍵觸發。 */
-      var btn = t.closest && t.closest('.vault-card[role="button"], [data-wiz-go][role="button"]');
+      var btn = t.closest && t.closest('.vault-card[role="button"], .vault-drop[role="button"], [data-wiz-go][role="button"]');
       if (btn && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); btn.click(); return; }
       if (e.key === "Escape" && els.sp && !els.sp.hidden) closeSharePop();
     });

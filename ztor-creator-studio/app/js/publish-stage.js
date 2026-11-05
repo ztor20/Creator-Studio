@@ -11,29 +11,25 @@
  * 畫面（版型見 ds-components/publish-stage.css）：
  *   主區＝粉絲視角前台預覽（宿主用 previewRender 把 js/fan-event-page.js 畫進來；
  *         票券頁／票務商品頁的切換由渲染器畫在預覽頂端）
- *   側欄＝三段：
+ *   側欄＝兩段（價格只用創作者幣別＝基準幣別顯示，其他幣別的換算價在粉絲端才出現）：
  *     1 語言    四個語系一列一個，標狀態（預設／自動翻譯／已修改 N 欄），點選切換預覽語系；
  *               有「還原自動翻譯」；段底「逐欄位對照」開右側滑出的**翻譯表**
- *     2 幣別    基準＋四個換算幣別，標狀態（基準／換算／已覆寫 N 項），點選切換預覽幣別；
- *               預覽裡的價格點下去開右側滑出的**價格表**
- *     3 依 mode：'publish' ＝發布前檢核（宿主給 checks()，每項可點跳回該步驟）
- *                'save'    ＝未儲存的變更摘要（本語系改了 N 欄、覆寫了 N 項）
+ *     2 依 mode：'publish' ＝發布前檢核（宿主給 checks()，每項可點跳回該步驟）
+ *                'save'    ＝未儲存的變更摘要（改了 N 欄）
+ *   墓碑 2026-11-05（D514）：**價格表**抽屜、逐幣別覆寫、預覽價格點開價格表退場；
+ *   墓碑 2026-11-05（D514 決定三）：側欄「幣別」段（基準／換算／bookyay 原價標記）與預覽幣別切換退場。
  *   側欄底部＝主鈕（發布活動／儲存）＋次鈕（上一步／取消）
  *
  * 草稿模型延續 publish-preview.js（本檔是活動側的繼承者）：DRAFTS 每個欄位每個語系
- * 一份草稿、EDITED 記非預設語系是否被手動改過、PRICES 記每個價格的基準與逐幣別覆寫。
- * 三份都是模組變數，故意不隨每次 mount() 重置——第 8 步與其他步驟之間來回走、或
- * 「上一步」回去改一個字再回來，改過的翻譯與覆寫都還在。
+ * 一份草稿、EDITED 記非預設語系是否被手動改過。
+ * 兩份都是模組變數，故意不隨每次 mount() 重置——第 8 步與其他步驟之間來回走、或
+ * 「上一步」回去改一個字再回來，改過的翻譯都還在。價格不存草稿：每次都由宿主給的
+ * priceObj 即時換算（events-store priceIn）。
  *
  * 用法（宣告式，同站上其他共用渲染器）：
  *   var stage = window.ztorPublishStage.mount(hostEl, {
  *     fields: [{ key, el:{value}, kind:'input'|'textarea', labelKey, labelFallback, group, locked }],   // locked（D445）＝bookyay 匯入、原文鎖定：欄位名後標小鎖頭（譯文仍可填）
- *     prices: [{ key, label, labelKey, groupKey, groupFallback, priceObj:{base,amount,override,pin,baseOpen}, locked }],
- *       priceObj.pin（D330，2026-09-29）＝鎖定欄 `{ HKD: bookyay 原價 }`：該幣別格唯讀、掛鎖、可有小數、沒有重設，
- *       也不計入「已覆寫」；pin 落在基準幣別上（創作者幣別＝港幣）＝基準欄鎖定。
- *       priceObj.baseOpen（D330）＝基準幣別欄也可覆寫、可重設為換算值（bookyay 帶入者：基準價是換算來的、鎖定，
- *       但粉絲以創作者幣別付的價可以改）；沒給＝基準欄唯讀（一般活動，要改回原欄位）。
- *     currencies: ['USD','TWD','HKD','SGD','JPY'], baseCurrency: 'TWD',
+ *     baseCurrency: 'TWD',                                  // 創作者幣別；預覽價格一律用它顯示（D514 決定三）
  *     views:   [{ key:'ticket' }, { key:'bundles' }],       // 選填：給渲染器的視圖清單。2026-10-16（D443）起活動兩個宿主不再傳（門票與套組合成一頁），
  *                                                          //   目前沒有消費者；機制留著，不傳就是 null
  *     previewRender: function (host, api) {},               // 必填：主區怎麼畫
@@ -41,15 +37,11 @@
  *     translation: 'auto' | 'manual',                       // 選填，預設 'auto'＝現行行為（原文抄成譯文）。
  *       'manual'（D312，活動側）＝非預設語系不自動帶原文，只存使用者填的譯文；沒填時預覽/表格
  *       fallback 顯示原文，翻譯表格子沒填時以原文當 placeholder（不預填值）。
- *     priceOverrides: true | false,                          // 選填，預設 true＝現行行為（各幣別皆可覆寫）。
- *       false（2026-09-23 裁示，電子商店側）＝非基準幣別全面唯讀，只顯示換算值：無輸入框／
- *       「已覆寫」徽章／重設鈕，側欄幣別段不計覆寫筆數。prices[] 每列可用 overridable:true/false
- *       個別覆寫這個全域設定（列級優先於全域）——活動側（D306）不傳這個選項，維持可覆寫。
  *     editZones: [{ sel:'.pdp-buy__title', step:2 }],       // 選填：hover 出現「編輯」跳回哪一步
  *     onEdit: function (step) {},                           // editZones 的點擊行為
  *     checks: function () { return [{ key, label, ok, step }]; },   // mode:'publish'
  *     primaryKey / secondaryKey: i18n key（不給就用 mode 的預設）
- *     onPrimary: function (result) {},   // result = { translations, prices, mode }
+ *     onPrimary: function (result) {},   // result = { translations, mode }
  *     onSecondary: function () {}
  *   });
  *   stage.refresh();          // 宿主資料變了（例如回到第 8 步）重新掛一次
@@ -83,7 +75,6 @@
   /* 草稿：模組變數，見檔頭「故意不重置」說明 */
   var DRAFTS = {};
   var EDITED = {};
-  var PRICES = {};
 
   var opts = null;
   var rootEl = null;      /* .pstage */
@@ -95,10 +86,9 @@
   var currentLang = 'en';
   var defaultLang = 'en';
   var currentCurrency = 'TWD';
-  /* 兩軸的「使用者動過了沒」：沒動過就跟著宿主的預設走（預覽語系＝介面語言、幣別＝基準幣別），
+  /* 「使用者動過語系沒」：沒動過就跟著宿主的預設走（預覽語系＝介面語言），
      動過就尊重使用者的選擇，第 8 步與其他步驟來回走不會被打回預設。 */
   var langPicked = false;
-  var curPicked = false;
   var currentView = null;
 
   /* ── 文案草稿 ─────────────────────────────────────────────────── */
@@ -143,68 +133,18 @@
     });
   }
 
-  /* ── 價格草稿（D306 規則不變，換算與格式化都問 events-store）──── */
+  /* ── 價格（D514：只有基準價一個值，其他幣別由 events-store 換算）──── */
   function store() { return window.ztorEvents || null; }
-  function currencies() { return (opts && opts.currencies) || []; }
-  function priceRec(key) { return PRICES[key]; }
-  function priceIn(po, key) {
-    var rec = key ? priceRec(key) : null;
-    var obj = rec ? { base: rec.base, amount: rec.amount, override: rec.override, pin: rec.pin, baseOpen: rec.baseOpen } : po;
+  function priceIn(po) {
     var s = store();
-    if (!s || !obj) return 0;
-    return s.priceIn(obj, currentCurrency);
+    if (!s || !po) return 0;
+    return s.priceIn(po, currentCurrency);
   }
   function fmtAmount(n, cur) {
     var s = store();
     return s ? s.fmtMoney(cur || currentCurrency, n) : String(n);
   }
-  function money(po, key) { return fmtAmount(priceIn(po, key), currentCurrency); }
-  /* 換算值：基準欄就是基準價本身（baseOpen 的「重設為換算值」回到它）。 */
-  function convertedOf(rec, cur) {
-    if (cur === rec.base) return rec.amount;
-    var s = store(); return s ? s.fx(rec.base, cur, rec.amount) : rec.amount;
-  }
-  /* 鎖定欄（D330）：bookyay 原價那一格，唯讀、不吃覆寫。 */
-  function pinnedOf(rec, cur) {
-    var v = rec && rec.pin && rec.pin[cur];
-    return (v != null && v !== '' && !isNaN(Number(v))) ? Number(v) : null;
-  }
-  /* 這一格能不能覆寫：鎖定欄不行；基準欄只有 baseOpen 才行；其餘看列級／全域 priceOverrides。 */
-  function cellOverridable(rec, p, cur) {
-    if (!rec || pinnedOf(rec, cur) != null) return false;
-    if (cur === rec.base) return !!rec.baseOpen && rowOverridable(p);
-    return rowOverridable(p);
-  }
-  function isOverridden(rec, cur) {
-    if (pinnedOf(rec, cur) != null) return false;
-    if (cur === rec.base && !rec.baseOpen) return false;
-    var v = rec.override && rec.override[cur];
-    return v != null && v !== '' && !isNaN(Number(v));
-  }
-  /* priceOverrides（全域）／prices[i].overridable（列級，優先於全域）：該列非基準幣別
-     能不能覆寫。electronic 商店側傳 priceOverrides:false 全關；活動側不傳＝現行可覆寫。 */
-  function rowOverridable(p) {
-    if (p && p.overridable === false) return false;
-    if (p && p.overridable === true) return true;
-    return opts.priceOverrides !== false;
-  }
-  function overrideCount(cur) {
-    var n = 0;
-    (opts.prices || []).forEach(function (p) {
-      var rec = priceRec(p.key);
-      if (rec && cellOverridable(rec, p, cur) && isOverridden(rec, cur)) n++;
-    });
-    return n;
-  }
-  function overrideTotal() {
-    var n = 0;
-    (opts.prices || []).forEach(function (p) {
-      var rec = priceRec(p.key);
-      if (!rec) return;
-      currencies().forEach(function (c) { if (cellOverridable(rec, p, c) && isOverridden(rec, c)) n++; });
-    });
-    return n;
-  }
+  function money(po) { return fmtAmount(priceIn(po), currentCurrency); }
 
   /* ── 把草稿灌進宿主資料（mount 與 refresh 都跑）──────────────── */
   function syncData() {
@@ -227,26 +167,8 @@
         });
       }
     });
-    /* 基準價變了 → 沒覆寫的幣別跟著重新換算、手動覆寫過的幣別保留（2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則）。
-       換算值本來就不落地（priceIn 依 amount 即時換算），所以這裡只更新 amount、覆寫原樣留著；「重設為換算值」才讓該幣別回到跟隨。 */
-    (opts.prices || []).forEach(function (p) {
-      var po = p.priceObj || {};
-      var rec = PRICES[p.key];
-      /* 保留到分：bookyay 帶入、創作者幣別＝港幣時基準價可有小數（D330）；其他基準價本來就是整數。 */
-      var amount = Math.round((Number(po.amount) || 0) * 100) / 100;
-      var pin = po.pin ? JSON.parse(JSON.stringify(po.pin)) : null;
-      if (!rec || rec.base !== po.base) {
-        PRICES[p.key] = { base: po.base, amount: amount, override: JSON.parse(JSON.stringify(po.override || {})), pin: pin, baseOpen: !!po.baseOpen };
-      } else if (rec.amount !== amount) {
-        rec.amount = amount; rec.pin = pin; rec.baseOpen = !!po.baseOpen;
-      } else {
-        rec.pin = pin; rec.baseOpen = !!po.baseOpen;
-      }
-    });
-    var list = currencies();
-    if (!curPicked || list.indexOf(currentCurrency) < 0) {
-      currentCurrency = (opts.baseCurrency && list.indexOf(opts.baseCurrency) >= 0) ? opts.baseCurrency : (list[0] || 'TWD');
-    }
+    /* 預覽價格固定用創作者幣別（基準幣別）；沒有幣別切換（D514 決定三）。 */
+    currentCurrency = opts.baseCurrency || 'TWD';
     var views = (opts.views || []).map(function (v) { return v.key; });
     if (!currentView || views.indexOf(currentView) < 0) currentView = views[0] || null;
   }
@@ -295,12 +217,12 @@
   }
 
   /* ── 側欄 ─────────────────────────────────────────────────────── */
-  function rowBtn(active, name, state, attr, val, codeName) {
+  function rowBtn(active, name, state, attr, val) {
     var li = el('li');
     var b = el('button', 'pstage-row' + (active ? ' pstage-row--active' : ''));
     b.type = 'button';
     b.setAttribute(attr, val);
-    b.innerHTML = '<span class="pstage-row__name' + (codeName ? ' pstage-row__name--code' : '') + '">' + esc(name) + '</span>' +
+    b.innerHTML = '<span class="pstage-row__name">' + esc(name) + '</span>' +
       '<span class="pstage-row__state">' + esc(state) + '</span>';
     li.appendChild(b);
     return li;
@@ -344,35 +266,6 @@
     return sec;
   }
 
-  function currencySection() {
-    var list = currencies();
-    if (!list.length) return null;
-    var sec = el('section', 'pstage-sec');
-    sec.appendChild(el('h3', 'pstage-sec__title', esc(T('pstage.sec.currency', 'Currency'))));
-    var ul = el('ul', 'pstage-list');
-    var base = opts.baseCurrency;
-    list.forEach(function (c) {
-      var n = overrideCount(c);
-      /* D330：每一列都把這個幣別鎖在 bookyay 原價時，狀態寫「bookyay 原價」；基準欄可覆寫（bookyay 帶入者）時，基準後面接覆寫筆數。 */
-      var rows = (opts.prices || []).map(function (p) { return priceRec(p.key); }).filter(Boolean);
-      var allPinned = rows.length > 0 && rows.every(function (r) { return pinnedOf(r, c) != null; });
-      var ovText = T('pstage.cur.overridden', '{n} overridden').replace('{n}', n);
-      var state = allPinned ? T('pstage.cur.pinned', 'bookyay price')
-        : c === base ? (n ? T('pstage.cur.base', 'Base') + ' · ' + ovText : T('pstage.cur.base', 'Base'))
-        : (n ? ovText : T('pstage.cur.converted', 'Converted'));
-      ul.appendChild(rowBtn(c === currentCurrency, c, state, 'data-stage-currency', c, true));
-    });
-    sec.appendChild(ul);
-    var foot = el('div', 'pstage-sec__foot');
-    var tbl = el('button', 'btn btn--outline btn--sm');
-    tbl.type = 'button';
-    tbl.setAttribute('data-stage-drawer-open', 'price');
-    tbl.textContent = T('pstage.cur.table', 'Price table');
-    foot.appendChild(tbl);
-    sec.appendChild(foot);
-    return sec;
-  }
-
   function checkSection() {
     var sec = el('section', 'pstage-sec pstage-check');
     sec.setAttribute('data-stage-sec', 'check');
@@ -408,8 +301,7 @@
     sec.appendChild(el('h3', 'pstage-sec__title', esc(T('pstage.sec.changes', 'Unsaved changes'))));
     var fields = 0;
     LANGS.forEach(function (l) { fields += editedCount(l.code); });
-    var prices = overrideTotal();
-    if (!fields && !prices) {
+    if (!fields) {
       sec.appendChild(el('p', 'pstage-sum__none', esc(T('pstage.changes.none', 'Nothing changed yet'))));
       return sec;
     }
@@ -419,7 +311,6 @@
         '<span class="pstage-sum__k">' + esc(k) + '</span><span class="pstage-sum__v">' + esc(v) + '</span>'));
     }
     row(T('pstage.changes.fields', 'Text fields'), String(fields));
-    row(T('pstage.changes.prices', 'Price overrides'), String(prices));
     sec.appendChild(box);
     return sec;
   }
@@ -429,8 +320,6 @@
     var inner = sideEl.querySelector('[data-stage-side-inner]');
     inner.innerHTML = '';
     inner.appendChild(langSection());
-    var cur = currencySection();
-    if (cur) inner.appendChild(cur);
     var third = opts.mode === 'save' ? changesSection() : checkSection();
     inner.appendChild(third);
     if (window.ztorIcons) window.ztorIcons.applyIcons(inner);
@@ -443,11 +332,10 @@
     btn.disabled = !!(sec && sec.dataset.stageBlocked);
   }
 
-  /* ── 抽屜：翻譯表／價格表 ─────────────────────────────────────── */
+  /* ── 抽屜：翻譯表 ─────────────────────────────────────────────── */
   function ensureDrawer(key, titleKey, titleFb) {
     if (drawers[key]) return drawers[key];
-    /* 翻譯表、價格表都整頁（2026-09-23 使用者：「翻譯表的 popup 要整頁，同時裡面的每一個欄位都要變大」，
-       價格表隨後「可以統一」）：880 的抽屜把每格壓成一小塊，兩張表同一種殼。 */
+    /* 翻譯表整頁（2026-09-23 使用者：「翻譯表的 popup 要整頁，同時裡面的每一個欄位都要變大」）：880 的抽屜把每格壓成一小塊。 */
     var wrap = el('div', 'drawer drawer--full');
     wrap.setAttribute('data-stage-drawer', key);
     wrap.setAttribute('aria-hidden', 'true');
@@ -466,22 +354,11 @@
     drawers[key] = { wrap: wrap, body: wrap.querySelector('[data-stage-drawer-body]') };
     return drawers[key];
   }
-  function openDrawer(key, priceKey) {
-    var d = key === 'price'
-      ? ensureDrawer('price', 'pstage.drawer.price', 'Prices')
-      : ensureDrawer('trans', 'pstage.drawer.trans', 'Translations');
-    if (key === 'price') renderPriceTable(d.body); else renderTransTable(d.body);
+  function openDrawer() {
+    var d = ensureDrawer('trans', 'pstage.drawer.trans', 'Translations');
+    renderTransTable(d.body);
     d.wrap.classList.add('is-open');
     d.wrap.setAttribute('aria-hidden', 'false');
-    if (key === 'price' && priceKey) {
-      var cell = d.body.querySelector('[data-pp-price-key="' + priceKey + '"]');
-      if (cell) {
-        var tr = cell.closest('tr');
-        if (tr) tr.classList.add('pstage-trow--focus');
-        cell.focus();
-        cell.select && cell.select();
-      }
-    }
   }
   function closeDrawers() {
     Object.keys(drawers).forEach(function (k) {
@@ -519,11 +396,11 @@
       }
       lastGroup = f.group || null;
       var tr = el('tr');
-      /* D445：bookyay 匯入、原文鎖定的列（f.locked）在欄位名後標小鎖頭——語彙同價格表港幣欄鎖頭（.pp-price-lock＋lock 圖示）；
+      /* D445：bookyay 匯入、原文鎖定的列（f.locked）在欄位名後標小鎖頭——鎖頭語彙 .pp-field-lock＋lock 圖示；
          原文欄本來就唯讀、譯文欄照常可填，鎖頭只是告訴創作者「原文要回 bookyay 改」。 */
       var lockTip = f.locked ? T('pp.field.locked', 'From bookyay, original text locked') : '';
       tr.appendChild(el('td', 'ztor-table__feature', esc(f.labelKey ? T(f.labelKey, f.labelFallback || f.key) : (f.labelFallback || f.key)) +
-        (f.locked ? '<span class="pp-price-lock" role="img" data-pp-field-lock title="' + esc(lockTip) + '" aria-label="' + esc(lockTip) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '')));
+        (f.locked ? '<span class="pp-field-lock" role="img" data-pp-field-lock title="' + esc(lockTip) + '" aria-label="' + esc(lockTip) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '')));
       LANGS.forEach(function (l) {
         var td = el('td');
         var val = getFieldValue(f.key, l.code);
@@ -551,104 +428,6 @@
     scroll.appendChild(table);
     host.appendChild(scroll);
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);   // D445：欄位名後的小鎖頭
-  }
-
-  /* 價格表（列＝票種／組合包、欄＝五幣別；基準欄唯讀、bookyay 鎖定列標鎖） */
-  function syncPriceCellState(td, rec, cur) {
-    if (!td) return;
-    var on = isOverridden(rec, cur);
-    td.classList.toggle('pp-cell--overridden', on);
-    var tag = td.querySelector('[data-pp-price-tag]');
-    var reset = td.querySelector('[data-pp-price-reset]');
-    if (tag) tag.hidden = !on;
-    if (reset) reset.hidden = !on;
-  }
-  function renderPriceTable(host) {
-    host.innerHTML = '';
-    var list = currencies();
-    var base = opts.baseCurrency;
-    var rows = opts.prices || [];
-    /* 墓碑 2026-10-28（#382，使用者：「移除」）：表格上方的提示句（全唯讀／bookyay 港幣鎖定／一般三種）與判斷它用的
-       allReadonly、anyPinned 退場，鍵留著未用。bookyay 鎖定改在被鎖的幣別表頭換行附註（使用者：「這裡換行附註 bookyay 鎖定」）。 */
-    var scroll = el('div', 'ztor-table-scroll');
-    var table = el('table', 'ztor-table pp-table pp-price-table');
-    var thead = el('thead');
-    var hr = el('tr');
-    hr.appendChild(el('th', '', esc(T('pp.table.item', 'Item'))));
-    /* 被 bookyay 鎖定的幣別（D330，任一列在這個幣別有 pin）：表頭幣別下方換行一行小字「bookyay 鎖定」 */
-    var pinCur = {};
-    rows.forEach(function (p) { var r = priceRec(p.key); list.forEach(function (c) { if (pinnedOf(r, c) != null) pinCur[c] = true; }); });
-    list.forEach(function (c) {
-      hr.appendChild(el('th', '', esc(c) + (c === base ? ' <span class="badge badge--neutral">' + esc(T('pp.price.base', 'Base')) + '</span>' : '') +
-        (pinCur[c] ? '<span class="pp-th-sub">' + esc(T('pp.price.bkylock', 'Locked by bookyay')) + '</span>' : '')));
-    });
-    thead.appendChild(hr);
-    table.appendChild(thead);
-    var tbody = el('tbody');
-    var lastGroup = null;
-    (opts.prices || []).forEach(function (p) {
-      var rec = priceRec(p.key);
-      if (!rec) return;
-      var group = p.groupKey ? T(p.groupKey, p.groupFallback || '') : (p.group || null);
-      if (group && group !== lastGroup) {
-        var gr = el('tr', 'pp-group-row');
-        var gtd = el('td', '', esc(group));
-        gtd.colSpan = 1 + list.length;
-        gr.appendChild(gtd);
-        tbody.appendChild(gr);
-      }
-      lastGroup = group || null;
-      var tr = el('tr');
-      tr.appendChild(el('td', 'ztor-table__feature', esc(p.labelKey ? T(p.labelKey, p.label || p.key) : (p.label || p.key))));
-      list.forEach(function (c) {
-        var td = el('td');
-        var pinned = pinnedOf(rec, c);
-        if (pinned != null) {
-          /* bookyay 原價（D330）：鎖定、可有小數、沒有重設；沿用基準格的唯讀樣式＋鎖頭（.pp-price-lock，bookyay 鎖定專用）。 */
-          td.className = 'pp-cell pp-cell--readonly pp-cell--base';
-          td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(pinned, c)) + '</span>' +
-            '<span class="pp-price-lock" title="' + esc(T('pp.price.locked', 'Set by bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>';
-        } else if (c === rec.base && !rec.baseOpen) {
-          td.className = 'pp-cell pp-cell--readonly pp-cell--base';
-          td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(rec.amount, c)) + '</span>' +
-            (p.locked ? '<span class="pp-price-lock" title="' + esc(T('pp.price.locked', 'Set by bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '');
-        } else if (!cellOverridable(rec, p, c)) {
-          /* priceOverrides:false（或該列 overridable:false）＝只顯示換算值，沿用基準格
-             同一套唯讀樣式（.pp-cell--base 負責右對齊與列高對齊），不掛鎖圖示（不是
-             bookyay 鎖定，是電子商店規則本身不給覆寫）。 */
-          td.className = 'pp-cell pp-cell--readonly pp-cell--base';
-          td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(convertedOf(rec, c), c)) + '</span>';
-        } else {
-          td.className = 'pp-cell pp-cell--price';
-          var input = document.createElement('input');
-          input.className = 'input pp-cell-field pp-price-input';
-          input.type = 'number';
-          input.min = '0';
-          input.step = '1';
-          input.inputMode = 'numeric';
-          input.value = isOverridden(rec, c) ? rec.override[c] : convertedOf(rec, c);
-          input.setAttribute('data-pp-price-key', p.key);
-          input.setAttribute('data-pp-price-cur', c);
-          input.setAttribute('aria-label', c);
-          td.appendChild(input);
-          var meta = el('div', 'pp-price-meta');
-          meta.innerHTML =
-            '<span class="badge badge--orange badge--inline" data-pp-price-tag hidden>' + esc(T('pp.price.overridden', 'Overridden')) + '</span>' +
-            '<button class="btn btn--ghost btn--sm pp-price-reset" type="button" data-pp-price-reset="' + esc(p.key) + '" data-pp-price-cur="' + esc(c) + '" hidden>' +
-              esc(T('pp.price.reset', 'Reset to converted')) + '</button>';
-          td.appendChild(meta);
-          syncPriceCellState(td, rec, c);
-        }
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    scroll.appendChild(table);
-    host.appendChild(scroll);
-    /* 分組列黏在表頭正下方：表頭多了附註行會變高，量實際高度寫進 --pp-head-h（publish-stage.css 用） */
-    requestAnimationFrame(function () { var h = thead.getBoundingClientRect().height; if (h) table.style.setProperty('--pp-head-h', Math.round(h) + 'px'); });
-    if (window.ztorIcons) window.ztorIcons.applyIcons(host);
   }
 
   /* ── 預覽區塊的「編輯」入口（浮動鈕，見 CSS 檔頭）────────────── */
@@ -686,14 +465,6 @@
     renderPreview();
     renderSide();
   }
-  function setCurrency(cur) {
-    if (!cur || currencies().indexOf(cur) < 0) return;
-    curPicked = true;
-    if (cur === currentCurrency) return;
-    currentCurrency = cur;
-    renderPreview();
-    renderSide();
-  }
   function setView(v) {
     var views = (opts.views || []).map(function (x) { return x.key; });
     if (views.indexOf(v) < 0 || v === currentView) return;
@@ -704,18 +475,7 @@
   function collectResult() {
     var translations = {};
     (opts.fields || []).forEach(function (f) { translations[f.key] = DRAFTS[f.key] ? JSON.parse(JSON.stringify(DRAFTS[f.key])) : {}; });
-    var prices = {};
-    (opts.prices || []).forEach(function (p) {
-      var rec = priceRec(p.key);
-      if (!rec) return;
-      var out = {};
-      /* 唯讀列（priceOverrides:false 或該列 overridable:false）不輸出覆寫——即使草稿裡
-         殘留舊值（例如全域選項中途切換），落地結果也不帶出來。 */
-      /* 鎖定欄（pin）與唯讀的基準欄不輸出；bookyay 帶入者的基準欄覆寫（baseOpen，D330）要輸出。 */
-      currencies().forEach(function (c) { if (cellOverridable(rec, p, c) && isOverridden(rec, c)) out[c] = Math.round(Number(rec.override[c])); });
-      prices[p.key] = out;
-    });
-    return { translations: translations, prices: prices, mode: opts.mode || 'publish' };
+    return { translations: translations, mode: opts.mode || 'publish' };
   }
 
   /* ── 事件（委派一次，重畫不用重掛）───────────────────────────── */
@@ -729,13 +489,11 @@
       var close = e.target.closest('[data-stage-drawer-close]');
       if (close) { e.preventDefault(); closeDrawers(); return; }
       var openBtn = e.target.closest('[data-stage-drawer-open]');
-      if (openBtn) { e.preventDefault(); openDrawer(openBtn.getAttribute('data-stage-drawer-open')); return; }
+      if (openBtn) { e.preventDefault(); openDrawer(); return; }
       var langBtn = e.target.closest('[data-stage-lang]');
       if (langBtn) { setLang(langBtn.getAttribute('data-stage-lang')); return; }
       var resetBtn = e.target.closest('[data-stage-lang-reset]');
       if (resetBtn) { resetLang(currentLang); renderPreview(); renderSide(); return; }
-      var curBtn = e.target.closest('[data-stage-currency]');
-      if (curBtn) { setCurrency(curBtn.getAttribute('data-stage-currency')); return; }
       var goBtn = e.target.closest('[data-stage-goto]');
       if (goBtn) {
         e.preventDefault();
@@ -747,23 +505,9 @@
       if (primary) { e.preventDefault(); if (typeof opts.onPrimary === 'function') opts.onPrimary(collectResult()); return; }
       var secondary = e.target.closest('[data-stage-secondary]');
       if (secondary) { e.preventDefault(); if (typeof opts.onSecondary === 'function') opts.onSecondary(); return; }
-      /* 預覽裡的價格 → 開價格表（D310：價格不就地改） */
-      var priceHit = mainEl && mainEl.contains(e.target) ? e.target.closest('[data-fep-price-key]') : null;
-      if (priceHit) { e.preventDefault(); openDrawer('price', priceHit.getAttribute('data-fep-price-key')); return; }
-      var priceReset = e.target.closest('[data-pp-price-reset]');
-      if (priceReset) {
-        var rec = priceRec(priceReset.getAttribute('data-pp-price-reset'));
-        if (rec) {
-          delete rec.override[priceReset.getAttribute('data-pp-price-cur')];
-          if (drawers.price) renderPriceTable(drawers.price.body);
-          renderPreview();
-          renderSide();
-        }
-        return;
-      }
     });
 
-    /* 預覽裡就地編輯 ＋ 兩張表的輸入 */
+    /* 預覽裡就地編輯 ＋ 翻譯表的輸入 */
     document.addEventListener('input', function (e) {
       if (!rootEl) return;
       var slot = e.target.closest('[data-pp-field-key]');
@@ -778,29 +522,6 @@
         renderSide();
         return;
       }
-      var pcell = e.target.closest('[data-pp-price-key]');
-      if (pcell) {
-        var rec = priceRec(pcell.getAttribute('data-pp-price-key'));
-        var cur = pcell.getAttribute('data-pp-price-cur');
-        if (!rec) return;
-        var v = pcell.value.trim();
-        if (v === '' || isNaN(Number(v))) delete rec.override[cur];
-        else rec.override[cur] = Math.round(Number(v));
-        /* 只更新該格狀態，不重畫整張表（重畫會搶走焦點） */
-        syncPriceCellState(pcell.closest('td'), rec, cur);
-        renderSide();
-      }
-    });
-    document.addEventListener('change', function (e) {
-      if (!rootEl) return;
-      var pcell = e.target.closest('[data-pp-price-key]');
-      if (!pcell) return;
-      var rec = priceRec(pcell.getAttribute('data-pp-price-key'));
-      var cur = pcell.getAttribute('data-pp-price-cur');
-      if (!rec) return;
-      pcell.value = isOverridden(rec, cur) ? rec.override[cur] : convertedOf(rec, cur);
-      syncPriceCellState(pcell.closest('td'), rec, cur);
-      renderPreview();
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') closeDrawers();
@@ -893,6 +614,6 @@
   window.ztorPublishStage = {
     mount: mount,
     /* 讀模組草稿（宿主在確認之外的時機要看時用），回傳副本 */
-    drafts: function () { return { translations: JSON.parse(JSON.stringify(DRAFTS)), prices: JSON.parse(JSON.stringify(PRICES)) }; }
+    drafts: function () { return { translations: JSON.parse(JSON.stringify(DRAFTS)) }; }
   };
 })();

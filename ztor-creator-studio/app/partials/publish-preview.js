@@ -19,17 +19,13 @@
  * 「返回編輯」關掉這層之後草稿仍在，再次打開發布預覽會看到同一份修改。
  *
  * ── D305／D306 擴充（2026-09-22）──────────────────────────────────────
- * · 幣別軸：語言分頁旁多一組幣別切換（五種，D306），兩軸獨立——語言決定文案、幣別決定
- *   價格。幣別用 .segmented（Q8：它是控件層 toggle，切的是「同一份價格資料用哪個幣別看」，
- *   與語言分頁「看哪一份翻譯」的主要檢視不同層；五個三字碼並排剛好一列，不用下拉）。
- * · 價格草稿 PRICES：跟翻譯草稿一樣存模組變數（priceKey → { base, amount, override }），
- *   「返回編輯」不丟；基準價一改（amount 與上次不同）沒覆寫的幣別跟著重新換算、手動覆寫過的
- *   幣別保留（2026-10-14 D415 決定六，取代 §7.15 舊的整列重算規則）。列表檢視多一張價格表（列＝票種／組合包，欄＝五幣別；基準幣別欄唯讀並
- *   標「基準」；其餘欄可輸入、有覆寫時標示並可「重設為換算值」；bookyay 鎖定列基準欄標鎖）。
+ * · 墓碑 2026-11-05（D514 決定三）：幣別軸（語言分頁旁的幣別切換 .segmented）退場；預覽價格一律用
+ *   創作者幣別（baseCurrency）。
+ * · 墓碑 2026-11-05（D514）：價格草稿 PRICES、列表檢視的價格表與逐幣別覆寫退場；幣別切換只看不改（價格由 events-store 即時換算）。
  * · 視圖：宿主給 views（票券頁／票務商品頁）時，previewRender 的 api 帶 view／setView，
  *   切換的控件由宿主的渲染器自己畫（fan-event-page.js 畫在 .fep-shop 外面的 .pp-fan-viewbar）。
  * · mode：'publish'（預設，主鈕「確認發布」）｜'save'（詳情頁再開，主鈕「儲存」）；onConfirm
- *   同一個回呼，收到 `{ translations, prices }`（prices＝priceKey → 只含有覆寫的幣別）。
+ *   同一個回呼，收到 `{ translations }`。
  *
  * 用法（宣告式，跟站上其他 partials 同一套慣例）：
  *   window.ztorPublishPreview.open({
@@ -45,8 +41,7 @@
  *     previewSlots: { name: '#cp-pv-name', desc: '#cp-pv-desc' },  // 選填：previewClone
  *                                           // 內對應每個欄位的節點選擇器
  *     previewRender: function (host, api) {},  // 選填（與 previewClone 互斥）：宿主自訂渲染
- *     currencies: ['USD','TWD','HKD','SGD','JPY'], baseCurrency: 'TWD',   // 選填：給了才有幣別軸
- *     prices: [{ key:'tier:vip', label:'VIP', labelKey, groupKey, priceObj:{ base, amount, override }, locked:false }],
+ *     baseCurrency: 'TWD',                  // 選填：預覽價格用的創作者幣別（預設 TWD）
  *     views: [{ key:'ticket', labelKey:'fep.view.ticket' }, { key:'bundles', labelKey:'fep.view.bundles' }],
  *     mode: 'publish' | 'save',
  *     shell: 'fan',                        // 選填（2026-09-22）：粉絲視角活動頁用的加寬殼（.pp-dialog--fan，1376px）
@@ -75,11 +70,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   }
 
   /* 草稿存在模組變數，故意不隨每次 open() 重置——見檔頭「返回編輯保留草稿」說明。
-     fieldKey -> { langCode: value }；EDITED 只記非預設語系是否被手動編輯過。
-     PRICES：priceKey -> { base, amount, override:{cur:n} }（D306）。 */
+     fieldKey -> { langCode: value }；EDITED 只記非預設語系是否被手動編輯過。 */
   var DRAFTS = {};
   var EDITED = {};
-  var PRICES = {};
 
   var modalEl = null;
   var currentOpts = null;
@@ -103,26 +96,16 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 
   /* ── 價格（D306）：換算與格式化都轉問 events-store，這裡不自帶匯率表 ── */
   function store() { return window.ztorEvents || null; }
-  function currencies() { return (currentOpts && currentOpts.currencies) || []; }
-  function hasCurrency() { return currencies().length > 0; }
-  function priceRec(key) { return PRICES[key]; }
-  function priceIn(po, key) {
-    var rec = key ? priceRec(key) : null;
-    var obj = rec ? { base: rec.base, amount: rec.amount, override: rec.override } : po;
+  function priceIn(po) {
     var s = store();
-    if (!s || !obj) return 0;
-    return s.priceIn(obj, currentCurrency);
+    if (!s || !po) return 0;
+    return s.priceIn(po, currentCurrency);
   }
   function fmtAmount(n, cur) {
     var s = store();
     return s ? s.fmtMoney(cur || currentCurrency, n) : String(n);
   }
-  function money(po, key) { return fmtAmount(priceIn(po, key), currentCurrency); }
-  function convertedOf(rec, cur) { var s = store(); return s ? s.fx(rec.base, cur, rec.amount) : rec.amount; }
-  function isOverridden(rec, cur) {
-    var v = rec.override && rec.override[cur];
-    return v != null && v !== '' && !isNaN(Number(v));
-  }
+  function money(po) { return fmtAmount(priceIn(po), currentCurrency); }
 
   function ensureModal() {
     if (modalEl) return modalEl;
@@ -140,7 +123,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           '<div class="pp-toolbar">' +
             '<nav class="tabs pp-lang-tabs" role="tablist" data-i18n-aria-label="pp.tabs-label" aria-label="Translation language" data-pp-tabs></nav>' +
             '<div class="pp-toolbar__controls">' +
-              '<div class="segmented pp-currency" data-pp-currency-seg data-i18n-aria-label="pp.currency-label" aria-label="Currency" hidden></div>' +
               '<div class="segmented pp-view-toggle" data-pp-view-toggle>' +
                 '<button class="segmented__btn segmented__btn--active" type="button" data-pp-view="preview" data-i18n="pp.view.preview">Preview</button>' +
                 '<button class="segmented__btn" type="button" data-pp-view="list" data-i18n="pp.view.list">List</button>' +
@@ -156,11 +138,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
             '<div class="pp-table-block">' +
               '<h3 class="pp-table-title" data-pp-table-title="fields" data-i18n="pp.table.translations" hidden>Translations</h3>' +
               '<div class="ztor-table-scroll"><table class="ztor-table pp-table" data-pp-table></table></div>' +
-            '</div>' +
-            '<div class="pp-table-block" data-pp-price-block hidden>' +
-              '<h3 class="pp-table-title" data-i18n="pp.table.prices">Prices</h3>' +
-              '<p class="field__hint pp-table-hint" data-i18n="pp.table.prices-hint">Base currency is read-only — change the price in the form. Other currencies are converted; type a number to override it.</p>' +
-              '<div class="ztor-table-scroll"><table class="ztor-table pp-table pp-price-table" data-pp-price-table></table></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -183,14 +160,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (viewBtn) { setView(viewBtn.getAttribute('data-pp-view')); return; }
       var tabBtn = e.target.closest('[data-pp-lang]');
       if (tabBtn) { setLang(tabBtn.getAttribute('data-pp-lang')); return; }
-      var curBtn = e.target.closest('[data-pp-currency]');
-      if (curBtn) { setCurrency(curBtn.getAttribute('data-pp-currency')); return; }
-      var resetBtn = e.target.closest('[data-pp-price-reset]');
-      if (resetBtn) {
-        var rec = priceRec(resetBtn.getAttribute('data-pp-price-reset'));
-        if (rec) { delete rec.override[resetBtn.getAttribute('data-pp-price-cur')]; renderPriceTable(); }
-        return;
-      }
       /* 點遮罩（.payout-modal 本身、非對話框內）關閉——沿用站上彈窗慣例 */
       if (e.target === modalEl) close();
     });
@@ -204,29 +173,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var cell = e.target.closest('[data-pp-row-field]');
       if (cell) {
         setFieldValue(cell.getAttribute('data-pp-row-field'), cell.getAttribute('data-pp-row-lang'), cell.value);
-        return;
       }
-      var pcell = e.target.closest('[data-pp-price-key]');
-      if (pcell) {
-        var rec = priceRec(pcell.getAttribute('data-pp-price-key'));
-        var cur = pcell.getAttribute('data-pp-price-cur');
-        if (!rec) return;
-        var v = pcell.value.trim();
-        if (v === '' || isNaN(Number(v))) delete rec.override[cur];
-        else rec.override[cur] = Math.round(Number(v));
-        /* 只更新該格的「已覆寫／重設」狀態，不重畫整張表（重畫會搶走焦點） */
-        syncPriceCellState(pcell.closest('td'), rec, cur);
-      }
-    });
-    /* 離開輸入框才把數字整理成整數（§7.15 票價整數） */
-    modalEl.addEventListener('change', function (e) {
-      var pcell = e.target.closest('[data-pp-price-key]');
-      if (!pcell) return;
-      var rec = priceRec(pcell.getAttribute('data-pp-price-key'));
-      var cur = pcell.getAttribute('data-pp-price-cur');
-      if (!rec) return;
-      pcell.value = isOverridden(rec, cur) ? rec.override[cur] : convertedOf(rec, cur);
-      syncPriceCellState(pcell.closest('td'), rec, cur);
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && modalEl && !modalEl.hidden) close();
@@ -247,12 +194,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     currentLang = lang;
     updateTabsActive();
     renderPanels();
-  }
-  function setCurrency(cur) {
-    if (!cur || cur === currentCurrency || currencies().indexOf(cur) < 0) return;
-    currentCurrency = cur;
-    updateCurrencyActive();
-    if (currentView === 'preview') renderPreviewPanel();
   }
   function setFanView(v) {
     if (!currentOpts || !currentOpts.views) return;
@@ -278,23 +219,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       btn.setAttribute('aria-selected', on ? 'true' : 'false');
     });
   }
-  function buildCurrencySeg() {
-    var seg = modalEl.querySelector('[data-pp-currency-seg]');
-    var list = currencies();
-    seg.hidden = !list.length;
-    var base = currentOpts.baseCurrency;
-    seg.innerHTML = list.map(function (c) {
-      return '<button class="segmented__btn" type="button" data-pp-currency="' + esc(c) + '"' +
-        (c === base ? ' title="' + esc(T('pp.price.base', 'Base')) + '"' : '') + '>' + esc(c) + '</button>';
-    }).join('');
-    updateCurrencyActive();
-  }
-  function updateCurrencyActive() {
-    modalEl.querySelectorAll('[data-pp-currency]').forEach(function (b) {
-      b.classList.toggle('segmented__btn--active', b.getAttribute('data-pp-currency') === currentCurrency);
-    });
-  }
-
   function buildGenericPreviewNode() {
     var node = document.createElement('div');
     node.className = 'preview-card';
@@ -454,118 +378,12 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     });
     table.appendChild(tbody);
 
-    /* 兩張表並列時才需要各自的標題（只有翻譯表時沿用原本沒標題的樣子） */
-    var hasPrices = !!(currentOpts.prices && currentOpts.prices.length);
-    modalEl.querySelector('[data-pp-table-title="fields"]').hidden = !hasPrices;
-    modalEl.querySelector('[data-pp-price-block]').hidden = !hasPrices;
-    if (hasPrices) renderPriceTable();
-  }
-
-  /* ── 價格表（D305 決定五／D306）：列＝票種／組合包、欄＝五幣別 ── */
-  function syncPriceCellState(td, rec, cur) {
-    if (!td) return;
-    var on = isOverridden(rec, cur);
-    td.classList.toggle('pp-cell--overridden', on);
-    var tag = td.querySelector('[data-pp-price-tag]');
-    var reset = td.querySelector('[data-pp-price-reset]');
-    if (tag) tag.hidden = !on;
-    if (reset) reset.hidden = !on;
-  }
-  function renderPriceTable() {
-    var table = modalEl.querySelector('[data-pp-price-table]');
-    if (!table) return;
-    table.innerHTML = '';
-    var list = currencies();
-    var base = currentOpts.baseCurrency;
-    var thead = document.createElement('thead');
-    var hr = document.createElement('tr');
-    var th0 = document.createElement('th');
-    th0.setAttribute('data-i18n', 'pp.table.item');
-    th0.textContent = T('pp.table.item', 'Item');
-    hr.appendChild(th0);
-    list.forEach(function (c) {
-      var th = document.createElement('th');
-      th.textContent = c;
-      if (c === base) {
-        var b = document.createElement('span');
-        b.className = 'badge badge--neutral';
-        b.setAttribute('data-i18n', 'pp.price.base');
-        b.textContent = T('pp.price.base', 'Base');
-        th.appendChild(document.createTextNode(' '));
-        th.appendChild(b);
-      }
-      hr.appendChild(th);
-    });
-    thead.appendChild(hr);
-    table.appendChild(thead);
-
-    var tbody = document.createElement('tbody');
-    var lastGroup = null;
-    currentOpts.prices.forEach(function (p) {
-      var rec = priceRec(p.key);
-      if (!rec) return;
-      var group = p.groupKey ? T(p.groupKey, p.groupFallback || '') : (p.group || null);
-      if (group && group !== lastGroup) {
-        var gr = document.createElement('tr');
-        gr.className = 'pp-group-row';
-        var gtd = document.createElement('td');
-        gtd.colSpan = 1 + list.length;
-        gtd.textContent = group;
-        gr.appendChild(gtd);
-        tbody.appendChild(gr);
-      }
-      lastGroup = group || null;
-
-      var tr = document.createElement('tr');
-      var tdl = document.createElement('td');
-      tdl.className = 'ztor-table__feature';
-      tdl.textContent = p.labelKey ? T(p.labelKey, p.label || p.key) : (p.label || p.key);
-      tr.appendChild(tdl);
-      list.forEach(function (c) {
-        var td = document.createElement('td');
-        if (c === rec.base) {
-          /* 基準幣別欄唯讀（改基準價回原欄位）；bookyay 鎖定列多一把鎖（§7.15） */
-          td.className = 'pp-cell pp-cell--readonly pp-cell--base';
-          td.innerHTML = '<span class="pp-price-num">' + esc(fmtAmount(rec.amount, c)) + '</span>' +
-            (p.locked ? '<span class="pp-price-lock" title="' + esc(T('pp.price.locked', 'Set by bookyay')) + '"><i data-lucide="lock" class="ztor-icon"></i></span>' : '');
-        } else {
-          td.className = 'pp-cell pp-cell--price';
-          var input = document.createElement('input');
-          input.className = 'input pp-cell-field pp-price-input';
-          input.type = 'number';
-          input.min = '0';
-          input.step = '1';
-          input.inputMode = 'numeric';
-          input.value = isOverridden(rec, c) ? rec.override[c] : convertedOf(rec, c);
-          input.setAttribute('data-pp-price-key', p.key);
-          input.setAttribute('data-pp-price-cur', c);
-          input.setAttribute('aria-label', c);
-          td.appendChild(input);
-          var meta = document.createElement('div');
-          meta.className = 'pp-price-meta';
-          meta.innerHTML =
-            '<span class="badge badge--orange badge--inline" data-pp-price-tag data-i18n="pp.price.overridden" hidden>' + esc(T('pp.price.overridden', 'Overridden')) + '</span>' +
-            '<button class="btn btn--ghost btn--sm pp-price-reset" type="button" data-pp-price-reset="' + esc(p.key) + '" data-pp-price-cur="' + esc(c) + '" hidden>' +
-              '<span data-i18n="pp.price.reset">' + esc(T('pp.price.reset', 'Reset to converted')) + '</span>' +
-            '</button>';
-          td.appendChild(meta);
-          syncPriceCellState(td, rec, c);
-        }
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    if (window.applyI18n) window.applyI18n(table);
-    if (window.ztorIcons) window.ztorIcons.applyIcons(table);
   }
 
   function renderPanels() {
     var tabsNav = modalEl.querySelector('[data-pp-tabs]');
-    /* 列表檢視本身已經把四個語系並排成欄、五個幣別並排成欄，語言分頁與幣別切換在那個
-       模式下沒有動作意義，收起來 */
+    /* 列表檢視本身已經把四個語系並排成欄，語言分頁在那個模式下沒有動作意義，收起來 */
     tabsNav.hidden = currentView === 'list';
-    modalEl.querySelector('[data-pp-currency-seg]').hidden = currentView === 'list' || !hasCurrency();
     modalEl.querySelector('[data-pp-panel="preview"]').hidden = currentView !== 'preview';
     modalEl.querySelector('[data-pp-panel="list"]').hidden = currentView !== 'list';
     modalEl.querySelector('[data-pp-banner]').hidden = !(currentView === 'preview' && currentLang !== defaultLang);
@@ -578,19 +396,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     document.body.style.overflow = '';
   }
 
-  /* 交回宿主的結果：翻譯草稿全部、價格只給「有覆寫的幣別」（換算值算得出來、不落地） */
+  /* 交回宿主的結果：翻譯草稿全部 */
   function collectResult() {
     var translations = {};
     (currentOpts.fields || []).forEach(function (f) { translations[f.key] = DRAFTS[f.key] ? JSON.parse(JSON.stringify(DRAFTS[f.key])) : {}; });
-    var prices = {};
-    (currentOpts.prices || []).forEach(function (p) {
-      var rec = priceRec(p.key);
-      if (!rec) return;
-      var ov = {};
-      Object.keys(rec.override || {}).forEach(function (c) { if (isOverridden(rec, c)) ov[c] = Math.round(Number(rec.override[c])); });
-      prices[p.key] = ov;
-    });
-    return { translations: translations, prices: prices, mode: currentOpts.mode || 'publish' };
+    return { translations: translations, mode: currentOpts.mode || 'publish' };
   }
 
   function confirmAndPublish() {
@@ -606,7 +416,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     defaultLang = normalize(window.ztorLang ? window.ztorLang.get() : 'en');
     currentLang = defaultLang;
     currentView = 'preview';
-    currentCurrency = (opts.baseCurrency && (opts.currencies || []).indexOf(opts.baseCurrency) >= 0) ? opts.baseCurrency : ((opts.currencies || [])[0] || 'TWD');
+    currentCurrency = opts.baseCurrency || 'TWD';
     currentFanView = opts.views && opts.views.length ? opts.views[0].key : null;
 
     /* 掛載當下：預設語言欄一律鏡射表單目前值；未手動編輯過的其他語系一併跟著換
@@ -620,19 +430,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         if (l.code !== defaultLang && !EDITED[f.key][l.code]) DRAFTS[f.key][l.code] = defVal;
       });
     });
-    /* 價格草稿（D306）：第一次看到這個 key → 從宿主給的 priceObj 帶入（含既有覆寫）；
-       再次打開時保留草稿裡的覆寫；基準價變了 → 只更新基準價，沒覆寫的幣別依新基準價換算、覆寫保留（D415 決定六）。 */
-    (opts.prices || []).forEach(function (p) {
-      var po = p.priceObj || {};
-      var rec = PRICES[p.key];
-      var amount = Math.round(Number(po.amount) || 0);
-      if (!rec || rec.base !== po.base) {
-        PRICES[p.key] = { base: po.base, amount: amount, override: JSON.parse(JSON.stringify(po.override || {})) };
-      } else if (rec.amount !== amount) {
-        rec.amount = amount;
-      }
-    });
-
     /* 主鈕與標題依 mode（D305 決定四：詳情頁再開＝「儲存」） */
     var isSave = opts.mode === 'save';
     var title = modalEl.querySelector('#pp-title');
@@ -653,7 +450,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     modalEl.querySelector('[data-pp-preview]').classList.toggle('pp-preview-slot--fan', opts.shell === 'fan');
 
     buildTabs();
-    buildCurrencySeg();
     modalEl.querySelectorAll('[data-pp-view]').forEach(function (b) {
       b.classList.toggle('segmented__btn--active', b.getAttribute('data-pp-view') === 'preview');
     });
@@ -668,6 +464,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   window.ztorPublishPreview = {
     open: open,
     /* 讀取模組草稿（給宿主在確認之外的時機查看，例如詳情頁的摘要）；回傳副本 */
-    drafts: function () { return { translations: JSON.parse(JSON.stringify(DRAFTS)), prices: JSON.parse(JSON.stringify(PRICES)) }; }
+    drafts: function () { return { translations: JSON.parse(JSON.stringify(DRAFTS)) }; }
   };
 })();

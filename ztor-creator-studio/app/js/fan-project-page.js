@@ -43,7 +43,7 @@
  *     price: { priceObj, priceKey, from:false } | null,          // 價格鈕（免費＝null）
  *     // 共創／預購
  *     fund: {
- *       goal: priceObj,                          // 共創：目標金額（跟著預覽幣別換算，不是價格表的一列）
+ *       goal: priceObj,                          // 共創：目標金額（跟著預覽幣別換算）
  *       units: 100,                              // 預購：最少預購數（份）
  *       days: 30, deadline: '2026-10-23 23:59'   // 期間與截止時點
  *     },
@@ -68,8 +68,7 @@
  *   只多兩段前台 title.html 有、建立專案用不到的內文段：創作團隊（.detail-castwrap ＞ .detail-crew）與
  *   預告與花絮（.media-grid 的 .media-card＋.media-card__play）。段落順序照 title.html：創作團隊 → 劇照 → 預告與花絮。
  *
- * 價格節點帶 `data-fep-price-key`（沿用活動頁的屬性名：js/publish-stage.js 認這個屬性把價格表滑出來，
- * D310「價格不就地改」）；另掛 `data-fpj-price-key` 標明是專案頁的價格節點。
+ * 價格節點帶 `data-fpj-price-key` 標明是專案頁的價格節點。墓碑 2026-11-05（D514）：點價格開價格表（`data-fep-price-key`）退場。
  * 可給 editZones 選的區塊：[data-fpj-poster]、[data-fpj-title]、[data-fpj-keywords]、[data-fpj-desc]、
  * [data-fpj-fund]、[data-fpj-price]、[data-fpj-tiers]、[data-fpj-about]、[data-fpj-story]、
  * [data-fpj-budget]、[data-fpj-delivery]、[data-fpj-media]、[data-fpj-credits]、[data-fpj-clips]（後兩個只在作品模式出現）。
@@ -477,13 +476,12 @@
     var prim = el('div', 'detail-actions__primary');
     if (trailerBtn) prim.appendChild(trailerBtn);
     if (m.price && m.price.priceObj) {
-      /* 價格鈕本身不動作，但金額要點得到（開價格表），所以整顆不掛 data-pp-inert */
+      /* 價格鈕不動作（D514：金額不再點得開價格表） */
       var b = el('button', 'btn btn--yellow-ghost btn--lg detail-price');
-      b.type = 'button'; b.tabIndex = -1;
+      b.type = 'button'; b.setAttribute('data-pp-inert', ''); b.tabIndex = -1;
       var amt = codeMoney(api, amountOf(api, m.price.priceObj, m.price.priceKey));
       var main = el('span', 'detail-price__main');
       var a = el('span', 'detail-price__amount', esc(m.price.from ? T('fpj.price.from', 'From {price}').replace('{price}', amt) : amt));
-      a.setAttribute('data-fep-price-key', m.price.priceKey || '');
       a.setAttribute('data-fpj-price-key', m.price.priceKey || '');
       main.appendChild(a);
       b.appendChild(main);
@@ -512,7 +510,6 @@
       card.appendChild(th);
       var price = el('div', 'reward-tier__price');
       var pn = el('span', '', esc(codeMoney(api, amountOf(api, t.priceObj, t.priceKey))));
-      pn.setAttribute('data-fep-price-key', t.priceKey || '');
       pn.setAttribute('data-fpj-price-key', t.priceKey || '');
       price.appendChild(pn);
       card.appendChild(price);
