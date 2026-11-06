@@ -41,7 +41,7 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
         </label>
         <label class="payout-field">
           <span class="payout-field__label" data-i18n="manual.f.currency">Currency</span>
-          <select class="select"><option>USD</option><option>TWD</option><option>EUR</option><option>JPY</option></select>
+          <select class="select" data-currency-options></select>
         </label>
         <label class="payout-field">
           <span class="payout-field__label" data-i18n="manual.f.note">Note (optional)</span>

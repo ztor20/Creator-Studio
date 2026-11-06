@@ -1292,8 +1292,6 @@
                 <input class="input amount-field__input" data-pub-f="ship-fee" type="number" min="0" step="1">
               </span>
               <p class="field__hint" data-i18n="ed.pub.ship.fee.hint">Fans pay this on top at checkout.</p>
-              <!-- D368 決定四：bookyay 帶入的運費是港幣換算成創作者幣別的值，這一句寫港幣原值（同建立活動 syncShipFeeSrc） -->
-              <p class="field__hint" data-pub-ship-fee-src hidden></p>
             </div>
             <div class="field" data-pub-when="store" style="margin-bottom:0" hidden>
               <label class="field__label" data-i18n="ed.pub.ship.spot">Pickup location</label>
@@ -5306,12 +5304,8 @@
 
   /* 墓碑 2026-10-21（D462）：earlyHintFor（單張門票提前入場分鐘的換算說明）隨門票層提前入場退場。 */
 
-  /* bookyay 帶入的票（D330）：priceObj 帶 pin＝{ HKD: 原價 }。回「HK$300」；不是 bookyay 帶入的回空字串。 */
-  const isBkyTier = t => { const po = window.ztorEvents.priceOf(ev, t); return !!(po.pin && po.pin.HKD != null); };
-  function bkyPinText(t) {
-    const S = window.ztorEvents, po = S.priceOf(ev, t);
-    return (po.pin && po.pin.HKD != null && po.base !== 'HKD') ? S.fmtMoney('HKD', po.pin.HKD) : '';
-  }
+  /* bookyay 帶入的票（D517）：票種帶 bky，基準價鎖定。 */
+  const isBkyTier = t => !!(t && t.bky);
   /* ── 獨立票（D380 決定五，2026-10-09）──────────────────────────────
      獨立票＝不掛任何票種、只屬於一場的門票（資料 `standalone: true`，多場活動另帶 `sess`＝所屬場次 id）。
      與票種門票排在同一張清單、不另分區，名稱後掛「獨立票」標籤；多場活動補一列「場次」寫出它屬於哪一場，
@@ -5412,8 +5406,6 @@
           (soloSessText(t) ? fact(T('ed.tix.sess', 'Date'), tixEsc(soloSessText(t))) : '') +
           /* 票價以基準幣別顯示（D306／5.1.6.3 §2.6） */
           fact(T('ee.tix.price', 'Price'), priceVal) +
-          /* bookyay 帶入者（D330）：基準價是港幣原價換算來的——多一列「bookyay 原價 HK$300」 */
-          (bkyPinText(t) ? fact(T('ed.tix.bky-price', 'bookyay price'), tixEsc(bkyPinText(t))) : '') +
           /* D465：鎖給單售（可賣/配額）與保留中；沒鎖單售、也沒有保留時不加列 */
           (S.tierSingleLock(t) !== null ? fact(T('ed.tix.col.lock', 'Locked for single sale'), quotaHTML(S.tierSingleLock(t), S.tierHoldSingle(t))) : '') +
           (S.tierHeld(ev, t) ? fact(T('ed.tix.col.reserved', 'Reserved'), fmtNum(S.tierHeld(ev, t))) : '') +
@@ -5761,7 +5753,7 @@
              墓碑 2026-10-20（D460）：活動層那張「預設購票規則」卡（#ed-evrules／renderEvRules）退場。
      決定二：bookyay 帶入的票（含未售出）刪除鈕停用，原因寫在鈕旁（#ed-tm-del-why）。
      決定三：bookyay 帶入的票，提前入場與早到處理鎖定為跟隨場次（場次的值由 bookyay 帶入，D365）。
-     「bookyay 帶入的票」＝價格帶 bookyay 原價（isBkyTier，D330；D429 起不再有套票轉出的 1 人票 hideFix）；
+     「bookyay 帶入的票」＝票種帶 bky（isBkyTier，D517；D429 起不再有套票轉出的 1 人票 hideFix）；
      在活動詳情另外新增的票不算 bookyay 帶入的票，照常可改可刪；但入場（決定三）例外——
      D386 決定一（2026-10-09 使用者裁決「鎖」）：bookyay 活動另外新增的票（含獨立票、含新增中的那一張）提前入場與早到處理
      同樣鎖定為跟隨場次、掛同一枚 From bookyay（場次本身的值由 bookyay 帶入）。判斷用 entryLock（＝evIsBky），不用 tierBky。 */
@@ -5977,7 +5969,7 @@
     del.title = sold > 0 ? T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold)) : '';
     /* 2026-08-18：票種在子場也可以改（在這裡改＝只改這一場）。 */
     ['ed-tm-name', 'ed-tm-price', 'ed-tm-qty'].forEach(id => { tmEl(id).readOnly = false; });
-    if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D330：bookyay 帶入的基準價由港幣原價換算而來、鎖定（D514：沒有其他改價入口）
+    if (isBkyTier(t)) tmEl('ed-tm-price').readOnly = true;   // D328、D517：bookyay 帶入的基準價鎖定，要調價回 bookyay 改
     /* 張數（5.1.6.1 F21「票種名稱與預設價格與張數」鎖定；2026-10-07 補）＋
        票價與張數的來源標記（同票名那一枚） */
     const pqLock = isBkyTier(t);
@@ -7324,16 +7316,9 @@
       if (usw) { usw.classList.toggle('switch--on', !!lst.unlistOn); usw.setAttribute('aria-checked', lst.unlistOn ? 'true' : 'false'); }
       const ub = document.getElementById('ed-pub-unlist-body');
       if (ub) ub.hidden = !lst.unlistOn;
-      /* 順豐運費（F24；D368 決定四）：publish.shipFee＝創作者幣別的值；bookyay 帶入者另記港幣原值 shipFeeHkd，底下一句寫換算來源 */
+      /* 順豐運費（F24）：publish.shipFee＝創作者幣別的值 */
       putPub('ship-fee', pub.shipFee != null ? String(pub.shipFee) : '');
       putPub('ship-spot', pub.shipSpot || '');
-      const feeSrc = edit.querySelector('[data-pub-ship-fee-src]');
-      if (feeSrc) {
-        const hk = isBky() && pub.shipFeeHkd != null && pub.shipFeeHkd !== '' ? Number(pub.shipFeeHkd) : null;
-        feeSrc.hidden = hk == null;
-        if (hk != null) feeSrc.textContent = T('ed.pub.ship.fee.bky', 'Converted from bookyay {v}')
-          .replace('{v}', window.ztorEvents ? window.ztorEvents.fmtMoney('HKD', hk) : 'HK$' + hk);
-      }
       edit.querySelectorAll('[data-pub-when]').forEach(el => { el.hidden = el.dataset.pubWhen !== cur.pickup; });
       const sw = document.getElementById('ed-pub-shown');
       if (sw) { sw.setAttribute('aria-checked', pubShown() ? 'true' : 'false'); sw.classList.toggle('switch--on', pubShown()); }

@@ -7087,9 +7087,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 **`translation` 選項（D312，2026-09-23）** — `'auto' | 'manual'`，選填、預設 `'auto'`。auto（原行為）：切到還沒填的語系時，該欄位的草稿直接鏡射預設語言目前值——等於「自動翻譯」，讀者看不出這是原文還是已確認的譯文。manual：其他語系**不**把原文抄進草稿（未填＝空字串），預覽與翻譯表改用 `displayValue()` 對未填欄位 fallback 顯示原文（畫面上看得到內容、草稿裡仍是空）；側欄語言列狀態字串改為「未翻譯 Not translated」（`pstage.lang.untranslated`）或「已翻譯 n of N translated」（`pstage.lang.translated`，n＝`filledCount(lang)`、N＝`totalFields()`＝翻譯表列數）；翻譯表輸入框在未填格加 `placeholder="{原文}"`（`[data-stage-drawer="trans"] .pp-cell-field::placeholder`，`--muted-foreground`）；還原鈕文案由「還原自動翻譯」（`pstage.lang.reset`）換成「清除譯文 Clear translation」（`pstage.lang.clear`），行為也從「回填原文」改成「清空該語系草稿」。兩種模式共用同一個 `result()` 結構（`translations[key][lang]`，空字串＝未翻譯），差別只在「空字串」這件事會不會被自動填滿。**消費頁**：`create-event.html`、`event-localization.html` 掛 `translation:'manual'`（活動內容需要人工確認翻譯，主規格 §7.4「活動例外：手動翻譯」）；`create-product.html`、`create-project.html` 未傳此選項、沿用 `'auto'`。
 
-**`priceObj.pin`（D330，D514 決定四）** — bookyay 帶入的活動：`pin: { HKD: 原價 }` 把港幣價鎖在 bookyay 原價，可有小數；其他幣別照基準價換算。預覽只用創作者幣別，側欄不標示港幣原價；建立活動的票種彈窗在票價欄下寫港幣原值（`· bookyay`），活動詳情票卡多一列「bookyay 原價」。取價規則（鎖定價 → 基準／換算）在 `js/events-store.js` 的 `priceIn()`，`fmtMoney()` 有小數才留兩位。
-
-**D331 補充（2026-09-29）** — `pin` 的來源擴到創作者自建、成員含 bookyay 匯入票券的活動組合包：港幣欄＝（bookyay 票券港幣原價 × 張數 ＋ 商品成員合計換算成港幣）×（1 − 組合折扣%），由 `js/events-store.js` 的 `bkyBundleHkd()`（活動詳情「預覽與在地化」）與 `create-event.html` 的 `bdBkyHkd()`（建立活動第 7 步）算出，畫法與自動建立者相同（鎖頭、唯讀、可有小數）；允許多種票種時取下界。Creator Studio 清單、摘要、KPI 讀 `moneyIn(priceObj)`／`effAmount(priceObj)`＝`priceIn()` 的基準幣別值，基準欄被覆寫就是覆寫值（D331 決定一）。元件外觀不變。
+**墓碑 2026-11-06（D517 決定六）** — `priceObj.pin` 與 `bkyBundleHkd()` 退場。bookyay 票價以創作者幣別帶入，直接是基準價；含 bookyay 票券的組合包照一般組合包，其他幣別一律換算。
 
 **墓碑 2026-11-05（D514）** — 價格表抽屜、`priceOverrides` 選項、`prices[i].overridable` 列級旗標、`priceObj.override`／`baseOpen`、預覽價格的 `data-fep-price-key` 全部退場。五個建立流程與兩個在地化頁的預覽一律只看不改。
 

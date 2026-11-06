@@ -13653,7 +13653,7 @@ Letterpress cover, uncoated stock.</textarea></div>
   <div class="code-fold__body">
     <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> It reuses the one canonical dialog shell </span><span data-zh> 重用唯一的 canonical dialog 殼 </span><a href="#payout">.payout-modal / .payout-dialog</a><span data-en> plus the shared form helpers (Pattern 5.1 “Modal shell”).</span><span data-zh> 與共用表單 helper（Pattern 5.1「Modal shell」）。</span></p>
     <p class="field-text"><code>window.ZTOR_PARTIALS.manualEntryModal</code>＝模板字串。宿主頁把它注入一個 host、再自己接開關與送出；示意值寫在模板裡，介面文案走 <code>data-i18n</code>。</p>
-    <p class="field-text"><code>partials/manual-entry-modal.js</code>。消費頁：<code>earnings.html</code>、<code>earnings-overview.html</code>、<code>earnings-ztor.html</code>。</p>
+    <p class="field-text"><code>partials/manual-entry-modal.js</code>。消費頁：<code>earnings.html</code>、<code>earnings-overview.html</code>、<code>earnings-ztor.html</code>。幣別下拉掛 <code>[data-currency-options]</code>，選項由 <code>js/currency.js</code> 的 <code>paint()</code> 填全站幣別清單（D517）。</p>
   </div>
   </details>
 </section>
@@ -13744,8 +13744,7 @@ Letterpress cover, uncoated stock.</textarea></div>
     <p class="field-text"><code>translation: 'auto' | 'manual'</code>，選填、預設 <code>'auto'</code>。<strong>auto</strong>（原行為）：切到還沒填的語系時，草稿直接鏡射預設語言目前值——等於自動翻譯，讀者分不出是原文還是已確認的譯文；<code>create-product.html</code>、<code>create-project.html</code> 未傳此選項，沿用這個模式。<strong>manual</strong>：其他語系不把原文抄進草稿（未填＝空字串），預覽與翻譯表改用原文當 fallback 顯示（畫面上看得到內容、草稿仍是空）；側欄語言列狀態字串改「未翻譯 Not translated」／「已翻譯 n of N translated」（n＝已填欄數、N＝翻譯表列數）；翻譯表未填格加原文當 placeholder（<code>[data-stage-drawer="trans"] .pp-cell-field::placeholder</code>）；還原鈕文案由「還原自動翻譯」換成「清除譯文 Clear translation」，行為也從「回填原文」改成「清空該語系草稿」。<code>create-event.html</code> 與 <code>event-localization.html</code> 掛 <code>translation:'manual'</code>（活動內容需要人工確認翻譯，主規格 §7.4「活動例外：手動翻譯」）。兩種模式共用同一個 <code>result()</code> 結構，差別只在「空字串」會不會被自動填滿。</p>
     <p class="field-label">Currency <span class="field-note">(D514, 2026-11-05, retires D306 / D318 overrides)</span></p>
     <p class="field-text"><code>fields[].locked</code>（D445，2026-10-19）：bookyay 匯入、原文鎖定的列（描述、條款及細則、場地名稱、集合地點、交通說明、票種名稱；活動名稱不鎖）在欄位名後標小鎖頭 <code>.pp-field-lock</code>（<code>role="img"</code>、<code>title</code>／<code>aria-label</code>＝i18n <code>pp.field.locked</code>）。原文欄本來就唯讀、譯文欄照常可填；翻譯表另有 <code>venue</code>／<code>venue-meet</code>／<code>venue-transit</code>／<code>session-&lt;id&gt;</code>／<code>bundle-name-&lt;id&gt;</code>／<code>bundle-desc-&lt;id&gt;</code> 六組 key，粉絲頁預覽用同一組 key 取譯文。</p>
-    <p class="field-text"><code>priceObj.pin</code>（D330，D514 決定四）：bookyay 帶入的活動，<code>pin: { HKD: 原價 }</code> 把港幣價鎖在 bookyay 原價，可有小數；其他幣別照基準價換算。預覽只用創作者幣別，港幣原價不在預覽側欄標示；建立活動的票種彈窗在票價欄下寫港幣原值（<code>· bookyay</code>），活動詳情票卡多一列「bookyay 原價」。取價規則在 <code>js/events-store.js</code> 的 <code>priceIn()</code>（鎖定價 → 基準／換算），<code>fmtMoney()</code> 有小數才留兩位。</p>
-    <p class="field-text">D331 補充（2026-09-29）：<code>pin</code> 的來源擴到創作者自建、成員含 bookyay 匯入票券的活動組合包——港幣價＝（bookyay 票券港幣原價 × 張數 ＋ 商品成員合計換算成港幣）×（1 − 組合折扣%），由 <code>js/events-store.js</code> 的 <code>bkyBundleHkd()</code> 與 <code>create-event.html</code> 的 <code>bdBkyHkd()</code> 算出，允許多種票種時取下界。</p>
+    <p class="field-text">墓碑 2026-11-06（D517 決定六）：<code>priceObj.pin</code> 與 <code>bkyBundleHkd()</code> 退場。bookyay 票價以創作者幣別帶入，直接是基準價；含 bookyay 票券的組合包照一般組合包，其他幣別一律換算。</p>
     <p class="field-text">墓碑 2026-11-05（D514）：價格表抽屜、<code>priceOverrides</code> 選項、<code>prices[i].overridable</code> 列級旗標、<code>priceObj.override</code>／<code>baseOpen</code>、預覽價格的 <code>data-fep-price-key</code> 全部退場。五個建立流程與兩個在地化頁的預覽一律只看不改。墓碑 2026-11-05（D514 決定三）：側欄「幣別」段（基準／換算／bookyay 原價標記）、預覽幣別切換、<code>currencies</code> 與 <code>prices</code> 選項、<code>.pstage-row__name--code</code>、i18n <code>pstage.sec.currency</code>／<code>pstage.cur.*</code> 全部退場。</p>
     <p class="field-label">Do / Don’t</p>
     <p class="field-text"><span data-en>Do: </span><span data-zh>Do：</span>把「發布前看一次」做成流程的最後一步或一個獨立頁，讓預覽拿到整個寬度。<br><span data-en>Don’t: </span><span data-zh>Don’t：</span>在這個畫面之後再加一層「確認發布」浮層——本畫面就是那層確認（D310）。<br><span data-en>Don’t: </span><span data-zh>Don’t：</span>把「編輯」鈕插進粉絲頁的 markup——那份 markup 是前台 1:1 鏡像，塞東西進去就不再是鏡像，可翻譯欄位又是 contenteditable，塞在裡面會被當成內容編輯；改用浮動的 <code>.pstage-edit</code>。</p>
@@ -16055,6 +16054,7 @@ Letterpress cover, uncoated stock.</textarea></div>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/archived-gate.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script><!-- D517：補登彈窗的幣別下拉 -->
 <script src="partials/manual-entry-modal.js?v=r2.2"></script>
 <script src="partials/source-upload-modal.js?v=r2.2"></script>
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
@@ -16446,6 +16446,7 @@ Letterpress cover, uncoated stock.</textarea></div>
     var tpl = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS[host.getAttribute('data-ds-partial')];
     if (!tpl) return;
     host.innerHTML = tpl;
+    if (window.ztorCurrency) window.ztorCurrency.paint(host);
     host.querySelectorAll('[hidden]').forEach(function (el) {
       /* 只解除彈窗外層那一層的 hidden：內部條件區塊（例如編輯模式才藏的 Creator 搜尋）
          保持原樣，那才是它真實的長相。 */
