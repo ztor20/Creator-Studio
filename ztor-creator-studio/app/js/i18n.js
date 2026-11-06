@@ -808,14 +808,41 @@
     /* D316（2026-09-23）：每筆固定額改以平台基準幣別記錄，套用到創作者時依當時匯率換算。 */
     'fees.payment.fixed.base': { en: 'The fixed amount is recorded in the platform base currency and converted at the prevailing rate when it applies to a creator.', zh: '每筆固定額以平台基準幣別記錄，套用到創作者時依當時匯率換算。' },
     'fees.payment.sub':     { en: 'Each payment provider has its own rate — a percentage plus a fixed amount per transaction, applied to every transaction (OTT excluded; its rate is already all-in).', zh: '每個金流商各自的費率——百分比＋每筆固定金額，套用所有交易（OTT 線上影音除外，其費率已含金流）。' },
-    /* D514（2026-11-05）：換匯手續費。粉絲付款幣別與品項基準幣別不同時向粉絲加收，歸平台。 */
+    /* D514、D517：換匯手續費。粉絲付款幣別與品項基準幣別不同時併進售價，歸平台。 */
     'fees.swap.title':      { en: 'Currency swap fee', zh: '換匯手續費' },
-    'fees.swap.sub':        { en: 'Added to what the fan pays when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.', zh: '粉絲付款幣別和商品基準幣別不同時，向粉絲加收；同幣別不收。這筆費用歸平台，不計入創作者收入。' },
+    'fees.swap.sub':        { en: 'Built into the one price the fan sees when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.', zh: '粉絲付款幣別與品項基準幣別不同時，併進粉絲看到的單一價格；相同時不收。歸平台，不計入創作者收入。' },
+    'fees.swap.fx-note':    { en: 'Exchange rates update automatically every day and can’t be edited. Only the fee is set here.', zh: '匯率每日自動更新，不能手改；這裡只調手續費。' },
     'fees.swap.sample':     { en: 'Sample rates', zh: '示意值' },
     'fees.swap.col.cur':    { en: 'Fan pays in', zh: '粉絲付款幣別' },
     'fees.swap.col.rate':   { en: 'Fee rate', zh: '費率' },
-    'fees.swap.exc-hint':   { en: 'Leave blank to use the default; enter a value to override just that payment currency.', zh: '留空＝沿用預設；填數值只覆寫該付款幣別。' },
-    'fees.swap.clear':      { en: 'Clear override', zh: '清除覆寫' },
+    'fees.swap.col.countries': { en: 'Registered countries', zh: '適用註冊國家' },
+    'fees.swap.add':        { en: 'Add currency', zh: '新增幣別' },
+    'fees.swap.add.hint':   { en: 'Added currencies can’t be removed. Creators and manual income entries can use it right away.', zh: '新增後不能刪除；創作者幣別與手動補登收入馬上可以選。' },
+    'fees.swap.add.code':   { en: 'Code', zh: '幣別代碼' },
+    'fees.swap.add.code-ph': { en: 'e.g., MYR', zh: '例如：MYR' },
+    'fees.swap.add.code-err': { en: 'Enter a three-letter code.', zh: '請輸入三碼英文代碼。' },
+    'fees.swap.add.code-dup': { en: 'This currency is already on the list.', zh: '這個幣別已經在清單上。' },
+    'fees.swap.add.name':   { en: 'Name', zh: '幣別名稱' },
+    'fees.swap.add.name-ph': { en: 'e.g., Malaysian ringgit', zh: '例如：馬來西亞令吉' },
+    'fees.swap.add.name-err': { en: 'Enter the currency name.', zh: '請輸入幣別名稱。' },
+    'fees.swap.add.rate-err': { en: 'Enter a fee rate.', zh: '請輸入費率。' },
+    'fees.swap.add.countries-ph': { en: 'Select countries', zh: '選擇國家' },
+    'fees.swap.add.countries-err': { en: 'Select at least one country.', zh: '請至少選一個國家。' },
+    'fees.swap.added':      { en: 'Added currency', zh: '新增幣別' },
+    'fees.country.other':   { en: 'All other countries', zh: '其他國家' },
+    'fees.country.TW':      { en: 'Taiwan', zh: '台灣' },
+    'fees.country.HK':      { en: 'Hong Kong', zh: '香港' },
+    'fees.country.SG':      { en: 'Singapore', zh: '新加坡' },
+    'fees.country.JP':      { en: 'Japan', zh: '日本' },
+    'fees.country.KR':      { en: 'South Korea', zh: '韓國' },
+    'fees.country.MY':      { en: 'Malaysia', zh: '馬來西亞' },
+    'fees.country.TH':      { en: 'Thailand', zh: '泰國' },
+    'fees.country.VN':      { en: 'Vietnam', zh: '越南' },
+    'fees.country.PH':      { en: 'Philippines', zh: '菲律賓' },
+    'fees.country.ID':      { en: 'Indonesia', zh: '印尼' },
+    'fees.country.GB':      { en: 'United Kingdom', zh: '英國' },
+    'fees.country.AU':      { en: 'Australia', zh: '澳洲' },
+    'fees.country.CA':      { en: 'Canada', zh: '加拿大' },
     'fees.leaf.swap.USD':   { en: 'USD · US dollar', zh: 'USD · 美元' },
     'fees.leaf.swap.TWD':   { en: 'TWD · New Taiwan dollar', zh: 'TWD · 新台幣' },
     'fees.leaf.swap.HKD':   { en: 'HKD · Hong Kong dollar', zh: 'HKD · 港幣' },
@@ -5459,7 +5486,6 @@
     'ed.loc.saved':         { en: 'Saved — translations are live.', zh: '已儲存，翻譯已生效。' },
     /* D453（2026-10-19）墓碑：設定分頁「在地化」卡拿掉，ed.loc.title／langs／langs.val／base／overrides／overrides.none／overrides.n／locked（D330 港幣鎖定說明）不再有消費者，已刪；入口只剩頁首 ed.loc.btn。 */
     'ed.tix.other-cur':     { en: 'Other currencies',                 zh: '其他幣別' },
-    'ed.tix.bky-price':     { en: 'bookyay price',                    zh: 'bookyay 原價' },
     /* 動態欄位分組（使用者 2026-08-24 追加裁示）——create-product 的詳細規格列與
        多選項商品的選項組是列數不定的清單，每列的名稱/值都要能翻譯。這組 key 是
        列表檢視分組小標與逐列標籤共用的組字，不是某一列的固定文案，故用「組字＋
@@ -8169,13 +8195,15 @@
     'od.amt.threshold':     { en: 'Platform threshold discount', zh: '平台滿額折抵' },
     'od.amt.net':           { en: 'Net to you',              zh: '淨額' },
     'od.amt.fxpaid':        { en: 'Buyer paid',              zh: '買家實付' },
-    /* D514（2026-11-05）：換匯手續費列。匯率與時點是這筆訂單結帳時鎖定的值。 */
+    /* D514、D517：換匯手續費列與展開。匯率與時點是這筆訂單結帳時鎖定的值。 */
     'od.amt.swap':          { en: 'Currency swap fee',       zh: '換匯手續費' },
-    'od.amt.swap.rate':     { en: 'Rate {rate} · locked {at}', zh: '匯率 {rate} · {at} 鎖定' },
-    'od.amt.swap.note':     { en: 'Paid by the fan to the platform. Not part of your earnings.', zh: '由粉絲支付給平台，不計入你的收入。' },
-    'od.amt.swap.back':     { en: '{amt} goes back with the voided items', zh: '其中 {amt} 隨撤銷品項退回' },
+    'od.amt.swap.note':     { en: 'Included in the one price the fan saw. It goes to the platform and isn’t part of your earnings.', zh: '已含在粉絲看到的單一價格裡，歸平台，不計入你的收入。' },
+    'od.amt.swap.before':   { en: 'Before conversion',       zh: '換算前金額' },
+    'od.amt.swap.rate':     { en: 'Exchange rate',           zh: '匯率' },
+    'od.amt.swap.locked':   { en: 'Locked {at}',             zh: '{at} 鎖定' },
+    'od.amt.swap.after':    { en: 'After conversion',        zh: '換算後金額' },
     'od.amt.fxpaid.sum':    { en: 'Items and shipping {sum} + swap fee {fee}', zh: '品項與運費 {sum} ＋ 換匯手續費 {fee}' },
-    'od.amt.fxpaid.bky':    { en: 'bookyay price in HKD, no currency swap fee', zh: 'bookyay 港幣原價，不收換匯手續費' },
+    'od.amt.fxpaid.base':   { en: 'Creator currency {amt}',  zh: '創作者幣別 {amt}' },
     'od.amt.cta':           { en: 'View in Earnings →',      zh: '在收入管理查看 →' },
     /* 右欄「訂單資訊」（2026-08-07）：只放規格 §2.2 已有的下單時間一列。
        標籤寫「下單時間」而不是「建立於」——日期擺在這個標籤底下本來就是那個意思。 */
@@ -11238,7 +11266,6 @@
                               zh: '粉絲到指定門市或活動現場憑證件領票。' },
     'ed.pub.ship.fee':    { en: 'Postage',                 zh: '運費' },
     'ed.pub.ship.fee.hint': { en: 'Fans pay this on top at checkout.', zh: '粉絲結帳時另外付這筆。' },
-    'ed.pub.ship.fee.bky': { en: 'Converted from bookyay {v}', zh: '由 bookyay {v} 換算' },   // D368 決定四
     'ed.pub.ship.spot':   { en: 'Pickup location',         zh: '取貨地點' },
     'ed.pub.ship.spot.hint': { en: 'Fans bring ID here to collect the ticket.', zh: '粉絲帶證件到這裡領票。' },
     /* 墓碑 2026-09-29（D327）：詳情頁發布設定裡電子門票三組附屬設定的字串（ed.pub.tp／ed.pub.dq／ed.pub.tf 系列、

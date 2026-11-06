@@ -5,7 +5,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    兩種模式共用同一殼：
    - add：顯示 Creator 搜尋（data-fx-creator-field），標題＝新增費率例外。
    - edit：Creator 固定（藏搜尋），標題＝費率例外 · <Creator 名>。
-   支付手續費一律唯讀顯示（全站統一、不逐 Creator，D141）；平台費樹由頁面 clone #fee-tree 注入 [data-fx-tree]；換匯手續費表（D514）由頁面 clone #fee-swap-table 注入 [data-fx-swap]。 */
+   支付手續費一律唯讀顯示（全站統一、不逐 Creator，D141）；平台費樹由頁面 clone #fee-tree 注入 [data-fx-tree]。
+   墓碑 2026-11-06（D517 決定三）：換匯手續費的逐創作者覆寫（[data-fx-swap]）退場。 */
 window.ZTOR_PARTIALS.feeExceptionModal = String.raw`
 <!-- 費率例外彈窗 · spec 5.1.0.3 F3 / D141 -->
 <div class="payout-modal" data-fx-modal hidden>
@@ -30,13 +31,6 @@ window.ZTOR_PARTIALS.feeExceptionModal = String.raw`
 
       <!-- 支付手續費不在此彈窗：全站統一、不逐 Creator（D141），例外只覆寫平台費。
            參考值請見「基本設定」分頁；2026-07-23 使用者裁示自例外彈窗移除。 -->
-
-      <!-- 換匯手續費（D514 決定七）：逐粉絲付款幣別覆寫（表由頁面 clone #fee-swap-table 注入）-->
-      <div class="field" data-feat="S134" style="margin-bottom:var(--sp-18)">
-        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="fees.swap.title">Currency swap fee</span>
-        <p class="text-sub" style="margin:var(--sp-4) 0 var(--sp-8)" data-i18n="fees.swap.exc-hint">Leave blank to use the default; enter a value to override just that payment currency.</p>
-        <div data-fx-swap></div>
-      </div>
 
       <!-- 平台費：逐交易子類覆寫（樹由頁面注入）-->
       <div class="field">

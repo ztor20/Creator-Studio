@@ -161,25 +161,25 @@ table.map td:nth-child(2){width:22%}
 <body>
 <div class="wrap">
 <h1>平台費率設定</h1>
-<p class="lede">Admin 在這頁設定全平台的平台費率、支付費與換匯手續費，並可對個別創作者設不同的平台費率與換匯手續費費率。平台費與支付費怎麼套進一筆交易的金額、由誰負擔，見優惠規則的<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a>；換匯手續費見定價幣別的<a href="common-currency.html#swap-fee">換匯手續費</a>。</p>
+<p class="lede">Admin 在這頁設定全平台的平台費率、支付費與換匯手續費，並可對個別創作者設不同的平台費率；換匯手續費依付款幣別各設一個百分比，沒有逐創作者的費率。平台費與支付費怎麼套進一筆交易的金額、由誰負擔，見優惠規則的<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a>；換匯手續費見定價幣別的<a href="common-currency.html#swap-fee">換匯手續費</a>。</p>
 <div class="toc"></div>
 
 <h2 id="intro" class="no-num">概述</h2>
 <ul class="plain">
   <li>這頁是平台費率唯一的設定處，只有 Admin 能進入與修改，沒有權限時顯示無權限狀態</li>
   <li>創作者在商品細節、訂單與收入頁只看得到套用後的費率，不能改</li>
-  <li>平台費與換匯手續費各分兩層：全平台的預設值，以及對個別創作者的覆寫</li>
+  <li>平台費分兩層：全平台的預設值，以及對個別創作者的覆寫；換匯手續費只有全平台一層，依粉絲付款幣別各設一個百分比</li>
   <li>改了費率只對之後的交易生效，見<a href="#versioning">改費率只對之後生效</a></li>
 </ul>
 
 <h2 id="flow"><span class="n"></span>操作流程</h2>
-<p>Admin 先選要改全平台預設還是某位創作者的覆寫，改完儲存成一個新版本。</p>
+<p>Admin 先選要改全平台預設還是某位創作者的平台費覆寫，改完儲存成一個新版本。</p>
 <div class="dg" role="img" aria-label="平台費率設定流程圖：選設定模式；預設模式直接改預設費率，覆寫模式先選一位創作者再逐項覆寫或清除；儲存後產生新的費率版本，只對生效時間之後的交易生效">
 <div class="dg-hg" style="--dg-c:5">
   <div class="dg-node q" style="grid-row:1/3;grid-column:1"><span class="s">1</span>要改哪一層？<small>設定模式</small></div>
   <span class="dg-a" data-t="預設" style="grid-row:1;grid-column:2"></span>
   <span class="dg-a" data-t="覆寫" style="grid-row:2;grid-column:2"></span>
-  <div class="dg-node" style="grid-row:1;grid-column:3"><span class="s">2</span>改預設費率<small>平台費、支付費與換匯手續費</small></div>
+  <div class="dg-node" style="grid-row:1;grid-column:3"><span class="s">2</span>改預設費率<small>平台費、支付費、換匯手續費與新增幣別</small></div>
   <div class="dg-node" style="grid-row:2;grid-column:3">選一位創作者<small>沒選不顯示可覆寫的費率</small></div>
   <span class="dg-a" style="grid-row:1;grid-column:4/7"></span>
   <span class="dg-a" style="grid-row:2;grid-column:4"></span>
@@ -190,7 +190,7 @@ table.map td:nth-child(2){width:22%}
   <div class="dg-node end" style="grid-row:1/3;grid-column:9"><span class="s">4</span>新費率生效<small>只對生效時間之後的交易</small></div>
 </div>
 </div>
-<p class="dg-cap">流程圖：由左往右走，上面一列改全平台預設，下面一列改某位創作者的覆寫，兩條路在儲存合流；圓圈數字對應下方步驟清單的編號。</p>
+<p class="dg-cap">流程圖：由左往右走，上面一列改全平台預設，下面一列改某位創作者的平台費覆寫，兩條路在儲存合流；圓圈數字對應下方步驟清單的編號。</p>
 <ol class="plain">
   <li>選設定模式
     <ul class="plain">
@@ -209,7 +209,7 @@ table.map td:nth-child(2){width:22%}
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>設定模式</td><td>—</td><td>二選一<br>預設（General）：設全平台的預設值<br>覆寫（Override）：對一位創作者設不同的值，見<a href="#override">逐創作者覆寫</a></td></tr>
+    <tr><td>設定模式</td><td>—</td><td>二選一<br>預設（General）：設全平台的預設值<br>覆寫（Override）：對一位創作者設不同的平台費率，見<a href="#override">逐創作者覆寫</a></td></tr>
   </tbody>
 </table></div>
 <p>設定模式選預設時，Admin 在這裡設全平台通用的費率。平台費逐交易類型設定，見<a href="#platform-fee">平台費</a>；金流商的手續費另設一組，見<a href="#payment-fee">支付費</a>；向粉絲收的費用依付款幣別設定，見<a href="#swap-fee">換匯手續費</a>。</p>
@@ -249,17 +249,18 @@ table.map td:nth-child(2){width:22%}
 </table></div>
 
 <h3 id="swap-fee">換匯手續費</h3>
-<p>換匯手續費（Currency swap fee）是粉絲付款幣別與品項基準幣別不同時，平台向粉絲加收的費用；由粉絲支付、歸平台，跟從創作者收入內扣的平台費、支付費方向相反。定義與算法見定價幣別的<a href="common-currency.html#swap-fee">換匯手續費</a>。</p>
+<p>換匯手續費（Currency swap fee）是粉絲付款幣別與品項基準幣別不同時，平台併進售價的費用；由粉絲支付、歸平台，跟從創作者收入內扣的平台費、支付費方向相反。費率依粉絲付款幣別各設一個百分比，全平台同一組，沒有逐創作者的費率。定義與算法見定價幣別的<a href="common-currency.html#swap-fee">換匯手續費</a>。</p>
 <div class="tablewrap"><table class="fields">
   <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
   <tbody>
-    <tr><td>各付款幣別的費率（%）</td><td>—</td><td>可以改<br>固定五列，粉絲用該幣別付款時適用：<br>美元（USD）<br>新台幣（TWD）<br>港幣（HKD）<br>新加坡幣（SGD）<br>日圓（JPY）<br>每列一個百分比，沒有幣別對幣別的組合表<br>預設百分比與小數位數尚待確認，見頁尾</td></tr>
+    <tr><td>各付款幣別的費率（%）</td><td>—</td><td>可以改<br>預設五列，粉絲用該幣別付款時適用：<br>美元（USD）<br>新台幣（TWD）<br>港幣（HKD）<br>新加坡幣（SGD）<br>日圓（JPY）<br>每列一個百分比，預設都填同一個值；沒有幣別對幣別的組合表<br>預設百分比與小數位數尚待確認，見頁尾</td></tr>
+    <tr><td>新增幣別</td><td>—</td><td>Admin 可以新增幣別；新增的幣別同時成為創作者幣別與粉絲付款幣別的選項，並一併指定適用的註冊國家，見定價幣別的<a href="common-currency.html#fan-pay">粉絲付款與收款</a><br>新增後不提供刪除<br>細節尚待確認，見頁尾</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.0.3 頁面定位、F2、F6；主規格 §7.3、§7.6、§7.15；D085、D139、D141、D169、D316、D455、D514。</p>
+<p class="note">依據：5.1.0.3 頁面定位、F2、F6；主規格 §7.3、§7.6、§7.15；D085、D139、D141、D169、D316、D455、D514、D517。</p>
 
 <h2 id="override"><span class="n"></span>逐創作者覆寫</h2>
-<p>覆寫讓 Admin 對個別創作者給跟預設不同的平台費率與換匯手續費費率，處理個別合約或優惠。怎麼設，見<a href="#override-edit">選創作者與覆寫</a>；誰設過覆寫，見<a href="#override-list">覆寫清單</a>。</p>
+<p>覆寫讓 Admin 對個別創作者給跟預設不同的平台費率，處理個別合約或優惠。換匯手續費不能覆寫，每個付款幣別全平台一個費率。怎麼設，見<a href="#override-edit">選創作者與覆寫</a>；誰設過覆寫，見<a href="#override-list">覆寫清單</a>。</p>
 
 <h3 id="override-edit">選創作者與覆寫</h3>
 <p>設定模式切到覆寫時出現。</p>
@@ -268,9 +269,8 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>選擇創作者</td><td>覆寫模式必選</td><td>沒選定之前，不顯示可覆寫的費率</td></tr>
     <tr><td>各交易類型的覆寫值</td><td>選定創作者後</td><td>一次改一種交易類型，其餘自動沿用預設<br>不是整個維度套一個折扣</td></tr>
-    <tr><td>各付款幣別的換匯手續費覆寫值</td><td>選定創作者後</td><td>一次改一個付款幣別，其餘自動沿用預設</td></tr>
-    <tr><td>沿用預設的標示</td><td>沒覆寫的交易類型或付款幣別</td><td>顯示沿用預設，並標出沿用的值<br>覆寫值與預設值在畫面上要分得出來</td></tr>
-    <tr><td>清除覆寫</td><td>已覆寫的交易類型或付款幣別</td><td>回到沿用預設</td></tr>
+    <tr><td>沿用預設的標示</td><td>沒覆寫的交易類型</td><td>顯示沿用預設，並標出沿用的值<br>覆寫值與預設值在畫面上要分得出來</td></tr>
+    <tr><td>清除覆寫</td><td>已覆寫的交易類型</td><td>回到沿用預設</td></tr>
   </tbody>
 </table></div>
 
@@ -287,7 +287,7 @@ table.map td:nth-child(2){width:22%}
 
 <h3 id="override-list">覆寫清單</h3>
 <ul class="plain">
-  <li>列出目前哪些創作者設過覆寫、各自覆寫了哪些交易類型與付款幣別，供稽核與對帳</li>
+  <li>列出目前哪些創作者設過覆寫、各自覆寫了哪些交易類型，供稽核與對帳</li>
 </ul>
 
 <h4 id="override-states">覆寫的各種樣子</h4>
@@ -295,14 +295,14 @@ table.map td:nth-child(2){width:22%}
   <thead><tr><th style="width:24%">狀態</th><th style="width:34%">什麼時候</th><th>畫面</th></tr></thead>
   <tbody>
     <tr><td>還沒選創作者</td><td>設定模式是覆寫，尚未選創作者</td><td>不顯示可覆寫的費率</td></tr>
-    <tr><td>沿用預設</td><td>這位創作者沒有覆寫這種交易類型或這個付款幣別</td><td>顯示沿用預設，並標出沿用的值</td></tr>
-    <tr><td>已覆寫</td><td>Admin 覆寫過這種交易類型或這個付款幣別</td><td>顯示覆寫值，跟預設值分得出來；可以清除覆寫</td></tr>
+    <tr><td>沿用預設</td><td>這位創作者沒有覆寫這種交易類型</td><td>顯示沿用預設，並標出沿用的值</td></tr>
+    <tr><td>已覆寫</td><td>Admin 覆寫過這種交易類型</td><td>顯示覆寫值，跟預設值分得出來；可以清除覆寫</td></tr>
     <tr><td>沒有任何創作者覆寫</td><td>覆寫清單是空的</td><td><span class="tag wait">尚待確認</span></td></tr>
     <tr><td>沒有版本歷史</td><td>還沒有儲存過任何費率</td><td><span class="tag wait">尚待確認</span></td></tr>
     <tr><td>非 Admin 進入</td><td>沒有 Admin 身分</td><td>顯示無權限狀態，不提供編輯</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.0.3 F3、F6；D141、D315、D514。</p>
+<p class="note">依據：5.1.0.3 F3、F6；D141、D315、D517。</p>
 
 <h2 id="save"><span class="n"></span>儲存與版本歷史</h2>
 <p>預設與覆寫的修改都在這裡存成新版本，歷來的版本都查得到；時間軸圖見<a href="#versioning">改費率只對之後生效</a>。</p>
@@ -311,10 +311,10 @@ table.map td:nth-child(2){width:22%}
   <tbody>
     <tr><td>儲存</td><td>—</td><td>儲存預設或覆寫的修改，產生一個新的費率版本，見<a href="#versioning">改費率只對之後生效</a></td></tr>
     <tr><td>生效時間（Effective From）</td><td>—</td><td>新費率只對這個時間之後的交易生效<br>怎麼設定見頁尾尚待確認</td></tr>
-    <tr><td>版本歷史（Version History）</td><td>—</td><td>列出歷來的費率版本與各自的生效區間<br>覆寫產生的版本看得出是哪位創作者、改了哪些交易類型或付款幣別</td></tr>
+    <tr><td>版本歷史（Version History）</td><td>—</td><td>列出歷來的費率版本與各自的生效區間<br>覆寫產生的版本看得出是哪位創作者、改了哪些交易類型</td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.0.3 F4、F6；D041、D514。</p>
+<p class="note">依據：5.1.0.3 F4、F6；D041、D514、D517。</p>
 
 <h2 id="rules"><span class="n"></span>費率怎麼生效</h2>
 <p>一筆交易在成交當下決定套哪個費率，之後改費率不會改到它。套哪一個值，見<a href="#resolve">一筆交易套用哪個費率</a>；改了之後影響哪些交易，見<a href="#versioning">改費率只對之後生效</a>。</p>
@@ -330,13 +330,9 @@ table.map td:nth-child(2){width:22%}
   <li>收入管理、訂單詳情、商品細節與拍賣商品細節顯示的平台費與支付費，都讀這頁的設定、不另外計算；顯示的是那筆交易記下的費率，不是這頁目前的值</li>
   <li>平台費與支付費在收入拆解中各是一筆扣項，用詞見<a href="common-finance.html">財務術語與收入事件</a>；計費基準與負擔方見<a href="promo-rules.html#s2-fees">平台費與支付費怎麼算</a></li>
 </ul>
-<p>換匯手續費同樣依序找兩層，找到就用：</p>
-<ol class="plain">
-  <li>這位創作者對這個付款幣別的覆寫值（有設的話）</li>
-  <li>全平台預設中這個付款幣別的值</li>
-</ol>
+<p>換匯手續費沒有覆寫，直接用全平台設定中粉絲付款幣別的那一個值：</p>
 <ul class="plain">
-  <li>找到的費率在成交當下記進訂單，訂單詳情列明細，見<a href="order-detail.html#fields-amount">金額拆解</a>；之後調費率不改既有訂單</li>
+  <li>費率在成交當下記進訂單，訂單詳情逐列顯示，見<a href="order-detail.html#fields-amount">金額拆解</a>；調費率只影響之後的銷售，既有訂單不改</li>
   <li>換匯手續費不是創作者收入，也不從創作者收入扣，所以不進收入拆解</li>
 </ul>
 
@@ -357,14 +353,14 @@ table.map td:nth-child(2){width:22%}
   <li>版本歷史只增不改，更正以新版本表示</li>
   <li>換匯手續費的費率同走這套版本；差別是成交當下記進訂單，不記在收入事件</li>
 </ul>
-<p class="note">依據：5.1.0.3 F3、F4、F5、F6；主規格 §7.3、§7.6、§7.15；D041、D141、D253、D278、D315、D316、D514。</p>
+<p class="note">依據：5.1.0.3 F3、F4、F5、F6；主規格 §7.3、§7.6、§7.15；D041、D141、D253、D278、D315、D316、D514、D517。</p>
 
 <details class="foot">
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.0.3-平台費率設定.md</code>（v1.12）、<code>0-設計規格書.md</code>（v5.42）§4.1、§7.3、§7.6、§7.15</li>
-    <li>決策：D041、D085、D139、D141、D169、D253、D274、D278、D315、D316、D391、D455、D514</li>
+    <li>規格：<code>5.1.0.3-平台費率設定.md</code>（v1.13）、<code>0-設計規格書.md</code>（v5.43）§4.1、§7.3、§7.6、§7.15</li>
+    <li>決策：D041、D085、D139、D141、D169、D253、D274、D278、D315、D316、D391、D455、D514、D517</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -380,9 +376,10 @@ table.map td:nth-child(2){width:22%}
     <li>生效時間怎麼設定（立即生效或指定日期）</li>
     <li>沒有任何創作者設過覆寫、還沒有版本歷史時的畫面</li>
     <li>頁面載入中、儲存失敗時怎麼顯示</li>
+    <li>Admin 新增幣別時的欄位細節（新增後不提供刪除、同時進粉絲付款幣別與創作者幣別、一併指定適用的註冊國家）（推導）</li>
     <li>換匯手續費那部分產生的金流費由平台吸收，不算在創作者頭上（推導）</li>
   </ul>
-  <p class="k">最近同步：2026-11-05（D514 新增換匯手續費；對照 5.1.0.3 v1.12、主規格 v5.42）</p>
+  <p class="k">最近同步：2026-11-06（D517 換匯手續費去掉逐創作者覆寫、新增幣別欄位；對照主規格 v5.43 與 5.1.0.3 分頁）</p>
 </details>
 </div>
 </body>
