@@ -13,3 +13,5 @@
 - 從 main@bfbc656 切出。
 
 - 2026-11-05 WORKFLOW 對齊獨立版本制（main PR #420）
+
+- 2026-11-06 分級設定在 release2.4 也能修改（main PR #422）
