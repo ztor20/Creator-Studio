@@ -50,7 +50,7 @@
   .od-amt__amt { display:inline-flex; align-items:center; gap:var(--sp-4); }
   .od-amt .rowdis__toggle { color: var(--muted-foreground); }
   .od-amt__neg { color: var(--foreground-muted); }
-  /* 買家實付的組成：收在金額數字底下，hover／focus 才浮出（2026-08-07 使用者裁示；D514 起匯率與時點改寫在換匯手續費列）。
+  /* 買家實付的組成：收在金額數字底下，hover／focus 才浮出（2026-08-07 使用者裁示；D517 起匯率與時點寫在換匯手續費列的展開）。
      金額本身永遠看得到，換算細節是想看才看的第二層。
      用 position:absolute 而非撐開列高，避免 hover 時把下面「平台費」那幾列往下推；
      浮層補卡片底色＋陰影，否則文字會疊在下一列數字上。
@@ -998,30 +998,42 @@
   };
   var amtHtml = amtRow('od.amt.goods', 'Goods', A.goods, false);
   if (A.shipping) amtHtml += amtRow('od.amt.shipping', 'Shipping', A.shipping, false);
-  /* 跨幣別（§2.3.2／§7.3；D514 決定八）＝拆解表裡的兩列，不是表外註腳：換匯手續費（費率、金額、匯率時點）與買家實付。
+  /* 跨幣別（§2.3.2／§7.3；D514、D517 決定一、二）＝拆解表裡的兩列，不是表外註腳：換匯手續費與買家實付。
+     粉絲端只看到一個價格；這裡給創作者與 Admin 看展開：換匯手續費列可展開成換算前金額、匯率、換算後金額（展開沿用 row-disclosure，同平台費列）。
      位置在「商品金額＋運費」之後、費用扣項之前：順著讀就是「買家付了多少 → 扣掉哪些費 → 你拿到多少」。
-     換匯手續費歸平台，不進下面的平台費、支付費與淨額（D514 決定六）。金額是付款幣別，上面兩列是基準幣別。
-     同幣別訂單（order.fx 為 null）兩列都不產生；bookyay 活動以港幣付（fx.swap 為 null）只有買家實付、沒有手續費（〔推導〕1）。 */
+     換匯手續費歸平台，不進下面的平台費、支付費與淨額。金額是付款幣別，上面兩列是基準幣別；買家實付另附創作者幣別金額。
+     同幣別訂單（order.fx 為 null）兩列都不產生。 */
   if (order.fx) {
     var FX = order.fx, SW = FX.swap;
-    var swapBack = S.swapBack ? S.swapBack(order) : '';
-    if (SW) {
-      amtHtml += '<div class="od-amt" data-feat="O41">' +
+    var swapLine = function (label, sub, val) {
+      return '<div class="od-amt od-amt--line rowdis__child" data-rowdis-child="od-swap" hidden>' +
+        '<span class="od-amt__stack">' + label + sub + '</span><span>' + esc(val) + '</span></div>';
+    };
+    amtHtml += '<div class="rowdis__group rowdis__group--gutter" data-feat="O41">' +
+      '<div class="od-amt rowdis__head" data-rowdis-row="od-swap">' +
         '<span class="od-amt__stack">' +
           '<span><span data-i18n="od.amt.swap">Currency swap fee</span> · ' + SW.pct + '%</span>' +
-          '<span class="od-amt__hint" data-od-swap-rate></span>' +
-          '<span class="od-amt__hint" data-i18n="od.amt.swap.note">Paid by the fan to the platform. Not part of your earnings.</span>' +
-          (swapBack ? '<span class="od-amt__hint" data-od-swap-back></span>' : '') +
+          '<span class="od-amt__hint" data-i18n="od.amt.swap.note">Included in the one price the fan saw. It goes to the platform and isn’t part of your earnings.</span>' +
         '</span>' +
-        '<span>' + esc(SW.amount) + '</span>' +
-      '</div>';
-    }
+        '<span class="od-amt__amt">' +
+          '<button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="od-swap" aria-expanded="false"' +
+            ' aria-label="Expand" data-i18n-aria-label="od.units.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>' +
+          esc(SW.amount) +
+        '</span>' +
+      '</div>' +
+      swapLine('<span data-i18n="od.amt.swap.before">Before conversion</span>', '', FX.before) +
+      swapLine('<span data-i18n="od.amt.swap.rate">Exchange rate</span>', '<span class="od-amt__hint" data-od-swap-at></span>', FX.rate) +
+      swapLine('<span data-i18n="od.amt.swap.after">After conversion</span>', '', FX.after) +
+    '</div>';
     amtHtml += '<div class="od-amt">' +
-      '<span data-i18n="od.amt.fxpaid">Buyer paid</span>' +
+      '<span class="od-amt__stack">' +
+        '<span data-i18n="od.amt.fxpaid">Buyer paid</span>' +
+        '<span class="od-amt__hint" data-od-paid-base></span>' +
+      '</span>' +
       '<span class="od-amt__value" tabindex="0">' +
         '<i data-lucide="info" class="ztor-icon ztor-icon--xs" aria-hidden="true"></i>' +
         esc(FX.paid) +
-        /* 浮層講這個數字怎麼來的：有手續費寫品項與運費＋手續費；bookyay 港幣寫原價、不收，並帶匯率時點（沒有手續費列可放）。 */
+        /* 浮層講這個數字怎麼來的：品項與運費＋換匯手續費。 */
         '<span class="od-amt__sub" data-od-paid-sub></span>' +
       '</span></div>';
   }
@@ -1104,14 +1116,12 @@
   function paintFx() {
     var F = order.fx; if (!F) return;
     var tt = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb; };
-    var rateEl = amtHost.querySelector('[data-od-swap-rate]');
-    if (rateEl) rateEl.textContent = tt('od.amt.swap.rate', 'Rate {rate} · locked {at}').replace('{rate}', F.rate).replace('{at}', F.at);
-    var backEl = amtHost.querySelector('[data-od-swap-back]');
-    if (backEl) backEl.textContent = tt('od.amt.swap.back', '{amt} goes back with the voided items').replace('{amt}', S.swapBack(order));
+    var atEl = amtHost.querySelector('[data-od-swap-at]');
+    if (atEl) atEl.textContent = tt('od.amt.swap.locked', 'Locked {at}').replace('{at}', F.at);
+    var baseEl = amtHost.querySelector('[data-od-paid-base]');
+    if (baseEl) baseEl.textContent = tt('od.amt.fxpaid.base', 'Creator currency {amt}').replace('{amt}', F.paidBase);
     var subEl = amtHost.querySelector('[data-od-paid-sub]');
-    if (subEl) subEl.textContent = F.swap
-      ? tt('od.amt.fxpaid.sum', 'Items and shipping {sum} + swap fee {fee}').replace('{sum}', F.sum).replace('{fee}', F.swap.amount)
-      : tt('od.amt.fxpaid.bky', 'bookyay price in HKD, no currency swap fee') + ' · ' + F.rate;
+    if (subEl) subEl.textContent = tt('od.amt.fxpaid.sum', 'Items and shipping {sum} + swap fee {fee}').replace('{sum}', F.sum).replace('{fee}', F.swap.amount);
   }
   paintFx();
   document.addEventListener('i18n:applied', paintFx);

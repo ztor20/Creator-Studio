@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-11-06 · D517 新增幣別、訂單價格展開、bookyay 港幣退場（UI-CHANGES 四百八十、ASSUMPTIONS UIA-337）**：沒有新元件；新增幣別彈窗重用 `.payout-dialog` 殼與 zselect 下拉複選，換匯手續費展開重用 row-disclosure。Admin 新增的幣別存 localStorage `ztor.currencies.custom`，由 `js/currency.js` 合併進 `CODES`。下方舊條目提到的 `hkd`、`pin`、`bkyBundleHkd` 已退場。
+
 > **2026-11-05 · D514 決定三 預覽與發布拿掉幣別段與幣別切換（C 撤除；UI-CHANGES 四百七十三、ASSUMPTIONS UIA-336）**：`js/publish-stage.js` 側欄只剩兩段（語言、發布前檢核或未儲存的變更），預覽價格固定用創作者幣別（宿主給的 `baseCurrency`），`currencies`／`prices` 選項、`.pstage-row__name--code`、`.pp-currency` 與相關 i18n 鍵退場。下方舊條目提到的側欄幣別段、預覽幣別切換與五幣別軸一律以本條為準。資料層換算不動。
 
 > **2026-11-05 · D514 移除價格表與覆寫、新增換匯手續費（UI-CHANGES 四百六十九、ASSUMPTIONS UIA-334）**：沒有新元件；下方舊條目提到的價格表、`priceOverrides`、`overridable`、`baseOpen`、`data-fep-price-key` 全部退場。`publish-stage` 的幣別段只看不改，`prices[]` 只用來判斷狀態字；`priceObj` 收成 `{ base, amount, locked, pin }`。翻譯表鎖頭改名 `.pp-field-lock`。換匯手續費表沿用 `.fee-tree__panel`、`.amount-field` 與來源徽章；訂單列沿用 `.od-amt__stack`／`.od-amt__hint`。
