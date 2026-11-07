@@ -3,7 +3,7 @@
 > 由 `gen_ds_index.py` 從 `ds-components/` 產生；Stop hook 驗收 PASS 後自動重生，
 > 手動重生：專案根執行 `python3 ../../Skills/project-ui-creator/scripts/gen_ds_index.py "site/app"`。
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
-> 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
+> 用法細節與規範看 `design-system.md`（AI 契約總則）、各元件列尾的 `ds-specs/` 規格檔／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
 ## Tokens（_tokens.css，亮色，共 303 條）
 
@@ -410,193 +410,193 @@
 
 ## 元件（ds-components/，共 190 支；主 class 前 5 個）
 
-- `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
-- `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by
-- `album-tracks.css` — .album-tracks, .album-tracks__upload, .album-tracks__upload-label, .album-tracks__req, .album-tracks__upload-hint ｜ Album tracks · 數位商品「音樂專輯」的多曲目管理器
-- `alert.css` — .alert, .alert--card, .alert--snoozed, .alert--row, .alert--banner ｜ Alert — inline notice with status indicator, ico
-- `amount-field.css` — .amount-field, .amount-field__unit, .amount-field__sym, .amount-field__chev, .amount-field--readonly ｜ Ztor — Amount field (money input with a unit pre
-- `artist-picker.css` — .artist-picker__list, .artist-picker__row, .artist-picker__row--pending, .artist-picker__remove, .owner-lookup__tag ｜ Artist picker — added-artist list under the sear
-- `auth.css` — .auth-page, .auth-shell, .auth-brand, .auth-brand__logo, .auth-brand__name ｜ Auth shell · 未登入層的置中表單殼（spec 5.1.10 · D170）
-- `avatar.css` — .ztor-avatar, .ztor-avatar--lg, .ztor-avatar--sm ｜ Avatar · 人的識別圓（姓名首字，2026-09-02 promote）
-- `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
-- `benefit-matrix.css` — .bmx, .bmx__head, .bmx__head-label, .bmx__tier, .bmx__tier-count ｜ Ztor — Benefit matrix
-- `bento.css` — .bento, .bento--top, .bento__stack, .bento__stack--fill ｜ Bento — 12-column grid utility for dashboard / p
-- `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card
-- `bundle-editor.css` — .fc-bundle-col, .fc-bundle, .fc-bundle__body, .bd-group, .bd-group__title ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
-- `bundle-preview-card.css` — .bpc__title, .bpc, .bpc__list, .bpc__row, .bpc__what ｜ bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看
-- `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
-- `calc-list.css` — .calc-list, .form-section--card, .calc-list--framed, .calc-list__how, .calc-list__sum ｜ Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果）
-- `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建）
-- `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建）
-- `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制）
-- `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
-- `chart-tip.css` — .linechart__main, .fin-hitline, .fin-area, .fin-guide, .fin-marker ｜ chart-tip — 折線圖的滑過浮層與點擊熱區（2026-07-28）
-- `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
-- `check-card.css` — .check-cards, .check-card__group, .check-card, .check-card__mark, .check-card--on ｜ check-card.css · 多選卡（Cosmos 版型）
-- `checkbox.css` — .zcheck, .zcheck__control, .zcheck__input, .zcheck__box, .zcheck__label ｜ Checkbox — the house choice control
-- `chip.css` — .chip-group, .chip-group--loose, .chip, .chip--active, .chip--static ｜ Chip — clickable filter pill with active state +
-- `code-picker.css` — .code-picker, .code-picker__field, .chip__tag, .code-picker__tbl, .code-picker__head ｜ code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458）
-- `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
-- `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
-- `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
-- `cond-list.css` — .cond-list, .cond-list__item, .cond-list__head, .cond-list__title, .cond-list__remove ｜ cond-list.css · 條件清單（一開始是空的，從選單逐一加入；每種最多一次）
-- `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列
-- `data-list.css` — .data-list, .data-list__row, .data-list__group-label, .data-list__row-main, .data-list__row--disabled ｜ Data list — row-divider list (no card per row).
-- `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
-- `date-range.css` — .date-range, .date-range__label, .date-range__field, .date-range__sep, .date-range__clear ｜ date-range.css · 日期區間篩選（2026-10-13 · D411）
-- `demand-focus.css` — .demand-focus, .demand-focus__head, .demand-focus__titles, .demand-focus__kicker, .demand-focus__title ｜ demand-focus — 選定對象面板（2026-10-05 建，D360 需求看板 S68
-- `demand-table.css` — .demand-table__bar, .demand-table__title, .product-list--demand, .demand-market, .demand-market__name ｜ demand-table — 市場需求表（2026-10-05 建，D360 需求看板 S68，
-- `detail-overview.css` — .detail-overview, .detail-overview--2col, .detail-overview__col, .detail-overview__kpis, .detail-overview__kpi-row ｜ detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁
-- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-cards, .form-section--outlined ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
-- `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
-- `donut-mix.css` — .donut-mix, .donut-mix__ringwrap, .donut-mix__ring, .donut-mix__track, .donut-mix__seg ｜ donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建）
-- `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer--wide, .drawer--full
-- `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown--up ｜ Ztor — Dropdown menu (action menu)
-- `earnings-feed.css` — .earnings-feed, .earnings-feed__item, .earnings-feed__name, .earnings-feed__amount, .earnings-feed__amount--neg ｜ earnings-feed.css · 近期收入：一筆一個框
-- `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
-- `empty-card.css` — .empty-card, .empty-card--framed, .card, .empty-card__icon, .empty-card__icon--primary ｜ Empty card — in-card empty state for a loaded-bu
-- `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar
+- `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern) ｜ 規格 `ds-specs/4.14-accordion.md`
+- `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank data-table presentation. Shared by ｜ 規格 `ds-specs/admin-ip-bank-table.md`
+- `album-tracks.css` — .album-tracks, .album-tracks__upload, .album-tracks__upload-label, .album-tracks__req, .album-tracks__upload-hint ｜ Album tracks · 數位商品「音樂專輯」的多曲目管理器 ｜ 規格 `ds-specs/album-tracks.md`
+- `alert.css` — .alert, .alert--card, .alert--snoozed, .alert--row, .alert--banner ｜ Alert — inline notice with status indicator, ico ｜ 規格 `ds-specs/4.13-alert.md`
+- `amount-field.css` — .amount-field, .amount-field__unit, .amount-field__sym, .amount-field__chev, .amount-field--readonly ｜ Ztor — Amount field (money input with a unit pre ｜ 規格 `ds-specs/amount-field.md`
+- `artist-picker.css` — .artist-picker__list, .artist-picker__row, .artist-picker__row--pending, .artist-picker__remove, .owner-lookup__tag ｜ Artist picker — added-artist list under the sear ｜ 規格 `ds-specs/4.92-artist-picker.md`
+- `auth.css` — .auth-page, .auth-shell, .auth-brand, .auth-brand__logo, .auth-brand__name ｜ Auth shell · 未登入層的置中表單殼（spec 5.1.10 · D170） ｜ 規格 `ds-specs/4.113-auth-shell.md`
+- `avatar.css` — .ztor-avatar, .ztor-avatar--lg, .ztor-avatar--sm ｜ Avatar · 人的識別圓（姓名首字，2026-09-02 promote） ｜ 規格 `ds-specs/4.202-avatar.md`
+- `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot ｜ 規格 `ds-specs/4.3-badge-status-pill.md`、`ds-specs/4.4-status-dot.md`
+- `benefit-matrix.css` — .bmx, .bmx__head, .bmx__head-label, .bmx__tier, .bmx__tier-count ｜ Ztor — Benefit matrix ｜ 規格 `ds-specs/4.93-benefit-matrix.md`
+- `bento.css` — .bento, .bento--top, .bento__stack, .bento__stack--fill ｜ Bento — 12-column grid utility for dashboard / p ｜ 規格 `ds-specs/4.25-bento-grid.md`
+- `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card ｜ 規格 `ds-specs/4.94-brand-card.md`
+- `bundle-editor.css` — .fc-bundle-col, .fc-bundle, .fc-bundle__body, .bd-group, .bd-group__title ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案） ｜ 規格 `ds-specs/bundle-editor.md`
+- `bundle-preview-card.css` — .bpc__title, .bpc, .bpc__list, .bpc__row, .bpc__what ｜ bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看 ｜ 規格 `ds-specs/4.213-bundle-preview-card.md`
+- `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button ｜ 規格 `ds-specs/4.2-button.md`
+- `calc-list.css` — .calc-list, .form-section--card, .calc-list--framed, .calc-list__how, .calc-list__sum ｜ Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果） ｜ 規格 `ds-specs/4.217-calc-list.md`
+- `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建） ｜ 規格 `ds-specs/live-item.md`
+- `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建） ｜ 規格 `ds-specs/canvas-stage.md`
+- `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制） ｜ 規格 `ds-specs/card-group.md`
+- `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card ｜ 規格 `ds-specs/4.11-card.md`
+- `chart-tip.css` — .linechart__main, .fin-hitline, .fin-area, .fin-guide, .fin-marker ｜ chart-tip — 折線圖的滑過浮層與點擊熱區（2026-07-28） ｜ 規格 `ds-specs/4.95-chart-tip.md`
+- `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da ｜ 規格 `ds-specs/4.24-chart.md`、`ds-specs/segmented-control.md`、`ds-specs/chart-card.md`
+- `check-card.css` — .check-cards, .check-card__group, .check-card, .check-card__mark, .check-card--on ｜ check-card.css · 多選卡（Cosmos 版型） ｜ 規格 `ds-specs/check-card.md`
+- `checkbox.css` — .zcheck, .zcheck__control, .zcheck__input, .zcheck__box, .zcheck__label ｜ Checkbox — the house choice control ｜ 規格 `ds-specs/4.96-checkbox.md`
+- `chip.css` — .chip-group, .chip-group--loose, .chip, .chip--active, .chip--static ｜ Chip — clickable filter pill with active state + ｜ 規格 `ds-specs/4.5-chip.md`
+- `code-picker.css` — .code-picker, .code-picker__field, .chip__tag, .code-picker__tbl, .code-picker__head ｜ code-picker.css · 商品端優惠碼選擇欄（2026-10-20 D458） ｜ 規格 `ds-specs/4.239-code-picker.md`
+- `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要） ｜ 規格 `ds-specs/collapse-group.md`
+- `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to ｜ 規格 `ds-specs/combobox.md`
+- `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前 ｜ 規格 `ds-specs/4.22j-completeness-meter.md`
+- `cond-list.css` — .cond-list, .cond-list__item, .cond-list__head, .cond-list__title, .cond-list__remove ｜ cond-list.css · 條件清單（一開始是空的，從選單逐一加入；每種最多一次） ｜ 規格 `ds-specs/4.227-condition-list.md`
+- `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列 ｜ 規格 `ds-specs/4.29-payout-bank-picker-dialog.md`
+- `data-list.css` — .data-list, .data-list__row, .data-list__group-label, .data-list__row-main, .data-list__row--disabled ｜ Data list — row-divider list (no card per row). ｜ 規格 `ds-specs/4.22-data-list.md`
+- `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07 ｜ 規格 `ds-specs/date-input-placeholder.md`
+- `date-range.css` — .date-range, .date-range__label, .date-range__field, .date-range__sep, .date-range__clear ｜ date-range.css · 日期區間篩選（2026-10-13 · D411） ｜ 規格 `ds-specs/4.238-date-range.md`
+- `demand-focus.css` — .demand-focus, .demand-focus__head, .demand-focus__titles, .demand-focus__kicker, .demand-focus__title ｜ demand-focus — 選定對象面板（2026-10-05 建，D360 需求看板 S68 ｜ 規格 `ds-specs/4.226-demand-focus.md`
+- `demand-table.css` — .demand-table__bar, .demand-table__title, .product-list--demand, .demand-market, .demand-market__name ｜ demand-table — 市場需求表（2026-10-05 建，D360 需求看板 S68， ｜ 規格 `ds-specs/4.225-demand-table.md`
+- `detail-overview.css` — .detail-overview, .detail-overview--2col, .detail-overview__col, .detail-overview__kpis, .detail-overview__kpi-row ｜ detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁 ｜ 規格 `ds-specs/detail-overview.md`
+- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-cards, .form-section--outlined ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼 ｜ 規格 `ds-specs/4.52-detail-rail.md`
+- `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示） ｜ 規格 `ds-specs/4.97-detail-sheet.md`
+- `donut-mix.css` — .donut-mix, .donut-mix__ringwrap, .donut-mix__ring, .donut-mix__track, .donut-mix__seg ｜ donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建） ｜ 規格 `ds-specs/donut-mix.md`
+- `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer--wide, .drawer--full ｜ 規格 `ds-specs/drawer.md`
+- `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown--up ｜ Ztor — Dropdown menu (action menu) ｜ 規格 `ds-specs/4.26-dropdown-menu.md`
+- `earnings-feed.css` — .earnings-feed, .earnings-feed__item, .earnings-feed__name, .earnings-feed__amount, .earnings-feed__amount--neg ｜ earnings-feed.css · 近期收入：一筆一個框 ｜ 規格 `ds-specs/earnings-feed.md`
+- `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano ｜ 規格 `ds-specs/4.97-detail-sheet.md`
+- `empty-card.css` — .empty-card, .empty-card--framed, .card, .empty-card__icon, .empty-card__icon--primary ｜ Empty card — in-card empty state for a loaded-bu ｜ 規格 `ds-specs/4.22h-empty-card.md`
+- `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar ｜ 規格 `ds-specs/4.17-empty-stub.md`
 - `entry-list.css` — .entry-list, .entry-list__row, .entry-list__add, .entry-list--extras, .entry-list__row--extras ｜ entry-list.css · 逐筆單欄輸入清單（可增可刪）
-- `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
-- `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer
-- `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗）
-- `fact-list.css` — .fact-list, .fact-list__item ｜ Fact list · 唯讀事實列（2026-08-19）
-- `fan-phone.css` — .fan-phone, .preview-col--tall, .wizard-split__rail, .preview-col ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽）
-- `fan-shop.css` — .fep-shop, .fep-shop--event ｜ fan-shop.css · 前台活動頁鏡像（發布前預覽確認的預覽檢視，D305 使用者裁決 2
-- `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ fan-store.css · 粉絲端創作者頁的手機版鏡像（See-as-fan 預覽）
-- `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide
-- `field-more.css` — .field-more, .form-grid, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
-- `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
-- `field-source-tag.css` — .field-source, .field__label, .is-source-locked, .radio-cards, .segmented ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式
-- `field-system.css` — .field, .field__label, .field__label--split, .field__label-aside, .field__hint ｜ Ztor Creator Studio - Field system molecule
-- `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na
-- `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
-- `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01）
-- `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊與標題列讀數（2026-10-12，建立組合包改版；使
-- `form-grid.css` — .form-grid, .form-grid--3, .form-grid__full ｜ form-grid.css · 表單欄位並排網格 helper
-- `form-section.css` — .form-section, .form-section--dense, .form-section--outlined, .form-section__actions, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
-- `form-steps.css` — .form-steps ｜ form-steps.css · 同一張表單分步顯示（2026-10-21，建立商品／建立組合包
-- `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）
-- `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
-- `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom
-- `info-banner.css` — .info-banner, .info-banner__close, .info-banner--dismissible ｜ Neutral informational banner — for contextual ex
-- `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Ztor — Input (form field)
-- `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
-- `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開）
-- `kpi-rotator.css` — .kpi-rotator, .kpi-rotator__slide, .kpi-rotator__slide--active, .distribution, .distribution__head ｜ kpi-rotator — 一格位置輪流講兩件事（2026-08-31 建）
-- `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ KPI — metric tile (label / value / delta or meta
-- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__sub, .kv__sub--over ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
-- `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title
-- `limit-set.css` — .limit-set, .limit-set__head, .limit-set__sub, .limit-set__act, .limit-set__fields ｜ limit-set.css · 限購（D398，2026-10-12；D427，2026-10-
-- `link-field.css` — .linkf, .linkf__label, .linkf__row, .linkf__input, .linkf__act ｜ link-field.css · 唯讀連結 ＋ 複製 ＋ 重置
-- `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
-- `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar--filters, .list-toolbar__filters, .list-toolbar__filter ｜ List toolbar · 清單頁頭的兩層控制骨架
-- `listing-controls.css` — .lctl, .lctl__row, .lctl--locked, .lctl__row--locked, .lctl__lock-note ｜ listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7.
+- `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4. ｜ 規格 `ds-specs/4.22p-event-preview-card.md`
+- `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer ｜ 規格 `ds-specs/4.98-explainer.md`
+- `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗） ｜ 規格 `ds-specs/export-dialog.md`
+- `fact-list.css` — .fact-list, .fact-list__item ｜ Fact list · 唯讀事實列（2026-08-19） ｜ 規格 `ds-specs/fact-list.md`
+- `fan-phone.css` — .fan-phone, .preview-col--tall, .wizard-split__rail, .preview-col ｜ fan-phone.css · 粉絲頁手機版鏡像的顯示框（建立流程右欄的即時預覽） ｜ 規格 `ds-specs/4.243-fan-phone.md`
+- `fan-shop.css` — .fep-shop, .fep-shop--event ｜ fan-shop.css · 前台活動頁鏡像（發布前預覽確認的預覽檢視，D305 使用者裁決 2 ｜ 規格 `ds-specs/4.215-fan-event-page.md`、`ds-specs/4.218-fan-product-page.md`、`ds-specs/4.219-fan-bundle-page.md`
+- `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ fan-store.css · 粉絲端創作者頁的手機版鏡像（See-as-fan 預覽） ｜ 規格 `ds-specs/fan-store-preview.md`
+- `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide ｜ 規格 `ds-specs/4.99-fans-guide.md`
+- `field-more.css` — .field-more, .form-grid, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21） ｜ 規格 `ds-specs/field-more.md`
+- `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele ｜ 規格 `ds-specs/4.22c-field-pill.md`
+- `field-source-tag.css` — .field-source, .field__label, .is-source-locked, .radio-cards, .segmented ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式 ｜ 規格 `ds-specs/4.121-field-source-tag.md`
+- `field-system.css` — .field, .field__label, .field__label--split, .field__label-aside, .field__hint ｜ Ztor Creator Studio - Field system molecule ｜ 規格 `ds-specs/4.29-payout-bank-picker-dialog.md`
+- `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na ｜ 規格 `ds-specs/filter-tabs.md`
+- `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160） ｜ 規格 `ds-specs/4.111-finding-card.md`
+- `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01） ｜ 規格 `ds-specs/4.223-follow-field.md`
+- `form-ask.css` — .form-ask, .form-ask__t, .form-ask__s, .form-ask__body, .form-ask__row ｜ form-ask.css · 問句式設定塊與標題列讀數（2026-10-12，建立組合包改版；使 ｜ 規格 `ds-specs/4.237-form-ask.md`
+- `form-grid.css` — .form-grid, .form-grid--3, .form-grid__full ｜ form-grid.css · 表單欄位並排網格 helper ｜ 規格 `ds-specs/form-grid.md`
+- `form-section.css` — .form-section, .form-section--dense, .form-section--outlined, .form-section__actions, .form-section__head ｜ form-section.css · 無卡片表單區段（建立流程共用骨架） ｜ 規格 `ds-specs/form-section.md`
+- `form-steps.css` — .form-steps ｜ form-steps.css · 同一張表單分步顯示（2026-10-21，建立商品／建立組合包 ｜ 規格 `ds-specs/4.241-form-steps.md`
+- `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote） ｜ 規格 `ds-specs/4.91-funding-panel.md`
+- `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb ｜ 規格 `ds-specs/4.10-navigationmenu.md`、`ds-specs/4.20-header.md`
+- `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom ｜ 規格 `ds-specs/4.9-icon.md`
+- `info-banner.css` — .info-banner, .info-banner__close, .info-banner--dismissible ｜ Neutral informational banner — for contextual ex ｜ 規格 `ds-specs/4.7-info-banner.md`
+- `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Ztor — Input (form field) ｜ 規格 `ds-specs/4.8-input.md`
+- `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout  ｜ 規格 `ds-specs/4.22k-insight-row.md`
+- `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開） ｜ 規格 `ds-specs/issue-panel.md`
+- `kpi-rotator.css` — .kpi-rotator, .kpi-rotator__slide, .kpi-rotator__slide--active, .distribution, .distribution__head ｜ kpi-rotator — 一格位置輪流講兩件事（2026-08-31 建） ｜ 規格 `ds-specs/kpi-rotator.md`
+- `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ KPI — metric tile (label / value / delta or meta ｜ 規格 `ds-specs/4.12-kpi.md`
+- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__sub, .kv__sub--over ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線） ｜ 規格 `ds-specs/4.50-kv-list.md`
+- `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title ｜ 規格 `ds-specs/leave-dialog.md`
+- `limit-set.css` — .limit-set, .limit-set__head, .limit-set__sub, .limit-set__act, .limit-set__fields ｜ limit-set.css · 限購（D398，2026-10-12；D427，2026-10- ｜ 規格 `ds-specs/4.234-limit-set.md`
+- `link-field.css` — .linkf, .linkf__label, .linkf__row, .linkf__input, .linkf__act ｜ link-field.css · 唯讀連結 ＋ 複製 ＋ 重置 ｜ 規格 `ds-specs/4.206-link-field.md`
+- `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S ｜ 規格 `ds-specs/4.22l-list-footer.md`
+- `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar--filters, .list-toolbar__filters, .list-toolbar__filter ｜ List toolbar · 清單頁頭的兩層控制骨架 ｜ 規格 `ds-specs/4.90-list-toolbar.md`
+- `listing-controls.css` — .lctl, .lctl__row, .lctl--locked, .lctl__row--locked, .lctl__lock-note ｜ listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7. ｜ 規格 `ds-specs/4.205-listing-controls.md`
 - `live-item.css` — .live-bg, .is-live-bg, .live-rail__wrap, .live-rail__nav--prev, .live-rail__view ｜ live-item — 進行中的一件（2026-08-31 建）
-- `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義；
-- `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
-- `media-preview.css` — .mpreview, .mpreview__stage, .mpreview--image, .mpreview--clip, .mpreview__glyph ｜ media-preview.css · 單件媒體預覽（照片大圖／影片播放／音檔播放條）
-- `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
-- `member-picker.css` — .member-picker__empty, .member-picker__empty-t, .member-picker__empty-s, .member-picker__more, .member-picker__toolbar ｜ member-picker.css · 組合物挑選（2026-10-28，建立組合包「組合物」區
-- `member-table.css` — .member-table, .member-table__row, .member-table__exp, .member-table__head, .member-table__name ｜ member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示
-- `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
-- `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線）
-- `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層）
-- `next-step.css` — .next-step, .next-step--lead, .next-step__label, .next-step__text, .next-step__act ｜ next-step.css · 下一步（一句話 ＋ 一顆主要動作）
-- `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe
-- `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__flag ｜ SiteSpecific Owner lookup — registered user sele
-- `page-intro.css` — .page-intro, .page-intro__lead, .page-intro__media, .page-crumb, .page-crumb--back ｜ Ztor Creator Studio - Page intro molecule
-- `pager.css` — .pager, .pager__ellipsis
-- `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top
-- `pdp-preview.css` — .pdp-pv, .pdp-pv__gallery, .pdp-pv__frame, .pdp-pv__img, .pdp-pv__thumbs ｜ pdp-preview.css · 粉絲端商品頁的手機版鏡像（建立流程的即時預覽）
-- `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking）
-- `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta
-- `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access--bare, .scanner-access__main ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
-- `points-qr.css` — .points-qr, .points-qr--compact, .points-qr__code, .points-qr__name, .points-qr__points ｜ Points QR card — 點數 QR 卡（掃碼領點）
-- `post-composer.css` — .post-composer, .card, .post-composer__stub, .post-composer__head, .post-composer__foot ｜ Post composer · 發文框（2026-08-18 promote，自 progres
-- `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
-- `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-split--phone, .preview-col ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
-- `preview-dock.css` — .preview-dock-toggle, .preview-dock__close, .wizard ｜ preview-dock.css · 建立流程的預覽欄（右側整高欄，可開關）
-- `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
-- `price-ladder.css` — .price-ladder, .price-ladder__step, .price-ladder__k, .price-ladder__t, .price-ladder__s ｜ price-ladder.css · 價格階梯（2026-10-12，建立組合包改版；使用者在示
-- `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-
-- `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
-- `profile-avatar-row.css` — .profile-avatar-row, .profile-avatar-row__img, .profile-avatar-row__name ｜ profile-avatar-row.css · 頭像列（頭像＋名字＋「變更相片」）
-- `progress-mark.css` — .pmark, .pmark--done, .pmark--doing, .pmark--alert, .pmark--today ｜ Progress mark · 進度記號（2026-08-18，使用者裁決方案 B ＋ 同日追加
-- `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper--segmented, .progress-stepper__labels ｜ ── Progress stepper
-- `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--foot, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19
-- `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__status, .project-list__image ｜ Project list — borderless table list for the Pro
-- `publish-preview.css` — .pp-toolbar, .pp-lang-tabs, .pp-view-toggle, .pp-banner, .pp-preview-slot ｜ Publish preview · 發布前預覽確認層（D223，2026-08-24）
-- `publish-stage.css` — .pstage, .pstage__main, .pstage__side, .pstage__side-inner, .pstage__foot
-- `quick-result-list.css` — .quick-result, .quick-result__head, .quick-result__row, .quick-result__name, .quick-result__num ｜ Quick result list · 批次生成結果的唯讀預覽（一列一項）
-- `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ radio-card.css · 並排可選卡（radio 卡）
-- `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）
-- `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t
-- `rent-block.css` — .rent-block, .rent-block__eyebrow, .rent-block__group, .rent-block__sub, .rent-block__label ｜ Rent block — in-hero rental configurator (ip-det
-- `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table__col, .restock-table__group
-- `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
-- `review-status.css` — .review-status, .review-status--flat, .review-status__head, .review-status__thumb, .review-status__title ｜ Review status · 送審件的狀態面板（2026-08-07）
-- `rich-body.css` — .rich-body, .rich-body__blocks, .rich-body__block, .rich-body__main, .rich-body__grip ｜ rich-body.css · 描述區塊編輯器（一串可排序的文字／圖片／影片區塊）
-- `roster-picker.css` — .roster-picker, .roster-picker__pick, .roster-picker__bar, .roster-picker__search, .roster-picker__grid ｜ Roster picker · 上面選人、下面看那一位（2026-09-02 建、同日改版；
-- `row-disclosure.css` — .rowdis__group, .product-list-scroll, .rowdis__group--gutter, .rowdis__head, .rowdis__label ｜ Row disclosure（可展開子列）— 2026-09-03 建，2026-09-04 改
-- `rules-group.css` — .rules-group, .rules-group__row, .rules-group__k, .rules-group__t, .rules-group__s ｜ rules-group.css · 購買條件群組（2026-10-21，UI-CHANGES 二
-- `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__name, .scanner-brand ｜ Mobile scanner · spec 5.1.5.14 (standalone phone
-- `sched-restore.css` — .sched-restore, .sched-restore__label, .sched-restore__group, .sched-restore__list, .sched-restore__item
-- `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
-- `section-nav.css` — .section-nav-layout, .section-nav, .section-nav__item, .settings-nav__item, .section-nav__item--active ｜ section-nav.css · 側欄分節導覽（一頁多節，左邊選、右邊看）
-- `section-outline.css` — .section-outline-host, .section-outline, .section-outline--gutter, .section-outline__inner, .section-outline__head ｜ section-outline.css · 本頁大綱（長表單的區段導覽）
-- `section-tabs.css` — .section-tabs, .section-tabs--dialog, .section-tabs--rail, .section-tabs--wizard ｜ Section tabs · 長表單頂端的固定分節分頁（2026-09-21）
-- `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active, .segmented__btn--icon, .segmented--locked ｜ Segmented control · 2/3-way text toggle in a mut
-- `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit
-- `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06）
-- `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-section, .settings-section__title ｜ Ztor Creator Studio - Settings layout, nav, and 
+- `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義； ｜ 規格 `ds-specs/4.210-lock-sets.md`
+- `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。 ｜ 規格 `ds-specs/4.101-manage-ip.md`
+- `media-preview.css` — .mpreview, .mpreview__stage, .mpreview--image, .mpreview--clip, .mpreview__glyph ｜ media-preview.css · 單件媒體預覽（照片大圖／影片播放／音檔播放條） ｜ 規格 `ds-specs/4.242-media-preview.md`
+- `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫） ｜ 規格 `ds-specs/4.102-media-vault.md`
+- `member-picker.css` — .member-picker__empty, .member-picker__empty-t, .member-picker__empty-s, .member-picker__more, .member-picker__toolbar ｜ member-picker.css · 組合物挑選（2026-10-28，建立組合包「組合物」區 ｜ 規格 `ds-specs/4.244-member-picker.md`
+- `member-table.css` — .member-table, .member-table__row, .member-table__exp, .member-table__head, .member-table__name ｜ member-table.css · 組合物表（2026-10-12，建立組合包改版；使用者在示 ｜ 規格 `ds-specs/4.236-member-table.md`
+- `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label ｜ 規格 `ds-specs/4.22m-message-composer.md`、`ds-specs/4.22n-char-counter.md`、`ds-specs/4.22o-token-chip.md`
+- `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線） ｜ 規格 `ds-specs/meter-list.md`
+- `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層） ｜ 規格 `ds-specs/4.53-nest.md`
+- `next-step.css` — .next-step, .next-step--lead, .next-step__label, .next-step__text, .next-step__act ｜ next-step.css · 下一步（一句話 ＋ 一顆主要動作） ｜ 規格 `ds-specs/next-step.md`
+- `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe ｜ 規格 `ds-specs/4.22i-notification-matrix.md`
+- `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__flag ｜ SiteSpecific Owner lookup — registered user sele ｜ 規格 `ds-specs/4.92-artist-picker.md`
+- `page-intro.css` — .page-intro, .page-intro__lead, .page-intro__media, .page-crumb, .page-crumb--back ｜ Ztor Creator Studio - Page intro molecule ｜ 規格 `ds-specs/page-intro.md`
+- `pager.css` — .pager, .pager__ellipsis ｜ 規格 `ds-specs/pager.md`
+- `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top ｜ 規格 `ds-specs/4.29-payout-bank-picker-dialog.md`
+- `pdp-preview.css` — .pdp-pv, .pdp-pv__gallery, .pdp-pv__frame, .pdp-pv__img, .pdp-pv__thumbs ｜ pdp-preview.css · 粉絲端商品頁的手機版鏡像（建立流程的即時預覽） ｜ 規格 `ds-specs/4.54b-pdp-preview.md`
+- `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking） ｜ 規格 `ds-specs/4.103-perf-rank.md`
+- `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta ｜ 規格 `ds-specs/4.22b-picker.md`
+- `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access--bare, .scanner-access__main ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick ｜ 規格 `ds-specs/pickup-management.md`
+- `points-qr.css` — .points-qr, .points-qr--compact, .points-qr__code, .points-qr__name, .points-qr__points ｜ Points QR card — 點數 QR 卡（掃碼領點） ｜ 規格 `ds-specs/4.51c-points-qr-card.md`
+- `post-composer.css` — .post-composer, .card, .post-composer__stub, .post-composer__head, .post-composer__foot ｜ Post composer · 發文框（2026-08-18 promote，自 progres ｜ 規格 `ds-specs/post-composer.md`
+- `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5） ｜ 規格 `ds-specs/4.22e-preview-card.md`
+- `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-split--phone, .preview-col ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄） ｜ 規格 `ds-specs/preview-column.md`
+- `preview-dock.css` — .preview-dock-toggle, .preview-dock__close, .wizard ｜ preview-dock.css · 建立流程的預覽欄（右側整高欄，可開關） ｜ 規格 `ds-specs/wizard-frame.md`
+- `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5） ｜ 規格 `ds-specs/4.22f-preview-panel.md`
+- `price-ladder.css` — .price-ladder, .price-ladder__step, .price-ladder__k, .price-ladder__t, .price-ladder__s ｜ price-ladder.css · 價格階梯（2026-10-12，建立組合包改版；使用者在示 ｜ 規格 `ds-specs/4.235-price-ladder.md`
+- `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E- ｜ 規格 `ds-specs/4.27-product-list.md`
+- `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing ｜ 規格 `ds-specs/new-product-post.md`
+- `profile-avatar-row.css` — .profile-avatar-row, .profile-avatar-row__img, .profile-avatar-row__name ｜ profile-avatar-row.css · 頭像列（頭像＋名字＋「變更相片」） ｜ 規格 `ds-specs/4.211-profile-avatar-row.md`
+- `progress-mark.css` — .pmark, .pmark--done, .pmark--doing, .pmark--alert, .pmark--today ｜ Progress mark · 進度記號（2026-08-18，使用者裁決方案 B ＋ 同日追加 ｜ 規格 `ds-specs/progress-mark.md`
+- `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper--segmented, .progress-stepper__labels ｜ ── Progress stepper ｜ 規格 `ds-specs/progress-stepper.md`
+- `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--foot, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19 ｜ 規格 `ds-specs/4.51b-progress-timeline.md`
+- `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__status, .project-list__image ｜ Project list — borderless table list for the Pro ｜ 規格 `ds-specs/4.28-project-list.md`
+- `publish-preview.css` — .pp-toolbar, .pp-lang-tabs, .pp-view-toggle, .pp-banner, .pp-preview-slot ｜ Publish preview · 發布前預覽確認層（D223，2026-08-24） ｜ 規格 `ds-specs/publish-preview.md`
+- `publish-stage.css` — .pstage, .pstage__main, .pstage__side, .pstage__side-inner, .pstage__foot ｜ 規格 `ds-specs/4.216-publish-stage.md`
+- `quick-result-list.css` — .quick-result, .quick-result__head, .quick-result__row, .quick-result__name, .quick-result__num ｜ Quick result list · 批次生成結果的唯讀預覽（一列一項） ｜ 規格 `ds-specs/4.122-quick-result-list.md`
+- `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ radio-card.css · 並排可選卡（radio 卡） ｜ 規格 `ds-specs/radio-card.md`
+- `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇） ｜ 規格 `ds-specs/4.96-checkbox.md`
+- `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t ｜ 規格 `ds-specs/4.22g-readiness-card.md`
+- `rent-block.css` — .rent-block, .rent-block__eyebrow, .rent-block__group, .rent-block__sub, .rent-block__label ｜ Rent block — in-hero rental configurator (ip-det ｜ 規格 `ds-specs/rent-block.md`
+- `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table__col, .restock-table__group ｜ 規格 `ds-specs/4.29c-restock-order.md`
+- `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary  ｜ 規格 `ds-specs/4.49-review-row.md`
+- `review-status.css` — .review-status, .review-status--flat, .review-status__head, .review-status__thumb, .review-status__title ｜ Review status · 送審件的狀態面板（2026-08-07） ｜ 規格 `ds-specs/4.119-review-status.md`
+- `rich-body.css` — .rich-body, .rich-body__blocks, .rich-body__block, .rich-body__main, .rich-body__grip ｜ rich-body.css · 描述區塊編輯器（一串可排序的文字／圖片／影片區塊） ｜ 規格 `ds-specs/4.222-rich-body.md`
+- `roster-picker.css` — .roster-picker, .roster-picker__pick, .roster-picker__bar, .roster-picker__search, .roster-picker__grid ｜ Roster picker · 上面選人、下面看那一位（2026-09-02 建、同日改版； ｜ 規格 `ds-specs/4.203-roster-picker.md`
+- `row-disclosure.css` — .rowdis__group, .product-list-scroll, .rowdis__group--gutter, .rowdis__head, .rowdis__label ｜ Row disclosure（可展開子列）— 2026-09-03 建，2026-09-04 改 ｜ 規格 `ds-specs/4.204-row-disclosure.md`
+- `rules-group.css` — .rules-group, .rules-group__row, .rules-group__k, .rules-group__t, .rules-group__s ｜ rules-group.css · 購買條件群組（2026-10-21，UI-CHANGES 二 ｜ 規格 `ds-specs/4.240-rules-group.md`
+- `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__name, .scanner-brand ｜ Mobile scanner · spec 5.1.5.14 (standalone phone ｜ 規格 `ds-specs/mobile-scanner.md`
+- `sched-restore.css` — .sched-restore, .sched-restore__label, .sched-restore__group, .sched-restore__list, .sched-restore__item ｜ 規格 `ds-specs/schedule-restore.md`
+- `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill） ｜ 規格 `ds-specs/search.md`、`ds-specs/search-collapse.md`
+- `section-nav.css` — .section-nav-layout, .section-nav, .section-nav__item, .settings-nav__item, .section-nav__item--active ｜ section-nav.css · 側欄分節導覽（一頁多節，左邊選、右邊看） ｜ 規格 `ds-specs/4.22h0-section-nav.md`
+- `section-outline.css` — .section-outline-host, .section-outline, .section-outline--gutter, .section-outline__inner, .section-outline__head ｜ section-outline.css · 本頁大綱（長表單的區段導覽） ｜ 規格 `ds-specs/4.233-section-outline.md`
+- `section-tabs.css` — .section-tabs, .section-tabs--dialog, .section-tabs--rail, .section-tabs--wizard ｜ Section tabs · 長表單頂端的固定分節分頁（2026-09-21） ｜ 規格 `ds-specs/4.214-section-tabs.md`
+- `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active, .segmented__btn--icon, .segmented--locked ｜ Segmented control · 2/3-way text toggle in a mut ｜ 規格 `ds-specs/4.22d-segmented.md`
+- `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit ｜ 規格 `ds-specs/4.18-selection-card.md`
+- `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06） ｜ 規格 `ds-specs/4.117-session-list.md`
+- `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-section, .settings-section__title ｜ Ztor Creator Studio - Settings layout, nav, and  ｜ 規格 `ds-specs/4.48-store-settings-page.md`
 - `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
-- `size-mix.css` — .size-mix, .size-mix__slot, .size-mix__bar, .size-mix__fill, .size-mix__val ｜ size-mix — 各尺寸占比（2026-10-05 建，D360 需求看板 S68）
-- `social-links.css` — .social-links, .social-links__row, .social-links__head, .social-links__label, .social-links__mark ｜ social-links.css · 社群連結清單（平台一列一格＋新增＋平台清單）
-- `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns
-- `source-import.css` — .source-import, .source-gate, .source-gate__head, .source-gate__titles, .source-gate__acts ｜ Source import · 從外部平台搜尋一筆既有紀錄帶入表單
-- `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
-- `sparkline.css` — .sparkline, .sparkline__plot, .sparkline__main, .sparkline__canvas, .sparkline__svg ｜ Sparkline · 卡片內的微型走勢圖（無座標軸、無標籤、無互動）
-- `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
-- `split-bar.css` — .split-bar, .split-bar__track, .split-bar__seg, .split-bar__legend, .split-bar__row ｜ split-bar — 一個總量拆成幾塊（2026-08-31 建）
-- `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
-- `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示）
-- `staged-change.css` — .staged-remove, .staged-remove__strike, .staged-remove__bar ｜ Staged change — 「已套用、還沒儲存」的刪除標記（D392 補充二，2026-10
-- `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ stat-row.css · 卡內大數字排
-- `state-check.css` — .state-checks, .state-check, .state-check--on, .state-check__mark, .state-checks--stack ｜ State check · 一列並排的「開／關」狀態指示
-- `status-axes.css` — .status-axes, .status-axes--split ｜ Status axes · two INDEPENDENT order status track
-- `step-list.css` — .step-list, .step-list__row, .step-list__row--interactive, .step-list__act, .step-list__body ｜ Step list · 階段清單（2026-08-18）
-- `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input
-- `sticky-actions.css` — .sticky-actions, .sticky-actions__inner, .main ｜ Sticky page actions — keep a page's top CTAs rea
-- `stock-allocation.css` — .salloc, .salloc__row, .salloc__row--head, .salloc__row--pool, .salloc__row--cap ｜ stock-allocation.css · 庫存分配表（spec 0-設計規格書 §7.14 
-- `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ Stock Bar — 細長量條（庫存水位／用量比例）
-- `stock-history.css` — .shist__date, .shist__type, .shist__end, .shist__delta, .shist__child ｜ Stock history · 庫存歷史紀錄（2026-09-11，自 lab-stock-hi
-- `stock-readout.css` — .stock-readout, .stock-readout__num, .stock-readout__unit ｜ Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章）
-- `stock-tip.css` — .stock-tip, .stock-tip__pop, .stock-tip__row, .stock-tip__name, .stock-tip__qty ｜ Ztor — Stock tip (extra stock info on hover)
-- `store-settings.css` — .ss-stack, .ss-url, .ss-url__prefix, .ss-url__input, .ss-status
-- `switch.css` — .switch, .switch--on, .switch--locked ｜ Switch — binary on/off toggle (form control).
-- `table.css` — .ztor-table, .ztor-table-scroll, .card, .ztor-table__feature, .fee-tree__panel ｜ Ztor — Table
-- `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--count-plain ｜ Tabs — horizontal tab bar with hairline underlin
-- `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags
-- `ticket-preview.css` — .ticket-preview, .ticket-preview--custom-bg, .ticket-preview__top, .ticket-preview__when, .ticket-preview__logo ｜ Ticket preview — 票根即時預覽（建立活動步驟 5「票券銷售」）
-- `ticket-tier-card.css` — .tier-grid, .tier-list, .tier-toolbar, .tier-toolbar__actions, .tier-add ｜ Ticket tier card — 票種卡（spec 5.1.6.1 F9 / F9.1 / 
-- `tier-arc.css` — .tier-arc, .tier-arc__ringwrap, .tier-arc__ring, .tier-arc__track, .tier-arc__seg ｜ tier-arc — 層層包含的分層弧（2026-09-01 建）
-- `tier-overview.css` — .tier-ov, .tier-ov--compact, .tier-ov__head, .tier-ov__row, .tier-ov__rowlabel ｜ Tier overview — 分級對照表（唯讀）
-- `toast.css` — .ztor-toasts, .ztor-toast, .ztor-toast__icon, .ztor-toast--error, .ztor-toast__text ｜ Ztor — Toast
-- `todo-list.css` — .todo-list, .todo-list__row, .todo-list__row--done, .todo-list__body, .todo-list__text ｜ todo-list.css · 可編輯的待辦清單（勾選 ＋ 自行增刪）
-- `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--slim, .upload-tile--video ｜ Upload tile · dashed upload affordance for creat
-- `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
-- `vault-access.css` — .vault-access, .vault-reachline, .vault-access__head, .vault-method, .vault-method__head ｜ vault-access.css · 媒體庫「存取權限」分頁（2026-10-09）
-- `vault-list.css` — .vault-shell, .vault-stage, .vault-list, .vault-list__head, .vault-list__label ｜ Ztor — Vault list（媒體庫的庫房列表，左側欄）
-- `vault-open.css` — .vault-open, .vault-open__row, .vault-open__rowhead, .vault-open__rowtext, .vault-open__title ｜ Ztor — Vault open（媒體庫「開啟方式」：條件開啟、鑰匙開啟兩個開關）
-- `vault-overview.css` — .vault-ov, .vault-ov__pair, .vault-ov__viewer, .vault-ov__itemname, .vault-ov__tags ｜ vault-overview.css · 媒體庫「總覽」分頁的卡片內版面（2026-10-09）
-- `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板
-- `vault-stage.css` — .vault-bar, .vault-bar__title, .vault-bar__sched, .vault-bar__name, .vault-bar__nameinput ｜ Ztor — Vault stage（媒體庫主欄：標頭、成效 bento、內容卡片）
-- `vault-task.css` — .vault-tag, .vault-tag__text, .vault-tag--media, .vault-tag--plain, .vault-task ｜ vault-task.css · 媒體庫第二層：每件內容的任務（D377，2026-10-08）
-- `vault-wizard.css` — .wizard ｜ Ztor — Vault wizard（新增庫房的三步建立流程）
-- `venue-map.css` — .venue-map, .fep-shop, .venue-map__canvas, .venue-map__streets, .venue-map__road ｜ venue-map — 依完整地址產生的活動地點地圖（D369 決定二，2026-10-07 建
-- `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
-- `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
-- `wizard-split.css` — .wizard-split, .wizard-split__main, .wizard-split__rail, .wizard-split--narrow, .wizard-split--phone ｜ Wizard split — content column + sticky summary r
-- `work-card.css` — .work-cards__wrap, .work-cards__nav, .work-cards__nav--prev, .work-cards__nav--next, .work-cards ｜ Work card · 創作者自己那一批「進行中的項目與活動」的封面磚
-- `zselect.css` — .zselect__native, .zselect__trigger, .zselect__lead, .zselect__option, .zselect__label ｜ zselect — 下拉選單的房內樣式（2026-07-28 使用者裁示：「下拉的樣式還不是我們
+- `size-mix.css` — .size-mix, .size-mix__slot, .size-mix__bar, .size-mix__fill, .size-mix__val ｜ size-mix — 各尺寸占比（2026-10-05 建，D360 需求看板 S68） ｜ 規格 `ds-specs/4.224-size-mix.md`
+- `social-links.css` — .social-links, .social-links__row, .social-links__head, .social-links__label, .social-links__mark ｜ social-links.css · 社群連結清單（平台一列一格＋新增＋平台清單） ｜ 規格 `ds-specs/4.212-social-links.md`
+- `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns ｜ 規格 `ds-specs/4.104-sortable.md`
+- `source-import.css` — .source-import, .source-gate, .source-gate__head, .source-gate__titles, .source-gate__acts ｜ Source import · 從外部平台搜尋一筆既有紀錄帶入表單 ｜ 規格 `ds-specs/4.120-source-import.md`
+- `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159） ｜ 規格 `ds-specs/4.112-source-status.md`
+- `sparkline.css` — .sparkline, .sparkline__plot, .sparkline__main, .sparkline__canvas, .sparkline__svg ｜ Sparkline · 卡片內的微型走勢圖（無座標軸、無標籤、無互動） ｜ 規格 `ds-specs/sparkline.md`
+- `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕） ｜ 規格 `ds-specs/spec-row.md`
+- `split-bar.css` — .split-bar, .split-bar__track, .split-bar__seg, .split-bar__legend, .split-bar__row ｜ split-bar — 一個總量拆成幾塊（2026-08-31 建） ｜ 規格 `ds-specs/split-bar.md`
+- `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care ｜ 規格 `ds-specs/4.2-button.md`
+- `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示） ｜ 規格 `ds-specs/stack.md`
+- `staged-change.css` — .staged-remove, .staged-remove__strike, .staged-remove__bar ｜ Staged change — 「已套用、還沒儲存」的刪除標記（D392 補充二，2026-10 ｜ 規格 `ds-specs/4.232-staged-change.md`
+- `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ stat-row.css · 卡內大數字排 ｜ 規格 `ds-specs/4.22h1-stat-row-meter-list-day-bars.md`
+- `state-check.css` — .state-checks, .state-check, .state-check--on, .state-check__mark, .state-checks--stack ｜ State check · 一列並排的「開／關」狀態指示 ｜ 規格 `ds-specs/4.209-state-check.md`
+- `status-axes.css` — .status-axes, .status-axes--split ｜ Status axes · two INDEPENDENT order status track ｜ 規格 `ds-specs/status-axes.md`
+- `step-list.css` — .step-list, .step-list__row, .step-list__row--interactive, .step-list__act, .step-list__body ｜ Step list · 階段清單（2026-08-18） ｜ 規格 `ds-specs/step-list.md`
+- `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input ｜ 規格 `ds-specs/4.105-numeric-stepper.md`
+- `sticky-actions.css` — .sticky-actions, .sticky-actions__inner, .main ｜ Sticky page actions — keep a page's top CTAs rea ｜ 規格 `ds-specs/4.106-sticky-actions.md`
+- `stock-allocation.css` — .salloc, .salloc__row, .salloc__row--head, .salloc__row--pool, .salloc__row--cap ｜ stock-allocation.css · 庫存分配表（spec 0-設計規格書 §7.14  ｜ 規格 `ds-specs/4.207-stock-allocation.md`
+- `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ Stock Bar — 細長量條（庫存水位／用量比例） ｜ 規格 `ds-specs/4.51-stock-bar.md`
+- `stock-history.css` — .shist__date, .shist__type, .shist__end, .shist__delta, .shist__child ｜ Stock history · 庫存歷史紀錄（2026-09-11，自 lab-stock-hi ｜ 規格 `ds-specs/4.208-stock-history.md`
+- `stock-readout.css` — .stock-readout, .stock-readout__num, .stock-readout__unit ｜ Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章） ｜ 規格 `ds-specs/4.54-stock-readout.md`
+- `stock-tip.css` — .stock-tip, .stock-tip__pop, .stock-tip__row, .stock-tip__name, .stock-tip__qty ｜ Ztor — Stock tip (extra stock info on hover) ｜ 規格 `ds-specs/4.56-stock-tip.md`
+- `store-settings.css` — .ss-stack, .ss-url, .ss-url__prefix, .ss-url__input, .ss-status ｜ 規格 `ds-specs/4.48-store-settings-page.md`
+- `switch.css` — .switch, .switch--on, .switch--locked ｜ Switch — binary on/off toggle (form control). ｜ 規格 `ds-specs/4.6-switch.md`
+- `table.css` — .ztor-table, .ztor-table-scroll, .card, .ztor-table__feature, .fee-tree__panel ｜ Ztor — Table ｜ 規格 `ds-specs/4.23-table.md`
+- `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--count-plain ｜ Tabs — horizontal tab bar with hairline underlin ｜ 規格 `ds-specs/4.15-tabs.md`
+- `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags ｜ 規格 `ds-specs/tag-input.md`
+- `ticket-preview.css` — .ticket-preview, .ticket-preview--custom-bg, .ticket-preview__top, .ticket-preview__when, .ticket-preview__logo ｜ Ticket preview — 票根即時預覽（建立活動步驟 5「票券銷售」） ｜ 規格 `ds-specs/4.116-ticket-preview.md`
+- `ticket-tier-card.css` — .tier-grid, .tier-list, .tier-toolbar, .tier-toolbar__actions, .tier-add ｜ Ticket tier card — 票種卡（spec 5.1.6.1 F9 / F9.1 /  ｜ 規格 `ds-specs/4.114-ticket-tier-card.md`
+- `tier-arc.css` — .tier-arc, .tier-arc__ringwrap, .tier-arc__ring, .tier-arc__track, .tier-arc__seg ｜ tier-arc — 層層包含的分層弧（2026-09-01 建） ｜ 規格 `ds-specs/tier-arc.md`
+- `tier-overview.css` — .tier-ov, .tier-ov--compact, .tier-ov__head, .tier-ov__row, .tier-ov__rowlabel ｜ Tier overview — 分級對照表（唯讀） ｜ 規格 `ds-specs/4.93b-tier-overview.md`
+- `toast.css` — .ztor-toasts, .ztor-toast, .ztor-toast__icon, .ztor-toast--error, .ztor-toast__text ｜ Ztor — Toast ｜ 規格 `ds-specs/4.107-toast.md`
+- `todo-list.css` — .todo-list, .todo-list__row, .todo-list__row--done, .todo-list__body, .todo-list__text ｜ todo-list.css · 可編輯的待辦清單（勾選 ＋ 自行增刪） ｜ 規格 `ds-specs/todo-list.md`
+- `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--slim, .upload-tile--video ｜ Upload tile · dashed upload affordance for creat ｜ 規格 `ds-specs/4.7b-upload-tile.md`
+- `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va ｜ 規格 `ds-specs/variant-builder.md`
+- `vault-access.css` — .vault-access, .vault-reachline, .vault-access__head, .vault-method, .vault-method__head ｜ vault-access.css · 媒體庫「存取權限」分頁（2026-10-09） ｜ 規格 `ds-specs/4.231-vault-access.md`
+- `vault-list.css` — .vault-shell, .vault-stage, .vault-list, .vault-list__head, .vault-list__label ｜ Ztor — Vault list（媒體庫的庫房列表，左側欄） ｜ 規格 `ds-specs/4.245-vault-list.md`
+- `vault-open.css` — .vault-open, .vault-open__row, .vault-open__rowhead, .vault-open__rowtext, .vault-open__title ｜ Ztor — Vault open（媒體庫「開啟方式」：條件開啟、鑰匙開啟兩個開關） ｜ 規格 `ds-specs/4.247-vault-open.md`
+- `vault-overview.css` — .vault-ov, .vault-ov__pair, .vault-ov__viewer, .vault-ov__itemname, .vault-ov__tags ｜ vault-overview.css · 媒體庫「總覽」分頁的卡片內版面（2026-10-09） ｜ 規格 `ds-specs/4.230-vault-overview.md`
+- `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板 ｜ 規格 `ds-specs/4.108-vault-share.md`
+- `vault-stage.css` — .vault-bar, .vault-bar__title, .vault-bar__sched, .vault-bar__name, .vault-bar__nameinput ｜ Ztor — Vault stage（媒體庫主欄：標頭、成效 bento、內容卡片） ｜ 規格 `ds-specs/4.246-vault-stage.md`
+- `vault-task.css` — .vault-tag, .vault-tag__text, .vault-tag--media, .vault-tag--plain, .vault-task ｜ vault-task.css · 媒體庫第二層：每件內容的任務（D377，2026-10-08） ｜ 規格 `ds-specs/4.229-vault-item-task.md`
+- `vault-wizard.css` — .wizard ｜ Ztor — Vault wizard（新增庫房的三步建立流程） ｜ 規格 `ds-specs/4.248-vault-wizard.md`
+- `venue-map.css` — .venue-map, .fep-shop, .venue-map__canvas, .venue-map__streets, .venue-map__road ｜ venue-map — 依完整地址產生的活動地點地圖（D369 決定二，2026-10-07 建 ｜ 規格 `ds-specs/4.228-venue-map.md`
+- `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡） ｜ 規格 `ds-specs/vip-card.md`
+- `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta ｜ 規格 `ds-specs/4.24b-earnings-waterfall.md`
+- `wizard-split.css` — .wizard-split, .wizard-split__main, .wizard-split__rail, .wizard-split--narrow, .wizard-split--phone ｜ Wizard split — content column + sticky summary r ｜ 規格 `ds-specs/4.109-wizard-split.md`
+- `work-card.css` — .work-cards__wrap, .work-cards__nav, .work-cards__nav--prev, .work-cards__nav--next, .work-cards ｜ Work card · 創作者自己那一批「進行中的項目與活動」的封面磚 ｜ 規格 `ds-specs/work-card.md`
+- `zselect.css` — .zselect__native, .zselect__trigger, .zselect__lead, .zselect__option, .zselect__label ｜ zselect — 下拉選單的房內樣式（2026-07-28 使用者裁示：「下拉的樣式還不是我們 ｜ 規格 `ds-specs/4.110-zselect.md`

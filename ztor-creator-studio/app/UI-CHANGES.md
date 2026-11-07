@@ -15,6 +15,24 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-07（四百八十三）· 手機視窗高度與底部安全區補齊（D infra · 響應式）
+
+**標籤**：release2.4
+
+- 動機：`check_ds_sync` 的存量 WARN 清理，桌面畫面不變。
+- 手機網址列：`auth.css`、`scanner.css`、`canvas-home.css` 的 `100vh` 補 `100dvh`，避免頁面底部被網址列裁掉；`100vh` 留作舊瀏覽器後備。
+- 底部安全區：`sticky-actions.css`、`preview-panel.css`、`preview-dock.css`、`toast.css` 補 `env(safe-area-inset-bottom)`，避免被 iPhone 底部橫條蓋住。
+- 文件：斷掉的 19 個連結改指實際位置；裸色例外註記進 §1.5b，`check_ds_sync` 檢查 5 會認這份註記；相鄰 margin 的三處例外記在 §2.3。
+- 未驗證：iPhone 實機。
+
+## 2026-11-07（四百八十二）· design-system.md 拆檔、元件圖鑑接進收尾檢查（D infra · 文件）
+
+- 動機：`design-system.md` 長到 1.3MB、約 8,000 行，AI 讀不完，搜尋一個元件也會帶回一大段不相關內容。元件總表裡塞了 421KB 的決策經過，另有 40 支元件規格（§4.209–4.248）誤接在 Changelog 後面。
+- 拆檔：元件規格搬進 `ds-specs/`，一支一檔共 230 支，內容逐字搬移，只改相對連結；總表每列縮成一句，原文放在規格檔的「總表紀錄」段；改版歷史搬進 `design-system-changelog.md`。`design-system.md` 剩約 247KB。
+- 工具：`check_ds_sync` 會把規格檔算進文件，新增檢查 17（規格索引與檔案大小）、檢查 18（元件圖鑑同步）；`ds-index.md` 的元件列尾附規格檔路徑；`gen_design_gallery.py` 新增 `--check`。
+- 修正：`design-system.html` 的 Vault open 兩個 demo 各少一個 `</div>`，導致圖鑑腳本無法執行、`design-components.html` 缺新元件。補上後重新生成。
+- 不影響產品頁與 CSS。
+
 ## 2026-11-06（四百八十一）· 建立活動的「活動連結」拿掉「重置連結」（B 反饋 · create-event）
 
 **標籤**：release2.3、release2.4
