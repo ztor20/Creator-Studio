@@ -4,6 +4,7 @@
 用法（從 site/r2.3 執行）：
   python3 scripts/gen_design_gallery.py                 # 全部元件卡
   python3 scripts/gen_design_gallery.py --only button,badge,input   # 只生成指定 id（樣板用）
+  python3 scripts/gen_design_gallery.py --check         # 只比對是否同步（check_ds_sync 檢查 18 用）
 
 原則：不重寫任何內容。每張卡＝標題＋一句用途＋原卡的渲染區（matrix-block／demo／viz／preview，
 逐字搬過來、吃同一批元件 CSS）＋「規則與說明」摺疊（原卡其餘內容，只顯示中文）。
@@ -159,7 +160,7 @@ def prune_style(style: str, used_html: str) -> str:
     return "\n".join(r.strip() for r in out if r.strip())
 
 
-def build(only=None):
+def build(only=None, check=False):
     html = SRC.read_text(encoding="utf-8")
     # 不用行首行尾錨點：design-system.html 有一行黏了 16 支 <link>（2026-09-16 驗收抓到的漏洞）
     # 從整份文件收集（DS 頁有幾支 <link> 是後來在 body 裡補掛的），去重保序
@@ -270,6 +271,12 @@ def build(only=None):
 </body>
 </html>
 """
+    if check:
+        if OUT.exists() and OUT.read_text(encoding="utf-8") == out:
+            print(f"{OUT.name} 已同步（{len(cards)} 張卡）")
+            return
+        print(f"{OUT.name} 落後 design-system.html，請跑 python3 scripts/gen_design_gallery.py")
+        sys.exit(1)
     OUT.write_text(out, encoding="utf-8")
     print(f"{OUT.name}: {len(cards)} 張卡, {len(out)//1024} KB")
 
@@ -277,5 +284,6 @@ def build(only=None):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="逗號分隔的 section id")
+    ap.add_argument("--check", action="store_true", help="只比對不寫檔，落後時回傳 1")
     a = ap.parse_args()
-    build(set(a.only.split(",")) if a.only else None)
+    build(set(a.only.split(",")) if a.only else None, check=a.check)
