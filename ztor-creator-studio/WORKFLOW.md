@@ -55,7 +55,7 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 4. **共用腳本** — 每頁載入：`js/theme.js`（主題）、`js/i18n.js`（中英切換，配 `data-en`/`data-zh`）、`js/icons.js`+`js/icons-all.js`（圖示 registry → applyIcons，配 `data-lucide`）、`js/sidebar.js`（app-shell 導覽）、`shared.css`；其餘 `js/chart.js` / `js/hero.js` / `js/reveal.js` 等按需。
 5. **頁面層** — `*.html` = 「共用 chrome + 它用到的元件 CSS 子集 + 它用到的 `partials/*.js`」。
 6. **元件展示** — `design-system.html` 載入**同一份** `ds-components/*.css` 來展示 → 是元件的**單一真相來源**（設計師檢視元件只看它）。
-7. **文件層** — `design-system.md`（規格）、`component-library.md`、`requirements-map.md`、`SPEC` / `BUILD-SPEC` / `ASSUMPTIONS` / `UI-CHANGES`。
+7. **文件層** — `design-system.md`（總則與元件總表）、`ds-specs/`（元件規格，一支一檔）、`component-library.md`、`requirements-map.md`、`SPEC` / `BUILD-SPEC` / `ASSUMPTIONS` / `UI-CHANGES`。
 
 載入順序：`theme.js`（早，防閃白）→ `_tokens` → `fonts` → 元件 CSS → `shared.css` → `icons / i18n / sidebar` + 頁面 partials。
 
@@ -67,7 +67,7 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 |---|---|
 | **Token**（`_tokens.css`） | 影響全站所有元件 + 頁面 → 跨頁、跨深色目視驗證 |
 | **寫出可重用樣式** | 第一次就 promote 成 `ds-components/{name}.css`，不留在頁面 `<style>` |
-| **某個元件**（`ds-components/X.css`） | ① 同步 `design-system.html`（demo 卡 + TOC）② 同步 `design-system.md` 條目 ③ grep 所有用到的頁、一起改（共用元件改一次、同步全部 consumer） |
+| **某個元件**（`ds-components/X.css`） | ① 同步 `design-system.html`（demo 卡 + TOC）② 同步 `ds-specs/` 規格檔（新元件另在 `design-system.md` 總表加一列）③ grep 所有用到的頁、一起改（共用元件改一次、同步全部 consumer） |
 | **i18n 字串** | 加 `data-en` / `data-zh` 成對 + `js/i18n.js` 字典 |
 | **新圖示** | 先在 `js/icons.js` registry 註冊，再用 `data-lucide` |
 | **新字型** | 放 `fonts/` + `fonts.css` 加 @font-face |
