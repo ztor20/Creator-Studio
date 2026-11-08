@@ -15,6 +15,37 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-08（四百八十六）· 商品細節頁新增「貼文」分頁（A spec · D520）
+
+- 動機：新品貼文只在建立完成時彈一次，略過就沒有入口、發出後也不能改。使用者裁決在商品細節頁新增商品相關貼文，可以發布、編輯、管理；範圍只收新品貼文面板發出的（規格 5.1.5.1 §2.21、5.1.5.7「發布後的編輯與管理」）。
+- `product-detail.html`：左側分節導覽多一個「貼文」分頁（`data-feat="S144"`，功能表登記 ⚪ 未排定，只在最終版出現）。分頁內一個區塊：
+  - 右上「發新貼文」。
+  - 列表沿用群發訊息歷史的列：時間｜標題｜受眾｜狀態｜動作。
+  - 已排程：編輯、取消排程（先確認，次鈕叫「保留排程」，免得兩顆都是「取消…」）。
+  - 已發送：編輯；改過的標「已編輯」。
+  - 發送失敗：失敗原因＋重試。
+  - 沒有貼文時顯示空狀態說明；封存時整個分頁唯讀。
+- `js/product-posts.js`（新）：清單、撰寫面板模式切換、示範資料（存 sessionStorage；沒帶 ?id 的預設樣本有三篇，其他商品從空的開始）。
+- `partials/product-post-modal.js`：加細節頁模式要用的掛點；編輯已發送時顯示說明（不再通知、Email 不會變），收起受眾、發布時機與個人化變數。e-shop 建立後彈窗的樣子不變。
+- `ds-components/message-modal.css`：`.msg-history--post`（5 欄、手機收兩欄）、`.msg-row__subject-text`／`__edited`／`__actions`；失敗列的圖示改由 CSS 定尺寸。
+- `product-detail.html` 的確認彈窗多一個選填 `cancelKey`，可改次鈕文字。
+- 文件：`ds-specs/4.22m-message-composer.md`、`ds-specs/new-product-post.md`、`design-system.html` 商品貼文列 demo、`design-components.html` 重生；`feature-scope-map.md` S144、`js/devtools.js` FEAT_TIER。
+
+## 2026-11-07（四百八十五）· 文案對齊 D152、D261（B 反饋導入）
+
+**標籤**：release2.4
+
+- 動機：規格健檢（D518）盤點原型時發現兩句舊規則文案。
+- `js/i18n.js`：`ploy.int.vote-hint` 的「專案」改「項目」；`bd.impact.member-rule` 拿掉「成員漲價可能讓組合價高於成員合計」，組合售價已是成員原價合計乘折扣。
+
+## 2026-11-07（四百八十四）· 元件 demo 跟上產品頁（D infra · 文件）
+
+**標籤**：release2.4
+
+- 動機：demo 巡檢發現三個小節還在用 CSS 已刪除的舊 class，畫面和產品不同。
+- `design-system.html`：`store-settings` 右欄換成現行 Store preview；`pickup` 的場次行動卡與掃碼器存取卡照產品頁重寫；`media-vault` 的檢視者選單換成 `.control-prefix`。
+- 規格：`store-settings` 的 Anatomy 與 Classes、`ds-specs/4.48-store-settings-page.md` 的結構樹改成現行結構。
+
 ## 2026-11-07（四百八十三）· 手機視窗高度與底部安全區補齊（D infra · 響應式）
 
 **標籤**：release2.4
