@@ -426,7 +426,7 @@
 - `bundle-preview-card.css` — .bpc__title, .bpc, .bpc__list, .bpc__row, .bpc__what ｜ bundle-preview-card.css · 粉絲端組合包預覽卡（建立組合包時右欄「粉絲看 ｜ 規格 `ds-specs/4.213-bundle-preview-card.md`
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button ｜ 規格 `ds-specs/4.2-button.md`
 - `calc-list.css` — .calc-list, .form-section--card, .calc-list--framed, .calc-list__how, .calc-list__sum ｜ Calc list — 一行一項的算式列表（加總／扣抵，最後一列是結果） ｜ 規格 `ds-specs/4.217-calc-list.md`
-- `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建） ｜ 規格 `ds-specs/live-item.md`
+- `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建） ｜ 規格 `ds-specs/canvas-home.md`
 - `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建） ｜ 規格 `ds-specs/canvas-stage.md`
 - `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制） ｜ 規格 `ds-specs/card-group.md`
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card ｜ 規格 `ds-specs/4.11-card.md`
@@ -456,7 +456,7 @@
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano ｜ 規格 `ds-specs/4.97-detail-sheet.md`
 - `empty-card.css` — .empty-card, .empty-card--framed, .card, .empty-card__icon, .empty-card__icon--primary ｜ Empty card — in-card empty state for a loaded-bu ｜ 規格 `ds-specs/4.22h-empty-card.md`
 - `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar ｜ 規格 `ds-specs/4.17-empty-stub.md`
-- `entry-list.css` — .entry-list, .entry-list__row, .entry-list__add, .entry-list--extras, .entry-list__row--extras ｜ entry-list.css · 逐筆單欄輸入清單（可增可刪）
+- `entry-list.css` — .entry-list, .entry-list__row, .entry-list__add, .entry-list--extras, .entry-list__row--extras ｜ entry-list.css · 逐筆單欄輸入清單（可增可刪） ｜ 規格 `ds-specs/4.118-entry-list.md`
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4. ｜ 規格 `ds-specs/4.22p-event-preview-card.md`
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer ｜ 規格 `ds-specs/4.98-explainer.md`
 - `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ Export dialog · 匯出視窗（匯出＋匯出紀錄同一個視窗） ｜ 規格 `ds-specs/export-dialog.md`
@@ -468,7 +468,7 @@
 - `field-more.css` — .field-more, .form-grid, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21） ｜ 規格 `ds-specs/field-more.md`
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele ｜ 規格 `ds-specs/4.22c-field-pill.md`
 - `field-source-tag.css` — .field-source, .field__label, .is-source-locked, .radio-cards, .segmented ｜ Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式 ｜ 規格 `ds-specs/4.121-field-source-tag.md`
-- `field-system.css` — .field, .field__label, .field__label--split, .field__label-aside, .field__hint ｜ Ztor Creator Studio - Field system molecule ｜ 規格 `ds-specs/4.29-payout-bank-picker-dialog.md`
+- `field-system.css` — .field, .field__label, .field__label--split, .field__label-aside, .field__hint ｜ Ztor Creator Studio - Field system molecule ｜ 規格 `ds-specs/field-system.md`
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ Filter Tabs — secondary, lighter pill row for na ｜ 規格 `ds-specs/filter-tabs.md`
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160） ｜ 規格 `ds-specs/4.111-finding-card.md`
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ follow-field.css · 跟隨／另設的時間列（D342，2026-10-01） ｜ 規格 `ds-specs/4.223-follow-field.md`
@@ -492,7 +492,7 @@
 - `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S ｜ 規格 `ds-specs/4.22l-list-footer.md`
 - `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar--filters, .list-toolbar__filters, .list-toolbar__filter ｜ List toolbar · 清單頁頭的兩層控制骨架 ｜ 規格 `ds-specs/4.90-list-toolbar.md`
 - `listing-controls.css` — .lctl, .lctl__row, .lctl--locked, .lctl__row--locked, .lctl__lock-note ｜ listing-controls.css · 上架、顯示與開賣（spec 0-設計規格書 §7. ｜ 規格 `ds-specs/4.205-listing-controls.md`
-- `live-item.css` — .live-bg, .is-live-bg, .live-rail__wrap, .live-rail__nav--prev, .live-rail__view ｜ live-item — 進行中的一件（2026-08-31 建）
+- `live-item.css` — .live-bg, .is-live-bg, .live-rail__wrap, .live-rail__nav--prev, .live-rail__view ｜ live-item — 進行中的一件（2026-08-31 建） ｜ 規格 `ds-specs/live-item.md`
 - `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ lock-sets.css · 組合包「鎖定套數」區（規則：2026-09-11 使用者重定義； ｜ 規格 `ds-specs/4.210-lock-sets.md`
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。 ｜ 規格 `ds-specs/4.101-manage-ip.md`
 - `media-preview.css` — .mpreview, .mpreview__stage, .mpreview--image, .mpreview--clip, .mpreview__glyph ｜ media-preview.css · 單件媒體預覽（照片大圖／影片播放／音檔播放條） ｜ 規格 `ds-specs/4.242-media-preview.md`
@@ -550,7 +550,7 @@
 - `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit ｜ 規格 `ds-specs/4.18-selection-card.md`
 - `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06） ｜ 規格 `ds-specs/4.117-session-list.md`
 - `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-section, .settings-section__title ｜ Ztor Creator Studio - Settings layout, nav, and  ｜ 規格 `ds-specs/4.48-store-settings-page.md`
-- `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
+- `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪） ｜ 規格 `ds-specs/4.115-size-chart-editor.md`
 - `size-mix.css` — .size-mix, .size-mix__slot, .size-mix__bar, .size-mix__fill, .size-mix__val ｜ size-mix — 各尺寸占比（2026-10-05 建，D360 需求看板 S68） ｜ 規格 `ds-specs/4.224-size-mix.md`
 - `social-links.css` — .social-links, .social-links__row, .social-links__head, .social-links__label, .social-links__mark ｜ social-links.css · 社群連結清單（平台一列一格＋新增＋平台清單） ｜ 規格 `ds-specs/4.212-social-links.md`
 - `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns ｜ 規格 `ds-specs/4.104-sortable.md`

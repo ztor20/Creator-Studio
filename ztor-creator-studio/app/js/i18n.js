@@ -473,7 +473,7 @@
     'ploy.int.refund': { en: 'Refunds and chargebacks', zh: '退款與拒付' },
     'ploy.int.refund-hint': { en: 'Reversed at the value left after fading', zh: '回沖，以沖銷當下已衰減的價值計' },
     'ploy.int.vote': { en: 'Vote eligibility', zh: '投票資格' },
-    'ploy.int.vote-hint': { en: 'Eligible projects only, one vote per project', zh: '只限有資格的專案，每專案一票' },
+    'ploy.int.vote-hint': { en: 'Eligible projects only, one vote per project', zh: '只限有資格的項目，每項目一票' },
     'ploy.int.self': { en: 'Self-invite detection', zh: '自我邀請偵測' },
     'ploy.int.self-hint': { en: 'Checked by payment method, device and address', zh: '以付款工具、裝置、地址偵測' },
     'ploy.int.cap': { en: 'Cap checks', zh: '上限判定' },
@@ -3555,6 +3555,27 @@
     'npp.publish':            { en: 'Publish post',                        zh: '發布貼文' },
     'npp.schedule':           { en: 'Schedule post',                       zh: '排程發布' },
     'npp.skip':               { en: 'Skip for now',                        zh: '之後再說' },
+    /* D520（2026-11-08）：商品細節頁「貼文」分頁開同一個面板——發新貼文／編輯；編輯已發送的貼文時的說明 */
+    'npp.title.new':          { en: 'New post',                            zh: '發新貼文' },
+    'npp.title.edit':         { en: 'Edit post',                           zh: '編輯貼文' },
+    'npp.sent.title':         { en: 'This post has already been sent',     zh: '這篇貼文已經發送' },
+    'npp.sent.text':          { en: "Saving updates the post fans see in the app and marks it as edited. Fans won't be notified again, and Emails already sent won't change.", zh: '儲存後，粉絲在站內看到的會是新內容，並標示「已編輯」。不會再通知粉絲，已寄出的 Email 也不會改變。' },
+    'pd.posts.tab':           { en: 'Posts',                               zh: '貼文' },
+    'pd.posts.title':         { en: 'Related posts',                       zh: '相關貼文' },
+    'pd.posts.sub':           { en: 'Fans you pick are notified when a post is sent. After that, only the title and text can change.', zh: '發送時會通知你選的粉絲；發送後只能改標題與內文。' },
+    'pd.posts.new':           { en: 'New post',                            zh: '發新貼文' },
+    'pd.posts.empty':         { en: 'No posts yet. Announce this product to your fans here.', zh: '還沒有貼文。可以在這裡向粉絲宣布這件商品。' },
+    'pd.posts.edit':          { en: 'Edit',                                zh: '編輯' },
+    'pd.posts.cancel-sched':  { en: 'Cancel schedule',                     zh: '取消排程' },
+    'pd.posts.edited':        { en: 'Edited',                              zh: '已編輯' },
+    'pd.posts.cancel.title':  { en: 'Cancel this scheduled post?',         zh: '取消這篇排程貼文？' },
+    'pd.posts.cancel.body':   { en: "It won't be sent, and no fans will be notified.", zh: '這篇不會發送，也不會通知任何粉絲。' },
+    'pd.posts.cancel.ok':     { en: 'Cancel schedule',                     zh: '取消排程' },
+    'pd.posts.cancel.keep':   { en: 'Keep scheduled',                      zh: '保留排程' },
+    'pd.posts.toast.sent':    { en: 'Post published',                      zh: '貼文已發布' },
+    'pd.posts.toast.sched':   { en: 'Post scheduled',                      zh: '貼文已排程' },
+    'pd.posts.toast.saved':   { en: 'Post saved',                          zh: '貼文已儲存' },
+    'pd.posts.toast.canceled':{ en: 'Schedule canceled',                   zh: '已取消排程' },
 
     /* ─── Restock flow (spec 5.1.5.6) ─────────────────────── */
     'restock.title':          { en: 'Restock',                            zh: '補貨' },
@@ -3934,7 +3955,7 @@
     /* D241（spec §7.14 組合包成交條件）：成員「隱藏」不再讓組合不可售——隱藏的成員照樣
        能被組合帶著成交。舊的 bd.impact.note 把下架與隱藏混為一談，改由這一條取代。 */
     /* D332（2026-09-29）：成員的開賣與停售只管它自己的單售，不再讓組合不可售——拿掉 off sale／未開賣。 */
-    'bd.impact.member-rule': { en: "This bundle stops selling when a member is unlisted or has nothing left to sell inside it. A member's own sale dates and visibility only apply to its single sales. A member price rise can also push the bundle price above the members' total.", zh: '成員下架，或在本組合的可售量歸零時，組合就不可售。成員自己的開賣、停售與隱藏只管它的單售，不影響本組合。成員漲價則可能讓組合價高於成員合計。' },
+    'bd.impact.member-rule': { en: "This bundle stops selling when a member is unlisted or has nothing left to sell inside it. A member's own sale dates and visibility only apply to its single sales.", zh: '成員下架，或在本組合的可售量歸零時，組合就不可售。成員自己的開賣、停售與隱藏只管它的單售，不影響本組合。' },
     /* D332：共用庫存時，成員單售還沒開賣，本組合照樣會賣掉共用的量——要替單售保留，鎖定套數。 */
     'bd.stock.sub':          { en: 'Lock item stock for this bundle, or share it with the item\u2019s other channels. Shared stock can sell through this bundle before an item\u2019s own sale opens.', zh: '把商品的庫存鎖定給本組合，或與其他販售管道共用。共用時，成員單售還沒開賣，本組合也照樣會賣掉共用的量。' },
     'bd.members.alloc-hint': { en: 'Lock amounts are edited in Bundle stock.', zh: '鎖定量在「組合庫存」分頁調整。' },
@@ -9162,6 +9183,8 @@
     'msg.to.devoted.tag': { en: 'Ranked Fans', zh: '上榜粉絲' },
     'msg.to.all.tag':     { en: 'All fans', zh: '全部粉絲' },
     'msg.to.risk.tag':    { en: 'At risk', zh: '流失風險' },
+    'msg.to.fan.tag':     { en: '[[tier.fan|Fan]]', zh: '[[tier.fan|一般粉絲]]' },   // D520：商品貼文列的受眾徽章
+    'msg.to.recovered.tag': { en: 'Recovered', zh: '已挽回' },
     'msg.status.sent':    { en: 'Sent', zh: '已發送' },
     'msg.status.scheduled':{ en: 'Scheduled', zh: '已排程' },
     'msg.status.failed':  { en: 'Failed', zh: '發送失敗' },

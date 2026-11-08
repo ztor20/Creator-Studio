@@ -88,3 +88,4 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 
 - 版本與治理見 [README.md](README.md)：`site/` 不得把畫面、截圖、互動或既有程式靜默反向同步成產品規則。
 - 共用大檔（`app/js/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。
+- 設計系統文件分三處（2026-11-07 起）：`app/design-system.md` 只放總則、元件總表（一列一句）與索引；元件規格一支一檔在 `app/ds-specs/`；改版歷史在 `app/design-system-changelog.md`。改元件只讀總表和該元件的規格檔。改完 `design-system.html` 要重跑 `python3 app/scripts/gen_design_gallery.py` 重生 `design-components.html`；它是生成檔，撞到衝突就重跑腳本，不要手動合併。
