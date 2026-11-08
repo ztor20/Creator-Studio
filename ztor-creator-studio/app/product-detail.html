@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/state-check.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=r2.2"><!-- D520：貼文分頁的列＋撰寫面板欄位 -->
+<link rel="stylesheet" href="ds-components/product-post-modal.css?v=r2.2"><!-- D520：撰寫面板（商品附件卡） -->
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
@@ -180,6 +182,8 @@
           <button class="section-nav__item" role="tab" data-tab="demand" aria-selected="false" data-pd-cat="physical" data-feat="S69" data-i18n="product-detail.btn.demand">Demand data</button>
           <button class="section-nav__item" role="tab" data-tab="settings" aria-selected="false" data-i18n="product-detail.tab.settings">Product settings</button>
           <button class="section-nav__item" role="tab" data-tab="links" aria-selected="false" data-i18n="product-detail.tab.links">Links</button>
+          <!-- 貼文（§2.21 · D520 · S144）：這件商品的相關貼文——發新貼文、編輯、取消排程、重試；程式在 js/product-posts.js -->
+          <button class="section-nav__item" role="tab" data-tab="posts" aria-selected="false" data-feat="S144" data-i18n="pd.posts.tab">Posts</button>
         </nav>
         <div class="section-nav__body">
 
@@ -1316,6 +1320,35 @@
       </div><!-- /detail-cards -->
       </div><!-- /tab-panel links -->
 
+      <!-- 貼文分頁（§2.21 · D520 · S144）：相關貼文只收新品貼文撰寫面板發出、綁定這件商品的貼文。
+           列沿用群發訊息歷史（message-modal.css 的 .msg-history--post），撰寫面板同 e-shop 建立後彈窗（partials/product-post-modal.js）。 -->
+      <div class="tab-panel" data-panel="posts" role="tabpanel" data-feat="S144">
+      <div class="detail-cards">
+        <section class="form-section form-section--outlined" data-pd-posts>
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title" data-i18n="pd.posts.title">Related posts</h3>
+              <p class="form-section__sub" data-i18n="pd.posts.sub">Fans you pick are notified when a post is sent. After that, only the title and text can change.</p>
+            </div>
+            <div class="form-section__head-actions">
+              <button class="btn btn--outline btn--sm" type="button" data-pd-post-new><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="pd.posts.new">New post</span></button>
+            </div>
+          </div>
+          <div class="msg-history msg-history--post" data-pd-posts-table hidden>
+            <div class="msg-history__head">
+              <span data-i18n="msg.hist.time">Time</span>
+              <span data-i18n="msg.hist.subject">Subject</span>
+              <span data-i18n="msg.hist.audience">Audience</span>
+              <span data-i18n="msg.hist.status">Status</span>
+              <span></span>
+            </div>
+            <div class="data-list" data-pd-posts-list></div>
+          </div>
+          <div class="field__hint" data-pd-posts-empty hidden data-i18n="pd.posts.empty">No posts yet. Announce this product to your fans here.</div>
+        </section>
+      </div>
+      </div><!-- /tab-panel posts -->
+
       </div><!-- /detail-main -->
 
       <!-- 右側唯讀 meta 欄（跨分頁常駐）-->
@@ -1416,6 +1449,8 @@
 <!-- 商品圖片格（[data-upload]）：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="partials/product-post-modal.js?v=r2.2"></script>
+<script src="js/product-posts.js?v=r2.2"></script><!-- D520 · S144：貼文分頁 -->
 <script src="js/size-guides-store.js?v=r2.2"></script><!-- 尺寸指南：商店那份資料源與編輯器彈窗（同 create-product，2026-09-22） -->
 <script src="partials/size-guide-modal.js?v=r2.2"></script>
 <script>
@@ -2784,7 +2819,12 @@
         }
         /* 擋下（純告知）只留一顆主鈕 */
         const cancelBtn = dialog.querySelector('.leave-dialog__actions [data-pd-confirm-cancel]');
-        if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
+        if (cancelBtn) {
+          cancelBtn.hidden = !!opts.noCancel;
+          /* opts.cancelKey（選填，D520）：主鈕本身就叫「取消排程」時，次鈕改叫「保留排程」，免得兩顆都是「取消…」 */
+          const ck = opts.cancelKey || 'e-shop.shown.cancel';
+          cancelBtn.setAttribute('data-i18n', ck); cancelBtn.textContent = T(ck, opts.cancelFallback || 'Cancel');
+        }
         pending = opts.onConfirm; pendingCancel = opts.onCancel || null;
         dialog.setAttribute('data-open', '');
         if (ok) ok.focus();
@@ -4541,6 +4581,8 @@
 
 <script src="js/zselect.js?v=r2.2"></script>
 <!-- 下架／封存確認彈窗（2026-09-18 · D284／D288）：借 leave-dialog 的殼——下架＝標題帶品名＋後果；仍在上架中組合包裡＝列出組合包（.leave-dialog__list）＋主鈕「一同下架這些組合包」；封存＝單純確認（不再列組合包）。 -->
+<!-- D520：貼文分頁的撰寫面板掛載點（js/product-posts.js 第一次開啟時注入 partials/product-post-modal.js） -->
+<div data-pd-post-host></div>
 <div class="leave-dialog" data-pd-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="pd-confirm-title">
   <div class="leave-dialog__scrim" data-pd-confirm-cancel></div>
   <div class="leave-dialog__card">

@@ -12,7 +12,13 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    the F2 attached-product card (.npp-product) + Skip path.
 
    Title/close live on the popup frame (no page header, D067). Sample audience
-   counts are illustrative demo data; product name/price are filled by e-shop. */
+   counts are illustrative demo data; product name/price are filled by e-shop.
+
+   D520 (2026-11-08): product-detail.html's Posts tab opens the same popup via
+   js/product-posts.js for a new post or to edit one. Hooks for that mode:
+   [data-npp-intro] (hidden there), [data-npp-audience-field] /
+   [data-npp-timing-field] (hidden when editing a sent post), and
+   [data-npp-sent-note] (shown when editing a sent post). */
 window.ZTOR_PARTIALS.productPostModal = String.raw`
 <!-- New Product Post popup · spec §5.1.5.7 / D068 -->
 <div class="payout-modal" data-npp-modal hidden>
@@ -23,7 +29,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
     </div>
 
     <div class="payout-dialog__body">
-      <p class="npp-intro" data-i18n="npp.intro">Your product is live. Announce it to your fans now, or skip and do it later.</p>
+      <p class="npp-intro" data-npp-intro data-i18n="npp.intro">Your product is live. Announce it to your fans now, or skip and do it later.</p>
 
       <!-- F2 · Attached product (auto-filled from the product just created; bound to it) -->
       <div class="npp-product">
@@ -36,6 +42,15 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
           </span>
         </div>
         <a class="npp-product__link" href="product-detail.html" data-i18n="npp.product.view">View product<i data-lucide="chevron-right" class="ztor-icon"></i></a>
+      </div>
+
+      <!-- D520：編輯已發送的貼文時才出現——只改標題與內文、不再通知、已寄出的 Email 不會變 -->
+      <div class="alert alert--row alert--info" role="status" data-npp-sent-note hidden>
+        <span class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></span>
+        <div class="alert__body">
+          <div class="alert__title" data-i18n="npp.sent.title">This post has already been sent</div>
+          <div class="alert__meta" data-i18n="npp.sent.text">Saving updates the post fans see in the app and marks it as edited. Fans won't be notified again, and Emails already sent won't change.</div>
+        </div>
       </div>
 
       <div class="msg-compose">
@@ -63,7 +78,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
         </div>
 
         <!-- F3 · Audience (segments reused from 5.1.7.1) -->
-        <div class="msg-field">
+        <div class="msg-field" data-npp-audience-field>
           <div class="msg-field__label">
             <span class="msg-field__label-text"><span data-i18n="msg.to">To</span><span class="msg-field__req" aria-hidden="true">*</span></span>
           </div>
@@ -79,7 +94,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
         </div>
 
         <!-- F5 · Timing & delivery (schedule + tz reused from 5.1.7.1) -->
-        <div class="msg-field">
+        <div class="msg-field" data-npp-timing-field>
           <div class="msg-schedule">
             <div class="msg-schedule__label">
               <span class="msg-schedule__title" data-i18n="msg.schedule">Schedule for later</span>

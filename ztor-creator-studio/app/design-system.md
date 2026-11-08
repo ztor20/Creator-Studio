@@ -703,7 +703,7 @@ references the role, never raw values (html 版另有每個角色的即時渲染
 **相鄰 margin 的存量例外（2026-11-07）**：垂直節奏預設由容器 `gap` 持有（Q103），下面三處保留相鄰選擇器：
 
 - `.product-list__line + .product-list__line`：容器 `.product-list__items` 用 `-webkit-box` 做行數截斷，`gap` 在這種容器不生效。
-- `.scanner-access__field + .scanner-access__field`：`design-system.html` 的 demo 仍是舊 markup，容器改 `gap` 會改變 demo 間距，等 demo 換新再收。
+- `.scanner-access__field + .scanner-access__field`：卡片底部的說明字不是 field，靠 `.mt-8` 貼近上方欄位，容器改 `gap` 會把距離從 8px 撐成 24px。
 - `.rule + .rule`：同一組規則同時出現在 `create-event-legacy.html` 與 `js/ticket-bundle.js`，兩處容器不同，等舊頁退場再收。
 
 ### 2.4 Control sizes
@@ -818,7 +818,7 @@ Not implemented. Browser-level forced-colors will fall through to defaults; sema
 
 **元件規格一支一檔，放在 [`ds-specs/`](./ds-specs/)**（2026-11-07 從本檔拆出，內容逐字搬移）。本檔只留分類、總表與索引；改元件時讀該元件的規格檔就好。
 
-- `§4.x` 引用對應 `ds-specs/4.x-*.md`。
+- `§4.x` 引用對應 `ds-specs/4.x-*.md`；找不到檔案時，那是 `design-system.html` 的小節編號或舊編號，改用元件名稱在總表查。
 - 總表每列的元件名稱連到規格檔；總表原本的長敘述在規格檔的「總表紀錄」段。
 - 新元件在 `ds-specs/` 開新檔，並在總表加一列。
 
@@ -989,7 +989,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Tier arc](./ds-specs/tier-arc.md) | 🟡 molecule | ✓ App | 層層包含的分層弧，呈現一般粉絲到核心圈的粉絲分層 | [tier-arc.css](./ds-components/tier-arc.css) |
 | [KPI rotator](./ds-specs/kpi-rotator.md) | 🟡 molecule | ✓ App | 展示版左欄的輪播卡，輪流顯示收入走勢與粉絲分布 | [kpi-rotator.css](./ds-components/kpi-rotator.css) |
 | [Canvas home](./ds-specs/canvas-home.md) | 🟠 organism | SiteSpecific | `index.html` 的版型層：窄的左欄三格（收入輪播／兩個進行中項目／三則待處理）浮在鋪滿整個視窗的底圖上，整頁釘在視窗高度、不捲 |  |
-| [Live item](./ds-specs/live-item.md) | 🟡 molecule | ✓ App | 展示版第二屏的主角：一件正在跑的事，講在一張佔掉大半屏高度的海報旁邊 |  |
+| [Live item](./ds-specs/live-item.md) | 🟡 molecule | ✓ App | 展示版第二屏的主角：一件正在跑的事，講在一張佔掉大半屏高度的海報旁邊 || [live-item.css](./ds-components/live-item.css) |
 | [Chart](./ds-specs/4.24-chart.md) | 🟠 organism | ✓ App | 折線圖、堆疊長條、來源圖例與排名長條等 SVG 圖表群 | [chart.css](./ds-components/chart.css) |
 | [Earnings waterfall](./ds-specs/4.24b-earnings-waterfall.md) | 🟡 molecule | ✓ App | 收入頁的損益瀑布表，從總收入逐項扣除到可分配利潤 | [waterfall.css](./ds-components/waterfall.css) |
 | [Detail overview](./ds-specs/detail-overview.md) | 🟠 organism | ✓ App | 詳情頁總覽的三欄骨架 | [detail-overview.css](./ds-components/detail-overview.css) |
