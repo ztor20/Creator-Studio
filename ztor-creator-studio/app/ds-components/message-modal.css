@@ -209,6 +209,36 @@
 .msg-row__retry {
   margin-left: auto;
 }
+.msg-row__fail .ztor-icon { width: 14px; height: 14px; }
+/* Product posts variant（2026-11-08 · D520 · S144，商品細節頁「貼文」分頁）：
+   同一種列，換成 5 欄：時間（年月日時分，比相對時間寬）｜標題（發送後改過的帶「已編輯」）｜
+   受眾｜狀態｜每列動作（編輯／取消排程）。沒有收件人數與開信率——那兩欄屬群發訊息的成效。 */
+.msg-history--post .msg-history__head,
+.msg-history--post .msg-row {
+  grid-template-columns: 112px minmax(0, 1fr) 104px 84px 168px;
+}
+/* 標題太長時只截標題字，「已編輯」永遠看得到 */
+.msg-history--post .msg-row__subject {
+  display: flex;
+  align-items: baseline;
+}
+.msg-row__subject-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.msg-row__edited {
+  flex: none;
+  margin-left: var(--sp-6);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.msg-row__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-6);
+}
 /* Brand-new row just pushed by Send now / Schedule send (demo) */
 .msg-row.is-new {
   animation: msg-row-in 320ms var(--easing);
@@ -230,6 +260,8 @@
   .msg-row__audience { grid-column: 1; order: 4; }
   .msg-row__recipients,
   .msg-row__openrate { display: none; }
+  .msg-row__actions { grid-column: 1 / -1; order: 5; justify-content: flex-start; }
+  .msg-history--post .msg-row { grid-template-columns: minmax(0, 1fr) auto; }
   .msg-schedule-when { grid-template-columns: 1fr; }
 }
 
