@@ -506,7 +506,7 @@
     </section>
 
     <!-- 購買條件（2026-10-21 三步驟：從「購買條件與限購」拆出，放第二步「上架設定」；規則不變——D342／D400：
-         含門票＝預設跟隨所含門票（取最嚴）、關掉跟隨可調、只能收窄；純商品＝預設不限、可加限時購買／限粉絲分級購買。
+         含門票＝預設跟隨所含門票（取最嚴）、關掉跟隨可調、只能收窄；純商品＝預設不限、可加限粉絲分級購買（D524 起沒有限時購買）。
          2026-10-22 使用者裁決：release2.3 建立時就能設（原 D455 B7「照預設帶入、調整在細節頁」的唯讀讀數退場），元件與檢查同組合包細節頁） -->
     <section class="form-section form-section--outlined cb-sec" data-form-step="3" data-st-section="rules" data-outline-group="sale" data-feat="S94" data-cb-buy-sec>
       <div class="form-section__head">
@@ -686,7 +686,7 @@
 <script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 bundle-detail 共用） --><!-- 2026-09-18 D292：活動票券成員的候選（活動與票種） -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的上架與開賣（跟隨活動／另設）與購買條件預設 -->
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398／D456：組合包限購（自己設、獨立計算、擋存） -->
-<script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） -->
+<script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（D524 起沒有限時購買） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
@@ -1592,7 +1592,7 @@
   /* ── 購買條件與限購（D398、D400；5.1.5.4 §4 F2）──────────────────────────────────────────
      所有組合包都有兩組，畫在第一張分卡成員之後的 [data-cb-rules]：
        · 購買條件：含門票＝上面 renderTbFollow 畫的唯讀預設（跟隨所含門票，buyOnly）；純商品＝預設不限、
-         用 js/purchase-conds.js 的條件清單加「限時購買／限粉絲分級購買」，期間須在組合包自己的上架區間內〔推導〕。
+         用 js/purchase-conds.js 的條件清單加「限粉絲分級購買」（D524 起沒有限時購買），期間須在組合包自己的上架區間內〔推導〕。
        · 限購：js/purchase-limits.js——D456（2026-10-20）起不繼承成員：預設不限、不帶入成員的限購，獨立計算
          （買組合包不扣成員商品或單張門票的額度）；沒有跟隨成員開關。D469（2026-10-22，release2.3）起建立時就能設，建立後仍可到組合包細節頁調整。
      限購區塊只在結構變了（有沒有成員、語言）才重畫，打字不重畫、游標不跑。 */
@@ -1607,7 +1607,7 @@
   }
   const cbTr = k => k === 'tb.err.outside' ? T('pl.err.outside', 'Outside this bundle’s listing period ({period}).') : T(k, k);
   const featOnC = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
-  const cbCondsCtx = { types: ['buyTime', 'buyTier'], emptyKey: 'pl.cond.empty', featOn: featOnC };   /* 同組合包細節頁 condsCtx（release2.3） */
+  const cbCondsCtx = { types: ['buyTier'], emptyKey: 'pl.cond.empty', featOn: featOnC };   /* 同組合包細節頁 condsCtx（release2.3）；D524（2026-11-09）：沒有限時購買，S82 收起時整列不畫（PCc.usable） */
   /* D463（最終版 S105）：七種條件可編輯、預設沒有條件；限購＝其中的「限購」條件（以組計），寫回 cbRulesState.limits 給既有讀端 */
   const cbUni = () => !!PCc && !!PCc.uniOn && PCc.uniOn();
   let cbUApi = null;
@@ -1647,8 +1647,9 @@
     const wrap = document.querySelector('[data-cb-conds-wrap]');
     const buy = document.querySelector('[data-cb-buy]');
     if (hr) hr.hidden = !tixOn;
-    if (wrap) wrap.hidden = tixOn;
-    if (buy) buy.hidden = tixOn && !featOnC('S63');   /* 含門票的購買條件（S63）不在版本內時，連標籤一起收 */
+    const cbPureOn = !!PCc && PCc.usable(cbCondsCtx);   /* D524：純商品組合包在目前版本有沒有任何可加的條件；沒有就整列（標題、Who can buy、新增鈕）與整節一起收 */
+    if (wrap) wrap.hidden = tixOn || !cbPureOn;
+    if (buy) buy.hidden = tixOn ? !featOnC('S63') : !cbPureOn;   /* 含門票的購買條件（S63）不在版本內時，連標籤一起收 */
     /* 2026-10-21 三步驟：購買條件獨立成第二步的一節——那一列收起時整節一起收（不留只有標題的空卡）；
        限購那一節沒有成員時整節收起（沿用「沒有成員時限購區塊整個不顯示」） */
     const buySec = document.querySelector('[data-cb-buy-sec]');
@@ -1659,7 +1660,7 @@
     const uh = document.querySelector('[data-cb-uconds]');
     if (uni && uh && PCc) {
       if (!cbUApi) cbUApi = PCc.mount(uh, { rules: cbRulesState.conds, scope: 'bundle', times: cbUEt, tr: cbUTr,
-        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnC, pctReadout: c => PCc.pctText(c, [Math.round(finalPrice() * 100) / 100]) }   /* 讀數以組合包售價（成員原價合計套組合折扣）回推 % */,
+        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnC, types: PCc.UNI_TYPES, pctReadout: c => PCc.pctText(c, [Math.round(finalPrice() * 100) / 100]) }   /* 讀數以組合包售價（成員原價合計套組合折扣）回推 % */,
         onChange: () => { cbUSyncLimits(); recompute(); } });
       else { cbUApi.refresh(); cbUApi.check(); }
     } else if (!uni && uh && uh.innerHTML) { cbUApi = null; PCc.release(uh); }
@@ -1667,8 +1668,8 @@
        第二步那句「照預設帶入，建立後可到組合包細節頁調整」與它的底部彙總列一起拿掉。
        墓碑 2026-10-22（D469）：第一步「限購」那句附註（data-cb-rules-later）與它的顯示切換一併退場——限購建立時也能設。 */
     /* 2026-10-22 使用者裁決（release2.3）：純商品組合包建立時就能設購買條件——同組合包細節頁 release2.3（js/purchase-conds.js 條件清單，
-       只開限時購買／限粉絲分級購買，預設不限；期間須在組合包自己的上架區間內，擋關算在 cbRulesErr） */
-    if (!tixOn && wrap && !uni && PCc) {
+       只開限粉絲分級購買（D524 起沒有限時購買），預設不限；擋關算在 cbRulesErr） */
+    if (!tixOn && wrap && !uni && PCc && cbPureOn) {
       if (!wrap.querySelector('[data-cb-conds-host]')) {
         wrap.innerHTML = '<div class="rules-group__k"><span class="rules-group__t" data-i18n="rg.buy">' + esc(T('rg.buy', 'Who can buy')) + '</span></div>' +
           '<div class="rules-group__body" data-cb-conds-host></div>';
@@ -2222,7 +2223,7 @@
       sched: following ? Object.assign({}, tbState.sched) : undefined,
       rules: (following && !cbUni()) ? (tbState.rules ? JSON.parse(JSON.stringify(tbState.rules)) : null) : undefined,   /* null＝跟隨所含門票；建立時另設的照存（2026-10-22）。D463（最終版）：不跟隨所含門票，條件寫在 conds */
       /* D398／D456：限購 null＝不限、{ person }＝組合包自己設的上限（獨立計算，以組計）；
-         純商品組合包的購買條件（限時購買／限粉絲分級購買，預設不限）——含門票的照 rules（跟隨所含門票） */
+         純商品組合包的購買條件（限粉絲分級購買，預設不限；D524 起沒有限時購買）——含門票的照 rules（跟隨所含門票） */
       /* D469：建立時填的上限照存；清空或沒填＝不限（null），不留 { person: '' } 空殼 */
       limits: (n => n ? { person: String(n) } : null)((window.cbRulesState && window.ztorPurchaseLimits)
         ? window.ztorPurchaseLimits.posInt((window.ztorPurchaseLimits.norm(window.cbRulesState.limits) || {}).person) : null),
