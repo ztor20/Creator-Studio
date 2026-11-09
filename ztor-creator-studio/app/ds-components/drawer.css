@@ -3,9 +3,9 @@
    一個 scrim + 一個貼右緣的直向面板；用於「側邊看詳情／歷史／說明」
    這類不需離開當前頁、內容較長可捲動的情境。
 
-   首見於 earnings-sony.html（Deck for Sony 版收入管理）的「提領歷史」與
-   「如何運作」兩個抽屜；由 partials/finance-overview.js 以 data-drawer-* 掛勾
-   控制開關（scrim / 關閉鈕 / Esc 皆關閉）。
+   用在哪一類、按鈕怎麼放，看 pattern 5.1.14 抽屜類型（2026-11-09）。現有實例：媒體庫的「內容設定」
+   「鑰匙」、翻譯表（--full，屬彈窗第 11 類整頁工作區）。earnings-sony 的 data-drawer-* 開關
+   名稱沿用舊稱，實際開的是彈窗。
 
    結構：
      .drawer            殼（fixed 覆蓋全視窗，預設 aria-hidden 收起）
@@ -13,6 +13,7 @@
        .drawer__panel   貼右緣的面板（未開時 translateX 滑出視窗外）
          .drawer__head  標題列 + 關閉鈕
          .drawer__body  可捲動內容區
+         .drawer__foot  頁尾動作列（2026-11-09 新增，選用）：編輯設定類的儲存／取消，破壞性動作放左側
 
    開關：外層加 .is-open（面板滑入、scrim 淡入）。全值引用 _tokens.css。
 
@@ -82,6 +83,17 @@
   flex: 1; min-height: 0; overflow-y: auto;
   padding: var(--sp-20) var(--sp-24) var(--sp-24);
 }
+
+/* 頁尾動作列（2026-11-09，pattern 5.1.14 第 2 類「編輯設定」）：固定在面板底部、不隨內容捲動；
+   主要動作靠右，刪除這類破壞性動作放最左（.drawer__foot-start），兩邊之間自動撐開。 */
+.drawer__foot {
+  flex: none;
+  display: flex; align-items: center; gap: var(--sp-8);
+  padding: var(--sp-16) var(--sp-24);
+  border-top: 1px solid var(--border);
+}
+.drawer__foot-start { margin-right: auto; }
+.drawer--full .drawer__foot { padding: var(--sp-16) var(--sp-40); }
 
 /* 尊重減動效偏好：直接顯隱、不滑動 */
 @media (prefers-reduced-motion: reduce) {
