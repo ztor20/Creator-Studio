@@ -11147,6 +11147,18 @@
     'ed.conflict.title': { en: 'This change clashes with other sale times', zh: '這次修改和其他販售時間衝突' },
     'ed.conflict.body': { en: 'After this change, these would fall outside the event’s listing period or run past the sale end. Adjust them first, then change the event.', zh: '改了之後，下列項目會落到活動上架區間外，或晚於活動停售。請先調整它們，再改活動。' },
     'ed.conflict.ok': { en: 'Got it', zh: '知道了' },
+    /* js/ztor-dialog.js 共用確認／告知彈窗的預設按鈕字（2026-11-09） */
+    'dlg.ok':      { en: 'Got it',  zh: '知道了' },
+    'dlg.cancel':  { en: 'Cancel',  zh: '取消' },
+    'dlg.confirm': { en: 'Confirm', zh: '確認' },
+    'dlg.close':   { en: 'Close',   zh: '關閉' },
+    'dlg.t.blocked':   { en: "Can't publish yet", zh: '還不能發布' },
+    'dlg.t.saved':     { en: 'Saved',             zh: '已儲存' },
+    'dlg.t.draft':     { en: 'Draft saved',       zh: '已存成草稿' },
+    'dlg.t.published': { en: 'Published',         zh: '已發布' },
+    'dlg.t.export':    { en: 'Export',            zh: '匯出' },
+    'pk.log.export.title': { en: 'Export redemption log', zh: '匯出核銷紀錄' },
+    'pk.log.export.unit':  { en: 'entries', zh: '筆紀錄' },
     'ed.conflict.ticket': { en: 'Ticket · {n}', zh: '門票 · {n}' },
     'ed.conflict.bundle': { en: 'Ticket bundle · {n}', zh: '組合包 · {n}' },
     /* D392（2026-10-10）：門票、預設購票規則改成套用到頁面草稿，按「儲存」才寫入 */
@@ -12594,6 +12606,7 @@
     'ar.more.sub-done':   { en: 'All {total} listed', zh: '共 {total} 件，已全部列出' },
     'ar.more.end':        { en: 'That’s all {n}.', zh: '共 {n} 件，已全部列出。' },
     'ar.more.download':   { en: 'Download', zh: '下載' },
+    'ar.export.unit':     { en: 'items', zh: '筆' },   /* 2026-11-09 匯出確認的單位字 */
     'ar.more.close':      { en: 'Close',    zh: '關閉' },
 
     /* 內容詳情彈窗：點排行的任一列開啟。 */

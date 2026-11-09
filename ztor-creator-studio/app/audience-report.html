@@ -24,6 +24,9 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
+<link rel="stylesheet" href="ds-components/export-dialog.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 本頁專屬的 layout hook（非可重用樣式留頁內，照 CLAUDE.md 鐵律 1）。 */
@@ -740,8 +743,16 @@
       if (more.open) closeMore();
     });
     modal.querySelector('[data-ar-more-dl]').addEventListener('click', function () {
-      /* 匯出的檔案格式與欄位規格未定（見 5.1.7.9 待確認），原型只回饋動作已收到。 */
-      if (window.ztorToast) window.ztorToast.show(T('ar.export.toast'), { key: 'ar.export.toast' });
+      /* 2026-11-09（pattern 5.1.12 匯出確認、5.1.8 第 4 類）：先開匯出確認講筆數，不從按鈕直接下載。
+         匯出的檔案格式與欄位規格未定（見 5.1.7.9 待確認），確認後原型仍只回饋動作已收到。 */
+      var n = moreRows().length;
+      var fire = function () { if (window.ztorToast) window.ztorToast.show(T('ar.export.toast'), { key: 'ar.export.toast' }); };
+      if (!window.ztorCsv) { fire(); return; }
+      window.ztorCsv.confirm({
+        title: (modal.querySelector('[data-ar-more-title]') || {}).textContent || T('ar.more.download', 'Download'),
+        count: n, unit: T('ar.export.unit', 'items'), scope: 'audience-report', filters: [],
+        onExport: fire
+      });
     });
   }
 
@@ -774,5 +785,6 @@
   render();
 })();
 </script>
+<script src="js/csv-export.js?v=r2.2"></script><!-- 匯出確認（pattern 5.1.12） -->
 </body>
 </html>

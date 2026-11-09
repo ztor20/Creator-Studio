@@ -2,7 +2,7 @@
 
 ### Login lang prompt
 
-**Pattern** — 5.1.8 Modal shell 的實例（登入語言確認），見 [5-pattern.md](../ds-pillars/5-pattern.md)。
+**Pattern** — 5.1.8 彈窗類型 的實例（登入語言確認），見 [5-pattern.md](../ds-pillars/5-pattern.md)。
 
 #### 總表紀錄（原 §4.1 · Login lang prompt）
 

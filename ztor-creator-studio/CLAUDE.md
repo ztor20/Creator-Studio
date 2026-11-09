@@ -90,7 +90,7 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 - 共用大檔（`app/js/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。
 - 設計系統文件分三層（2026-11-09 起）：
   - 速查版 `app/ds-index.md`：依序是 Pillar 5（pattern）、Pillar 4（元件、用途、規格檔）、Pillar 1（token）的速查，腳本產生、不手改；每次動手前先掃，要拼畫面或流程先找 pattern。
-  - 做畫面或新樣式前的流程：先看產品規格 → 找 pattern（照做；大致適用就加變體，不改原 pattern；沒有的話會重複用才建新 pattern，只有這頁就記 BUILD-SPEC）→ 找元件（用現成；差一點加變體；只有一頁用就留在頁面；都沒有才建新元件）→ 把這頁記成 pattern 卡的實例。pattern 的定義見 `app/ds-pillars/5-pattern.md` 開頭。
+  - 做畫面或新樣式前的流程：先看產品規格 → 找 pattern（元件有多種用途時先看它的類型總卡判斷是哪一類，例如 5.1.8 彈窗類型，都不像先檢討分類；照做；大致適用就加變體，不改原 pattern；沒有的話會重複用才建新 pattern，只有這頁就記 BUILD-SPEC）→ 找元件（用現成；差一點加變體；只有一頁用就留在頁面；都沒有才建新元件）→ 把這頁記成 pattern 卡的實例。pattern 的定義見 `app/ds-pillars/5-pattern.md` 開頭。
   - 入口 `app/design-system.md`：Identity、Do / Don't、Quick Reference 與「對照表」；要修改時先讀，再照對照表只讀需要的那一份。
   - 完整版：各 Pillar 在 `app/ds-pillars/`（元件總表在 `4-component.md`），元件規格一支一檔在 `app/ds-specs/`，改版歷史在 `app/design-system-changelog.md`。
 - 展示頁也分頁（2026-11-09 起）：`app/design-system.html` 是入口，各 Pillar 一頁 `app/design-system-*.html`（元件依類型分五頁 `design-system-components-*.html`）；共用檔頭、左側目錄、檔尾各只有一份：`app/ds-head.js`、`app/ds-toc.js`、`app/ds-tail.js`。新增元件：CSS 加進 `ds-head.js`、demo 卡寫進對應分組那一頁、目錄在 `ds-toc.js` 加一行。

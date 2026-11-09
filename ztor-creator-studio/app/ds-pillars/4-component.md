@@ -48,6 +48,7 @@
 
 1. **先看產品規格**（`documents/`）：頁面放什麼、有哪些狀態與規則，由它決定；pattern 只管怎麼組、怎麼排。
 2. **找 pattern**（Pillar 5）：
+   - 要用的元件有多種用途時（例：彈窗）→ 先看它的類型總卡（例：5.1.8 彈窗類型），判斷需求是哪一類；都不像 → 先檢討分類本身（加一類、拆一類或改定義）並更新實例，不硬塞進最接近的一類、也不在頁面另寫一種。
    - 有適用的 → 照做。
    - 大致適用、但要不同分支 → 加成那張 pattern 的**變體**，不改原 pattern；只有所有實例都該跟著改時才改原 pattern，並同步每個實例。
    - 沒有 → 這種組法會重複用（兩頁以上，或同一類任務）才建新 pattern；只有這一頁 → 記進 `BUILD-SPEC.md`。
@@ -62,6 +63,7 @@
 - **元件變體**：同一個元件換一種樣子或行為，CSS 寫成該元件的修飾類（`.wizard--overlay`），規格寫在該元件的規格檔。
 - **pattern 變體**：同一套做法在不同情境下的固定分支，寫在同一張 pattern 卡裡（例：多步驟精靈的整頁、整頁＋右側預覽、蓋在頁面上）。
 - **頁面專用元件**（📄）：有自己的 CSS，但只服務一個頁面或一個功能（例：媒體庫的 Vault list）。總表狀態欄寫「📄 頁面專用：功能（頁面）」，展示卡跟同類元件放在同一個分類頁，標題後加 📄、卡頂寫出只能在哪些頁用。只在標示的頁面使用；第二個功能要用時先升格：卡片搬回一般分頁、名稱與說明改通用、狀態欄改回一般（check_ds_sync 檢查 22 會提醒）。新的單頁樣式仍照第 3 步留在該頁，不開頁面專用元件。
+- **pattern 類型總卡**：一個有多種用途的元件（例：彈窗），在 Pillar 5 用一張總卡列出它的所有類型——每一類做什麼、放什麼、按鈕與寬度（例：5.1.8 彈窗類型）。元件層只管外殼與修飾類；用哪一類由總卡決定。
 - **pattern 實例**：某個功能照某種做法組出來的具體畫面（例如建立商品、新增庫房都是 Multi-step wizard 的實例），列在那張 pattern 卡的「實例」，畫面細節屬於該頁與產品規格。
 
 **Status tags (orthogonal to layer):**
@@ -208,7 +210,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Film picker](../ds-specs/film-picker.md) | 🟡 molecule | ✓ App | 電影關聯的可搜尋多選元件，建於標籤輸入與 chip 之上 | [partials/film-picker.js](../partials/film-picker.js) |
 | [Work fields](../ds-specs/work-fields.md) | 🟠 organism | ✓ App | 影片作品欄位區塊，由多個既有表單元件組成的 JS 元件 | [partials/work-fields.js](../partials/work-fields.js) |
 | [~~Lang switch~~](../ds-specs/lang-switch.md) | — | **已退場 2026-08-24（D223）** | 頁級「內容檢視語言」切換 | （已刪除） |
-| [Publish preview](../ds-specs/publish-preview.md) | 🟠 organism | ✓ App | 發布前預覽確認層，以彈窗顯示各語言版本的預覽內容 | [publish-preview.css](../ds-components/publish-preview.css) · [partials/publish-preview.js](../partials/publish-preview.js) |
+| [Publish preview](../ds-specs/publish-preview.md) | 🟠 organism | ✝ 彈窗退場（2026-11-09）；`pp-*` 樣式由 Publish stage 沿用 | 發布前預覽確認層，以彈窗顯示各語言版本的預覽內容 | [publish-preview.css](../ds-components/publish-preview.css) · [partials/publish-preview.js](../partials/publish-preview.js) |
 | [Manual entry modal](../ds-specs/manual-entry-modal.md) | 🟠 organism | ✓ App | 補登站外收入的彈窗，重用共用彈窗殼與表單 helper | [partials/manual-entry-modal.js](../partials/manual-entry-modal.js) |
 | [Source upload modal](../ds-specs/source-upload-modal.md) | 🟠 organism | 📄 頁面專用：其他單頁（fan-analytics.html） | 上傳外部平台匯出資料檔的彈窗，重用共用彈窗殼 | [partials/source-upload-modal.js](../partials/source-upload-modal.js) |
 | [Fee exception modal](../ds-specs/fee-exception-modal.md) | 🟠 organism | 📄 頁面專用：其他單頁（admin-platform-fees.html） | 逐位創作者覆寫平台費率的彈窗，有新增與編輯兩種模式 | [partials/fee-exception-modal.js](../partials/fee-exception-modal.js) |
