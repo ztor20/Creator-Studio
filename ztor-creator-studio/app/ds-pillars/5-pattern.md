@@ -4,9 +4,19 @@
 
 > Cross-component behavior conventions. Per DSS v1.4: layout patterns / voice / accessibility / interaction states / data viz live here, NOT in Component (which only defines per-component variants/states).
 
+### 定義與分區（2026-11-09）
+
+- **Pattern**：為了完成某一類使用者任務，把幾個元件組在一起的固定做法。它回答五件事：什麼情況用、用哪些元件、怎麼排、怎麼互動、邊界狀況怎麼處理。pattern 本身沒有樣式檔；需要樣式的部分屬於元件（Pillar 4）。
+- **Pattern 變體**：同一套做法在不同情境下的固定分支，寫在同一張卡的「變體」（例：多步驟精靈的整頁、整頁＋右側預覽、蓋在頁面上）。
+- **Pattern 實例**：某個功能照某張 pattern 做出來的具體頁面，在卡片底部的「實例」列名稱與連結；畫面細節屬於該頁的 `BUILD-SPEC.md` 與產品規格。
+- **不是 pattern 的東西**：單一元件（Pillar 4）；頁面骨架、網格與模板（Pillar 6）；產品規則，例如「付款資訊要在確認步驟重述」屬於 `documents/`，pattern 只說要在哪裡、用什麼方式呈現。
+- **Pillar 5 分兩區**：「組裝做法」＝5.1 的 pattern 卡；「全站通則」＝5.2 文案語氣、5.3 狀態與互動、5.4 資料視覺化。原本的 5.5 流程清單已併進 5.1.5 的實例。
+
+**做頁面或新樣式時怎麼用**：先看產品規格 → 找 pattern（有就照做；大致適用但要不同分支就加變體，不改原 pattern——只有所有實例都該跟著改時才改原 pattern並同步每個實例；沒有的話，會重複用才建新 pattern，只有這一頁就記進 `BUILD-SPEC.md`）→ 找元件（用現成；差一點加變體；只有一頁用就留在頁面；都沒有才建新元件）→ 把這頁加進用到的 pattern 卡「實例」。
+
 ### 5.1 Pattern cards
 
-Best-practice assembly recipes — how components combine to meet a creator's goal. A Pattern is not a component (Pillar 4) and not a wireframe (the page implementation). Each card has five grids: `trigger` (when to use) / `must` (≥2 non-negotiables) / `should` (advisable) / `must-not` (anti-patterns) / `_edge-cases` (empty / error / new-user / mobile / offline). Four categories, twelve cards（頁面級 5 張＋中間層 4 張，2026-07-08；2026-07-20 新增 Detail + persistent rail，共十張；2026-09-08 新增 Destructive confirm，共十一張）。Component sections demo the unit only — assembly rules live here（判準見 §4.0）。
+Best-practice assembly recipes — how components combine to meet a creator's goal. A Pattern is not a component (Pillar 4) and not a wireframe (the page implementation). Each card has five grids: `trigger` (when to use) / `must` (≥2 non-negotiables) / `should` (advisable) / `must-not` (anti-patterns) / `_edge-cases` (empty / error / new-user / mobile / offline)，加兩個選填欄：`變體`（同一做法的固定分支）與 `實例`（照它做的頁面）。 Four categories, twelve cards（頁面級 5 張＋中間層 4 張，2026-07-08；2026-07-20 新增 Detail + persistent rail，共十張；2026-09-08 新增 Destructive confirm，共十一張）。Component sections demo the unit only — assembly rules live here（判準見 §4.0）。
 
 **html 對照（本輪拆頁）** — `design-system.html` 這輪把原本擠在一張表格裡的十張卡拆成十個獨立小節，每個都掛了可跳轉的錨點、並用真元件渲染出組合實例＋「實際使用頁」連結；下方每張卡的標題都補上編號與對應錨點 id，方便對照。html 端的 Trigger／Must 是精簡過的展示文案，語意與下方全文版一致，不是另一套規則。
 
@@ -24,6 +34,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 | 5.1.10 | Detail + persistent rail | `#pattern-detail-rail` |
 | 5.1.11 | Destructive confirm | `#pattern-destructive-confirm` |
 | 5.1.12 | Export confirm | `#pattern-export-confirm` |
+| 5.1.13 | Pre-publish preview | `#pattern-prepublish` |
 
 #### 5.1.1 Dashboard home (Layout) · `#pattern-dashboard`
 
@@ -59,11 +70,17 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 
 #### 5.1.5 Multi-step wizard (Workflow) · `#pattern-wizard`
 
-- **trigger**: A create flow with 3–4 dependent steps (create-project 4-step · create-event 3-step · create-product 4-step).
+- **trigger**: A create flow with 3–4 dependent steps — 建立一件東西、步驟彼此相依（見下方實例）。
 - **must**: Use the `wizard-focus` template (no main topbar) with a centered `stepper`, `Selection card` grids for branching choices, and a sticky bottom action bar (Back / Save draft / Next); save a draft at every step so progress is never lost.
 - **should**: Show a Review step before commit that restates money / royalty / IP-rental disclosures; disable Next until the step's required fields validate (on-blur).
 - **must-not**: Never trap the user (always offer Save draft + exit); never advance past a step with unresolved financial or licensing disclosures; never reset earlier steps when navigating back.
 - **_edge-cases**: `empty` → step 1 prefilled with sensible defaults; `error` → validation inline on the offending field, stepper marks the step; `new-user` → first step carries a one-line explainer; `mobile` → stepper condenses to "Step 2 of 4", action bar stays sticky; `offline` → draft saves locally, banner "Will sync when back online".
+- **變體**：
+  - **整頁**：獨立頁面，沒有預覽欄（建立專案）。
+  - **整頁＋右側預覽**：右欄放粉絲端預覽，見 5.1.9 Split preview（建立商品、建立活動、建立組合包）。
+  - **蓋在頁面上**：精靈外框以全畫面覆蓋開在原頁上，關掉回原頁（新增庫房）。
+  - **單頁分步**：同一張表單分成幾步顯示、不拆成幾頁；其他步驟的區段收起，欄位值、即時預覽與就緒檢查都讀同一張表單（建立商品、建立組合包的「設定 → 上架設定 → 預覽與發布」；元件 [Form steps](./4-component.md) §4.241）。
+- **實例**：建立專案 `create-project.html`（4 步：About → Showcase → Monetization → Review，送出前揭露 IP 租用）· 建立活動 `create-event.html`（3 步：Type → Date & venue → Cover）· 建立商品 `create-product.html`（4 步，主要／次要分類分開記）· 建立組合包 `create-bundle.html` · 新增庫房（`media-vault.html` 內開啟，3 步：取名 → 放內容 → 誰開得了）。
 
 #### 5.1.6 Form assembly (Workflow) · `#pattern-form-assembly`
 
@@ -72,6 +89,8 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 - **should**: **Section 順序照商品的生命敘事**（create-product 的驗證序，其他建立流程沿用、依產品語意跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）；**上架這類「看著成品才做的決定」放右欄預覽卡下方**（split-preview 頁型，見 5.1.9），不排進左欄敘事。Section 的 `__sub` 只在需要說服或解釋規則時出現（素材、取貨有；價格、標題不用）。Order fields identity → content → settings → risk disclosures; put character counts as right-aligned `field__hint--count`（form-section scope）; keep one sticky action bar per form for save / next.
 - **must-not**: Never hand-roll a label/hint stack outside `.field`; never nest a second heading system inside a section; never mix card-wrapped and no-card sections in the same flow.
 - **_edge-cases**: `empty` → fields show placeholders, never pre-filled fake data; `error` → inline validation on the field, section stays open; `new-user` → first section carries a one-line explainer; `mobile` → `Form grid` collapses to single column; `offline` → draft-save locally（同 wizard）.
+
+- **實例**：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry（見 must）· 影片上架欄位（Work fields §4.123：同一組十五個欄位用在共創後上架、建立項目直接發佈影片、作品上架後編輯三處，由 `partials/work-fields.js` 產生）。
 
 #### 5.1.7 Settings page (Layout) · `#pattern-settings`
 
@@ -88,6 +107,8 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 - **should**: Focus-trap inside the dialog; primary action right-aligned in the foot; body reuses Field / Data-list rather than bespoke layouts.
 - **must-not**: Never roll a new modal chrome per feature; never stack two modals; never let backdrop-click discard unsaved money input without confirm.
 - **_edge-cases**: `empty` → open with sensible defaults; `error` → inline `Alert --row` inside the body, dialog stays open; `new-user` → helper line under the title; `mobile` → dialog goes full-width bottom-sheet-like; `offline` → submit disabled with reason.
+
+- **實例**（共用的彈窗殼在 §4.61 Modal shell／Payout picker）：申請撥款（`earnings.html`）· 群發訊息（Message composer §4.64，含 Token chip §4.65）· 建立商品後發文（New product post §4.39）· 補貨（Restock §4.62）· 補登收入（Manual entry modal §4.126）· 登入語言確認（Login lang prompt §4.131）· 重新上架確認（Schedule restore §4.77a 是彈窗裡的提示區塊）· 上傳資料檔（Source upload modal，`fan-analytics.html`）· 費率例外（Fee exception modal，`admin-platform-fees.html`）。破壞性動作與匯出另有自己的做法：5.1.11、5.1.12。
 
 #### 5.1.9 Split preview (Layout) · `#pattern-split-preview`
 
@@ -133,6 +154,20 @@ Best-practice assembly recipes — how components combine to meet a creator's go
   - `.export-summary`：大字筆數（`__num`，`--fs-28` 數字字型）＋單位，下一行「照目前的篩選結果：{篩選條件}」——篩選條件用匯出紀錄同一種寫法（`filterText`），按匯出前不必回頭看清單上方開了哪些篩選。
   - `.export-history`（版本閘 O42 關閉時整塊不出現）：上緣一道 `--border-soft` 細線和上半部分開；標題＋一句說明；最近 3 筆 `.data-list__row`，多於 3 筆時「顯示全部 N 筆」就地展開／收回；和這次篩選相同的紀錄右側 `.badge--neutral`「同樣的篩選」（比對時不看「收件資料」那一項——它是匯出選項、不是篩選），讓人按匯出前就看得到剛剛是不是已經匯過同一份。沒有紀錄時一句「還沒有匯出過，這次匯出後會記在這裡」。
   - 主鈕寫筆數「匯出 N 筆」（零筆時停用、寫「匯出」）。`ztorCsv.confirm()` 多收 `scope`、`filters`；`openLog()` 保留給舊呼叫，頁面已不用。
+
+#### 5.1.13 Pre-publish preview (Workflow) · `#pattern-prepublish`
+
+2026-11-09 建（分類巡檢：四張粉絲頁卡與 Publish stage 其實是同一套做法）。D310 起「發布前看一次」是全頁畫面，不是浮層。
+
+- **trigger**: 要對粉絲公開的東西（活動、商品、組合包、專案、作品）建立或改完、送出之前，讓創作者看一次粉絲端長什麼樣，順便檢查各語系的內容；發布後回頭改語系或內容時也用同一個畫面。
+- **must**: 頁面骨架用 Publish stage（§4.216）：左邊是前台鏡像（Fan page mirror §4.215，前台頁的 1:1 鏡像、資料來自建立流程），右邊是 sticky 控制側欄——語言（每個語系標狀態，可還原自動翻譯、可開逐欄位對照）＋發布前檢核（每項可點回該步驟）或未儲存的變更摘要；主鈕在側欄底部，按下就發布，不再問第二次；滑到預覽的某一塊浮出「編輯」，跳回擁有那塊內容的步驟。
+- **should**: 預覽只用創作者幣別（D514）；預覽區的購買類按鈕保持不動作。
+- **must-not**: 不用浮層做這一步（舊的 Publish preview 彈窗 §4.130 已退場）；`fan-shop.css` 只給前台鏡像用，不得被其他頁引用；不在預覽裡另做一套跟前台不同的版面。
+- **變體**：
+  - **精靈最後一步**（mode `publish`）：多步驟建立流程的最後一步「預覽與發布」，例如建立活動第 7 步。
+  - **發布後的獨立頁**（mode `save`）：「預覽與在地化」，主鈕換成「儲存」。
+- **實例**：建立活動 `create-event.html` · 建立商品 `create-product.html` · 建立組合包 `create-bundle.html` · 建立專案 `create-project.html` · 作品上架 `publish-work.html` · 活動的預覽與在地化 `event-localization.html` · 商品的預覽與在地化 `product-localization.html`。
+- **跟 5.1.9 Split preview 的分工**：Split preview 是編輯時的即時預覽欄（唯讀摘要）；本做法是送出前的最後確認，側欄是可操作的控制台。
 
 ### 5.2 Voice & Microcopy
 
@@ -225,12 +260,4 @@ R 2.2 chart family lives in [`ds-components/chart.css`](../ds-components/chart.c
 
 ### 5.5 Workflow patterns
 
-Multi-step, cross-page flows. The canonical recipe is the **Multi-step wizard** card in §5.1; the concrete flows are:
-
-- **Create project** — 4 steps (About → Showcase → Monetization → Review), with IP-rental disclosure surfaced before commit.
-- **Create event** — 3 steps (Type → Date & venue → Cover).
-- **Create product** — 4 steps; primary vs secondary category recorded separately.
-
-All use the `wizard-focus` template (no main topbar), a centered `stepper`, a sticky bottom action bar, and draft-save at every step. Money / royalty / licensing disclosures must appear on the Review step before commit.
-
----
+（2026-11-09 起併入 5.1.5）建立流程的清單改列在 5.1.5 Multi-step wizard 的「實例」，變體（整頁、整頁＋右側預覽、蓋在頁面上）也寫在那裡。原本這裡的共同規則（`wizard-focus` 模板、置中 stepper、固定底部動作列、每步存草稿、金額與授權揭露在確認步驟重述）與 5.1.5 的 must／should 相同，以 5.1.5 為準。

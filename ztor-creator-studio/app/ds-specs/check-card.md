@@ -1,6 +1,8 @@
 > 元件規格。總則、token 與元件總表見 [design-system.md](../design-system.md)。
 
-### Check card
+### Check card ✝
+
+> ✝ 2026-11-09 退場：沒有任何產品頁連結，只剩展示頁與 demo 在用。CSS 留墓碑、展示卡已移除；新需求別再用它。
 
 #### 總表紀錄（原 §4.1 · Check card）
 

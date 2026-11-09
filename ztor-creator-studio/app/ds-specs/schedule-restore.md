@@ -2,6 +2,8 @@
 
 ### Schedule restore
 
+**Pattern** — 用在重新上架彈窗裡，屬 5.1.8 Modal shell 的實例，見 [5-pattern.md](../ds-pillars/5-pattern.md)。
+
 #### 總表紀錄（原 §4.1 · Schedule restore）
 
 - `_layer`：🟡 molecule

@@ -53,11 +53,12 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.2 ships as 
   --color-status-error:      #DA314A;
   --color-status-info:       #266DF0;
 
-  --radius-sm: 3px;
-  --radius:   6px;
-  --radius-md:6px;  /* merged alias of --radius (Q2 2026-07-13) */
-  --radius-lg:8px;
-  --radius-xl:16px;
+  --radius-sm: 10px;
+  --radius:   10px;
+  --radius-md:10px;  /* merged alias of --radius (Q2 2026-07-13) */
+  --radius-lg:16px;
+  --radius-xl:24px;
+  --radius-shell:30px;
 
   --font-display: 'Satoshi', 'Geist', var(--font-cjk-display), system-ui, sans-serif;
   --font-ui:      'Satoshi', 'Geist', var(--font-cjk), system-ui, sans-serif;
@@ -76,8 +77,8 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.2 ships as 
     "status-success": { "$value": "#22C55E", "$type": "color" }
   },
   "radius": {
-    "sm": { "$value": "3px", "$type": "dimension" },
-    "md": { "$value": "6px", "$type": "dimension" }
+    "sm": { "$value": "10px", "$type": "dimension" },
+    "md": { "$value": "10px", "$type": "dimension" }
   }
 }
 ```
@@ -116,7 +117,7 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
       }
     },
     "effect": {
-      "radius": { "sm":"3px", "default":"6px", "md":"6px", "lg":"8px", "xl":"16px", "pill":"9999px" },
+      "radius": { "sm":"10px", "default":"10px", "md":"10px", "lg":"16px", "xl":"24px", "shell":"30px", "pill":"9999px" },
       "shadow": {
         "micro":    "0 4px 4px rgba(23,23,23,0.04)",
         "card":     "0 2px 8px -1px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)",
@@ -175,3 +176,14 @@ Filled with Ztor Creator Studio · R 2.2's actual values where the 7-Pillar stru
 
 
 ---
+
+## Appendix C · 資料與行為模組
+
+沒有自己外觀的 JS 模組：擁有的是值或行為，畫面從它們讀資料。它們不是元件，所以 2026-11-09 從 Pillar 4 總表移到這裡；展示卡在 `design-system-structure.html#appendix-c`。
+
+| Module | `_layer` | Status | Where seen (Ztor Creator Studio) | Source |
+|---|---|---|---|---|
+| [Work taxonomy](../ds-specs/work-taxonomy.md) | 🟢 atom | 🧩 資料／行為模組 | 題材與年齡分級的值域單一來源 JS 模組，供多處畫面共用 | [js/work-taxonomy.js](../js/work-taxonomy.js) |
+| [Archived gate](../ds-specs/archived-gate.md) | 🟢 atom | 🧩 資料／行為模組 | 封存態唯讀的事件層閘門：純 JS 元件 `partials/archived-gate.js`，無自帶 CSS、不畫任何東西 | [partials/archived-gate.js](../partials/archived-gate.js) |
+| [Loyalty settings](../ds-specs/loyalty-settings.md) | 🟢 atom | 🧩 資料／行為模組 | 平台忠誠點數設定的已儲存值模組，作為原型的單一資料來源 | [js/loyalty-settings.js](../js/loyalty-settings.js) |
+| [Fans roster](../ds-specs/fans-roster.md) | 🟢 atom | 🧩 資料／行為模組 | 粉絲示範母體：純資料模組 `js/fans-roster.js`，無自帶 CSS | [js/fans-roster.js](../js/fans-roster.js) |

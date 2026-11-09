@@ -2,6 +2,8 @@
 
 ### Manual entry modal
 
+**Pattern** — 5.1.8 Modal shell 的實例（補登收入），見 [5-pattern.md](../ds-pillars/5-pattern.md)。
+
 #### 總表紀錄（原 §4.1 · Manual entry modal）
 
 - `_layer`：🟠 organism
