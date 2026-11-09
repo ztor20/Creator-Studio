@@ -9,7 +9,7 @@
         篩「我的項目」列、改金額欄標題、無符合列時顯示對應類型的空狀態
      2) 類別／身分／日期下拉（data-fin-dd）— 疊加篩選「我的項目」列
      3) 兩張表的數字分頁（data-fin-pager / data-fin-histpager）
-     4) 兩個抽屜（data-drawer-open / -close / scrim / Esc）開關
+     4) 兩個彈窗（屬性名沿用舊稱 data-drawer-open / -close，實際開的是 .payout-modal；scrim / Esc 可關）開關
    全部只讀寫 class／attribute，不改頁面資料。
    ============================================================ */
 (function () {

@@ -597,6 +597,11 @@
     if (!prefill) mcode.focus();
   }
   function closeManual() { msheet.classList.remove('is-on'); scrim.classList.remove('is-on'); }
+  /* 2026-11-09（pattern 5.1.14）：底部 sheet 一律可按 Esc 關閉，跟抽屜、彈窗一致 */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (msheet.classList.contains('is-on')) closeManual(); else if (sheet.classList.contains('is-on')) closeSheet();
+  });
   q('[data-sc-manual]').addEventListener('click', function () { openManual(); });
   q('[data-sc-mclose]').addEventListener('click', closeManual);
   q('[data-sc-mgo]').addEventListener('click', function () {

@@ -2,6 +2,10 @@
 
 ### Drawer
 
+**Pattern** — 用在哪一類、按鈕放哪，先看 5.1.14 抽屜類型（[5-pattern.md](../ds-pillars/5-pattern.md)，Q143、Q145）。
+
+**頁尾 `.drawer__foot`**（2026-11-09，Q145）— 固定在面板底部、不隨內容捲動；主要動作靠右，`.drawer__foot-start` 放最左（刪除這類破壞性動作，按下走 `ztorDialog.confirm`）。`--full` 時內距跟著放大。
+
 #### 總表紀錄（原 §4.1 · Drawer）
 
 - `_layer`：🟠 organism
