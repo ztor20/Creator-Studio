@@ -1688,14 +1688,21 @@
     var k = (f.keys || []).filter(function (x) { return x.id === id; })[0];
     if (!k || k.revoked) return;
     var lost = (k.claimed || []).length;
-    if (!window.confirm(tx(
-      "Revoke " + k.code + "? " + num(lost) + " fans lose access to this vault immediately, and its remaining uses stop working.",
-      "撤銷 " + k.code + "？已靠它進來的 " + num(lost) + " 位粉絲會立刻失去這座庫房的權限，剩下的次數也會失效。"))) return;
+    /* 2026-11-09：原生 confirm() 換成共用彈窗 ztorDialog（5.1.8 彈窗類型・破壞性確認） */
+    window.ztorDialog.confirm({
+      title: tx("Revoke " + k.code + "?", "撤銷 " + k.code + "？"),
+      body: tx(num(lost) + " fans lose access to this vault immediately, and its remaining uses stop working.",
+               "已靠它進來的 " + num(lost) + " 位粉絲會立刻失去這座庫房的權限，剩下的次數也會失效。"),
+      okLabel: tx("Revoke", "撤銷"), danger: true
+    }).then(function (ok) { if (ok) doRevoke(); });
+    return;
+    function doRevoke() {
     V.commitUnlocks(f);
     k.revoked = todayStr();
     if (els.drawer.classList.contains("is-open")) renderShare();
     renderRail(); renderMain();
     if (window.ztorToast) window.ztorToast.show(tx("Key revoked", "鑰匙已撤銷"), { tone: "neutral" });
+    }
   }
 
   function copyLink(text, btn) {

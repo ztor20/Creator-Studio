@@ -1867,7 +1867,7 @@
       step = goStep; render();
       const badInStep = reqEls.find(el => (stepOf[el.getAttribute("data-ce")] || 0) === goStep && !el.value.trim());
       if (badInStep) { badInStep.focus(); }
-      alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
+      window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields.") });
       return;
     }
     /* 跨日活動（D328，5.1.6.1 F7／F11）：開了跨日的場次，結束日期必填、結束要晚於開始；
@@ -1879,7 +1879,7 @@
         sessShowErr = true;
         sessOpen.add(bad.id);
         step = 3; render(); renderSessions();
-        alert(T("ce.publish-blocked-enddate", "A multi-day date needs a start time, an end time, and an end later than its start. Check the dates."));
+        window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked-enddate", "A multi-day date needs a start time, an end time, and an end later than its start. Check the dates.") });
         return;
       }
       /* D396：提前入場時間開著卻沒填——同跨日，回步驟 3、該場展開、欄位就地紅字 */
@@ -1888,7 +1888,7 @@
         sessShowErr = true;
         sessOpen.add(badD.id);
         step = 3; render(); renderSessions();
-        alert(T("ce.publish-blocked-doors", "Early entry time is turned on for a date but left empty. Add the time or turn it off."));
+        window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked-doors", "Early entry time is turned on for a date but left empty. Add the time or turn it off.") });
         return;
       }
     }
@@ -1896,7 +1896,7 @@
     if (!isWP() && typesBad()) {
       step = 5; render();
       typeErrAll = true; openQuick(); syncTypeErrs();
-      alert(dT("d.type.err.blocked"));
+      window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: dT("d.type.err.blocked") });
       return;
     }
     /* D390 決定二十五：限時折扣價高於一般折扣價 → 回第 4 步（內部 5），打開那一份規則就地紅字 */
@@ -1905,7 +1905,7 @@
       if (dIss) {
         step = 5; render();
         const t0 = tiers.find(x => x.id === dIss.scope); if (t0) { startTier(t0); syncCondWarn(document.getElementById("ce-tier-modal-body")); }
-        alert(dT("d.cond.warn.time.blocked"));
+        window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: dT("d.cond.warn.time.blocked") });
         return;
       }
       /* D428：開了限購卻沒填每人總限購數量 → 回第 4 步（內部 5），打開那一份規則就地紅字 */
@@ -1913,7 +1913,7 @@
       if (cIss) {
         step = 5; render();
         const t0 = tiers.find(x => x.id === cIss.scope); if (t0) { startTier(t0); capFocus(document.getElementById("ce-tier-modal-body")); }
-        alert(dT("d.cond.cap.blocked"));
+        window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: dT("d.cond.cap.blocked") });
         return;
       }
     }
@@ -1922,7 +1922,7 @@
       step = 7; render();
       const er = document.getElementById("ce-unlist-err"); if (er) er.hidden = false;
       document.querySelector('[data-ce="unlist-d"]')?.focus();
-      alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
+      window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields.") });
       return;
     }
     /* D391 第 11 題：選了定時開賣卻沒填開賣日期與時間 → 擋下、回第 7 步就地標示（同定時下架沒填的做法） */
@@ -1930,7 +1930,7 @@
       step = 7; render();
       const er = document.getElementById("ce-sale-from-err"); if (er) er.hidden = false;
       document.querySelector('[data-ce="sale-from-d"]')?.focus();
-      alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
+      window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields.") });
       return;
     }
     /* D390（稽核第一節原型第 12 條）：定時下架早於活動結束 → 擋下、回第 7 步就地紅字（訊息與「超出上架區間」分開，原因不同） */
@@ -1939,7 +1939,7 @@
       if (um) {
         step = 7; render(); syncSaleLayer();
         document.querySelector('[data-ce="unlist-d"]')?.focus();
-        alert(um);
+        window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: um });
         return;
       }
     }
@@ -1948,7 +1948,7 @@
       const tl = timeLayerIssues();
       if (tl.length) {
         step = tl[0].step; render(); syncSaleLayer(); syncRuleTl();
-        alert(T("tb.publish.blocked") + "\n" + tl.map(x => "・" + x.label).join("\n"));
+        window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("tb.publish.blocked") + "\n" + tl.map(x => "・" + x.label).join("\n") });
         return;
       }
     }
@@ -2294,9 +2294,9 @@
       related: false
     };
   }
-  function doPublish() {
+  async function doPublish() {  /* async：等「已發布」告知關掉再導頁（2026-11-09 原生 alert 換成 ztorDialog） */
     markSaved();
-    alert(T("ce.publish-alert", "Event would be published here. (Prototype)"));
+    await window.ztorDialog.notice({ title: T('dlg.t.published', 'Published'), body: T("ce.publish-alert", "Event would be published here. (Prototype)") });
     /* Admin 代 creator 設定的那一趟（2026-09-01）：發布＝這一場設完了。把完成記號落
        localStorage（創作者活動管理頁與名冊靠它畫「待設定／已完成」），然後回到出發點。
        **回那裡而不是活動清單**：admin 的工作單位是 creator，做完一場該回到「這位
@@ -6941,5 +6941,6 @@
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

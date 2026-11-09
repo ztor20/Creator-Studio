@@ -2097,7 +2097,10 @@
         const msg = isZh()
           ? ('「' + name + '」目前在 ' + live + ' 個分級啟用中。移除會從所有分級一起拿掉，確定嗎？')
           : ('“' + name + '” is live on ' + live + ' tier(s). Removing takes it off all of them. Continue?');
-        if (!window.confirm(msg)) return;
+        /* 2026-11-09：原生 confirm() 換成共用彈窗 ztorDialog（5.1.8 彈窗類型・破壞性確認） */
+        window.ztorDialog.confirm({ title: isZh() ? '移除權益？' : 'Remove this perk?', body: msg, okLabel: isZh() ? '移除' : 'Remove', danger: true })
+          .then(ok => { if (ok) { row.remove(); countPerks(); } });
+        return;
       }
       row.remove();
       countPerks();
@@ -2261,5 +2264,6 @@
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
 <script src="js/detail-sheet.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

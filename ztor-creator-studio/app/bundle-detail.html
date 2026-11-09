@@ -31,7 +31,6 @@
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2"><!-- 封存態／因成員封存而下架的說明（D284） -->
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- 封存確認彈窗（D284） -->
 <link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的排程有問題的提示（D488） -->
 <link rel="stylesheet" href="ds-components/stock-allocation.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/lock-sets.css?v=r2.2">
@@ -3067,44 +3066,18 @@
       }
       /* 確認彈窗（封存）：借 leave-dialog 的殼，與 e-shop 同一套文案 */
       /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查（同 e-shop 的做法） */
-      const getDialog = () => document.querySelector('[data-bd-confirm-dialog]');
-      let pending = null, pendingCancel = null;
-      const closeConfirm = () => { pending = null; pendingCancel = null; const dialog = getDialog(); if (dialog) dialog.removeAttribute('data-open'); };
-      /* 取消（取消鈕、遮罩、×、Esc）＝關掉並呼叫 onCancel（D472 換場次取消要把選單退回原值） */
-      const cancelConfirm = () => { const fn = pendingCancel; closeConfirm(); if (fn) fn(); };
-      /* opts：title／body／items（.leave-dialog__list 列名稱）／okKey／okFallback／noCancel（純告知只留一顆主鈕）／onConfirm／onCancel（選填，D472） */
+      /* 2026-11-09（STYLE-DECISIONS Q141）：確認改用共用彈窗 ztorDialog（.payout-dialog--narrow），不再借 leave-dialog 的殼；呼叫介面不變。
+         opts：title／body／items／okKey／okFallback／destructive／noCancel（純告知只留一顆主鈕）／onConfirm／onCancel（選填，D472） */
       const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
       function askConfirm(opts) {
-        const dialog = getDialog();
-        if (!dialog) { if (opts.onConfirm) opts.onConfirm(); return; }
-        const title = dialog.querySelector('[data-bd-confirm-title]'), body = dialog.querySelector('[data-bd-confirm-body]');
-        const list = dialog.querySelector('[data-bd-confirm-list]'), ok = dialog.querySelector('[data-bd-confirm-ok]');
-        if (title) title.textContent = opts.title || '';
-        if (body) body.textContent = opts.body || '';
-        if (list) {
-          const items = opts.items || [];
-          list.hidden = !items.length;
-          list.innerHTML = items.map(n => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' + esc(n) + '</span></li>').join('');
-          if (items.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
-        }
-        if (ok) {
-          /* 刪除（D307）主鈕紅框 btn--destructive（STYLE-DECISIONS Q37 現行裁決），其餘主鈕 btn--primary */
-          ok.classList.toggle('btn--destructive', !!opts.destructive);
-          ok.classList.toggle('btn--primary', !opts.destructive);
-          const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey || 'e-shop.archive.confirm'); sp.textContent = T(opts.okKey || 'e-shop.archive.confirm', opts.okFallback || 'Archive');
-        }
-        const cancelBtn = dialog.querySelector('.leave-dialog__actions [data-bd-confirm-cancel]');
-        if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
-        pending = opts.onConfirm; pendingCancel = opts.onCancel || null;
-        dialog.setAttribute('data-open', '');
-        if (ok) ok.focus();
+        window.ztorDialog.confirm({
+          title: opts.title || '', body: opts.body || '', items: opts.items || [],
+          okLabel: T(opts.okKey || 'e-shop.archive.confirm', opts.okFallback || 'Archive'),
+          cancelLabel: T('e-shop.shown.cancel', 'Cancel'),
+          danger: !!opts.destructive, noCancel: !!opts.noCancel
+        }).then(ok => { if (ok) { if (opts.onConfirm) opts.onConfirm(); } else if (opts.onCancel) opts.onCancel(); });
       }
       window.bdAskConfirm = askConfirm;   /* D472：§2.6 組合包自設場次的換綁確認（renderBdPickup 在本段之前執行，呼叫時才取用） */
-      document.addEventListener('click', e => {
-        if (e.target.closest('[data-bd-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
-        if (e.target.closest('[data-bd-confirm-cancel]')) cancelConfirm();
-      });
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && (pending || pendingCancel)) cancelConfirm(); });
 
       const bname = () => (bundle && bundle.name) || '';
       /* 可賣性防呆的擋下（D331 決定三）：頁首按鈕（下架／封存／刪除；隱藏已於 2026-10-15 隨 D424 決定 9 移出）被擋時用純告知彈窗（只有「知道了」，同重新上架被擋的
@@ -3282,20 +3255,8 @@
 <!-- 下架／封存／重新上架確認彈窗（2026-09-18 · D284／D288／D289）：借 leave-dialog 的殼——下架＝確認；封存＝確認；
      重新上架＝有已下架成員時列出「會一起重新上架的成員」（.leave-dialog__list）＋主鈕「一併重新上架」；
      有已封存成員時擋下、列出、單一主鈕「知道了」（取消鈕收起）。 -->
-<div class="leave-dialog" data-bd-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="bd-confirm-title">
-  <div class="leave-dialog__scrim" data-bd-confirm-cancel></div>
-  <div class="leave-dialog__card">
-    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-bd-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
-    <h2 class="leave-dialog__title" id="bd-confirm-title" data-bd-confirm-title></h2>
-    <p class="leave-dialog__body" data-bd-confirm-body></p>
-    <ul class="leave-dialog__list" data-bd-confirm-list hidden></ul>
-    <div class="leave-dialog__actions">
-      <button class="btn btn--primary" type="button" data-bd-confirm-ok><span data-i18n="e-shop.archive.confirm">Archive</span></button>
-      <button class="btn btn--outline" type="button" data-bd-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
-    </div>
-  </div>
-</div>
 <!-- D471：共用「建立取貨場次」彈窗＋組合包的取貨場次區（mountBundlePickup） -->
 <div data-pickup-modal-host></div>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

@@ -31,11 +31,11 @@
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的排程有問題的提示（D488） -->
 <!-- 2026-09-22 商品標籤（建立拍賣共用設定 5.1.5.10 的 ca-tags 同一組 .tag-input；Upcoming 可編、開拍後唯讀） -->
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 共用確認／告知彈窗 ztorDialog 的外殼 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* auction-detail · 競標進程／出價活動／拍賣資訊（spec 5.1.5.8）。出價數字為示意；2026-09-18 起狀態、三開關與封存走 ListingState（D285／D284）。
@@ -792,30 +792,14 @@
       window.linkField.setValue(e.detail.root, L.resetPrivateLink(a));
     });
 
-    /* 確認彈窗：借 leave-dialog 的殼（與 e-shop／product-detail 同一套） */
-    const getDialog = () => document.querySelector('[data-ad-confirm-dialog]');
-    let pending = null;
+    /* 確認彈窗：2026-11-09 起改用共用彈窗 ztorDialog（.payout-dialog--narrow，STYLE-DECISIONS Q141），原本借 leave-dialog 的殼；呼叫介面不變 */
     function askConfirm(opts) {
-      const d = getDialog();
-      if (!d) { opts.onConfirm(); return; }
-      const title = d.querySelector('[data-ad-confirm-title]'), body = d.querySelector('[data-ad-confirm-body]'), ok = d.querySelector('[data-ad-confirm-ok]');
-      if (title) title.textContent = opts.title || '';
-      if (body) body.textContent = opts.body || '';
-      if (ok) {
-        ok.classList.toggle('btn--destructive', !!opts.destructive);
-        ok.classList.toggle('btn--primary', !opts.destructive);
-        const sp = ok.querySelector('span') || ok; sp.setAttribute('data-i18n', opts.okKey); sp.textContent = T(opts.okKey, opts.okFallback);
-      }
-      pending = opts.onConfirm;
-      d.setAttribute('data-open', '');
-      if (ok) ok.focus();
+      window.ztorDialog.confirm({
+        title: opts.title || '', body: opts.body || '',
+        okLabel: T(opts.okKey, opts.okFallback), cancelLabel: T('e-shop.shown.cancel', 'Cancel'),
+        danger: !!opts.destructive
+      }).then(ok => { if (ok && opts.onConfirm) opts.onConfirm(); });
     }
-    const closeConfirm = () => { pending = null; const d = getDialog(); if (d) d.removeAttribute('data-open'); };
-    document.addEventListener('click', e => {
-      if (e.target.closest('[data-ad-confirm-ok]')) { const fn = pending; closeConfirm(); if (fn) fn(); return; }
-      if (e.target.closest('[data-ad-confirm-cancel]')) closeConfirm();
-    });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) closeConfirm(); });
 
     const name = () => (document.getElementById('ad-title') || {}).textContent || '';
     /* 下架一律先確認（D288 裁決一）：Live 時鈕已停用（D286，見 syncPrimaryAction），這裡只擋一次防呆；
@@ -909,17 +893,6 @@
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 <!-- 確認彈窗（2026-09-18 · D284／D288）：借 leave-dialog 的殼——下架確認（非 Live 才可按）與封存確認共用一個殼，主鈕皆 primary（兩個動作都可逆）。 -->
-<div class="leave-dialog" data-ad-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="ad-confirm-title">
-  <div class="leave-dialog__scrim" data-ad-confirm-cancel></div>
-  <div class="leave-dialog__card">
-    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-ad-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
-    <h2 class="leave-dialog__title" id="ad-confirm-title" data-ad-confirm-title></h2>
-    <p class="leave-dialog__body" data-ad-confirm-body></p>
-    <div class="leave-dialog__actions">
-      <button class="btn btn--primary" type="button" data-ad-confirm-ok><span data-i18n="e-shop.archive.confirm">Archive</span></button>
-      <button class="btn btn--outline" type="button" data-ad-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
-    </div>
-  </div>
-</div>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

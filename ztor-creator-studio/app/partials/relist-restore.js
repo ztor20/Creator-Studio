@@ -9,12 +9,12 @@
    為什麼有這支：同一個檢查有六個入口——商品細節頁、組合商品細節頁、拍賣細節頁（頁首「上架」與上架開關）、電子商店清單三類列的「上架」、
      組合包上架的成員閘門（partials/bundle-relist.js）、活動詳情重新上架的 D448 彈窗；媒體庫庫房的重新上架對話框也用同一段提示。
      列時間、分組、原因只寫這一份。
-   純 vanilla，只依賴 window.ListingState。樣式：ds-components/sched-restore.css（內容區塊）＋ leave-dialog.css（block() 的殼）。
+   純 vanilla，只依賴 window.ListingState。樣式：ds-components/sched-restore.css（內容區塊）＋ payout-modal.css（block() 走 js/ztor-dialog.js 的殼，2026-11-09 起）。
 
    用法：
      const plan = ZtorRelistRestore.plan([{ entity, name, check }]);   // check(key, iso, entity) → 不通過的原因字串，或 null（可省略）
      if (!plan.any) { ListingState.relist(entity); … }                  // 沒有問題：直接上架、恢復
-     else ZtorRelistRestore.block({ title, plan, auction, T, onClose })  // 擋下：自帶 leave-dialog 殼，只有「知道了」
+     else ZtorRelistRestore.block({ title, plan, auction, T, onClose })  // 擋下：共用彈窗 ztorDialog 的提示告知，只有「知道了」
      // 或在別的殼裡：body += ZtorRelistRestore.blockHTML(plan, { auction, T, label })
      // D489：body += ZtorRelistRestore.memberBlockHTML([{ name, members:[名稱] }], { T })
    墓碑（2026-10-29 · D488）：ask()（恢復／不恢復兩選一的確認）、bindChoice()、skipOf() 退場——沒有「不恢復」這個選項了。
@@ -102,52 +102,18 @@
     return h;
   }
 
-  /* ── 自帶的提示殼（leave-dialog）：商品／組合包／拍賣細節頁與電子商店清單共用；只注入一次 ── */
-  var dlg = null, pending = null;
-  function ensureDialog() {
-    if (dlg) return dlg;
-    dlg = document.createElement('div');
-    dlg.className = 'leave-dialog';
-    dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true'); dlg.setAttribute('aria-labelledby', 'rr-dialog-title');
-    dlg.setAttribute('data-rr-dialog', '');
-    dlg.innerHTML =
-      '<div class="leave-dialog__scrim" data-rr-close></div>' +
-      '<div class="leave-dialog__card">' +
-        '<button class="leave-dialog__close" type="button" data-rr-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>' +
-        '<h2 class="leave-dialog__title" id="rr-dialog-title" data-rr-title></h2>' +
-        '<p class="leave-dialog__body" data-rr-body></p>' +
-        '<div data-rr-slot></div>' +
-        '<div class="leave-dialog__actions">' +
-          '<button class="btn btn--primary" type="button" data-rr-close data-rr-ok></button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(dlg);
-    dlg.addEventListener('click', function (e) { if (e.target.closest('[data-rr-close]')) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && pending) close(); });
-    return dlg;
-  }
-  function close() {
-    var p = pending; pending = null;
-    if (dlg) dlg.removeAttribute('data-open');
-    if (p && typeof p.onClose === 'function') p.onClose();
-  }
-
-  /**
+  /* ── 擋下提示（2026-11-09 起改用共用彈窗 ztorDialog：.payout-dialog--narrow 的「提示告知」，STYLE-DECISIONS Q141；原本自帶 leave-dialog 殼）──
    * 擋下提示：opts：{ title, plan, auction, T, body?, onClose? }。純告知，只有一顆「知道了」，什麼都不改（D488 決定 3.1）。
-   * onClose：關掉時呼叫（上架開關要畫回關）。
+   * onClose：關掉時呼叫（上架開關要畫回關）。頁面要載入 js/ztor-dialog.js 與 payout-modal.css。
    */
   function block(opts) {
-    var o = opts || {}, T = o.T, d = ensureDialog();
-    d.querySelector('[data-rr-title]').textContent = o.title || '';
-    d.querySelector('[data-rr-body]').textContent = o.body || tr(T, 'rr.body', 'Some saved times have passed or can’t be used. Change them to a future time or clear them, then list it again.');
-    d.querySelector('[data-rr-slot]').innerHTML = blockHTML(o.plan, { auction: o.auction, T: T });
-    var ok = d.querySelector('[data-rr-ok]');
-    ok.textContent = tr(T, 'rr.ok', 'Got it');
-    d.querySelector('.leave-dialog__close').setAttribute('aria-label', tr(T, 'rr.close', 'Close'));
-    pending = { onClose: o.onClose };
-    if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(d);
-    d.setAttribute('data-open', '');
-    ok.focus();
+    var o = opts || {}, T = o.T;
+    var body = o.body || tr(T, 'rr.body', 'Some saved times have passed or can’t be used. Change them to a future time or clear them, then list it again.');
+    window.ztorDialog.notice({
+      title: o.title || '',
+      body: { html: '<p>' + esc(body) + '</p>' + blockHTML(o.plan, { auction: o.auction, T: T }) },
+      okLabel: tr(T, 'rr.ok', 'Got it')
+    }).then(function () { if (typeof o.onClose === 'function') o.onClose(); });
   }
 
   window.ZtorRelistRestore = { plan: plan, blockHTML: blockHTML, memberBlockHTML: memberBlockHTML, block: block, fmt: fmt };

@@ -113,13 +113,19 @@
         var msg = isZh()
           ? "放棄尚未儲存的變更？"
           : "Discard your unsaved changes?";
-        if (!window.confirm(msg)) return;
-        dirty = false;
-        paint();
-        if (window.ztorToast) {
-          window.ztorToast.show(
-            isZh() ? "變更已放棄" : "Changes discarded", { tone: "success" });
-        }
+        /* 2026-11-09：原生 confirm() 換成共用彈窗 ztorDialog（捨棄變更＝破壞性確認，5.1.11） */
+        window.ztorDialog.confirm({
+          title: msg, okLabel: isZh() ? "放棄變更" : "Discard",
+          cancelLabel: isZh() ? "繼續編輯" : "Keep editing", danger: true
+        }).then(function (ok) {
+          if (!ok) return;
+          dirty = false;
+          paint();
+          if (window.ztorToast) {
+            window.ztorToast.show(
+              isZh() ? "變更已放棄" : "Changes discarded", { tone: "success" });
+          }
+        });
       });
     }
 

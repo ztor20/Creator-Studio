@@ -246,7 +246,7 @@ document.write(String.raw`  <aside class="toc">
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-wizard"><span data-en>5.1.5 Multi-step wizard</span><span data-zh>5.1.5 Multi-step wizard</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-form-assembly"><span data-en>5.1.6 Form assembly</span><span data-zh>5.1.6 Form assembly</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-settings"><span data-en>5.1.7 Settings page</span><span data-zh>5.1.7 Settings page</span></a>
-    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-modal"><span data-en>5.1.8 Modal shell</span><span data-zh>5.1.8 Modal shell</span></a>
+    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-modal"><span data-en>5.1.8 Modal types</span><span data-zh>5.1.8 彈窗類型</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-split-preview"><span data-en>5.1.9 Split preview</span><span data-zh>5.1.9 Split preview</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-detail-rail"><span data-en>5.1.10 Detail + persistent rail</span><span data-zh>5.1.10 Detail + persistent rail</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-destructive-confirm"><span data-en>5.1.11 Destructive confirm</span><span data-zh>5.1.11 Destructive confirm</span></a>
