@@ -27,7 +27,7 @@
    篩選條件存成結構（[{ k: 標籤 key, v: 值, vk: 值的 key }]），顯示時才翻譯——切語言後舊紀錄跟著換。
 
    視窗沿用既有 canonical 對話框殼（.payout-modal／.payout-dialog，站上所有確認彈窗同一套）
-   ＋ .zcheck 核取框，沒有新 CSS；組裝規則寫在 design-system.md §5.1.12（Export confirm）。
+   ＋ .zcheck 核取框，沒有新 CSS；組裝規則寫在 ds-pillars/5-pattern.md §5.1.12（Export confirm）。
    視窗在第一次開啟時才建立，整頁共用一份；文字每次開啟都重讀 i18n，語言切換後立即生效。
    ------------------------------------------------------------------ */
 (function () {

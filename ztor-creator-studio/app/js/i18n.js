@@ -3579,7 +3579,7 @@
 
     /* ─── Restock flow (spec 5.1.5.6) ─────────────────────── */
     'restock.title':          { en: 'Restock',                            zh: '補貨' },
-    'restock.sub':            { en: "Add stock for physical items, limited or unlimited. Digital items don't apply.", zh: '為實體商品補貨，限量與不限量都可以；數位商品不適用。' },   /* 2026-10-20 D455（B1）：不限量實體商品照常可補 */
+    'restock.sub':            { en: "Add stock for physical items, limited or unlimited. Digital items don't apply.", zh: '為實體商品補貨，限量與不限量都可以；數位商品不適用。' },   /* 2026-10-20 D455（B1）：不限量實體商品照常可補 */   /* 2026-10-20 D455（B1）：不限量實體商品照常可補 */
     'restock.close':          { en: 'Close restock',                      zh: '關閉補貨' },
     'restock.select':         { en: 'Select items to restock',            zh: '選擇要補貨的品項' },
     'restock.empty':          { en: 'All your products are sufficiently stocked.', zh: '目前所有商品庫存充足。' },
@@ -3594,6 +3594,17 @@
     'restock.method':         { en: 'Restock method',                     zh: '補貨方式' },
     'restock.method.now':     { en: 'Restock now',                        zh: '立即補貨' },
     'restock.method.scheduled': { en: 'Scheduled',                        zh: '計時補貨' },   /* 2026-10-20 D455（A5）：統一「計時補貨」 */
+    /* 2026-11-09 D525：修改庫存（同一個彈窗的另一種模式；取代 D523 的減少庫存卡） */
+    'restock.adjust.title':   { en: 'Adjust stock',                       zh: '修改庫存' },
+    'restock.adjust.sub':     { en: 'Set each item to the stock you actually have — up or down. Digital items don\'t apply.', zh: '把每個品項改成實際的在庫數，可往上也可往下；數位商品不適用。' },
+    'restock.adjust.submit':  { en: 'Save stock',                         zh: '儲存庫存' },
+    'restock.adjust.min':     { en: 'Min {n}',                            zh: '最低 {n}' },
+    'restock.adjust.hint':    { en: "Stock can't go below what's locked to sales channels or reserved by unpaid orders. To go lower, lower the lock first.", zh: '在庫不能低於鎖給販售管道的量加上下單未付款的保留量；要再低，先把鎖定調低。' },
+    'restock.adjust.err':     { en: 'Some items are below their minimum', zh: '有品項低於最低在庫數' },
+    'restock.adjust.toast':   { en: 'Stock updated',                      zh: '庫存已更新' },
+    'restock.adjust.open':    { en: 'Adjust stock',                       zh: '修改庫存' },
+    'restock.col.new':        { en: 'New stock',                          zh: '新的在庫數' },
+    'restock.col.diff':       { en: 'Change',                             zh: '差額' },
     'restock.method.now-hint':  { en: 'Stock is on hand — adds to inventory immediately.', zh: '現貨在手，送出即計入庫存。' },
     'restock.method.scheduled-hint': { en: 'Ordered from a supplier — mark received on arrival.', zh: '向供應商下單，到貨後按「到貨確認」入庫。' },
     'restock.f.qty':          { en: 'Restock quantity',                   zh: '補貨數量' },
@@ -3607,7 +3618,7 @@
     'restock.receive':        { en: 'Mark received',                      zh: '到貨確認' },
     'restock.submit':         { en: 'Submit restock',                     zh: '送出補貨' },
     'restock.history.title':  { en: 'Stock history',                      zh: '庫存歷史紀錄' },  /* 2026-09-11 補貨＋鎖定合併 */
-    'restock.history.hint':   { en: 'Every restock and lock change — newest first.', zh: '每一筆補貨與鎖定變動，最新在上。' },
+    'restock.history.hint':   { en: 'Every restock, stock adjustment and lock change — newest first.', zh: '每一筆補貨、修改庫存與鎖定變動，最新在上。' },   /* D525 加修改庫存 */
     'restock.status.done':    { en: 'Completed',                          zh: '已完成' },
     'restock.status.restocking': { en: 'Restocking',                      zh: '補貨中' },
     'restock.justnow':        { en: 'Just now',                           zh: '剛剛' },
@@ -3751,6 +3762,7 @@
     'stock.history.sub':            { en: 'One row per restock order or lock change — open a row for details.', zh: '一張補貨單或一次鎖定一筆，點開看明細。' },
     'stock.history.type.restock':   { en: 'Restock',            zh: '補貨' },
     'stock.history.type.lock':      { en: 'Lock',               zh: '鎖定' },
+    'stock.history.type.adjust':    { en: 'Adjust',             zh: '修改庫存' },   /* D525 */
     'stock.history.note.single':    { en: 'Locked for single sale', zh: '鎖給單售' },
     'stock.history.unset':          { en: 'Unset',              zh: '未指定' },
     'stock.history.k.qty':          { en: 'Quantity',           zh: '數量' },   /* 單一規格商品的明細列沒有規格名可寫，原本是「—」（2026-09-11 使用者：改一個看得懂的名稱） */   /* 2026-09-11 使用者：「— → 1」要寫成「未指定 → 1」 */
@@ -5103,7 +5115,7 @@
     'nav.navmode-label':            { en: 'Display mode',         zh: '顯示模式' },
     /* D222（2026-08-24，撤除 D221）：語言收回單一概念「預設語言」，見 window.ztorLang。
        D221 曾在此加過「顯示語言」第二列與 nav.lang.gotosettings／langmismatch.* 三組 key，
-       D222 撤除；lang-mismatch-dialog 已退場（見 partials/、design-system.md §4.131 墓碑）。 */
+       D222 撤除；lang-mismatch-dialog 已退場（見 partials/、ds-specs/login-lang-prompt.md 的沿革）。 */
     'settings.lang.title':          { en: 'Language',             zh: '語言' },
     'settings.lang.sub':            { en: 'One language setting for this account.', zh: '這個帳號只有一個語言設定。' },
     'settings.lang.default':        { en: 'Default language',     zh: '預設語言' },

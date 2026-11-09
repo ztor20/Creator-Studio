@@ -1,5 +1,13 @@
 > **2026-10-27 序號改名（D484）**：本檔 2026-10-27 以前的條目保留當時寫法。換算：release2.3＝現 release2.2（E-Shop）、release2.4＝現 release2.3（活動）、release2.5＝現 release2.4（粉絲管理＋媒體庫）。
 
+## UIA-340 · D525 修改庫存的呈現假設（2026-11-09；UI-CHANGES 四百九十一）— 呈現假設
+
+- 修改庫存借用補貨彈窗與同一張表（`.restock-table`），換標題、欄名與送出字，不另做元件。
+- 每列下限寫在名稱下一行「最低 N」，下限是 0 的列不寫；低於下限用共用的紅框與表下錯誤字。
+- 電子商店清單列的「目前數量」沿用清單庫存欄的數字（既有做法），下限＝目前減掉未鎖定可賣；清單本身送出後不示範改數字，改庫存與紀錄在商品細節頁示範。
+- 紀錄類型徽章用 `.badge--outline`，和補貨（info）、鎖定（neutral）區分；明細寫「改前 → 改後（差額）」，沿用鎖定紀錄的箭頭寫法。
+- 組合包不提供修改庫存〔推導，D525〕；送出當下低於最新下限要整單擋下〔推導，D525〕，原型沒有並發下單，未示範。
+
 ## UIA-339 · D521 掃描與領點不受場次時間阻擋的呈現假設（2026-11-09；UI-CHANGES 四百八十七）— 呈現假設
 
 `scanner.html`、`create-event.html`、`event-detail.html`、`partials/pickup-session-modal.js`、`pickup-detail.html`、`js/i18n.js`
@@ -2748,7 +2756,7 @@ D315 撤回 D311 的逐張門票例外費率：平台費只剩 Admin 在費率�
 - **主辦**：persona 名冊名＋頭像（`.pdp-host` 創作者變體＋「前往創作者商店 ›」）；create-event 沒載名冊時退回「Gary Lin」＋首字圓。
 - **金額格式**：`events-store.fmtMoney` 是「NT$1,200」，渲染器補成前台的「NT$ 1,200」（符號後一個空格）；區間「NT$ 1,200 – 2,800」高價端不重複符號；不改站上其他頁的格式。
 - **靜態文案跟介面語言、內容跟預覽語系**（同 UIA-165）；預覽語系是英文時 `.fep-shop[lang=en]` 整頁換 Satoshi／Inter（前台 `html[lang=en]` 同一條規則）；zh-Hans／id 沿用 zh／en 字典。
-- **前台 token 自帶、不與站上混用**：`fan-shop.css` 檔頭 `.fep-shop { … }` 定義前台 80 支 token（含裸 rgb／px 字級），是 design-system.md §4.215 註記的例外；`ds-baseline.json` 手動登記 83 處裸色。與 shared.css 打架的只有 `.btn`（高度／字距）與 `h1–h6` 字重，補丁寫在 `fan-shop.css` 檔尾，不動 shared.css。
+- **前台 token 自帶、不與站上混用**：`fan-shop.css` 檔頭 `.fep-shop { … }` 定義前台 80 支 token（含裸 rgb／px 字級），是 ds-specs/4.215-fan-event-page.md 註記的例外；`ds-baseline.json` 手動登記 83 處裸色。與 shared.css 打架的只有 `.btn`（高度／字距）與 `h1–h6` 字重，補丁寫在 `fan-shop.css` 檔尾，不動 shared.css。
 - **與前台仍有的視覺差**（皆資料或欄位差，非樣式差）：時間「19:30 – 21:40」vs 前台「19:30 開演」、時長「2 h 10 min」vs「約 2 小時 10 分」（宿主既有格式，未改）；主圖是活動主視覺（多為方形）落在前台 2:3 框裡以 `contain` 置中；優先購／限購文案是原型示意。
 
 ### 產品缺口（未經上游確認，原型不補）
@@ -2758,7 +2766,7 @@ D315 撤回 D311 的逐張門票例外費率：平台費只剩 Admin 在費率�
 - **組合包的取貨說明**（前台「商品於活動現場領取」）在建立流程沒有欄位；粉絲端要顯示什麼待上游。
 - **前台版型的追蹤機制**：這份鏡像是 2026-09-22 的快照；前台 CSS 版本字串一變（`components.css?v=…`）就要重抓，目前沒有自動比對。
 
-**驗證**：headless Playwright（1440×1000，`ztor.persona=default`）——`event-detail.html?id=realive-asia-kaohsiung` › 預覽與在地化：票券頁／票務商品頁（截圖 `screenshots/2026-09-22-fan-shop-mirror-01…02`）；`create-event.html?from=nick-symphonic-taipei` 補場次與場地、第 6 步以 `ZtorBundleEditor.mounted[0]` 餵一組「VIP ＋ 官方 Tee」（兩票種任選 × 1＋多規格 Tee＋權益＋10% 折扣）→ 發布 → 票券頁／票務商品頁（`…-03…04`）、USD 切換價格重算、English 分頁 4 個可編輯 slot＋`lang=en`；`?id=taipei-nye`（bookyay，HKD 基準）（`…-05`）；`design-system.html#fan-event-page` 就地渲染（`…-06`）；create-product 呼叫 `open()` 不帶 `shell` → 殼維持 xwide；console 0 錯誤；`check_ds_sync.py` PASS＋既有 WARN；`?v=r2.2` 未 bump。
+**驗證**：headless Playwright（1440×1000，`ztor.persona=default`）——`event-detail.html?id=realive-asia-kaohsiung` › 預覽與在地化：票券頁／票務商品頁（截圖 `screenshots/2026-09-22-fan-shop-mirror-01…02`）；`create-event.html?from=nick-symphonic-taipei` 補場次與場地、第 6 步以 `ZtorBundleEditor.mounted[0]` 餵一組「VIP ＋ 官方 Tee」（兩票種任選 × 1＋多規格 Tee＋權益＋10% 折扣）→ 發布 → 票券頁／票務商品頁（`…-03…04`）、USD 切換價格重算、English 分頁 4 個可編輯 slot＋`lang=en`；`?id=taipei-nye`（bookyay，HKD 基準）（`…-05`）；`design-system-components-new.html#fan-event-page` 就地渲染（`…-06`）；create-product 呼叫 `open()` 不帶 `shell` → 殼維持 xwide；console 0 錯誤；`check_ds_sync.py` PASS＋既有 WARN；`?v=r2.2` 未 bump。
 
 ## UIA-166 · bookyay 帶入活動的取票方式／電子門票整組鎖定（建立流程與詳情頁同規則）；ztor 只發靜態 QR——自建活動的動態 QR 關且不可開、bookyay 端開著的帶入後顯示為開但鎖並加括號註記（2026-09-22 · D308，拍板 D302 決定五／D303 決定八；spec 5.1.6.1 F21／F24／F11、5.1.6.2 F14）— 呈現假設／產品缺口
 
@@ -3452,7 +3460,7 @@ D253 裁決四把作廢範圍擴到**所有未完成履約的品項**：取貨�
 - **「重新檢查」不落 localStorage，只改記憶體裡的那一筆**：`ztor.creatorEdits` 存的是「Admin 在這台瀏覽器改過的東西」，而最後檢查時間在真實系統裡是平台側同步作業的時刻，不是一筆人為編輯。寫進去等於讓前端宣稱自己擁有那個時鐘，也會讓示範資料被每一次點擊永久推移（下一個開這一頁的人看到的是別人按出來的時間）。**代價**：重新整理後回到示範值。
 - **「重新檢查」的位置在標題列、不在卡片**：卡片同日才壓成兩列並拿掉「最後匯入時間」，再把一行時間戳放回卡上等於原地繞回去。這個量也只有在選定一位之後才需要知道，與摘要數字同一級。
 - **未綁定時整組動作收起來**：沒綁 bookyay 帳號就沒有可檢查的來源，留一顆永遠停用的「重新檢查」會讀成「這裡壞了」。已綁定但目前沒有活動仍然看得到——那正是最想按一下的時候。
-- **忙碌態走 Button 的 `[aria-busy="true"]`**（本輪新增的通用狀態，見 `design-system.md` §4.2）：按鈕維持原重量、只有圖示轉圈、文字換成進行式；重複點擊用 JS 旗標擋，不用 `pointer-events`。
+- **忙碌態走 Button 的 `[aria-busy="true"]`**（本輪新增的通用狀態，見 `ds-specs/4.2-button.md`）：按鈕維持原重量、只有圖示轉圈、文字換成進行式；重複點擊用 JS 旗標擋，不用 `pointer-events`。
 
 ### 產品缺口〔產品待確認〕（不得包裝成正式功能）
 
