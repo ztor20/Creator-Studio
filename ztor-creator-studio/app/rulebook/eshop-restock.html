@@ -83,13 +83,13 @@ tr:last-child td{border-bottom:0}
 <div class="wrap">
 
 <h1 id="restock">補貨</h1>
-<p class="lede">創作者用補貨為低庫存或售罄的實體商品補上庫存，並記下供應商與到貨資訊。</p>
+<p class="lede">創作者用補貨為低庫存或售罄的實體商品補上庫存，並記下供應商與到貨資訊；盤點後要把在庫改成實際數量時，用修改庫存。</p>
 
 <div class="toc"></div>
 
 <h2 id="restock-intro" class="no-num">概述</h2>
 <ul class="plain">
-  <li>只有實體商品能補貨，數位商品不適用</li>
+  <li>只有實體商品能補貨或修改庫存，數位商品不適用</li>
   <li>補貨後的庫存與狀態反映在<a href="eshop-list.html">商品清單</a>，補貨紀錄在<a href="eshop-product-stock.html">商品細節頁的商品庫存</a>查看</li>
 </ul>
 
@@ -232,6 +232,36 @@ tr:last-child td{border-bottom:0}
 </ul>
 <p class="note">依據：5.1.5.6 §4 ②、④、§7；5.1.5.1 §2.10；主規格 §7.2、§7.14；D100、D104、D241、D260、D342。</p>
 
+<h2 id="restock-adjust"><span class="n"></span>修改庫存</h2>
+<p>盤點後要把在庫改成實際的數量時（貨損壞、遺失、盤點多出或少了、拿去自用），創作者用修改庫存直接填新的在庫數；進貨仍用補貨。</p>
+<ul class="plain">
+  <li>入口：<a href="eshop-list.html">商品清單</a>單售實體商品那一列的操作選單，以及<a href="eshop-product-stock.html#st-manage">商品細節頁的庫存管理</a>（區塊頂端改全部選項組合、列上的操作選單只改那一列）</li>
+  <li>品項清單和補貨一樣：單一選項 1 列，多選項每個啟用中的選項組合一列</li>
+</ul>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>功能或欄位</th><th>出現條件與必填</th><th>規則</th></tr></thead>
+  <tbody>
+    <tr><td>新的在庫數</td><td>每一列一格，預設帶目前在庫</td><td>整數，可往上也可往下<br>等於目前在庫＝這一列不改<br>至少一列有改才能送出<br>最低只能改到鎖給各販售管道的量＋沒有被鎖定那一格的保留，列上看得到這個最低數<br>沒有上限</td></tr>
+    <tr><td>差額</td><td>每一列</td><td>新的在庫數－目前在庫，寫成 +N 或 −N，隨輸入即時算出</td></tr>
+    <tr><td>備註（Notes）</td><td>選填</td><td>沒有必填的原因，要記原因就寫在備註</td></tr>
+  </tbody>
+</table></div>
+<div class="tablewrap"><table class="fields">
+  <thead><tr><th>狀態</th><th>什麼時候</th><th>畫面</th></tr></thead>
+  <tbody>
+    <tr><td>不低於最低數</td><td>填的數字不小於這一列的最低在庫數</td><td>差額照常算出</td></tr>
+    <tr><td>低於最低數</td><td>填的數字小於這一列的最低在庫數</td><td>這一列標成錯誤，整張不能送出</td></tr>
+  </tbody>
+</table></div>
+<ul class="plain">
+  <li>送出當下在庫就改成新的數字，沒有等待中的狀態；各品項的庫存狀態重新判定，可能變成充足、低庫存或售罄</li>
+  <li>鎖定量與保留中的量不能在這裡改；要改到更低，先在<a href="eshop-product-stock.html#st-manage">庫存管理</a>把鎖定調低，見<a href="eshop-sales.html#stock-lock">鎖定庫存</a>與<a href="eshop-sales.html#stock-reserve">保留</a></li>
+  <li>計時補貨還沒到貨的量不在在庫裡，不受影響；已售出的量與已成立的訂單也不受影響</li>
+  <li>不限量的實體商品也可以修改庫存</li>
+  <li>每次送出在<a href="eshop-product-stock.html#st-history">庫存歷史紀錄</a>寫一筆：類型「修改庫存」，逐選項組合的改前 → 改後與差額、備註，狀態是已完成</li>
+</ul>
+<p class="note">依據：5.1.5.6 §8；5.1.5.1 §2.10；主規格 §7.2、§7.14；D496、D525。</p>
+
 <h2 id="restock-log"><span class="n"></span>補貨紀錄</h2>
 <p>每次送出補貨，對數量大於 0 的品項逐品項寫入補貨紀錄。</p>
 <ul class="plain">
@@ -256,8 +286,8 @@ tr:last-child td{border-bottom:0}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.6-補貨流程.md</code>（v1.10）§1～§7；<code>5.1.5.1-商品細節頁.md</code> §2.10、§3；<code>0-設計規格書.md</code> §7.2、§7.14</li>
-    <li>決策：D051、D078、D100、D101、D104、D106、D241、D260、D268、D342、D455、D496、D513</li>
+    <li>規格：<code>5.1.5.6-補貨流程.md</code>（v1.12）§1～§7；<code>5.1.5.1-商品細節頁.md</code> §2.10、§3；<code>0-設計規格書.md</code> §7.2、§7.14</li>
+    <li>決策：D051、D078、D100、D101、D104、D106、D241、D260、D268、D342、D455、D496、D513、D525</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -267,8 +297,10 @@ tr:last-child td{border-bottom:0}
     <li>從庫存管理表某一個選項組合那一列進入補貨時，品項清單是不是只有那 1 列</li>
     <li>品項清單載入中、送出失敗時畫面怎麼顯示</li>
     <li>沒有任何一列補貨數量大於 0 時，送出按鈕與提示怎麼顯示</li>
+    <li>修改庫存送出當下，若某列已低於最新的最低在庫數（例如這段時間有人下單），整張單不送出、提示重新確認數量（推導）</li>
+    <li>組合包沒有修改庫存，要改成員的在庫到成員商品改（推導）</li>
   </ul>
-  <p class="k">最近同步：2026-11-05（D513：組合包販售上限退場；主規格 v5.41）</p>
+  <p class="k">最近同步：2026-11-09（D525：新增修改庫存；5.1.5.6 v1.12）</p>
 </details>
 </div>
 </body>

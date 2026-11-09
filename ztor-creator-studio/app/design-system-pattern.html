@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ztor Creator Studio · R 2.2 · Pillar 5 · Pattern</title>
+<!-- 共用檔頭、目錄、檔尾各只有一份：ds-head.js、ds-toc.js、ds-tail.js（2026-11-09 拆頁） -->
+<script src="ds-head.js?v=r2.2"></script>
+</head>
+<body>
+<nav class="dsn" aria-label="Design">
+  <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
+  <div class="dsn__tabs">
+    <a href="design-tokens.html">Tokens</a>
+    <a href="design-layers.html">Layers</a>
+    <a href="design-components.html">Components</a>
+    <a href="design-system.html" aria-current="page">Spec</a>
+  </div>
+  <!-- 2026-10-15 淺色模式暫時關閉（STYLE-DECISIONS Q135）：亮／暗切換收起，js/theme.js 一律套深色 -->
+  <div class="segmented dsn__theme" role="group" aria-label="Theme" hidden>
+    <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
+    <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
+  </div>
+</nav>
+<div class="doc">
+<script src="ds-toc.js?v=r2.2"></script>
+  <main class="doc-main" id="top">
+
+<section class="pillar" id="patterns">
+      <div><span class="pillar__num">05.1 · Pattern ▸ Cards</span></div>
+      <h2 class="pillar__title"><span data-en>How components assemble.</span><span data-zh>元件如何組合</span></h2>
+      <p class="pillar__intro" data-en>Best-practice assembly recipes — how components combine to meet a creator's goal. Twelve cards across four categories (page-level and mid-level); each has trigger / must / should / must-not / edge-cases. Component sections demo the unit only — assembly rules live here.</p>
+      <p class="pillar__intro" data-zh>最佳實務的組合配方 — 元件如何組合起來達成創作者的目標。四個類別共十二張卡（頁面級＋中間層），每張都列出 trigger / must / should / must-not / edge-cases。元件段只展示單元本身——組合規則一律寫在這裡（判準見 §4.0）。</p>
+      <div class="viz"><div class="wire-grid">
+        <a class="wire-link" href="#pattern-dashboard"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__b wire__b--hero"></div><div class="wire__kpi"><div class="wire__b"></div><div class="wire__b"></div><div class="wire__b"></div></div><div class="wire__row wire__row--grow"><div class="wire__b"></div><div class="wire__b"></div></div></div><div class="wire__cap"><b>Dashboard home</b> · <span data-en>hero + KPI + alerts</span><span data-zh>hero + KPI + alerts</span></div></div></a>
+        <a class="wire-link" href="#pattern-tabbed"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__row"><div class="wire__b" style="height:14px"></div><div class="wire__b" style="height:14px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:14px"></div></div><div class="wire__b wire__b--grow"></div></div><div class="wire__cap"><b>Tabbed section</b> · <span data-en>tabs + one panel</span><span data-zh>tabs + 單一面板</span></div></div></a>
+        <a class="wire-link" href="#pattern-filter-list"><div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__row"><div class="wire__b" style="height:12px;width:40px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:12px;width:40px"></div></div><div class="wire__b wire__b--grow"></div></div><div class="wire__cap"><b>Filter + list</b> · <span data-en>chips drive rows</span><span data-zh>chips 驅動列表</span></div></div></a>
+        <a class="wire-link" href="#pattern-lifecycle"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div class="wire__b" style="width:60%;height:10px"></div><div class="wire__b" style="width:40%;height:24px;background:var(--primary);opacity:.5"></div></div><div class="wire__cap"><b>Lifecycle states</b> · <span data-en>empty / loading / error</span><span data-zh>空白 / 載入中 / 錯誤</span></div></div></a>
+        <a class="wire-link" href="#pattern-wizard"><div class="wire"><div class="wire__frame"><div class="wire__row" style="justify-content:center"><span class="wire__b" style="width:10px;height:10px;border-radius:999px;background:var(--primary);opacity:.6"></span><span class="wire__b" style="width:10px;height:10px;border-radius:999px"></span><span class="wire__b" style="width:10px;height:10px;border-radius:999px"></span></div><div class="wire__b wire__b--grow"></div><div class="wire__b" style="height:18px;background:var(--primary);opacity:.5"></div></div><div class="wire__cap"><b>Multi-step wizard</b> · <span data-en>stepper + sticky bar</span><span data-zh>stepper + 固定底欄</span></div></div></a>
+        <a class="wire-link" href="#pattern-form-assembly"><div class="wire"><div class="wire__frame"><div class="wire__b" style="height:8px;width:45%"></div><div class="wire__b" style="height:16px"></div><div class="wire__b" style="height:8px;width:60%"></div><div class="wire__b" style="height:16px"></div><div class="wire__b" style="height:1px;opacity:.5"></div><div class="wire__b" style="height:8px;width:45%"></div><div class="wire__b" style="height:16px"></div></div><div class="wire__cap"><b>Form assembly</b> · <span data-en>field → section → form</span><span data-zh>欄位 → 區段 → 表單</span></div></div></a>
+        <a class="wire-link" href="#pattern-settings"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div style="display:flex;flex-direction:column;gap:4px;width:28%"><div class="wire__b" style="height:10px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:10px"></div><div class="wire__b" style="height:10px"></div></div><div style="display:flex;flex-direction:column;gap:4px;flex:1"><div class="wire__b" style="height:14px"></div><div class="wire__b" style="height:14px"></div><div class="wire__b" style="height:14px"></div></div></div><div class="wire__cap"><b>Settings page</b> · <span data-en>nav + row cards</span><span data-zh>設定導覽 + 列卡</span></div></div></a>
+        <a class="wire-link" href="#pattern-modal"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:50%"></div><div class="wire__b" style="height:16px"></div><div class="wire__b" style="height:8px;background:var(--primary);opacity:.5;align-self:flex-end;width:30%"></div></div></div><div class="wire__cap"><b>Modal shell</b> · <span data-en>one dialog chrome</span><span data-zh>單一 dialog 殼</span></div></div></a>
+        <a class="wire-link" href="#pattern-split-preview"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div class="wire__b" style="flex:1.6;height:auto"></div><div style="flex:1;border:1px solid var(--border);border-radius:4px;display:flex;flex-direction:column;gap:3px;padding:3px"><div class="wire__b" style="height:8px;width:60%"></div><div class="wire__b" style="flex:1"></div></div></div><div class="wire__cap"><b>Split preview</b> · <span data-en>editor + live preview</span><span data-zh>編輯 + 即時預覽</span></div></div></a>
+        <a class="wire-link" href="#pattern-detail-rail"><div class="wire"><div class="wire__frame" style="flex-direction:row;gap:6px"><div style="display:flex;flex-direction:column;gap:4px;flex:1"><div class="wire__row"><div class="wire__b" style="height:8px;width:26px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:8px;width:26px"></div></div><div class="wire__b" style="flex:1"></div></div><div style="display:flex;flex-direction:column;gap:4px;width:34%"><div class="wire__b" style="height:22px"></div><div class="wire__b" style="height:22px"></div></div></div><div class="wire__cap"><b>Detail + persistent rail</b> · <span data-en>tabs + sticky meta rail</span><span data-zh>分頁 + 常駐 meta 欄</span></div></div></a>
+        <a class="wire-link" href="#pattern-destructive-confirm"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:45%"></div><div class="wire__b" style="height:6px"></div><div class="wire__b" style="height:6px;width:80%"></div><div class="wire__row" style="justify-content:flex-end;gap:3px"><div class="wire__b" style="height:8px;width:22%"></div><div class="wire__b" style="height:8px;width:30%;background:var(--destructive);opacity:.5"></div></div></div></div><div class="wire__cap"><b>Destructive confirm</b> · <span data-en>say the consequences first</span><span data-zh>先把後果講完</span></div></div></a>
+        <a class="wire-link" href="#pattern-export-confirm"><div class="wire"><div class="wire__frame" style="justify-content:center;align-items:center"><div style="width:70%;border:1px solid var(--border);border-radius:4px;padding:4px;display:flex;flex-direction:column;gap:3px"><div class="wire__b" style="height:8px;width:45%"></div><div class="wire__b" style="height:6px;width:70%"></div><div class="wire__row" style="gap:3px"><div class="wire__b" style="height:6px;width:8px"></div><div class="wire__b" style="height:6px;width:60%"></div></div><div class="wire__row" style="justify-content:flex-end;gap:3px"><div class="wire__b" style="height:8px;width:22%"></div><div class="wire__b" style="height:8px;width:30%"></div></div></div></div><div class="wire__cap"><b>Export confirm</b> · <span data-en>say how many, then download</span><span data-zh>先講筆數，再下載</span></div></div></a>
+      </div></div>
+      <section class="sub" id="pattern-dashboard">
+        <div class="sub__head"><h3 class="sub__title">5.1.1 Dashboard home</h3><span class="layer">Layout</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Post-login one-glance read</p>
+        <p class="field-text" data-zh>登入後一眼掌握全局</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>full-bleed hero + KPI bento (display-size headline metric) + Alert "Actions needed" beside recent-earnings data-list; money figures state available vs pending inline</p>
+        <p class="field-text" data-zh>滿版 hero + KPI bento(標題用 display 級字級突顯)+ 在近期收益 data-list 旁放「Actions needed」Alert;金額在行內標明 available 與 pending</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview">
+          <div class="page-intro" style="margin-bottom:var(--sp-16)">
+            <h1 class="page-intro__title">Dashboard</h1>
+            <div class="page-intro__lede"><p class="page-intro__sub">Here's how Coastline EP is doing today.</p></div>
+          </div>
+          <div class="bento" style="margin-bottom:var(--sp-16)">
+            <div class="kpi bento--span-4"><div class="kpi__label">Gross revenue</div><div class="kpi__value">$24,830</div><div class="kpi__delta">+18.4% MoM</div></div>
+            <div class="kpi bento--span-4"><div class="kpi__label">Available</div><div class="kpi__value">$842.10</div><div class="kpi__meta">Ready to withdraw</div></div>
+            <div class="kpi bento--span-4"><div class="kpi__label">Pending</div><div class="kpi__value">$1,204.00</div><div class="kpi__meta">In hold window</div></div>
+          </div>
+          <div class="card" style="margin-bottom:var(--sp-16)">
+            <div class="card__head"><h3 class="card__title">Actions needed</h3></div>
+            <div class="alert alert--row alert--warning">
+              <div class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></div>
+              <div class="alert__body"><div class="alert__title">Tax form required before your next payout</div><div class="alert__meta">Resolve in Settings</div></div>
+            </div>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="receipt" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Pre-order · Coastline EP</div><div class="data-list__meta">Project · 2 hours ago</div></div></div><div class="data-list__amount">+$1,410.00</div></div>
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--neutral"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">E-Shop sale · Tote bag</div><div class="data-list__meta">E-Shop · Yesterday</div></div></div><div class="data-list__amount">+$38.00</div></div>
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--error"><i data-lucide="banknote" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Payout to bank</div><div class="data-list__meta">Payout · 3 days ago</div></div></div><div class="data-list__amount data-list__amount--neg">−$842.10</div></div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="index.html">index.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="index.html">index.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-tabbed">
+        <div class="sub__head"><h3 class="sub__title">5.1.2 Tabbed section view</h3><span class="layer">Layout</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>One entity, parallel sub-views (Earnings / E-Shop / Projects / Fans)</p>
+        <p class="field-text" data-zh>單一實體、多個平行子視圖(Earnings / E-Shop / Projects / Fans)</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>Tabs with one active panel, active tab synced to URL hash, each panel opens with its own scoped KPI row</p>
+        <p class="field-text" data-zh>Tabs 只開一個面板,作用中的分頁與 URL hash 同步,每個面板各自帶一列專屬 KPI</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview">
+          <div class="page-intro" style="margin-bottom:var(--sp-16)">
+            <h1 class="page-intro__title">Earnings</h1>
+            <div class="page-intro__lede"><p class="page-intro__sub">Track gross revenue, net revenue, pending payouts, and tax documents in one place.</p></div>
+          </div>
+          <nav class="tabs" role="tablist" style="margin-bottom:var(--sp-16)">
+            <button class="tabs__item tabs__item--active" role="tab" aria-selected="true">Overview</button>
+            <button class="tabs__item" role="tab" aria-selected="false">Transactions <span class="tabs__item-count">214</span></button>
+            <button class="tabs__item" role="tab" aria-selected="false">Payouts</button>
+            <button class="tabs__item" role="tab" aria-selected="false">Tax</button>
+          </nav>
+          <div class="tab-panel tab-panel--active" role="tabpanel">
+            <div class="bento" style="margin-bottom:var(--sp-16)">
+              <div class="kpi bento--span-4"><div class="kpi__label">Gross revenue</div><div class="kpi__value">$24,830</div><div class="kpi__delta">+18.4% MoM</div></div>
+              <div class="kpi bento--span-4"><div class="kpi__label">Net income</div><div class="kpi__value">$19,672</div><div class="kpi__meta">Fees · splits · costs</div></div>
+              <div class="kpi bento--span-4"><div class="kpi__label">Voids</div><div class="kpi__value">$1,204</div><div class="kpi__delta kpi__delta--neg">-4.2% MoM</div></div>
+            </div>
+            <div class="card"><div class="card__head"><h3 class="card__title">Recent activity</h3></div><p class="field-text">This panel only renders while "Overview" is the active tab.</p></div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="earnings.html">earnings.html</a> · <a href="e-shop.html">e-shop.html</a> · <a href="projects.html">projects.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="earnings.html">earnings.html</a> · <a href="e-shop.html">e-shop.html</a> · <a href="projects.html">projects.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-filter-list">
+        <div class="sub__head"><h3 class="sub__title">5.1.3 Filter + list</h3><span class="layer">Interaction</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Long filterable record set</p>
+        <p class="field-text" data-zh>可篩選的長資料集</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>single-select Chip group drives a row-divider Data list; active filter + result count always visible; clearing returns the full set</p>
+        <p class="field-text" data-zh>單選 Chip 群組驅動有列分隔線的 Data list;作用中的篩選與結果數量始終可見;清除後回到完整資料集</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview">
+          <div class="filter-row" style="margin-bottom:var(--sp-12)">
+            <div class="chip-group" role="group" aria-label="Transaction type">
+              <button class="chip chip--active">All <span class="chip__count">24</span></button>
+              <button class="chip">Sales <span class="chip__count">16</span></button>
+              <button class="chip">Payouts <span class="chip__count">6</span></button>
+              <button class="chip">Void <span class="chip__count">2</span></button>
+            </div>
+            <div class="filter-row__actions"><button class="btn btn--outline btn--sm">Clear</button></div>
+          </div>
+          <p class="field-text" style="margin-bottom:var(--sp-12)">Showing 24 of 24 transactions</p>
+          <div class="data-list">
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="receipt" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Pre-order · Coastline EP</div><div class="data-list__meta">Project · 2 hours ago</div></div></div><div class="data-list__amount">+$1,410.00</div></div>
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--neutral"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">E-Shop sale · Tote bag</div><div class="data-list__meta">E-Shop · Yesterday</div></div></div><div class="data-list__amount">+$38.00</div></div>
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--error"><i data-lucide="banknote" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Payout to bank</div><div class="data-list__meta">Payout · 3 days ago</div></div></div><div class="data-list__amount data-list__amount--neg">−$842.10</div></div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="earnings.html">earnings.html</a> · <a href="fans-crm.html">fans-crm.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="earnings.html">earnings.html</a> · <a href="fans-crm.html">fans-crm.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-lifecycle">
+        <div class="sub__head"><h3 class="sub__title">5.1.4 Lifecycle states</h3><span class="layer">Lifecycle</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Any data region</p>
+        <p class="field-text" data-zh>任何資料區塊</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>define all of Empty / Loading / Error; Empty uses Empty-stub + one clear action; Error uses Alert <code>--row</code> + retry and never blanks loaded data; never toast-only</p>
+        <p class="field-text" data-zh>都要定義 Empty / Loading / Error 三態;Empty 用 Empty-stub + 一個明確動作;Error 用 Alert <code>--row</code> + 重試,且絕不清空已載入的資料;絕不只用 toast</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview">
+          <div class="bento">
+            <div class="card bento--span-4">
+              <div class="card__head"><h3 class="card__title">Empty</h3></div>
+              <div class="empty-stub" style="min-height:160px;padding:0">
+                <div class="empty-stub__inner">
+                  <div class="empty-stub__mark">P</div>
+                  <div class="empty-stub__title" style="font-size:var(--fs-16)">No projects yet</div>
+                  <p class="empty-stub__sub">Create your first to start earning.</p>
+                  <div class="empty-stub__refs"><button class="btn btn--primary btn--sm">Create project</button></div>
+                </div>
+              </div>
+            </div>
+            <div class="card bento--span-4">
+              <div class="card__head"><h3 class="card__title">Loading</h3></div>
+              <div style="display:flex;flex-direction:column;gap:var(--sp-8)">
+                <div style="height:14px;width:70%;border-radius:var(--radius-sm);background:var(--muted)"></div>
+                <div style="height:14px;width:100%;border-radius:var(--radius-sm);background:var(--muted)"></div>
+                <div style="height:14px;width:85%;border-radius:var(--radius-sm);background:var(--muted)"></div>
+                <p class="field-note" style="margin-top:var(--sp-4)">Loading transactions…</p>
+              </div>
+            </div>
+            <div class="card bento--span-4">
+              <div class="card__head"><h3 class="card__title">Error</h3></div>
+              <div class="alert alert--row alert--error">
+                <div class="alert__icon"><i data-lucide="x-circle-fill" class="ztor-icon"></i></div>
+                <div class="alert__body"><div class="alert__title">Couldn't load transactions</div><div class="alert__meta">Your existing data stays on screen.</div></div>
+              </div>
+              <button class="btn btn--outline btn--sm" style="margin-top:var(--sp-12)" type="button"><i data-lucide="refresh-cw" class="ztor-icon"></i> Retry</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="edit-event.html">edit-event.html</a> · <a href="event-detail.html">event-detail.html</a> · <a href="project-detail.html">project-detail.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="edit-event.html">edit-event.html</a> · <a href="event-detail.html">event-detail.html</a> · <a href="project-detail.html">project-detail.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-wizard">
+        <div class="sub__head"><h3 class="sub__title">5.1.5 Multi-step wizard</h3><span class="layer">Workflow</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>3–4 step create flow (project / event / product)</p>
+        <p class="field-text" data-zh>3–4 步的建立流程(project / event / product)</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>wizard-focus template (no topbar), centered stepper, Selection-card branches, sticky action bar, draft-save every step; Review restates money / royalty / IP disclosures before commit</p>
+        <p class="field-text" data-zh>wizard-focus 模板(無 topbar)、置中 stepper、Selection-card 分支、固定動作列、每步都存草稿;Review 在送出前重申金額 / 權利金 / IP 揭露事項</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview ds-preview--medium">
+          <div class="wizard">
+            <div class="wizard__top"><button class="wizard__close"><i data-lucide="x" class="ztor-icon"></i> Close</button><div class="progress-stepper" style="--progress:66%;flex:1"><div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div><div class="progress-stepper__labels"><span class="progress-stepper__label progress-stepper__label--done">Basics</span><span class="progress-stepper__label progress-stepper__label--done">Tickets</span><span class="progress-stepper__label progress-stepper__label--current">Publishing</span><span class="progress-stepper__label">Review</span></div></div><span></span></div>
+            <div class="wizard__body">
+              <h2 class="wizard__step-title">How should this event go live?</h2>
+              <p class="wizard__step-sub">Draft saves automatically after every step; nothing here is final until Review.</p>
+              <div class="selection-grid">
+                <div class="selection-card selection-card--active"><div class="selection-card__title">Publish now</div><div class="selection-card__sub">Visible on your storefront immediately.</div></div>
+                <div class="selection-card"><div class="selection-card__title">Schedule</div><div class="selection-card__sub">Go live at a date and time you choose.</div></div>
+              </div>
+            </div>
+            <div class="wizard__bottom"><button class="btn btn--ghost">Save draft</button><div class="wizard__bottom-actions"><button class="btn btn--outline">Back</button><button class="btn btn--primary">Next</button></div></div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="create-project.html">create-project.html</a> · <a href="create-event.html">create-event.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="create-project.html">create-project.html</a> · <a href="create-event.html">create-event.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-form-assembly">
+        <div class="sub__head"><h3 class="sub__title">5.1.6 Form assembly</h3><span class="layer">Workflow</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Any create / edit form</p>
+        <p class="field-text" data-zh>任何建立／編輯表單</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>every field is a <a href="design-system-components-forms.html#field-system">Field</a> (label + hint + one atom control); group into <a href="design-system-components-forms.html#form-section">Form sections</a> (title + grey sub; sibling sections auto-divide, base gap 6 / field spacing 16); side-by-side via <a href="design-system-components-forms.html#form-grid">Form grid</a>; save on a sticky action bar. Sectioned create sheets use <code>--surface-page</code>; visible outlined sections use <code>--card</code> / dark <code>--muted</code> fill (no border edge, Q14) and a <code>--sp-24</code> gap across hidden conditional sections. Adopted by product, auction, bundle, event, project, IP registration, and Admin IP Entry flows. Field order: identity → content → settings → risk disclosures. <strong>One section = one decision</strong> (extracted from create-product, 2026-09-01): split sections by the decision a creator makes, not by field type — price and discount are two decisions, so two sections; the test is whether the section title answers "what is being decided here" in one line. <strong>Branches toggle visibility, never reorder</strong>: physical / digital / multi-variant branches show or hide whole sections via <code>data-*-show</code>; section order stays fixed and no second form is ever built. <strong>Four fixed levels inside a section</strong>: <code>__head</code> → <code>__subhead</code> (only when one decision holds two field groups) → <code>form-grid</code> / <code>field</code> → <code>nest</code>; skip unused levels, never invent a fifth. Route-changing actions (e.g. type switch) live at the right end of the first section's <code>__head--actions</code></p>
+        <p class="field-text" data-zh>每個欄位都是 <a href="design-system-components-forms.html#field-system">Field</a>（label＋hint＋單一 atom 控件）；用 <a href="design-system-components-forms.html#form-section">Form section</a> 成組（標題＋灰副標；區段相接自動分隔線、基礎 gap 6／欄距 16）；並排用 <a href="design-system-components-forms.html#form-grid">Form grid</a>；儲存放固定動作列。區塊式建立 sheet 使用 <code>--surface-page</code>；可見外框區塊以 <code>--card</code>／黑夜 <code>--muted</code> 填色（無邊框線，Q14）與跨越隱藏條件區塊的 <code>--sp-24</code> 間距組成。商品／拍賣／組合／活動／項目／IP 登錄／Admin IP Entry 均已採用。欄位順序：識別 → 內容 → 設定 → 風險揭露。<strong>一個 section＝一個決定</strong>（2026-09-01 自 create-product 抽取）：切區依創作者要做的決定、不依欄位型別——價格與折扣是兩個決定就是兩個 section；判別句：section 標題能不能一句話回答「這區在決定什麼」。<strong>條件分支控顯隱、不重排</strong>：實體／數位／多規格分支用 <code>data-*-show</code> 控整個 section 顯隱，順序恆定、絕不為分支建第二份表單。<strong>Section 內分層階梯固定四級</strong>：<code>__head</code> → <code>__subhead</code>（僅當同一決定下有兩群欄位）→ <code>form-grid</code>／<code>field</code> → <code>nest</code>；用不到就跳過，不得自創第五級。改變路由的動作（類型切換）放第一個 section 的 <code>__head--actions</code> 右端</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview ds-preview--narrow">
+          <section class="form-section form-section--outlined">
+            <div class="form-section__head"><h3 class="form-section__title">Product info</h3><p class="form-section__sub">The basics buyers see first.</p></div>
+            <div class="field"><label class="field__label">Product name</label><input class="input" value="Summer Tour Hoodie"></div>
+            <div class="field"><label class="field__label">Description</label><div class="field__hint">The more detail, the more they trust it.</div><textarea class="textarea" rows="2">100% organic cotton, screen-printed tour art.</textarea></div>
+            <div class="form-grid" style="margin-top:var(--sp-16)">
+              <div class="field"><label class="field__label">Price</label><input class="input" value="$32.00"></div>
+              <div class="field"><label class="field__label">Stock on hand</label><input class="input" value="88"></div>
+            </div>
+          </section>
+          <div class="sticky-actions" style="position:static;width:100%;margin-top:var(--sp-16)">
+            <div class="sticky-actions__inner">
+              <button class="btn btn--outline">Cancel</button>
+              <button class="btn btn--primary">Save draft</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="create-product.html">create-product.html</a> · <a href="create-event.html">create-event.html</a> · <a href="create-auction.html">create-auction.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="create-product.html">create-product.html</a> · <a href="create-event.html">create-event.html</a> · <a href="create-auction.html">create-auction.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-settings">
+        <div class="sub__head"><h3 class="sub__title">5.1.7 Settings page</h3><span class="layer">Layout</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Any settings / configuration screen</p>
+        <p class="field-text" data-zh>任何設定／配置畫面</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en><a href="design-system-components-flow.html#settings-nav">Settings nav</a> groups on the left; each group = a card of stacked <a href="design-system-components-flow.html#settings-row">Settings rows</a> (last row no divider); the right slot holds exactly one control (Switch / value / Badge). Per-row instant apply <em>or</em> one card-level save — pick one per card, never mixed</p>
+        <p class="field-text" data-zh>左側 <a href="design-system-components-flow.html#settings-nav">Settings nav</a> 分組；每組＝一張卡疊 <a href="design-system-components-flow.html#settings-row">Settings row</a>（尾列無分隔線）；右槽只放一個控件（Switch／值／Badge）。逐列即時生效<em>或</em>整卡一個儲存——一張卡擇一，不得混用</p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview ds-preview--medium">
+          <div class="settings-layout">
+            <nav class="settings-nav" aria-label="Settings">
+              <a class="settings-nav__item settings-nav__item--active">Profile</a>
+              <a class="settings-nav__item">Appearance</a>
+              <a class="settings-nav__item">Payments</a>
+              <a class="settings-nav__item">Integrations</a>
+            </nav>
+            <section class="card">
+              <h3 class="settings-section__title">Payments</h3>
+              <p class="settings-section__sub">Manage payout method and tax status.</p>
+              <div class="settings-row"><div><div class="settings-row__label">Auto payout</div><div class="settings-row__hint">Send available funds every Friday.</div></div><div class="switch switch--on" role="switch" aria-checked="true"></div></div>
+              <div class="settings-row"><div><div class="settings-row__label">Payout method</div><div class="settings-row__hint">Primary account for creator revenue.</div></div><div class="settings-row__value">Visa ending 2048</div></div>
+              <div class="settings-row"><div><div class="settings-row__label">Tax status</div><div class="settings-row__hint">Required before requesting payout.</div></div><span class="badge badge--success">Verified</span></div>
+            </section>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="settings.html">settings.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="settings.html">settings.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-modal">
+        <div class="sub__head"><h3 class="sub__title">5.1.8 Modal shell</h3><span class="layer">Interaction</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Any interruptive task</p>
+        <p class="field-text" data-zh>任何攔截式任務</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>reuse the one canonical dialog chrome (<a href="design-system-components-flow.html#payout">.payout-dialog</a> head / body / foot) + backdrop + <code>is-modal-open</code> scroll-lock; destructive / money actions add a confirm gate. Never roll a new modal chrome (payout · broadcast · new-product-post · manual-entry all share this shell)</p>
+        <p class="field-text" data-zh>一律重用唯一的 canonical dialog 殼（<a href="design-system-components-flow.html#payout">.payout-dialog</a> 頭／身／腳）＋backdrop＋<code>is-modal-open</code> 捲動鎖；破壞性／金額類動作加確認閘。絕不自捲新 modal 殼（payout · 廣播 · 新商品貼文 · 手動登錄都共用此殼）</p>
+        <p class="field-label" data-en>Rendered composition <span class="field-note">(<code>.payout-modal</code> shown inline via <code>.demo--inline-modal</code> — see Pillar 4 · Payout dialog)</span></p>
+        <p class="field-label" data-zh>渲染組合實例 <span class="field-note">（<code>.payout-modal</code> 用 <code>.demo--inline-modal</code> 壓成行內展示——見 Pillar 4 · Payout dialog）</span></p>
+        <div class="demo demo--inline-modal"><div class="payout-modal" style="width:100%">
+          <div class="payout-dialog">
+            <div class="payout-dialog__head">
+              <h4 class="payout-dialog__title">Request payout</h4>
+              <button class="btn btn--icon" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="payout-dialog__body">
+              <div class="field">
+                <span class="field__label">Payout bank</span>
+                <div class="payout-selected-bank">
+                  <div class="payout-bank-card__icon"><i data-lucide="landmark" class="ztor-icon"></i></div>
+                  <div class="payout-selected-bank__main"><div class="payout-selected-bank__title">First Hawaiian Bank ··4821</div><div class="payout-selected-bank__meta">Default · USD · 1–2 business days</div></div>
+                </div>
+              </div>
+              <div class="field">
+                <span class="field__label">Amount</span>
+                <span class="amount-field amount-field--hero"><span class="amount-field__unit">$</span><input class="input amount-field__input" value="1,200"></span>
+                <span class="field__hint">Available: $4,820.00</span>
+              </div>
+            </div>
+            <div class="payout-dialog__foot">
+              <button class="btn btn--ghost">Cancel</button>
+              <button class="btn btn--primary">Confirm payout</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="earnings.html">earnings.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="earnings.html">earnings.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-split-preview">
+        <div class="sub__head"><h3 class="sub__title">5.1.9 Split preview</h3><span class="layer">Layout</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>Editing needs a live fan view</p>
+        <p class="field-text" data-zh>編輯時要即時看粉絲視角</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>a right <a href="design-system-components-flow.html#preview-column">preview column</a> / <a href="design-system-components-flow.html#preview-panel">panel</a> compresses the main column (no scrim, not an overlay; the form stays interactive); entry = "See as fan", closing restores width. Card inside reuses <a href="design-system-components-flow.html#preview-card">Preview card</a></p>
+        <p class="field-text" data-zh>右側 <a href="design-system-components-flow.html#preview-column">預覽欄</a>／<a href="design-system-components-flow.html#preview-panel">面板</a>壓縮主欄（無遮罩、非浮層；表單保持可互動）；入口＝「See as fan」，關閉還原寬度。欄內的卡重用 <a href="design-system-components-flow.html#preview-card">Preview card</a></p>
+        <p class="field-label" data-en>Section order</p><p class="field-label" data-zh>Section 順序</p>
+        <p class="field-text" data-en>Follow the product's life story (validated on create-product; other create flows reuse it and skip stages that don't apply): identity (what it is) → showcase (media) → deliverable (content file) → commercial terms (variations → price → discount → stock) → fulfilment (delivery / pickup) → purchase rules (limits) → discovery (tags, links) → assurance (checkout). Decisions best made while looking at the finished thing — like listing — sit under the preview card in the right column (see 5.1.9), outside the left-column story. A section's grey <code>__sub</code> appears only when it needs to persuade or explain a rule (media, delivery yes; price no)</p>
+        <p class="field-text" data-zh>照商品的生命敘事排（create-product 驗證序，其他建立流程沿用、跳過不適用的環節）：識別（它是什麼）→ 呈現（素材）→ 交付物（內容檔案）→ 售賣條件（規格 → 價格 → 折扣 → 庫存）→ 履約（交付／取貨）→ 購買規則（限購）→ 發現（標籤、關聯）→ 保障（結帳與保障）。「看著成品才做的決定」（如上架）放右欄預覽卡下方（見 5.1.9），不排進左欄敘事。<code>__sub</code> 灰副標只在需要說服或解釋規則時出現（素材、取貨有；價格不用）</p>
+        <p class="field-label" data-en>Rendered composition</p><p class="field-label" data-zh>渲染組合實例</p>
+        <div class="demo demo--preview"><div class="ds-preview">
+          <div class="preview-split">
+            <div class="preview-split__form">
+              <div class="field"><label class="field__label">Product name</label><input class="input" value="Summer Tour Hoodie"></div>
+              <div class="field"><label class="field__label">Price</label><input class="input" value="$48.00"></div>
+              <div class="field"><label class="field__label">Description</label><textarea class="textarea" rows="2">Zip hoodie from the 2026 tour.</textarea></div>
+            </div>
+            <aside class="preview-col" style="--preview-col-top:0">
+              <div class="preview-col__head"><h3 class="preview-col__title">See as fan</h3><p class="preview-col__sub">What buyers see on the storefront.</p></div>
+              <div class="preview-card">
+                <div class="preview-card__media"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="preview-card__body">
+                  <div class="preview-card__row"><h4 class="preview-card__name">Summer Tour Hoodie</h4><span class="preview-card__price">$48.00</span></div>
+                  <p class="preview-card__desc">Zip hoodie from the 2026 tour.</p>
+                </div>
+              </div>
+              <!-- D241（2026-09-04）：同 §4.22f 那張卡，內容改吃 listing-controls（§4.205）。 -->
+              <div class="card"><div class="card__head"><h3 class="card__title" data-i18n="cp.listing.title">Listing, visibility and sale</h3></div>
+                <div class="lctl lctl--stack">
+                  <div class="lctl__row"><div class="lctl__head"><div class="lctl__titles"><span class="lctl__title" data-i18n="cp.listing.listed-switch">Listed</span></div><div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0"></div></div></div>
+                  <div class="lctl__row"><div class="lctl__head"><div class="lctl__titles"><span class="lctl__title" data-i18n="cp.listing.shown-h">Show in shop</span></div><div class="switch switch--on lctl__control" role="switch" aria-checked="true" tabindex="0"></div></div></div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="create-product.html">create-product.html</a> · <a href="store-settings.html">store-settings.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="create-product.html">create-product.html</a> · <a href="store-settings.html">store-settings.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-detail-rail">
+        <div class="sub__head"><h3 class="sub__title">5.1.10 Detail + persistent rail</h3><span class="layer">Layout</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>An entity page where editing is split across tabs but a few read-only facts must never leave view (product detail: stock, delivery, linked project)</p>
+        <p class="field-text" data-zh>編輯分散在多個分頁、但有幾項唯讀事實必須永遠看得到的實體頁（商品細節：庫存、交付、關聯項目）</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>wrap the page in <code>.page.page--narrow</code> (1056px — the default 1280px plus a 300px rail leaves the main column too wide), then the <a href="design-system-components-flow.html#detail-rail">Detail rail</a> shell: editable <a href="design-system-components-flow.html#tabs">Tabs</a> in <code>.detail-main</code>, sticky <code>.detail-rail</code> on the right holding <strong>read-only</strong> <a href="design-system-components-forms.html#form-section">Form section</a> cards built from <a href="design-system-components-lists.html#kv-list">KV list</a> / <a href="design-system-components-flow.html#stock-bar">Stock bar</a> / <a href="design-system-components-cards.html#kpi">KPI</a>. The rail answers "what do I need to know before I change something", so it holds constraints and consequences (stock on hand, delivery method, what this item is attached to), never the fields being edited and never a primary action. Cap it at 3–4 cards — a rail that scrolls has stopped being persistent. Below 1100px it falls in under the main column, so nothing in it may be the only route to a task.</p>
+        <p class="field-text" data-zh>頁面外層用 <code>.page.page--narrow</code>（1056px——預設 1280px 再配 300px 右欄，主欄會太寬），內層用 <a href="design-system-components-flow.html#detail-rail">Detail rail</a> 殼：可編輯的 <a href="design-system-components-flow.html#tabs">Tabs</a> 放 <code>.detail-main</code>，右邊 sticky 的 <code>.detail-rail</code> 放<strong>唯讀</strong>的 <a href="design-system-components-forms.html#form-section">Form section</a> 卡，內容由 <a href="design-system-components-lists.html#kv-list">KV list</a>／<a href="design-system-components-flow.html#stock-bar">Stock bar</a>／<a href="design-system-components-cards.html#kpi">KPI</a> 組成。右欄回答的是「改東西前我要先知道什麼」，所以放的是限制與後果（現有庫存、交付方式、這個項目掛在哪），不放正在編輯的欄位、也不放主要動作。卡片控制在 3–4 張——會捲動的右欄就不再是常駐。1100px 以下右欄會掉到主欄下方，所以裡面不能有任何「只有這條路」的任務入口。</p>
+        <p class="field-label" data-en>Rendered composition <span class="field-note">(column ratio pinned narrower here for the demo box; real proportions are 1fr / 300px)</span></p>
+        <p class="field-label" data-zh>渲染組合實例 <span class="field-note">（此處欄寬為配合展示框收窄；實際比例為 1fr / 300px）</span></p>
+        <div class="demo demo--preview"><div class="ds-preview">
+          <div class="detail-grid" style="grid-template-columns:minmax(0,1fr) 220px">
+            <div class="detail-main">
+              <nav class="tabs" role="tablist" style="margin-bottom:var(--sp-16)">
+                <button class="tabs__item tabs__item--active" role="tab" aria-selected="true">Overview</button>
+                <button class="tabs__item" role="tab" aria-selected="false">Pricing &amp; stock</button>
+                <button class="tabs__item" role="tab" aria-selected="false">Shipping</button>
+              </nav>
+              <div class="tab-panel tab-panel--active" role="tabpanel">
+                <div class="bento" style="margin-bottom:var(--sp-16)">
+                  <div class="kpi bento--span-6"><div class="kpi__label">Units sold</div><div class="kpi__value">312</div><div class="kpi__delta">+9.1% MoM</div></div>
+                  <div class="kpi bento--span-6"><div class="kpi__label">Revenue</div><div class="kpi__value">$14,976</div><div class="kpi__meta">Lifetime</div></div>
+                </div>
+                <div class="form-section form-section--outlined">
+                  <div class="form-section__head"><h3 class="form-section__title">Product info</h3></div>
+                  <div class="field"><label class="field__label">Product name</label><input class="input" value="Summer Tour Hoodie"></div>
+                </div>
+              </div>
+            </div>
+            <div class="detail-rail" style="position:static">
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h4 class="form-section__title">Stock</h4></div><div class="stock-bar"><span class="stock-bar__fill" style="width:62%"></span></div><div class="kv kv--lead"><span class="kv__k">On hand</span><span class="kv__v">31 / 50</span></div></section>
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h4 class="form-section__title">Delivery</h4></div><div class="kv kv--lead"><span class="kv__k">Ship</span><span class="kv__v">Yes</span></div><div class="kv"><span class="kv__k">Pickup</span><span class="kv__v">Available</span></div></section>
+              <section class="form-section form-section--outlined"><div class="form-section__head"><h4 class="form-section__title">Linked project</h4></div><div class="kv kv--lead"><span class="kv__k">Project</span><span class="kv__v">Coastline EP</span></div></section>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="product-detail.html">product-detail.html</a></p>
+        <p class="field-text" data-zh>實際頁面：<a href="product-detail.html">product-detail.html</a></p>
+      </section>
+
+      <section class="sub" id="pattern-destructive-confirm">
+        <div class="sub__head"><h3 class="sub__title">5.1.11 Destructive confirm</h3><span class="layer">Interaction</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>An action that can't be taken back — voiding an order item, deleting a product / draft / event, disabling an account. Reversible actions (save draft, unlist, toggle visibility) just do it and show a toast.</p>
+        <p class="field-text" data-zh>一個按下去就收不回來的動作——作廢訂單明細、刪除商品／草稿／活動、停用帳號。可逆的動作（存草稿、下架、切換顯示）不走這張卡，做完給 toast 就好。</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>No new modal CSS — this is <a href="#pattern-modal">Modal shell</a> plus <a href="design-system-components-basic.html#button">.btn--destructive</a>, which is why the rule lives here and not in Pillar 4. The entry point is a quiet <code>.btn--ghost.btn--destructive</code> (red text, never the loudest thing in the row); only the commit button in the dialog foot is a full <code>.btn--destructive</code>. Body order is fixed, four blocks: <strong>what is being acted on</strong> (name it and quantify it — never "this item") → <strong>prerequisite</strong> (what must already be done elsewhere, e.g. "refund the buyer in Stripe first") → <strong>what happens</strong> (one line per consequence: codes voided, stock restocked, who gets emailed) → <strong>no undo</strong>. Afterwards the toast says what actually happened, not "success".</p>
+        <p class="field-text" data-zh>沒有新的 modal CSS——它是 <a href="#pattern-modal">Modal shell</a> 加上 <a href="design-system-components-basic.html#button">.btn--destructive</a>，所以規則寫在 Pattern、不寫成元件。入口是安靜的 <code>.btn--ghost.btn--destructive</code>（紅字，絕不是那一列裡最響的東西）；只有彈窗頁尾真正執行的那顆才是完整的 <code>.btn--destructive</code>。內容順序固定四段：<strong>動到哪一項</strong>（講出名稱與數量，不要只說「這個項目」）→ <strong>前置條件</strong>（要先在別的地方做完什麼，例如「請先在 Stripe 完成人工退款」）→ <strong>會發生什麼</strong>（一條後果一行：憑證失效、庫存回補、誰會收到信）→ <strong>不可逆</strong>。事後的 toast 要說出實際發生了什麼，不是只說「成功」。</p>
+        <p class="field-text" data-en><strong>2026-10-15 (visual check C1, STYLE-DECISIONS Q134):</strong> the confirm button may never look weaker than the entry. When the entry is already the tinted <code>.btn--soft.btn--destructive</code> (one per list row, the order header’s “Void whole order”), the confirm uses the same tinted button. The prerequisite and the no-undo note are <a href="design-system-components-basic.html#alert"><code>Alert --row</code></a> (warning / error) above the reason field, not grey hints; a prerequisite that doesn’t apply is removed (a free order — zero amount, no payment — shows no Stripe refund note).</p>
+        <p class="field-text" data-zh><strong>2026-10-15（目視檢查 C1，STYLE-DECISIONS Q134）</strong>：確認鈕不得比入口弱。入口已是淡紅底 <code>.btn--soft.btn--destructive</code>（清單列每列一顆、訂單頁首的「撤銷整張訂單」）時，確認鈕用同一款淡紅底。前置條件與不可逆改用 <a href="design-system-components-basic.html#alert"><code>Alert --row</code></a>（warning／error）放在原因欄上方，不再是灰色 hint；前置條件不適用時整條收起（免費訂單——金額 0、不經金流——不出現 Stripe 退款提醒）。</p>
+        <p class="field-text" data-en><strong>2026-10-15, applied site-wide:</strong> event detail’s shared confirm dialog (<code>openConfirm()</code> in <code>event-detail.html</code>) now gives every destructive confirm the tinted <code>.btn--soft.btn--destructive</code> — Void all remaining tickets, Void ticket, Unlist event, Remove date, Discard changes (Cancel event was retired on 2026-10-20, D457). One dialog serves several entries; the confirm takes the strongest entry’s level, so no entry ever outweighs it. Pages with their own dialog whose entry is a red outline, ghost button, menu item or icon button (delete product, delete draft, delete IP) keep the red-outline confirm: same level as the entry, which Q134 allows.</p>
+        <p class="field-text" data-zh><strong>2026-10-15 全站套用</strong>：活動詳情的共用確認視窗（<code>event-detail.html</code> 的 <code>openConfirm()</code>）所有破壞性動作的確認鈕一律改淡紅底 <code>.btn--soft.btn--destructive</code>——撤銷全部剩餘票券、撤銷單張票、下架活動、移除場次、捨棄變更（取消活動於 2026-10-20 D457 退場）。同一個視窗服務多個入口，確認鈕取最強入口那一級，任何入口都不會比它重。自帶視窗、入口是紅框、ghost、選單項或圖示鈕的頁面（刪除商品、刪除草稿、刪除 IP）維持紅框確認鈕：與入口同級，符合 Q134。</p>
+        <p class="field-label" data-en>Should / must-not</p><p class="field-label" data-zh>建議／禁止</p>
+        <p class="field-text" data-en>Keep a blocked entry point visible and disabled with a <code>title</code> saying why (already picked up, needs the Admin role) — a hidden button reads as "this feature doesn't exist". Never use the native <code>confirm()</code>; never replace the consequence list with a single vague "this cannot be undone"; never change the screen before the user confirms.</p>
+        <p class="field-text" data-zh>不能按的入口留在畫面上、停用並用 <code>title</code> 說明為什麼（已取貨、需要 Admin 角色）——藏起來的按鈕會被讀成「沒有這個功能」。不可用原生 <code>confirm()</code>；不可把後果縮成一句籠統的「此操作無法復原」；不可在使用者確認之前就先改畫面。</p>
+        <p class="field-label" data-en>Rendered composition <span class="field-note">(<code>.payout-modal</code> shown inline via <code>.demo--inline-modal</code>)</span></p>
+        <p class="field-label" data-zh>渲染組合實例 <span class="field-note">（<code>.payout-modal</code> 用 <code>.demo--inline-modal</code> 壓成行內展示）</span></p>
+        <div class="demo demo--inline-modal"><div class="payout-modal" style="width:100%">
+          <div class="payout-dialog">
+            <div class="payout-dialog__head">
+              <h4 class="payout-dialog__title">Void item</h4>
+              <button class="btn btn--icon" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="payout-dialog__body">
+              <div class="data-list">
+                <div class="data-list__row">
+                  <div class="data-list__row-main"><div class="data-list__body">
+                    <div class="data-list__title">Kowloon After Dark vinyl · numbered 1/50</div>
+                    <div class="data-list__meta">1 × $180.00</div>
+                  </div></div>
+                </div>
+              </div>
+              <div class="field__label mt-16">What voiding does</div>
+              <div class="field__hint">This item's pickup codes stop working immediately — they can't be scanned at a session.</div>
+              <div class="field__hint mt-8">Stock goes back on the shelf; a bundle restocks each of its members.</div>
+              <div class="field__hint mt-8">The buyer gets an order-cancelled email listing this item.</div>
+              <!-- 2026-10-15（目視檢查 C1）：前置條件與不可逆改用 Alert --row，放在原因欄上方 -->
+              <div class="mt-16">
+                <div class="alert alert--row alert--warning" role="note"><span class="alert__icon"><i data-lucide="banknote" class="ztor-icon"></i></span><div class="alert__body"><div class="alert__title">Refund the buyer in Stripe first — voiding moves no money and never calls Stripe.</div></div></div>
+                <div class="alert alert--row alert--error" role="note"><span class="alert__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></span><div class="alert__body"><div class="alert__title">There's no undo — a voided item can't be reinstated.</div></div></div>
+              </div>
+            </div>
+            <div class="payout-dialog__foot">
+              <button class="btn btn--ghost btn--sm">Cancel</button>
+              <!-- 入口是淡紅底（.btn--soft.btn--destructive）→ 確認鈕同一款、不得比入口弱（Q134） -->
+              <button class="btn btn--soft btn--destructive btn--sm">Void this item</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-label" data-en>Entry points in the row <span class="field-note">(enabled · blocked by item state · blocked by role)</span></p>
+        <p class="field-label" data-zh>列上的入口 <span class="field-note">（可按・被品項狀態擋下・被角色擋下）</span></p>
+        <div class="demo" style="display:flex;gap:var(--sp-12);flex-wrap:wrap;align-items:center">
+          <button class="btn btn--ghost btn--destructive btn--sm">Void</button>
+          <button class="btn btn--ghost btn--destructive btn--sm" disabled aria-disabled="true" title="Already picked up — can't be voided">Void</button>
+          <button class="btn btn--ghost btn--destructive btn--sm" disabled aria-disabled="true" title="Requires the Admin role">Void</button>
+        </div>
+        <p class="field-text" data-en>See it live: <a href="order-detail.html?id=ZT-10484">order-detail.html</a> — void an order item (Admin only)</p>
+        <p class="field-text" data-zh>實際頁面：<a href="order-detail.html?id=ZT-10484">order-detail.html</a>——作廢訂單品項（Admin 專屬）</p>
+      </section>
+      <section class="sub" id="pattern-export-confirm">
+        <div class="sub__head"><h3 class="sub__title">5.1.12 Export confirm</h3><span class="layer">Interaction</span></div>
+        <p class="field-label" data-en>Trigger</p><p class="field-label" data-zh>觸發</p>
+        <p class="field-text" data-en>A list the creator filtered and now wants as a file — Orders, and the ticket transactions inside one event. The file follows the current filters, so the dialog says how many rows it will hold before anything downloads.</p>
+        <p class="field-text" data-zh>創作者已經篩好一份清單、現在要拿它成檔——訂單管理，以及某場活動裡的交易明細。檔案照目前的篩選結果，所以下載前先在視窗裡講清楚會有幾筆。</p>
+        <p class="field-label" data-en>Must</p><p class="field-label" data-zh>必須</p>
+        <p class="field-text" data-en>No new modal CSS — this is <a href="#pattern-modal">Modal shell</a> (<code>.payout-modal</code> / <code>.payout-dialog--narrow</code>) plus <a href="design-system-components-new.html#checkbox">.zcheck</a>, built once by <code>js/csv-export.js</code> (<code>ztorCsv.confirm()</code>) and shared by every export. Body order: the row count first, then the optional personal-data checkbox with one hint line, then the footer (Cancel left-aligned ghost, Export primary). The checkbox is <strong>unchecked every time the dialog opens</strong> — personal data never leaves by default. With zero rows the Export button is disabled and the sentence says why.</p>
+        <p class="field-text" data-zh>沒有新的 modal CSS——它是 <a href="#pattern-modal">Modal shell</a>（<code>.payout-modal</code>／<code>.payout-dialog--narrow</code>）加上 <a href="design-system-components-new.html#checkbox">.zcheck</a>，由 <code>js/csv-export.js</code>（<code>ztorCsv.confirm()</code>）建一次、每個匯出共用。內容順序：先講筆數，再放選填的個資核取框與一行說明，最後是腳（取消＝ghost、匯出＝primary）。核取框<strong>每次開窗都回到不勾</strong>——個資預設不外流。零筆時匯出鈕停用、句子講明原因。</p>
+        <p class="field-label" data-en>Should / must-not</p><p class="field-label" data-zh>建議／禁止</p>
+        <p class="field-text" data-en>The file itself is built in the browser (<code>ztorCsv.build()</code>: UTF-8 BOM, comma-separated, quotes doubled, CRLF) and named <code>{what}_{event?}_{date range | all}.csv</code> in the interface language, headers included. Amounts are plain numbers — no currency symbol, no thousands separator; empty means "no value", never <code>0</code> standing in for "not applicable". When an export has no personal-data option, say that in one hint line instead of showing a disabled checkbox. Never download straight from the toolbar button, and never pre-check the personal-data box.</p>
+        <p class="field-text" data-zh>檔案在瀏覽器端產生（<code>ztorCsv.build()</code>：UTF-8 加 BOM、逗號分隔、雙引號重複、CRLF 換行），檔名依介面語言寫成 <code>{內容}_{活動?}_{起訖日期｜全部}.csv</code>，表頭一樣走在地化。金額一律是純數字、不帶貨幣符號與千分位；空白代表沒有值，不用 <code>0</code> 代替「不適用」。這份匯出沒有個資選項時，用一行說明講明，不要放一個停用的核取框。禁止從工具列按鈕直接下載，也禁止預設勾選個資核取框。</p>
+        <p class="field-label" data-en>Rendered composition <span class="field-note">(<code>.payout-modal</code> shown inline via <code>.demo--inline-modal</code>)</span></p>
+        <p class="field-label" data-zh>渲染組合實例 <span class="field-note">（<code>.payout-modal</code> 用 <code>.demo--inline-modal</code> 壓成行內展示）</span></p>
+        <div class="demo demo--inline-modal"><div class="payout-modal" style="width:100%">
+          <!-- 2026-10-28 改版：預設寬度（下半部放匯出紀錄）、大字筆數＋篩選條件、主鈕寫筆數；樣式 ds-components/export-dialog.css -->
+          <div class="payout-dialog">
+            <div class="payout-dialog__head">
+              <h4 class="payout-dialog__title">匯出訂單</h4>
+              <button class="btn btn--icon btn--sm" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="payout-dialog__body">
+              <div class="export-summary">
+                <div class="export-summary__count"><span class="export-summary__num">36</span><span class="export-summary__unit">筆訂單</span></div>
+                <p class="export-summary__filters">照目前的篩選結果：狀態：已付款</p>
+              </div>
+              <div class="field mt-16">
+                <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label">Include shipping details (name, phone, address)</span></label>
+                <div class="field__hint mt-8">By default only the buyer name and email are exported.</div>
+              </div>
+              <section class="export-history">
+                <div class="export-history__head"><h4 class="export-history__title">匯出紀錄</h4><p class="export-history__sub">誰在什麼時候、用哪些篩選條件匯出了幾筆，以及檔名；新的在上。</p></div>
+                <div class="data-list">
+                  <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+                    <div class="data-list__title">訂單_全部.csv</div>
+                    <div class="data-list__meta">2026-10-15 14:32 · Admin · 代管 Gary Lin</div>
+                    <div class="data-list__meta">狀態：已付款 · 36 筆</div>
+                  </div></div><span class="badge badge--neutral">同樣的篩選</span></div>
+                  <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+                    <div class="data-list__title">訂單_2026-06-01至2026-06-11.csv</div>
+                    <div class="data-list__meta">2026-06-12 09:30 · Gary Lin · 創作者</div>
+                    <div class="data-list__meta">訂單日期：2026-06-01 – 2026-06-11 · 21 筆</div>
+                  </div></div></div>
+                </div>
+                <button class="btn btn--ghost btn--sm export-history__more" type="button">顯示全部 5 筆</button>
+              </section>
+            </div>
+            <div class="payout-dialog__foot">
+              <button class="btn btn--ghost btn--sm">取消</button>
+              <button class="btn btn--primary btn--sm">匯出 36 筆</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="field-text" data-en>See it live: <a href="orders.html">orders.html</a> — Export · <a href="event-detail.html?id=nick-live-taoyuan-bky">event-detail.html</a> — Transactions › Export transactions</p>
+        <p class="field-text" data-zh>實際頁面：<a href="orders.html">orders.html</a>——匯出；<a href="event-detail.html?id=nick-live-taoyuan-bky">event-detail.html</a>——交易明細的「匯出交易」</p>
+        <p class="field-label" data-en>After export · export history <span class="field-note">(2026-10-15 · D424)</span></p><p class="field-label" data-zh>匯出之後・匯出紀錄 <span class="field-note">（2026-10-15 · D424）</span></p>
+        <p class="field-text" data-en>Pressing Export closes the dialog and raises a bottom-right toast — “Exporting N orders…” (<a href="design-system-components-new.html#toast">Toast</a> <code>.ztor-toasts--corner</code> + <code>--busy</code>). About a second later the same toast turns into “Export complete · N orders” and the file downloads; at that moment one export-history record is written. Pages call <code>ztorCsv.run({ scope, name, count, filters, make })</code> and never set their own timers. Next to Export sits a quiet <code>.btn--ghost</code> “Export history” (history icon) that opens the Modal shell with one <code>.data-list__row</code> per export: the file name, then time · who, then filters · count — newest first. Creators and Admins both see it.</p>
+        <p class="field-text" data-zh>按下匯出 → 視窗關閉 → 右下角 toast「匯出中…（N 筆訂單）」（<a href="design-system-components-new.html#toast">Toast</a> 的 <code>.ztor-toasts--corner</code>＋<code>--busy</code>）→ 約 1 秒後同一則原地轉成「匯出完成 · N 筆訂單」並下載，同一刻寫一筆匯出紀錄。頁面一律呼叫 <code>ztorCsv.run({ scope, name, count, filters, make })</code>，不自己設計時器。匯出鈕旁一顆次要的 <code>.btn--ghost</code>「匯出紀錄」（history icon），開 Modal shell，一次匯出一列 <code>.data-list__row</code>：標題＝檔名，第一行＝時間 · 誰，第二行＝篩選條件 · 筆數，新的在上；創作者與 Admin 都看得到。</p>
+        <div class="demo demo--inline-modal"><div class="payout-modal" style="width:100%">
+          <div class="payout-dialog">
+            <div class="payout-dialog__head">
+              <h4 class="payout-dialog__title">匯出紀錄</h4>
+              <button class="btn btn--icon btn--sm" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="payout-dialog__body">
+              <p class="field__hint">誰在什麼時候、用哪些篩選條件匯出了幾筆，以及檔名；新的在上。</p>
+              <div class="data-list mt-16">
+                <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+                  <div class="data-list__title">訂單_2026-06-01至2026-06-11.csv</div>
+                  <div class="data-list__meta">2026-10-15 14:32 · Admin · 代管 Gary Lin</div>
+                  <div class="data-list__meta">狀態：已過期 · 訂單日期：2026-06-01 – 2026-06-11 · 3 筆</div>
+                </div></div></div>
+                <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+                  <div class="data-list__title">訂單_全部.csv</div>
+                  <div class="data-list__meta">2026-10-15 10:05 · Gary Lin · 創作者</div>
+                  <div class="data-list__meta">未篩選（全部） · 36 筆</div>
+                </div></div></div>
+              </div>
+            </div>
+            <div class="payout-dialog__foot"><button class="btn btn--ghost btn--sm">關閉</button></div>
+          </div>
+        </div></div>
+      </section>
+    </section>
+
+    <section class="pillar" id="voice">
+      <div><span class="pillar__num">05.2 · Pattern ▸ Voice</span></div>
+      <h2 class="pillar__title"><span data-en>Task-oriented and finance-honest.</span><span data-zh>以任務為導向,對財務誠實</span></h2>
+      <p class="pillar__intro" data-en>Talks to an independent creator running their own business: plain about money, royalties, splits, and verification; never hides a fee or a pending state. Sentence case throughout. Imperative for actions, plain present for states.</p>
+      <p class="pillar__intro" data-zh>對象是經營自己事業的獨立創作者:把金錢、權利金、分潤與驗證講清楚;絕不隱藏任何費用或 pending 狀態。全篇用 sentence case。動作用祈使句,狀態用平直的現在式。</p>
+      <p class="field-label" data-en>Is / Is-not</p>
+      <p class="field-label" data-zh>該有的語氣 / 不該有的語氣</p>
+      <table class="spec"><thead><tr><th><span data-en>Voice is</span><span data-zh>語氣是</span></th><th><span data-en>Voice is not</span><span data-zh>語氣不是</span></th></tr></thead><tbody>
+        <tr><td><span data-en>Plain about money — "You'll receive <strong>$842.10</strong> after a 12% fee"</span><span data-zh>把金錢講清楚 — 「You'll receive <strong>$842.10</strong> after a 12% fee」</span></td><td><span data-en>Vague — "Earnings will be processed"</span><span data-zh>含糊 — 「Earnings will be processed」</span></td></tr>
+        <tr><td><span data-en>Specific about state — "Pending until 28 Jun"</span><span data-zh>把狀態講具體 — 「Pending until 28 Jun」</span></td><td><span data-en>Falsely settled — "Paid"</span><span data-zh>假裝已結清 — 「Paid」</span></td></tr>
+        <tr><td><span data-en>Action-first — "Request payout"</span><span data-zh>動作優先 — 「Request payout」</span></td><td><span data-en>Feature-first — "Payout management module"</span><span data-zh>功能優先 — 「Payout management module」</span></td></tr>
+        <tr><td><span data-en>Calm, second-person — "You can edit this until the event goes live"</span><span data-zh>冷靜、用第二人稱 — 「You can edit this until the event goes live」</span></td><td><span data-en>Hype / urgency — "Don't miss out!"</span><span data-zh>炒作 / 製造急迫感 — 「Don't miss out!」</span></td></tr>
+        <tr><td><span data-en>Honest about limits — "Bundles aren't available in your region yet"</span><span data-zh>對限制誠實 — 「Bundles aren't available in your region yet」</span></td><td><span data-en>Evasive — "Coming soon" with no reason</span><span data-zh>迴避 — 只說「Coming soon」卻不給原因</span></td></tr>
+        <tr><td><span data-en>Conservative on compliance — "Tax docs are estimates; confirm with your advisor"</span><span data-zh>合規上保守 — 「Tax docs are estimates; confirm with your advisor」</span></td><td><span data-en>Over-promising — "We handle all your taxes"</span><span data-zh>過度承諾 — 「We handle all your taxes」</span></td></tr>
+      </tbody></table>
+      <p class="field-label" data-en>Microcopy</p>
+      <p class="field-label" data-zh>Microcopy</p>
+      <ul class="field-list">
+        <li data-en>CTA primary: <code>Create project</code> · <code>Request payout</code> · <code>Publish</code> · <code>Save draft</code></li>
+        <li data-zh>主要 CTA: <code>Create project</code> · <code>Request payout</code> · <code>Publish</code> · <code>Save draft</code></li>
+        <li data-en>CTA secondary: <code>Back</code> · <code>Cancel</code> · <code>Export CSV</code></li>
+        <li data-zh>次要 CTA: <code>Back</code> · <code>Cancel</code> · <code>Export CSV</code></li>
+        <li data-en>Success: "Project saved as draft." · "Payout requested — arrives in 2–3 business days."</li>
+        <li data-zh>成功: 「Project saved as draft.」(已存為草稿)· 「Payout requested — arrives in 2–3 business days.」(已申請提領,2–3 個工作天到帳)</li>
+        <li data-en>Warning: "This product is referenced by 2 live projects. Editing it updates them too."</li>
+        <li data-zh>警告: 「This product is referenced by 2 live projects. Editing it updates them too.」(此商品被 2 個上線中的 project 引用,編輯會一併更新它們)</li>
+        <li data-en>Error: "Couldn't save. Your draft is kept — try again."</li>
+        <li data-zh>錯誤: 「Couldn't save. Your draft is kept — try again.」(無法儲存,草稿已保留,請再試一次)</li>
+        <li data-en>Empty (new): "No projects yet. Create your first to start earning."</li>
+        <li data-zh>空白(全新): 「No projects yet. Create your first to start earning.」(還沒有 project,建立第一個就能開始賺錢)</li>
+        <li data-en>Empty (filtered): "No transactions match these filters. Clear filters to see all."</li>
+        <li data-zh>空白(篩選後): 「No transactions match these filters. Clear filters to see all.」(沒有交易符合這些篩選條件,清除篩選即可看全部)</li>
+        <li data-en>Guidance: "Available = cleared and ready to withdraw. Pending = still in the platform's hold window."</li>
+        <li data-zh>說明: 「Available = cleared and ready to withdraw. Pending = still in the platform's hold window.」(Available = 已結清可提領;Pending = 仍在平台保留期內)</li>
+        <li data-en>Money state pair: "Available <strong>$842.10</strong> · Pending <strong>$1,204.00</strong>"</li>
+        <li data-zh>金額狀態組合: 「Available <strong>$842.10</strong> · Pending <strong>$1,204.00</strong>」</li>
+        <li data-en>Capitalization: sentence case for headings, paragraphs, and buttons.</li>
+        <li data-zh>大小寫: 標題、段落與按鈕一律用 sentence case。</li>
+      </ul>
+      <div class="viz viz--col">
+        <div class="alert alert--row alert--success" style="max-width:480px"><div class="alert__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div><div class="alert__body"><div class="alert__title">Payout requested — arrives in 2–3 business days.</div></div></div>
+        <div class="alert alert--row alert--warning" style="max-width:480px"><div class="alert__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></div><div class="alert__body"><div class="alert__title">This product is referenced by 2 live projects. Editing it updates them too.</div></div></div>
+        <div style="font-family:var(--font-ui);font-size: var(--fs-14);color:var(--foreground)">Available <strong>$842.10</strong> · Pending <strong>$1,204.00</strong></div>
+      </div>
+    </section>
+
+
+    <section class="pillar" id="states">
+      <div><span class="pillar__num">05.3 · Pattern ▸ States &amp; Interaction</span></div>
+      <h2 class="pillar__title"><span data-en>Global interaction defaults.</span><span data-zh>全域互動預設</span></h2>
+      <ul class="field-list">
+        <li data-en><strong>Nav dropdown</strong>: hover-open with a 140ms close delay; click toggles; ESC-to-close. Panel bg uses <code>--background</code>.</li>
+        <li data-zh><strong>Nav dropdown</strong>: hover 開啟,關閉延遲 140ms;點擊切換;按 ESC 關閉。面板背景用 <code>--background</code>。</li>
+        <li data-en><strong>Theme toggle</strong>: light / dark / system cycle, persisted; <code>?theme=</code> one-time override.</li>
+        <li data-zh><strong>Theme toggle</strong>: light / dark / system 循環,會記住;<code>?theme=</code> 可一次性覆寫。</li>
+        <li data-en><strong>Tabs</strong>: single active panel, URL-hash synced. <strong>Chips</strong>: single-select, result count updates on change. <strong>Switch</strong>: 150ms knob slide.</li>
+        <li data-zh><strong>Tabs</strong>: 只有一個作用中面板,與 URL hash 同步。<strong>Chips</strong>: 單選,變動時更新結果數量。<strong>Switch</strong>: 150ms 滑鈕動畫。</li>
+        <li data-en><strong>Lifecycle</strong>: 404 keeps chrome + link to Dashboard; Empty stub for unbuilt routes; Error = inline <code>Alert --row</code> with retry, never blanks loaded data; never toast-only.</li>
+        <li data-zh><strong>Lifecycle</strong>: 404 保留外框 + 提供回 Dashboard 的連結;尚未建好的路由用 Empty stub;Error = 行內 <code>Alert --row</code> 附重試,絕不清空已載入的資料;絕不只用 toast。</li>
+        <li data-en><strong>Motion</strong>: 150–240ms ease-out; entrance animations gated behind reduced-motion.</li>
+        <li data-zh><strong>Motion</strong>: 150–240ms ease-out;進場動畫受 reduced-motion 控制。</li>
+      </ul>
+      <p class="field-label" data-en>Clickable card hover <span class="field-note">(2026-10-20 · one answer site-wide)</span></p>
+      <p class="field-label" data-zh>可點卡片 hover <span class="field-note">（2026-10-20 · 全站同一個答案）</span></p>
+      <ul class="field-list">
+        <li data-en>When the <strong>whole face of a card is one click target</strong> (navigates, opens an editor or a dialog, picks an option), hover = lift <code>--clickable-card-lift</code> (−4px) + fill swaps to <code>--clickable-card-hover-bg</code> (the button hover rung, <code>--control-raise-hover</code>). <strong>No border change, no shadow change.</strong> Under <code>prefers-reduced-motion</code> the card does not move (the fill still changes). A selected card (<code>--active</code>, <code>.is-active</code>, <code>--selected</code>) only lifts and keeps its own selected fill.</li>
+        <li data-zh>卡片<strong>整張臉是一個點擊區</strong>（導頁、開編輯、開彈窗、選一個選項）時，hover ＝ 上浮 <code>--clickable-card-lift</code>（−4px）＋底色換成 <code>--clickable-card-hover-bg</code>（按鈕 hover 階，<code>--control-raise-hover</code>）。<strong>不換邊框、不換陰影。</strong><code>prefers-reduced-motion</code> 時不位移（底色照換）。已選的卡（<code>--active</code>／<code>.is-active</code>／<code>--selected</code>）只上浮、保留自己的已選底色。</li>
+        <li data-en><strong>Consumers (offset + fill)</strong>: <code>.ztor-card--clickable</code>, <code>a.card[href]</code>/<code>button.card</code> (IP Market), <code>.tier-card--clickable</code>, <code>.project-card</code>, <code>.selection-card</code>, <code>.radio-cards .segmented__btn</code>, <code>.kpi--tappable</code>, <code>.vault-ovcard</code>, <code>.vshare__opt</code>, <code>.payout-bank-card</code>, <code>.payout-bank-option</code>, <code>.live-item</code>. <strong>Offset only</strong>: <code>.canvas-start__card</code> (fill stays a film over the photo). Note: <code>js/reveal.js</code> removes <code>.reveal</code>/<code>.is-in</code> 1.4s after a card's entrance, otherwise the entrance rules pin <code>transform</code> and the hover lift never shows.</li>
+        <li data-zh><strong>消費者（位移＋底色）</strong>：<code>.ztor-card--clickable</code>、<code>a.card[href]</code>／<code>button.card</code>（IP Market）、<code>.tier-card--clickable</code>、<code>.project-card</code>、<code>.selection-card</code>、<code>.radio-cards .segmented__btn</code>、<code>.kpi--tappable</code>、<code>.vault-ovcard</code>、<code>.vshare__opt</code>、<code>.payout-bank-card</code>、<code>.payout-bank-option</code>、<code>.live-item</code>。<strong>只吃位移</strong>：<code>.canvas-start__card</code>（底色維持照片上的薄膜）。注意：<code>js/reveal.js</code> 會在卡片進場 1.4 秒後卸掉 <code>.reveal</code>／<code>.is-in</code>，否則進場規則會把 <code>transform</code> 釘死、hover 上浮永遠出不來。</li>
+        <li data-en><strong>Not covered (own hover language)</strong>: list / table rows (<code>.product-list__row</code>, <code>.data-list__row--go</code>, <code>.alert--card[data-go]</code>, <code>.vault-row</code>, <code>.pickup-select__row</code>), buttons / chips / <code>.check-card</code> pills, dashed add/drop tiles (<code>.upload-tile</code>, <code>.cb-add-tile</code>, <code>.payout-bank-card--add</code>), thumbnail galleries (<code>.vault-tile</code>, <code>.work-card</code> moves only its cover), cards with a button inside (<code>.brand-card</code>), the fan-side mirror <code>.fep-shop</code>, and photo-backed items (<code>.canvas-stage__pick</code>, <code>.issue-panel--compact .issue-card</code>).</li>
+        <li data-zh><strong>不套用（各有自己的 hover 語彙）</strong>：清單／表格的列（<code>.product-list__row</code>、<code>.data-list__row--go</code>、<code>.alert--card[data-go]</code>、<code>.vault-row</code>、<code>.pickup-select__row</code>）、按鈕／chip／<code>.check-card</code> 膠囊、虛線的新增／投放格（<code>.upload-tile</code>、<code>.cb-add-tile</code>、<code>.payout-bank-card--add</code>）、縮圖畫廊（<code>.vault-tile</code>、<code>.work-card</code> 只動封面）、卡內另有按鈕的卡（<code>.brand-card</code>）、粉絲端鏡像 <code>.fep-shop</code>、照片上的項目（<code>.canvas-stage__pick</code>、<code>.issue-panel--compact .issue-card</code>）。</li>
+      </ul>
+      <div class="demo" style="gap:var(--sp-16);flex-wrap:wrap;padding-top:var(--sp-12)">
+        <div class="ztor-card ztor-card--clickable" style="width:170px"><div class="ztor-card__title">ztor-card</div><div class="ztor-card__meta">hover me</div></div>
+        <button class="selection-card" type="button" style="width:170px"><span class="selection-card__title">selection-card</span><span class="selection-card__sub">hover me</span></button>
+        <button class="selection-card selection-card--active" type="button" style="width:170px"><span class="selection-card__title">selected</span><span class="selection-card__sub">lifts only</span></button>
+        <div class="card tier-card tier-card--clickable" style="width:170px"><div class="tier-card__head"><h4 class="tier-card__name">tier-card</h4></div></div>
+      </div>
+    </section>
+
+    <section class="pillar" id="dataviz">
+      <div><span class="pillar__num">05.4 · Pattern ▸ Data viz</span></div>
+      <h2 class="pillar__title"><span data-en>Chart conventions.</span><span data-zh>圖表慣例</span></h2>
+      <p class="pillar__intro" data-en>Lives in <code>chart.css</code> (see §4.71). Line chart: default series <code>--primary</code>, comparison <code>--muted-foreground</code> dashed, area fill <code>color-mix(--primary 18%)</code>. Source-breakdown palette: <code>--primary</code> → #000 → <code>--status-success</code> → <code>--status-info</code> → #999. Series rely on legend labels, not color alone.</p>
+      <p class="pillar__intro" data-zh>放在 <code>chart.css</code>(見 §4.71)。折線圖:預設序列用 <code>--primary</code>,對照序列用 <code>--muted-foreground</code> 虛線,區域填色用 <code>color-mix(--primary 18%)</code>。來源拆解的配色:<code>--primary</code> → #000 → <code>--status-success</code> → <code>--status-info</code> → #999。序列靠圖例 label 區分,不只靠顏色。</p>
+    </section>
+
+
+  </main>
+</div>
+<script src="ds-tail.js?v=r2.2"></script>
+</body>
+</html>
