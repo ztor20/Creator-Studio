@@ -294,10 +294,7 @@
       "</dl>" +
       taskSectionHtml(it) +
       grandRowHtml(it) +
-      '<div class="vault-item__actions">' +
-        '<button type="button" class="btn btn--outline btn--sm" data-item-sheet-delete>' +
-          icon("trash-2") + tx("Delete", "刪除") + "</button>" +
-      "</div>";
+"";   /* 刪除鈕 2026-11-09 移到抽屜頁尾 .drawer__foot（pattern 5.1.14 編輯設定），不再放在內容最底下 */
     afterSheetRender(els.itemBody);
     var pr = els.itemBody.querySelector("[data-preview]");
     if (pr) { preview.len = Number(pr.getAttribute("data-len")) || 0; paintPreview(pr); }
@@ -964,7 +961,7 @@
       }).join("") + "</div>";
   }
   function openPlays(f) {
-    openConfirm({ title: L("vault.plays.title"), body: playsBody(f), ok: L("vault.plays.close"), noCancel: true, quiet: true });
+    openConfirm({ title: L("vault.plays.title"), body: playsBody(f), ok: L("vault.plays.close"), noCancel: true, quiet: true, wide: true });
   }
 
   /* 帳號下沒有任何庫房（頁面狀態「無庫房」）：主欄退位，只留建立的引導。 */
@@ -1443,6 +1440,9 @@
     els.cfOk.className = "btn " + (o.danger ? "btn--destructive" : o.quiet ? "btn--outline" : "btn--primary");
     els.cfOk.querySelector("span").textContent = o.ok;
     els.cfCancel.hidden = !!o.noCancel;
+    /* 寬度跟著彈窗類型走（STYLE-DECISIONS Q142）：確認類用窄版；「看細節」（查看／播放人數）用預設寬 */
+    var dlg = els.cf.querySelector(".payout-dialog");
+    if (dlg) dlg.classList.toggle("payout-dialog--narrow", !o.wide);
     confirmOk = o.onOk || null;
     els.cf.hidden = false;
     document.body.classList.add("is-modal-open");
@@ -2109,14 +2109,25 @@
       }
 
       if (e.target.closest("[data-item-sheet-delete]")) {
+        /* 2026-11-09：刪除收不回來，先走破壞性確認（pattern 5.1.11；原本按下就刪） */
         var it = itemById(state.itemId);
-        var f = vault();
-        f.items = f.items.filter(function (x) { return x.id !== state.itemId; });
-        state.itemId = null;
-        els.itemSheet.classList.remove("is-open");
-        els.itemSheet.setAttribute("aria-hidden", "true");
-        renderMain(); renderRail(); renderWall();
-        if (it && window.ztorToast) window.ztorToast.show(tx("Deleted", "已刪除"), { tone: "neutral" });
+        var delId = state.itemId;
+        if (!it) return;
+        window.ztorDialog.confirm({
+          title: tx("Delete “" + V.t(it.name) + "”?", "刪除「" + V.t(it.name) + "」？"),
+          body: tx("It leaves this vault for everyone, including fans who already unlocked it. This can’t be undone.",
+                   "這件內容會從庫房移除，已經解開的粉絲也看不到了。刪除後無法復原。"),
+          okLabel: tx("Delete", "刪除"), danger: true
+        }).then(function (ok) {
+          if (!ok) return;
+          var f = vault();
+          f.items = f.items.filter(function (x) { return x.id !== delId; });
+          state.itemId = null;
+          els.itemSheet.classList.remove("is-open");
+          els.itemSheet.setAttribute("aria-hidden", "true");
+          renderMain(); renderRail(); renderWall();
+          if (window.ztorToast) window.ztorToast.show(tx("Deleted", "已刪除"), { tone: "neutral" });
+        });
       }
     });
 

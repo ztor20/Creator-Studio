@@ -28,7 +28,7 @@
       var id = 'ztor-dlg-' + (++seq);
       var back = document.activeElement;   /* 關掉後焦點還回開啟前的元素（例：發布被擋時先聚焦的錯誤欄位） */
       var wrap = document.createElement('div');
-      wrap.className = 'payout-modal';
+      wrap.className = 'payout-modal payout-modal--top';   /* 從抽屜等浮層裡打開也要在最上面 */
       var okCls = o.danger === 'soft' ? 'btn--soft btn--destructive' : (o.danger ? 'btn--destructive' : 'btn--primary');
       wrap.innerHTML =
         '<section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="' + id + '">' +
