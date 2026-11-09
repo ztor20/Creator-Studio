@@ -39,6 +39,15 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
     });
   };
+  /* 作品定價幣種的選項：全站幣別清單，預設選創作者幣別（D522）。沒載 currency.js 時退回預設五種。 */
+  function curOptions() {
+    var C = window.ztorCurrency;
+    var codes = C ? C.CODES : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
+    var pick = C ? C.CREATOR : 'HKD';
+    return codes.map(function (c) {
+      return '<option value="' + c + '"' + (c === pick ? ' selected' : '') + '>' + esc(C ? C.label(c) : c) + '</option>';
+    }).join('');
+  }
   function enhance(node) {
     if (window.ztorIcons) window.ztorIcons.applyIcons(node);
     if (window.applyI18n) window.applyI18n(node);
@@ -594,10 +603,8 @@
       + '</div>'
       + '<div data-pw-price-body>'
       + '<div class="field mt-16"><div class="field__label" data-i18n="pw.price.currency">' + esc(T('pw.price.currency', 'Currency')) + '</div>'
-      + '<div class="segmented" data-pw-currency style="max-width:220px">'
-      + '<button class="segmented__btn segmented__btn--active" type="button" data-pw-cur="HKD">HKD</button>'
-      + '<button class="segmented__btn" type="button" data-pw-cur="TWD">TWD</button>'
-      + '</div></div>'
+      /* 選項＝全站幣別清單（主規格 §7.15、D522：預設五種＋Admin 新增），預設選創作者幣別。 */
+      + '<select class="select" data-pw-currency style="max-width:var(--w-220)">' + curOptions() + '</select></div>'
       + '<div data-pw-quality-list></div>'
       + '<button class="btn btn--outline btn--add mt-16" type="button" data-pw-add-quality><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.price.add">'
       + esc(T('pw.price.add', 'Add a quality')) + '</span></button>'
@@ -622,14 +629,13 @@
       e.preventDefault(); paid.classList.toggle('switch--on'); togglePaid();
     });
     function sym() {
-      var a = curWrap.querySelector('.segmented__btn--active');
-      return a && a.dataset.pwCur === 'TWD' ? 'NT$' : 'HK$';
+      var C = window.ztorCurrency;
+      return C ? C.symbol(curWrap.value) : curWrap.value;
     }
-    curWrap.addEventListener('click', function (e) {
-      var b = e.target.closest('.segmented__btn');
-      if (!b) return;
-      curWrap.querySelectorAll('.segmented__btn').forEach(function (x) { x.classList.toggle('segmented__btn--active', x === b); });
+    curWrap.addEventListener('change', function () {
       s.querySelectorAll('[data-pw-cur-sym]').forEach(function (x) { x.textContent = sym(); });
+      emit();
+      if (opts.onChange) opts.onChange();
     });
     var usedQ = function () {
       return Array.prototype.slice.call(list.querySelectorAll('[data-pw-quality]')).map(function (el) { return el.dataset.pwQuality; });
@@ -675,11 +681,7 @@
       if (!w) return;
       paid.classList.toggle('switch--on', !!w.paid);
       togglePaid();
-      if (w.currency) {
-        curWrap.querySelectorAll('.segmented__btn').forEach(function (b) {
-          b.classList.toggle('segmented__btn--active', b.dataset.pwCur === w.currency);
-        });
-      }
+      if (w.currency) curWrap.value = w.currency;
       var qs = w.qualities || [];
       if (!qs.length) return;
       /* 畫質清單是可增可刪的，還原時整份換掉才不會留下當初刪掉的那一列。 */
@@ -853,7 +855,7 @@
     };
     var tagsBox = q('[data-pw-tags]');
     var tags = (tagsBox && tagsBox.closest('.form-section') && tagsBox.closest('.form-section')._tags) || [];
-    var curBtn = q('[data-pw-currency] .segmented__btn--active');
+    var curSel = q('[data-pw-currency]');
     var paidEl = q('#pw-paid');
     return {
       file: { name: fileEl ? ((fileEl.querySelector('.upload-tile__filename') || {}).textContent || '') : '', state: stateOf(fileEl) },
@@ -889,7 +891,7 @@
       tags: tags.slice(),
       age: optKey('#pw-age'),
       paid: !!paidEl && paidEl.classList.contains('switch--on'),
-      currency: curBtn ? curBtn.dataset.pwCur : '',
+      currency: curSel ? curSel.value : '',
       qualities: qa('[data-pw-quality]').map(function (c) {
         var v = Array.prototype.slice.call(c.querySelectorAll('input')).map(function (i) { return String(i.value || '').trim(); });
         return { name: c.dataset.pwQuality, price: v[0] || '', popcorn: v[1] || '', rent: v[2] || '', watch: v[3] || '' };

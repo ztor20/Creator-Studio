@@ -102,6 +102,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
             <input class="input" type="datetime-local" data-pks-end value="2026-07-12T17:00">
           </label>
         </div>
+        <span class="field__hint" data-i18n="pks.f.time.hint">Only used to show the session status. It doesn’t affect scanning.</span>
         <span class="field__hint" data-pks-time-err hidden style="color:var(--destructive)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
         <label class="field mt-16" data-pks-onsite>
           <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
@@ -128,7 +129,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         </label>
         <!-- D499（5.1.5.12 F5）：掃碼領點沒有 scanner 網址／密碼與取貨說明，改成啟用／停用開關（建立時預設啟用〔推導〕） -->
         <div class="control-row mt-16" data-pks-lp data-feat="O43" hidden>
-          <div><div class="control-row__main" data-i18n="pk.lp.f.enabled">Enabled</div><div class="control-row__sub" data-i18n="pk.lp.f.enabled.sub">When disabled, no QR code in this session gives points, whatever the time.</div></div>
+          <div><div class="control-row__main" data-i18n="pk.lp.f.enabled">Enabled</div><div class="control-row__sub" data-i18n="pk.lp.f.enabled.sub">When disabled, no QR code in this session gives points.</div></div>
           <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-pks-enabled aria-label="Enabled" data-i18n-aria-label="pk.lp.f.enabled"></div>
         </div>
       </section>
