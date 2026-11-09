@@ -561,15 +561,14 @@
           </div>
           <!-- D463（2026-10-21，最終版 S105）：所有組合包（純商品、含票券）都用同一份七種條件，是組合包自己的一組——不跟隨所含門票、不沿用成員；
                限購併進來成為其中一種（以組計）。JS 在最終版把條件清單畫進 [data-bd-conds]（所有組合包都顯示）、收起跟隨所含門票那一列與獨立的限購列；
-               release2.3 照舊（含門票＝跟隨、純商品＝限時購買／限粉絲分級購買、限購另一列）。 -->
+               release2.3 照舊（含門票＝跟隨、純商品＝限粉絲分級購買（D524 起沒有限時購買）、限購另一列）。 -->
           <!-- 2026-10-21（UI-CHANGES 二百八十二）：購買條件與限購整併成一個群組 .rules-group（ds-components/rules-group.css，同建立組合、建立活動組合包彈窗）：
                條件列（含門票＝跟隨所含門票；純商品＝條件清單）→ 限購列 → 底部一句彙總；原本的「誰可以買」小標與兩個獨立線框退場。 -->
           <div class="rules-group" data-bd-rules-group>
             <div class="rules-group__row" data-tb-rules-sec hidden data-feat="S63">
               <div data-tb-host="rules" data-rg-slot></div>
             </div>
-            <!-- D400：純商品組合包也有購買條件（限時購買／限粉絲分級購買），預設不限；js/purchase-conds.js 條件清單（只開這兩種），
-                 期間須在組合包自己的上架區間內〔推導〕。檢視態畫成鎖定的條件卡（沒有條件時一句「任何人都買得到」） -->
+            <!-- D400：純商品組合包也有購買條件，預設不限；D524（2026-11-09）起 release 版只剩限粉絲分級購買（S82，收起時整列不畫），限時購買拿掉；js/purchase-conds.js 條件清單。檢視態畫成鎖定的條件卡（沒有條件時一句「任何人都買得到」） -->
             <div class="rules-group__row" data-bd-conds hidden>
               <div class="rules-group__k"><span class="rules-group__t" data-i18n="rg.buy">Who can buy</span></div>
               <div class="rules-group__body" data-bd-conds-host></div>
@@ -772,7 +771,7 @@
 <script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292 第 3 批：活動組合包（含票券成員）的資料源，products-store 查不到 id 時合流查這裡 -->
 <script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁組合包取貨場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
 <script src="js/purchase-limits.js?v=r2.2"></script>
-<script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（限時購買／限粉絲分級購買） --><!-- D398：組合包限購（預設取成員交集、覆寫、擋存），與商品、建立組合、活動門票共用 -->
+<script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（D524 起沒有限時購買） --><!-- D398：組合包限購（預設取成員交集、覆寫、擋存），與商品、建立組合、活動門票共用 -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的時間層級與購買條件（與建立活動第 6 步、建立組合共用） -->
 <script src="partials/stepper.js?v=r2.2"></script><!-- .zstep 步進行為（成員數量） -->
 <script src="js/link-field.js?v=r2.2"></script>
@@ -1122,7 +1121,7 @@
       rules: (seed && seed.rules) ? JSON.parse(JSON.stringify(seed.rules)) : null,
       /* D398：組合包的限購（所有組合包）。null＝不限（預設）、{ person }＝組合包自己設的上限（以組計；D427 起只剩每人總限購；D456 起不繼承成員）。
          舊資料（D342 的 rules.cap='cap'）視為組合包自己設的值 */
-      /* D400：純商品組合包的購買條件（{ conds: { buyTime?, buyTier? } }，預設不限）；含門票的照 rules（D342） */
+      /* D400：純商品組合包的購買條件（{ conds: { buyTier? } }，D524 起沒有 buyTime，預設不限）；含門票的照 rules（D342） */
       conds: (seed && seed.conds) ? JSON.parse(JSON.stringify(seed.conds)) : { conds: {} },
       limits: (seed && seed.limits !== undefined) ? (seed.limits ? JSON.parse(JSON.stringify(seed.limits)) : null)
         : (window.ztorPurchaseLimits ? window.ztorPurchaseLimits.fromRules(seed && seed.rules) : null)
@@ -1931,7 +1930,7 @@
       /* 節標題：含門票（且購買條件在目前版本內）＝「購買條件與限購」、兩組各有小標；純商品＝「限購」 */
       const d = window.ztorDevState;
       /* D400：所有組合包都有購買條件——純商品的在 [data-bd-conds]；含門票的（S63）不在版本內時節標題只剩「限購」 */
-      const buyOn = !hasTix || !d || !d.featOn || d.featOn('S63');
+      const buyOn = hasTix ? (!d || !d.featOn || d.featOn('S63')) : (!PC || PC.usable(condsCtx));   /* D524：純商品組合包在 release 版沒有可用條件時，節標題只剩「限購」 */
       renderConds(hasTix, editing);
       const title = document.querySelector('[data-bd-rules-title]');
       if (bdUni()) {   /* D463（最終版 S105）：節標題＝購買條件；限購是條件清單裡的一種，不另畫一列 */
@@ -1953,15 +1952,15 @@
       if (window.bdStockLockApply) window.bdStockLockApply();   /* D438：上架中重畫限購後補鎖 */
     }
     window.bdRenderLimits = renderLimits;
-    /* 純商品組合包的購買條件（D400）：編輯態掛 purchase-conds 的條件清單（只開限時購買、限粉絲分級購買），檢視態畫鎖定的條件卡 */
+    /* 純商品組合包的購買條件（D400；D524 起沒有限時購買）：編輯態掛 purchase-conds 的條件清單（release 版只開限粉絲分級購買），檢視態畫鎖定的條件卡 */
     const PC = window.ztorPurchaseConds;
     let bdCondsApi = null;
     const featOnB = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
-    const condsCtx = { types: ['buyTime', 'buyTier'], emptyKey: 'pl.cond.empty', featOn: featOnB };
+    const condsCtx = { types: ['buyTier'], emptyKey: 'pl.cond.empty', featOn: featOnB };   /* D524：release 版純商品組合包沒有限時購買，只剩限粉絲分級（S82）；S82 收起時整列不畫（PC.usable） */
     /* D463（2026-10-21，最終版 S105）：七種條件、組合包自己的一組，含票券的也一樣（不跟隨所含門票）；限購＝「限購」條件（以組計）。
-       uCtx 不給 types＝七種全開；粉絲分級三種照舊掛 S82。讀數以組合包售價回推 %。 */
+       D524（2026-11-09）：uCtx.types＝PC.UNI_TYPES（六種，沒有限時購買）；粉絲分級三種照舊掛 S82。讀數以組合包售價回推 %。 */
     const bdUni = () => !!PC && !!PC.uniOn && PC.uniOn();
-    const uCtx = { capUnit: 'set', noEmpty: true, featOn: featOnB,
+    const uCtx = { capUnit: 'set', noEmpty: true, featOn: featOnB, types: PC && PC.UNI_TYPES,
       pctReadout: c => PC.pctText(c, [window.bdFinalNow ? window.bdFinalNow() : 0]) };
     /* 既有資料轉換〔推導，D463 決定 5〕：改版前跟隨所含門票（或已另設）的組合包，把當下推導出來的分級與限時間寫成自己的條件；
        原本的限購值轉成「限購」條件。只做一次（_uSeeded），之後以條件清單為準。換算本體在 js/purchase-conds.js 的 legacyConds（bundle-editor 共用）。
@@ -2041,8 +2040,8 @@
         return;
       }
       if (host._bdUni) { host._bdUni = false; PC.release(host); bdCondsApi = null; const kL = box.querySelector('.rules-group__k'); if (kL) kL.hidden = false; }   /* 版本從最終版切走：收掉最終版畫的那一份 */
-      box.hidden = hasTix;
-      if (hasTix) { bdCondsApi = null; return; }
+      box.hidden = hasTix || !PC.usable(condsCtx);   /* D524：沒有任何可用條件（release 版 S82 收起）時整列不畫 */
+      if (box.hidden) { bdCondsApi = null; PC.release(host); return; }
       if (editing) {
         if (!bdCondsApi) bdCondsApi = PC.mount(host, { rules: bundleModel.conds, scope: 'bundle', ctx: condsCtx, times: bdEt, tr: bdTr,
           onChange: r => { bundleModel.conds = r; bdSyncRulesSum(); renderBdSettingsOverview(); } });
@@ -2062,8 +2061,6 @@
     /* 群組底部一句彙總（2026-10-21）：購買條件一句讀數＋限購。含門票＝跟隨所含門票（或另設後的設定），版本沒開 S63 時沒有這一列；純商品＝條件清單的現況 */
     function bdCondsLine() {
       const raw = bundleModel.conds || {}, cs = raw.conds || raw, parts = [];
-      const rng = x => (x && (x.from || x.to)) ? ' ' + String(x.from || '…').replace('T', ' ') + ' – ' + String(x.to || '…').replace('T', ' ') : '';
-      if (cs.buyTime) parts.push(T('d.cond.buyTime', 'Sales window') + rng(cs.buyTime));
       if (cs.buyTier) parts.push(T('d.cond.buyTier', 'Fan tier only'));
       return parts.length ? parts.join(' · ') : T('ce.rule.any', 'No limit');
     }
@@ -2074,7 +2071,7 @@
       if (bdUni()) { box.querySelectorAll('[data-rg-sum]').forEach(el => { el.textContent = T('pc.sum', 'In effect: {buy}.').replace('{buy}', PC.summary(bundleModel.conds, 'set')); }); return; }
       let buy;
       if (hasTix) { const c = tbCtx(); buy = (c && featOnB('S63')) ? TB.buyLine(bundleModel, c.def, T) : null; }
-      else buy = bdCondsLine();
+      else buy = (PC && PC.usable(condsCtx)) ? bdCondsLine() : null;
       PL.syncSum(box, buy, bundleModel.limits, T);
     }
     window.bdSyncRulesSum = bdSyncRulesSum;

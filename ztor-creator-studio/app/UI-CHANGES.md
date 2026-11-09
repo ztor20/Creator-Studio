@@ -15,6 +15,21 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-09（四百九十）· 商品與組合包的購買條件拿掉「限時購買」（C 撤除 · D524）
+
+**標籤**：release2.4
+
+限時購買和開賣時間重複，使用者裁決（2026-11-09）：商品與組合包的可買時間只看上架與開賣設定；活動門票保留七種，早鳥與分階段開賣不動。
+
+- `js/purchase-conds.js`：新增 `UNI_TYPES`（六種，沒有 `buyTime`）與 `usable(ctx)`（依 `ctx.types`＋`ctx.featOn` 回報有沒有任何可加的條件）；`legacyConds()` 不再把舊資料的限時購買轉進組合包條件〔推導〕。門票的呼叫端不傳 `types`，行為不變。
+- 最終版（S105）：`create-product.html`、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`、`js/bundle-editor.js`（建立活動第 5 步組合包彈窗）的條件清單改傳 `UNI_TYPES`，「新增條件」選單由七種變六種。
+- release 版純商品組合包：`create-bundle.html`、`bundle-detail.html` 的條件清單只剩「限粉絲分級購買」（S82）。release2.3／release2.4 的 S82 收起，沒有任何可用條件時 `usable()` 回 false，整列（「Who can buy」標題、清單、新增條件鈕）不畫；建立組合包整節一起收，組合包細節頁的節標題與彙總句只剩「限購」。
+- `js/products-store.js`：兩個純商品組合包（`roadie-set`、`wish-you-good-life-four-piece`）原示範的限時購買移除，改預設不限；`docs/示範資料索引.md` 同步。`js/events-store.js` 的 `buyTime` 全是門票規則，保留。
+- `feature-scope-map.md`：S105 說明「七種」改「六種（沒有限時購買）」；S104（門票限時購買）不變。`ds-specs/4.227-condition-list.md` 補 `UNI_TYPES`／`usable()`。
+- release2.3 凍結版含此區塊、尚未搬。規格由另一邊同步（D524），規則手冊另有人改，本筆不動。
+
+---
+
 ## 2026-11-09（四百八十九）· 購買條件的「新增條件」下拉不再被外框切掉（B 反饋導入）
 
 **標籤**：release2.4
