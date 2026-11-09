@@ -127,6 +127,121 @@
 }</pre></details>
     </section>
 
+    <section class="pillar" id="appendix-c">
+      <div><span class="pillar__num">Appendix C</span></div>
+      <h2 class="pillar__title"><span data-en>Data &amp; behavior modules</span><span data-zh>資料與行為模組</span></h2>
+      <p class="pillar__intro" data-en>JS modules with no look of their own: they own values or behavior that screens read. They are not components (nothing to place on a page), so they live here instead of Pillar 4. Moved here 2026-11-09.</p>
+      <p class="pillar__intro" data-zh>沒有自己外觀的 JS 模組：擁有的是值或行為，畫面從它們讀資料。它們不是元件（沒有東西可以放到頁面上），所以放在附錄、不放 Pillar 4。2026-11-09 移來。</p>
+<section class="sub" id="work-taxonomy">
+  <div class="sub__head">
+    <h3 class="sub__title">4.124 Work taxonomy</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>The one list behind every genre picker and every age-rating select on the site (spec §7.1.2 · §7.11). It is a data module: it owns values, not looks. Before it existed the same film could show three different age ratings on three screens.</p>
+  <p class="sub__desc" data-zh>站上每一個題材選擇器與年齡分級選單背後的同一份清單（規格 §7.1.2、§7.11）。它是資料模組——擁有的是值，不是外觀。在它之前，同一部片可以在三個畫面顯示三個不同的分級。</p>
+  <p class="field-label" data-en>The values it serves <span class="field-note">(live — this page only writes the two empty shells below; the module fills them, so the list here can never fall out of date)</span></p>
+  <p class="field-label" data-zh>值域一覽 <span class="field-note">（真的由模組填的：本頁只寫下面兩個空殼，所以這裡列出的值不會過期）</span></p>
+  <div class="demo"><div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px">
+    <div>
+      <div class="field__label" data-en>Genres · 21 values, multi-select</div><div class="field__label" data-zh>題材 · 21 個值、可複選</div>
+      <div class="chip-group" data-taxonomy-genres></div>
+    </div>
+    <div>
+      <div class="field__label" data-en>Age rating · 6 values, single select, first is the default</div><div class="field__label" data-zh>年齡分級 · 6 個值、單選，第一個是預設值</div>
+      <select class="select" style="max-width:280px" data-taxonomy-age aria-label="Age rating"></select>
+    </div>
+  </div></div>
+  <p class="sub__desc" data-en>There is no interaction demo beyond toggling a chip, because the module has no behaviour of its own — the only thing it does at runtime is fill these shells and toggle the selected state. Everything visual belongs to <a href="design-system-components-basic.html#chip">Chip</a> and <a href="design-system-components-basic.html#input">Select</a>.</p>
+  <p class="sub__desc" data-zh>除了點選 chip 之外沒有互動可展示，因為這支模組沒有自己的行為——執行期只做兩件事：把空殼填好、切換選取狀態。看得到的部分都屬於 <a href="design-system-components-basic.html#chip">Chip</a> 與 <a href="design-system-components-basic.html#input">Select</a>。</p>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> It emits </span><span data-zh> 它產出的是 </span><code>.chip</code> / <code>.select</code> <span data-en>markup only.</span><span data-zh>的 markup。</span></p>
+    <p class="field-text"><strong data-en>Auto-wiring</strong><strong data-zh>就地接線</strong>：<code>&lt;select data-taxonomy-age="pw.age.13"&gt;</code> 與 <code>&lt;div class="chip-group" data-taxonomy-genres&gt;</code> 在載入時就被填好、chip 開關以委派綁定，宿主頁不必寫 JS（本卡的展示走的就是這條路）。</p>
+    <p class="field-text"><code>window.ZtorWorkTaxonomy.GENRES</code>（21 個鍵名尾段）／<code>AGES</code>（6 個完整 i18n key，順序即顯示順序）／<code>genreKey(g)</code>／<code>ageOptionsHtml(selected)</code>／<code>genreChipsHtml(attr)</code>／<code>hydrate(root)</code>。顯示文字來自 <code>js/i18n.js</code>。沒有載 i18n 的頁面（例如本頁）吃退路：年齡分級有內建英文字樣，題材則退回鍵名尾段（<code>drama</code>、<code>tvmovie</code>…），所以上面那排 chip 看到的是值本身、不是介面上的用字。</p>
+    <p class="field-text"><code>js/work-taxonomy.js</code>。消費頁：<code>publish-work.html</code>、<code>create-project.html</code>、<code>project-detail.html</code>（公開資訊的年齡分級）。載入順序：必須早於 <code>partials/work-fields.js</code> 與 <code>js/zselect.js</code>。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="archived-gate">
+  <div class="sub__head">
+    <h3 class="sub__title">4.202 Archived gate</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Makes an archived detail page read-only at the event level (spec §7.14 “Archived · No delete”, D284 / D288). Each detail page already hides or disables its edit entry points; this module is the second line — while the page root carries <code>data-archived</code>, every data-changing control (inputs, switches, segmented buttons, radio lists, chip ✕, the film picker’s add / remove, upload tiles, the private-link reset) is intercepted in the capture phase before any page handler runs. Navigation and viewing stay untouched: links, tabs, section nav, disclosure handles, the confirm dialog and whatever the page allows explicitly (the Unarchive button — since 2026-09-22 / D298 the archived page's only action, which returns the item to Unlisted). Nothing is drawn — the visible read-only cues are the existing <a href="design-system-components-basic.html#info-banner">info banner</a>, locked <a href="design-system-components-forms.html#listing-controls">listing controls</a> and hidden actions.</p>
+  <p class="sub__desc" data-zh>把已封存的細節頁在事件層收成唯讀（規格 §7.14「封存與不可刪除」，D284／D288）。每個細節頁本來就會藏掉或停用編輯入口；本模組是第二道——頁面根節點帶 <code>data-archived</code> 時，所有會改資料的控件（輸入格、開關、分段按鈕、單選清單、chip 的 ✕、選片器的加入／移除、上傳格、非公開連結的重置）在 capture 階段就被攔下、到不了頁面的 handler。導覽與查看不受影響：連結、分頁、章節導覽、展開把手、確認彈窗，以及頁面明確放行的（「解除封存」鈕——2026-09-22 · D298 起已封存頁唯一的動作，按下回到已下架）。它不畫任何東西——看得見的唯讀提示仍是既有的 <a href="design-system-components-basic.html#info-banner">info banner</a>、鎖定的 <a href="design-system-components-forms.html#listing-controls">listing controls</a> 與收起的動作。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — the wrapper carries <code>data-archived</code>; toggle it to see the gate open and close)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的由模組守著：外框帶 <code>data-archived</code>，切換看閘門開關）</span></p>
+  <div class="demo">
+    <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:var(--sp-12)" data-ds-gate data-archived>
+      <div class="info-banner"><i data-lucide="archive" class="ztor-icon info-banner__icon"></i><span data-en>Archived — read-only. Unarchiving returns it to Unlisted; settings are kept.</span><span data-zh>已封存：整頁唯讀，解除封存後回到已下架、設定照舊保留。</span></div>
+      <div class="control-row"><div class="control-row__main"><span data-en>Show in shop</span><span data-zh>顯示於商店</span></div><div class="switch switch--on" role="switch" tabindex="0" aria-checked="true" data-ds-gate-switch></div></div>
+      <input class="input" value="Tour zine vol. 2" aria-label="Name">
+      <div data-ds-gate-filmpicker></div>
+      <div style="display:flex;gap:var(--sp-8);align-items:center">
+        <button class="btn btn--primary" type="button" data-ds-gate-unarchive data-archived-allow><i data-lucide="archive-restore" class="ztor-icon"></i><span data-en>Unarchive</span><span data-zh>解除封存</span></button>
+        <span class="field__hint" data-ds-gate-log data-en>Try the switch or the field — nothing changes while archived.</span><span class="field__hint" data-ds-gate-log data-zh>試著切開關或改欄位：封存中什麼都不會變。</span>
+      </div>
+    </div>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own, draws nothing.</strong><strong data-zh>無自帶 CSS、不畫任何東西。</strong> <code>window.ZtorArchivedGate.install(rootEl, { block?: string, allow?: string }) → { isActive() }</code>。<span data-en>The check is live — the gate reads <code>rootEl.hasAttribute('data-archived')</code> on every event, so archiving and relisting need no re-install. <code>block</code> extends the default blocked selectors, <code>allow</code> extends the default pass-through ones; <code>allow</code> wins. Also honours <code>[data-archived-allow]</code> on any element.</span><span data-zh>判斷是即時的——每個事件都重讀 <code>rootEl.hasAttribute('data-archived')</code>，封存／解除封存不必重裝。<code>block</code> 追加要擋的選擇器、<code>allow</code> 追加放行的；放行優先。任何元素標 <code>[data-archived-allow]</code> 也放行。</span></p>
+    <p class="field-text"><span data-en>Default block: </span><span data-zh>預設擋：</span><code>input, textarea, select, [contenteditable], .switch, .segmented__btn, .radio-list__item, .radio-card, .zcheck, .chip__remove, [data-fp-add], [data-fp-remove], .tag-input__entry, .upload-tile, [data-upload], [data-linkf-reset]</code>。<span data-en>Default allow: </span><span data-zh>預設放行：</span><code>a, summary, [role=tab], .tabs__item, .section-nav__item, [data-tab-jump], [data-rowdis], .leave-dialog, [data-archived-allow]</code>。<span data-en>Events: click · keydown (Enter / Space) · beforeinput · input · change, all capture-phase, <code>stopImmediatePropagation</code> + <code>preventDefault</code>.</span><span data-zh>事件：click・keydown（Enter／Space）・beforeinput・input・change，一律 capture，<code>stopImmediatePropagation</code>＋<code>preventDefault</code>。</span></p>
+    <p class="field-text"><code>partials/archived-gate.js</code>。消費頁：<code>product-detail.html</code>（root＝<code>.main</code>，追加擋逐列「⋯」的上架開關與鎖定、選項編輯器；放行「解除封存」與預覽）、<code>bundle-detail.html</code>（追加擋鎖定分配的按鈕）、<code>auction-detail.html</code>（只用預設清單）。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="loyalty-settings">
+  <div class="sub__head">
+    <h3 class="sub__title">4.249 Loyalty settings</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Platform Loyalty Settings (spec 5.1.0.8) saves its values here, and every page that shows tiers or fan KPIs reads them: custom tier names, the minimum loyalty points (S_floor), top %, and the Active / At-risk / Recent-points windows. In the prototype the values live in this browser only.</p>
+  <p class="sub__desc" data-zh>平台忠誠點數設定（規格 5.1.0.8）把值存在這裡，凡是顯示分級或粉絲 KPI 的頁都照著讀：自訂分級名稱、最低忠誠點數（S_floor）、前 % 名、活躍／流失風險／入帳三個視窗。原型裡這些值只存在這台瀏覽器。</p>
+  <p class="field-label" data-en>Values in effect <span class="field-note">(live — filled by the module; “saved” means someone changed it on Platform Loyalty Settings)</span></p>
+  <p class="field-label" data-zh>目前生效的值 <span class="field-note">（模組當場填；「已儲存」代表在平台忠誠點數設定改過）</span></p>
+  <div class="demo"><div style="width:100%;max-width:640px"><table class="ztor-table"><thead><tr><th data-en>Setting</th><th data-zh>設定</th><th data-en>Default</th><th data-zh>預設</th><th data-en>In effect</th><th data-zh>生效值</th></tr></thead><tbody data-ds-loyalty></tbody></table></div></div>
+  <p class="sub__desc" data-en>No interaction demo: the module has no behaviour of its own. Editing happens on Platform Loyalty Settings; the change-log card there has a prototype-only “Reset to defaults”.</p>
+  <p class="sub__desc" data-zh>沒有互動可展示：這支模組沒有自己的行為。編輯在平台忠誠點數設定做；那頁修改紀錄卡底部有原型專用的「還原預設」。</p>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong></p>
+    <p class="field-text"><code>window.ztorLoyalty.get()</code>（生效值：<code>KA</code>／<code>gamma</code>／<code>pts</code>／<code>topPct</code>／<code>sFloor</code>／<code>grace</code>／<code>dormancy</code>／<code>activeDays</code>／<code>riskDays</code>／<code>recentDays</code>／<code>names</code>／<code>switches</code>）、<code>DEFAULTS</code>、<code>raw()</code>、<code>save(raw)</code>、<code>reset()</code>、<code>tierName(tier)</code>、<code>inputKey(label, field)</code>；存檔與還原都會發 <code>ztor:loyalty-changed</code>。localStorage 鍵 <code>ztor.loyaltySettings</code>（JSON：<code>{ values, names, switches }</code>），讀寫都包 try/catch，讀不到就用預設。</p>
+    <p class="field-text"><strong data-en>i18n hook</strong><strong data-zh>翻譯掛勾</strong>：註冊 <code>window.ztorI18nHook</code>，<code>js/i18n.js</code> 的 <code>t()</code> 先問它——分級名稱的鍵（<code>fans.tier.*</code>、<code>tier-settings.tier.*</code>…）有自訂名稱就回自訂名稱（中英文介面都顯示同一個字）；字串裡的 <code>[[token|預設]]</code>（<code>floor</code>、<code>p1</code>–<code>p3</code>、<code>active</code>、<code>risk</code>、<code>recent</code>、<code>dormancy</code>、<code>tier.inner</code>…）換成生效值，沒載模組的頁顯示預設。</p>
+    <p class="field-text"><code>js/loyalty-settings.js</code>。寫入：<code>admin-platform-loyalty.html</code>。讀取：<code>fans-crm.html</code>、<code>fan-detail.html</code>、<code>media-vault.html</code>、<code>media-vault-popup.html</code>、<code>e-shop.html</code>（經 <code>js/fans-roster.js</code>／<code>js/tier-population.js</code>）、<code>fans-guide.html</code>、<code>tier-settings.html</code>。載入順序：早於 <code>js/fans-roster.js</code>。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="fans-roster">
+  <div class="sub__head">
+    <h3 class="sub__title">4.250 Fans roster</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>One sample fan population (1,340 fans, fixed seed) with a points ledger per fan. Points, last valid action and recent revenue come from each ledger; tier, rank, status and every Fans KPI are then worked out from the Loyalty settings above, so the roster, the KPI cards, the at-risk banner, fan detail and the Media Vault tier counts always agree.</p>
+  <p class="sub__desc" data-zh>一個示範粉絲母體（1,340 位、固定種子），每位粉絲各有一份點數明細。點數、最近一次有效動作、近期營收都由明細算；分級、名次、狀態與粉絲管理的每個 KPI 再依上一張卡的設定算出，所以名冊、KPI 卡、流失風險橫幅、粉絲詳情、媒體庫的分級人數永遠對得上。</p>
+  <p class="field-label" data-en>What it serves right now <span class="field-note">(live)</span></p>
+  <p class="field-label" data-zh>目前算出的數字 <span class="field-note">（模組當場填）</span></p>
+  <div class="demo"><div style="width:100%;max-width:640px"><table class="ztor-table"><thead><tr><th data-en>Figure</th><th data-zh>數字</th><th data-en>Value</th><th data-zh>值</th></tr></thead><tbody data-ds-roster></tbody></table></div></div>
+  <p class="sub__desc" data-en>Sample data, not product data: in production the Loyalty engine supplies scores, ranks and tier floors and the back office does not compute them.</p>
+  <p class="sub__desc" data-zh>這是示範資料，不是產品資料：正式版的分數、名次、各級最低分由 Loyalty 引擎提供，後台不自算。</p>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong></p>
+    <p class="field-text"><code>window.ztorFans.list</code>（依名次）／<code>get(id)</code>／<code>ledger(id)</code>（新到舊；分錄 <code>{ code, cat, title, sub, t, amount, pts, cap, feat }</code>）／<code>progress(fan, points)</code>／<code>status(fan)</code>／<code>summary(over)</code>（<code>{ total, active, risk, riskGroups, revenue, avg, tiers }</code>，<code>over</code> 是預覽用的暫時設定）／<code>tierMin(tier)</code>／<code>settings()</code>／<code>daysAgo(t)</code>；getter <code>S_FLOOR</code>／<code>RISK_DAYS</code>／<code>ACTIVE_DAYS</code>／<code>RECENT_DAYS</code>。明細點數照入帳當時（規格預設）的 K_A、γ 與發分值算，改設定不回算（5.1.0.8 F6）。</p>
+    <p class="field-text"><code>js/tier-population.js</code>（<code>window.ztorTierPopulation</code>）把各級活躍人數交給媒體庫與電子商店；沒載這支時退回 13／115／257／898。</p>
+    <p class="field-text"><code>js/fans-roster.js</code>。消費頁：<code>fans-crm.html</code>、<code>fan-detail.html</code>；經 <code>js/tier-population.js</code>：<code>media-vault.html</code>、<code>media-vault-popup.html</code>、<code>e-shop.html</code>。載入順序：<code>js/loyalty-settings.js</code> → 本檔 → <code>js/tier-population.js</code>。</p>
+  </div>
+  </details>
+</section>
+    </section>
+
     <section class="pillar" id="impl">
       <div><span class="pillar__num">Implementation Notes</span></div>
       <h2 class="pillar__title"><span data-en>Technical-stack landing.</span><span data-zh>技術堆疊總覽</span></h2>
@@ -155,8 +270,8 @@
       <p class="sub__desc" data-zh>外框的 <code>overflow-x:auto</code> 連縱向一起裁，列尾選單往下長出去就只剩半截（最後一列必中，2026-08-20 使用者回報）。<code>.admin-table-wrap--menu</code> 放行 overflow（外框與 <code>.ztor-table</code> 兩層都要——表格自己也是 <code>overflow:hidden</code>，只放行外框選單仍然出不來），並把 840px 最小寬歸零——那個寬度是給欄位多得多的 Admin IP 銀行表用的，三欄的清單硬留著只會逼出一條沒必要的橫捲。overflow 放行後外框圓角不再 clip 內容，所以首列表頭與末列自己補圓角貼齊內緣。做法沿用 <code>variant-table-wrap--menu</code>。消費頁：商店設定的尺寸指南與優惠碼兩張清單。</p>
       <p class="sub__desc" data-en>ztorUI reskin (2026-08-28 Wave 3 · B-grade sweep fix): <code>.admin-table-wrap</code> now uses the glass card recipe (<code>--ztu-glass-bg</code> + <code>backdrop-filter: blur(var(--ztu-blur-glass))</code> + 1px <code>--border</code> + <code>--shadow-card</code>/<code>--shadow-edge-top</code>, same formula as <code>.card</code>/Q77), replacing the old solid <code>--card</code> fill with a single <code>--shadow-card</code>. The nested <code>.ztor-table</code> keeps its own header/hover tokens unchanged — verified readable on admin-ip-bank, admin-platform-fees, admin-video-review and store-settings.</p>
       <p class="sub__desc" data-zh>ztorUI 換裝（2026-08-28 Wave 3 B 級巡檢補修）：<code>.admin-table-wrap</code> 外框改玻璃配方（<code>--ztu-glass-bg</code> ＋ <code>backdrop-filter: blur(var(--ztu-blur-glass))</code> ＋ 1px <code>--border</code> ＋ <code>--shadow-card</code>/<code>--shadow-edge-top</code>，同 <code>.card</code>／Q77 配方），取代原本實色 <code>--card</code> 底＋單層 <code>--shadow-card</code>。巢狀 <code>.ztor-table</code> 的表頭／hover token 不變——已在 admin-ip-bank、admin-platform-fees、admin-video-review、store-settings 四頁實測可讀。</p>
-      <p class="field-text" data-en>Style source: <code>ds-components/admin-ip-bank-table.css</code>.</p>
-      <p class="field-text" data-zh>樣式來源：<code>ds-components/admin-ip-bank-table.css</code>。</p>
+      <p class="field-note" data-en>Style source: <code>ds-components/admin-ip-bank-table.css</code>.</p>
+      <p class="field-note" data-zh>樣式來源：<code>ds-components/admin-ip-bank-table.css</code>。</p>
     </section>
     <section class="pillar" id="validator">
       <div><span class="pillar__num">Integrity Check</span></div>

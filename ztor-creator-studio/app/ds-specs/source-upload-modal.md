@@ -2,6 +2,8 @@
 
 ### Source upload modal
 
+**Pattern** — 5.1.8 Modal shell 的實例（上傳資料檔），見 [5-pattern.md](../ds-pillars/5-pattern.md)。
+
 #### 總表紀錄（原 §4.1 · Source upload modal）
 
 - `_layer`：🟠 organism

@@ -255,31 +255,31 @@ Section-level vertical rhythm is closer to `80–96px`. Card internal padding is
 
 ### 1.4 Radius
 
-**六個具名 token（`_tokens.css` canonical，值以此為準）：**
+**六個具名 token（`_tokens.css` canonical，值以此為準）：** 2026-08-28 r2.3 換裝把整組往上抬一到兩階（舊值 3／6／8／16／28，見改版歷史）。
 
 | Token | Value | Note |
 |---|---|---|
-| `--radius-sm` | `3px` | Inner sub-radii on nested components (chips inside cards, code chips, swatches) |
-| `--radius` | `6px` | Buttons, inputs, form controls — primary radius |
-| `--radius-md` | `6px`（`--radius` 別名） | Q2 2026-07-13 併入 `--radius`；保留別名避免 67 處呼叫點 churn，原值曾為 7px |
-| `--radius-lg` | `8px` | Nav panels, dropdown 浮層 |
-| `--radius-xl` | `16px` | Card / panel / dialog-level containers（Q16 2026-07-17，原 6px 放大到與 form-section 一致） |
-| `--radius-shell` | `28px` | Route-page corner inside the sidebar app shell |
+| `--radius-sm` | `10px` | Inner sub-radii on nested components (chips inside cards, code chips, swatches) |
+| `--radius` | `10px` | Buttons, inputs, form controls — primary radius |
+| `--radius-md` | `10px`（`--radius` 別名） | Q2 2026-07-13 併入 `--radius`；保留別名避免 67 處呼叫點 churn，原值曾為 7px |
+| `--radius-lg` | `16px` | Nav panels, dropdown 浮層、卡內子卡 |
+| `--radius-xl` | `24px` | Card / panel / dialog-level containers（Q16 2026-07-17 起卡片級用它） |
+| `--radius-shell` | `30px` | Route-page corner inside the sidebar app shell |
 | `--radius-pill` | `9999px` | Status dots, avatar circles, badge chips, full-round pills |
 
 | Semantic role | Value | Where |
 |---|---|---|
-| `radius-button-primary` | `6px` | "Create project", "Request payout" |
-| `radius-button-secondary` | `6px` | "Back" / "Cancel" outline CTA (`--radius-md` merged into `--radius`, Q2 2026-07-13) |
-| `radius-card` | `16px` (`--radius-xl`, card/panel/dialog level — Q16 2026-07-17；原 6px) · `8px` (dropdown 浮層, `--radius-lg`) | Cards, panels, dialogs / dropdown panels |
-| `radius-input` | `6px` | Form fields |
-| `radius-small` | `2–5px` | Inner sub-radii on nested components |
+| `radius-button-primary` | `10px`（`--radius`） | "Create project", "Request payout" |
+| `radius-button-secondary` | `10px`（`--radius`） | "Back" / "Cancel" outline CTA (`--radius-md` merged into `--radius`, Q2 2026-07-13) |
+| `radius-card` | `24px` (`--radius-xl`, card/panel/dialog level — Q16 2026-07-17) · `16px` (dropdown 浮層, `--radius-lg`) | Cards, panels, dialogs / dropdown panels |
+| `radius-input` | `10px`（`--radius`） | Form fields |
+| `radius-small` | `10px`（`--radius-sm`） | Inner sub-radii on nested components |
 | `radius-card-feature` | `12px` | Feature / highlight cards |
 | `radius-media` | `16px` | Embedded media / hero video container |
 | `radius-quote-card` | `24px` | Editorial / callout card (IP hero) |
 | `radius-pill` | `1000px / 100%` | Status dots, avatar circles, badge chips |
 
-Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px buttons / inputs / nav cards) but **escalates sharply** at the editorial layer — `12px → 16px → 24px` are reserved for content surfaces (callouts, editorial cards, media). Then a clean leap to full pills for round elements.
+Ztor's radius system is **fine-grained subtle** at the chrome layer (10px buttons / inputs, 16px nav panels) but **escalates sharply** at the editorial layer — `12px → 16px → 24px` are reserved for content surfaces (callouts, editorial cards, media). Then a clean leap to full pills for round elements.
 
 ### 1.5 Shadow
 

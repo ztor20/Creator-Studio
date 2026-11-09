@@ -629,6 +629,15 @@ Q39 顯示端續作把清單縮圖與卡片封面收斂成單一直式 `--img-po
 - 建議：B——欄位級錯誤提示是任何表單都可能需要的通用需求，不應該是套組編輯器的專屬能力；但涉及 field-system.css 載入順序與既有 8 處以上消費頁，屬於需要使用者確認才動的範圍。
 - **2026-08-04 追加第三份同構實作**：`.field__hint.tier-card__err`（`ds-components/ticket-tier-card.css`，票種卡的欄位級驗證訊息）用的是與現況 B 完全相同的配方——同樣疊在 `.field__hint` 上、同樣 `--status-error`、同樣寫成兩個 class 提高權重。本輪不擅自升級成 DS 級（那是本題要裁決的事），只登記證據：這已經是第三次為同一件事各刻一份 CSS，選項 B 的成本理由又多一個消費者。
 
+### Q140：唯讀鍵值列有兩支——Fact list 與 KV list（2026-11-09 提出，待裁決）
+
+同一個視覺角色（唯讀「名稱 → 值」，一項一行、值靠右）有兩支元件：`fact-list.css:25–50` 與 `kv-list.css:30–71`。版面、間距、字級都相同，只差兩點：
+- 列線：fact-list 用 `color-mix(in srgb, var(--border) 40%, transparent)`，kv 用 `--border-soft`（Q72 裁定列線用 `--border-soft`）。
+- 長值：fact-list 的值有 `overflow-wrap: anywhere`，kv 沒有。
+
+fact-list 用在 create-bundle、bundle-detail、create-product、pickup-detail、project-detail、pickup、product-detail 與 `partials/pickup-session-modal.js`。
+選項：**A** 合併：kv 補上 `overflow-wrap`，fact-list 各處改用 `.kv` 標記，線色跟著 Q72 統一成 `--border-soft`；**B** 維持兩支，在兩支規格檔寫明分工。暫依現況（兩支並存），未新增第三種。裁決權在使用者。
+
 ### Q35：原價刪除線有兩種做法，字級不同（2026-07-30 提出，待裁決）
 
 套組編輯器這輪為收合摘要列新增「有折扣時原價劃線」的視覺，落地時發現站上已經有同一個視覺角色的既有做法，兩者字級不同、各自獨立定義，沒有共用一個 token 或 class。

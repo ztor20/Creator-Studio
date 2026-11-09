@@ -30,9 +30,9 @@ document.write(String.raw`
 <script src="partials/rich-body.js?v=r2.2"></script>  <!-- §4.215 demo 的描述區塊（D354，只用靜態工具） -->
 <script src="partials/venue-map.js?v=r2.2"></script><!-- D369：Fan event page 示範的「活動地點」地圖＋Venue map 元件 -->
 <script src="js/fan-event-page.js?v=r2.2"></script>  <!-- 2026-09-22：§4.130 demo 的預覽檢視＝§4.215 Fan event page（D305） -->
-<script src="js/fan-product-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.218 Fan product page 的 demo，也是 §4.216 Publish stage 商品側 previewRender 的同一支 -->
-<script src="js/fan-bundle-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.219 Fan bundle page 的 demo，也是 §4.216 Publish stage 組合側 previewRender 的同一支 -->
-<script src="js/fan-project-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.220 Fan project page 的 demo，也是 §4.216 Publish stage 專案側 previewRender 的同一支 -->
+<script src="js/fan-product-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.215（商品頁） Fan product page 的 demo，也是 §4.216 Publish stage 商品側 previewRender 的同一支 -->
+<script src="js/fan-bundle-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.215（組合包頁） Fan bundle page 的 demo，也是 §4.216 Publish stage 組合側 previewRender 的同一支 -->
+<script src="js/fan-project-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.215（專案頁） Fan project page 的 demo，也是 §4.216 Publish stage 專案側 previewRender 的同一支 -->
 <script src="partials/publish-preview.js?v=r2.2"></script>
 <script src="js/publish-stage.js?v=r2.2"></script>  <!-- 2026-09-22：§4.216 Publish stage（D310 全頁版）的 demo -->
 <script src="partials/login-lang-prompt.js?v=r2.2"></script>
@@ -174,7 +174,7 @@ document.write(String.raw`
   /* §4.243 Fan phone：同一份示範資料畫進 236 寬的手機框（UI-CHANGES 394） */
   var fphHost = document.querySelector('[data-ds-fan-phone-demo]');
   if (fphHost && window.ztorFanEventPage && typeof fepApi !== 'undefined') window.ztorFanEventPage.render(fphHost, ppDemoModel(), fepApi);
-  /* §4.218 Fan product page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，
+  /* §4.215（商品頁） Fan product page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，
      示範一件有兩顆選項（尺寸）、有折扣、快沒庫存的實體商品，觸發折後價／省多少／庫存提醒三個分支。 */
   var fppHost = document.querySelector('[data-ds-fpp-demo]');
   if (fppHost && window.ztorFanProductPage) {
@@ -207,7 +207,7 @@ document.write(String.raw`
     };
     window.ztorFanProductPage.render(fppHost, fppModel, fppApi);
   }
-  /* §4.219 Fan bundle page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，
+  /* §4.215（組合包頁） Fan bundle page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，
      兩份示範各觸發一種 kind——純商品套組（goods，規格挑選＋套組內容）與含票券組合（eventset，
      座位區域＋活動資訊框＋組合折扣造成的票種價差）。 */
   function fbpApi(vals) {
@@ -275,7 +275,7 @@ document.write(String.raw`
     };
     window.ztorFanBundlePage.render(fbpEventHost, fbpEventModel, fbpApi(fbpEventVals));
   }
-  /* §4.220 Fan project page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，
+  /* §4.215（專案頁） Fan project page 就地渲染：替身 api（固定語系／幣別、不開 inline 編輯），同一條渲染路徑，
      兩份示範各觸發一種 kind——直接發行（golive，標題頁：海報＋價格鈕＋關於這部作品）與共創（fund，
      cocreate 版型：募資面板＋方案卡＋預算分配＋交付時程，固定顯示 0 人支持／0%）。 */
   function fpjApi(vals) {
@@ -604,5 +604,49 @@ document.addEventListener('click', function (e) {
   var body = box.querySelector('.collapse-body');
   if (body) body.hidden = !open;
 });
+</script>
+<script>
+/* 設計師檢視（2026-11-09）：預設只顯示用途、視覺展示、該做與別做、元件關係；
+   工程細節各自收成一個摺疊，要看再一個一個點開。只在規格頁執行（有左側目錄），內容一字不刪。
+   收起的有：「規格／行為細節／結構」三段、「Class API」「Token 使用」開頭的段落、補充註記（日期、沿革、題號）。其他段落裡的表格多半是
+   「什麼時候用哪個」這類設計指引，維持顯示。 */
+(function () {
+  if (!document.querySelector('aside.toc') || !document.querySelector('main.doc-main')) return;
+  var ENG = { '規格': 'Specification', '行為細節': 'Behavior details', '結構': 'Anatomy' };
+  function fold(nodes, en, zh, before) {
+    var d = document.createElement('details'); d.className = 'ds-eng';
+    var s = document.createElement('summary'); s.className = 'ds-eng__summary';
+    s.innerHTML = '<span data-en>' + en + '</span><span data-zh>' + zh + '</span><span class="ds-eng__tag"><span data-en>Engineering</span><span data-zh>工程細節</span></span>';
+    d.appendChild(s);
+    before.parentNode.insertBefore(d, before);
+    nodes.forEach(function (n) { d.appendChild(n); });
+    return d;
+  }
+  document.querySelectorAll('main.doc-main p.field-label:not([data-en])').forEach(function (zh) {
+    var key = zh.textContent.trim();
+    var plain = !zh.hasAttribute('data-zh');
+    var eng = ENG[key] || (/^(Class API|Token 使用)/.test(key) ? key : '') || (plain && /^(Consumers|消費頁)$/.test(key) ? 'Consumers' : '');
+    if (!eng) return;
+    if (plain && eng === 'Consumers') key = '消費頁';
+    var en = zh.previousElementSibling && zh.previousElementSibling.matches('p.field-label[data-en]') ? zh.previousElementSibling : null;
+    var items = [], n = zh.nextElementSibling;
+    while (n && !n.matches('p.field-label') && !n.matches('section')) { items.push(n); n = n.nextElementSibling; }
+    if (!items.length) return;
+    fold(items, en ? en.textContent : eng, key, en || zh);
+    if (en) en.remove(); zh.remove();
+  });
+  document.querySelectorAll('main.doc-main p.field-note').forEach(function (p) {
+    if (p.closest('details')) return;
+    var group = [p], n = p.nextElementSibling;
+    while (n && n.matches('p.field-note')) { group.push(n); n = n.nextElementSibling; }
+    fold(group, 'Notes', '補充註記', p);
+  });
+  function openTarget() {
+    var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+    var el = document.getElementById(id); if (!el) return;
+    for (var d = el.closest('details.ds-eng'); d; d = d.parentElement && d.parentElement.closest('details.ds-eng')) d.open = true;
+  }
+  openTarget(); window.addEventListener('hashchange', openTarget);
+})();
 </script>
 `);

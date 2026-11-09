@@ -58,7 +58,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
         <div class="msg-field">
           <div class="msg-field__label">
             <span class="msg-field__label-text"><span data-i18n="npp.field.title">Post title</span><span class="msg-field__req" aria-hidden="true">*</span></span>
-            <span class="char-counter" data-npp-title-count>0 / 120</span>
+            <span class="field__counter" data-npp-title-count>0 / 120</span>
           </div>
           <input class="input" data-npp-title maxlength="120" placeholder="e.g., New drop just landed" data-i18n-placeholder="npp.title.ph">
         </div>
@@ -67,7 +67,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
         <div class="msg-field">
           <div class="msg-field__label">
             <span class="msg-field__label-text"><span data-i18n="npp.field.body">Post</span><span class="msg-field__req" aria-hidden="true">*</span></span>
-            <span class="char-counter" data-npp-body-count>0 / 2000</span>
+            <span class="field__counter" data-npp-body-count>0 / 2000</span>
           </div>
           <textarea class="textarea" data-npp-body maxlength="2000" rows="5" placeholder="Tell your fans what makes it special…" data-i18n-placeholder="npp.body.ph"></textarea>
           <div class="msg-tokens">

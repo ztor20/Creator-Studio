@@ -15,6 +15,142 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-09（五百零八）· 元件庫巡檢第 4 批：退場、資料模組移附錄、兩個合併、Status axes 標頁面專用（D infra／文件）
+
+依 `docs/元件庫巡檢-2026-11-09.md` 的 E 類與使用者對 4 個邊界案例的裁決。產品頁沒動。
+
+- 退場（CSS 改墓碑、展示卡與目錄移除、總表與規格標 ✝ 2026-11-09）：Roster picker、Vault overview、Check card、Artist picker（連同 `partials/artist-picker.js`）。巡檢前已是墓碑的 Restock log、Inline edit、Info sections、View switch 一併移除展示卡。
+- 巡檢報告判斷錯、改為保留：Meta cell（建立專案頁在用）、Content block injector（儀表板與收入頁經 `data-component` 在用，移到「卡片與磚」）、Card 的 `.ztor-card`（STYLE-DECISIONS Q3 與 Section card 的說明都把它當「獨立內容卡」的標準）。
+- 資料與行為模組移到附錄 C（`design-system-structure.html#appendix-c`、`ds-pillars/appendix.md`）：Work taxonomy、Archived gate、Loyalty settings、Fans roster；總表狀態寫「🧩 資料／行為模組」，速查版另列一段。
+- 合併（使用者裁決）：Tier overview 併進 Benefit matrix、Stock tip 併進 Tooltip，各成原卡的變體段，規格與總表合成一列。兩者的 HTML 結構跟存活元件不同（tier-ov 有自己的格線與編輯模式；stock-tip 是清單儲存格的浮卡，`.tip` 是圖示提示），直接改 class 會讓 5 個產品頁跑版，所以 CSS 檔與 class 名稱沿用，掛在存活元件的總表列下。
+- Status axes 標成頁面專用（訂單列表、訂單詳情）。
+- View switch 查證：`.segmented__btn--icon` 不是殘留，是 2026-07-23 取代它的 Segmented 圖示變體，4 頁用得正確。
+
+## 2026-11-09（五百零七）· 元件展示分頁只照類型分：取消「R2.2 新元件」與「頁面專用元件」兩頁（D infra／文件）
+
+使用者：「應該沒有所謂 R2.2 這種新舊分類，要整理到元件或 pattern 分類中」，頁面專用元件也照分類放。
+
+- 104 張卡依「它是什麼」搬進五個分類頁：R2.2 新元件 44 張、頁面專用 50 張、無自帶 CSS 的 JS 元件 10 張。現在 basic 27、forms 41、lists 43、cards 48、flow 52，共 211 張。
+- 目錄拿掉「R2.2 新元件」「頁面專用元件」「無自帶 CSS 的 JS 元件」三個小分組；新增「頁面區塊與 Hero」（cards 頁：媒體庫外殼、展示版型、詳情頁 hero、整頁型設定與掃碼等）與「資料與行為模組」（flow 頁，第 4 批會移到附錄）。cards 頁改名「卡片、資料視覺化與頁面區塊」。
+- 頁面專用卡標題後加 📄，卡頂一行寫出只能在哪些頁用；總表狀態欄、速查表與檢查 22 照舊。
+- 所有連結改到新位置；`design-system-components-new.html`、`design-system-components-pages.html` 刪除。
+- 文件同步：入口對照表改成「五頁、依類型分、不照版本或建立時間分」；4.0、展示頁 4.0、各層 CLAUDE.md／AGENTS.md、`project-ui-creator` skill（新增「展示頁分頁只照類型分」）。
+
+## 2026-11-09（五百零六）· 功能畫面改記成 pattern 的實例，新增 pattern「發布前預覽」（D infra／文件）
+
+分類巡檢列了 14 張「其實是某個功能照某種做法組出來的畫面」。這些卡的 CSS 或 JS 都還在用，所以卡片保留，改成在卡頂寫明屬於哪個 pattern，並在 pattern 卡列出實例。產品頁沒動。
+
+- 新增 5.1.13 發布前預覽（Pre-publish preview）：全頁 Publish stage＋前台鏡像＋控制側欄；兩種變體（精靈最後一步、發布後的「預覽與在地化」獨立頁）；7 個實例頁；寫明跟 5.1.9 Split preview 的分工。AI 文件、展示頁、目錄與概覽縮圖都加了。
+- 四張粉絲頁卡（活動、商品、組合包、專案）併成一張「4.215 Fan page mirror（前台鏡像）」，另三張成為卡內的變體段，規格檔併進 4.215，總表剩一列。
+- 4.61 改名「Modal shell（彈窗殼）＋ Payout bank picker」：這張卡的 `.payout-modal`／`.payout-dialog` 就是全站共用的彈窗殼。5.1.8 Modal shell 補上實例清單（申請撥款、群發訊息、建立商品後發文、補貨、補登收入、登入語言確認、重新上架確認、上傳資料檔、費率例外）。
+- 5.1.5 Multi-step wizard 加變體「單頁分步」（Form steps）；5.1.6 Form assembly 補實例（影片上架欄位 Work fields）。
+- 14 張相關卡頂端加一行「Pattern：屬於哪張卡」並連過去。
+- Publish preview（§4.130）在新 pattern 裡寫成已退場的舊做法；卡片本身的退場留給下一批。
+
+## 2026-11-09（五百零五）· 6 張變體卡併回原元件卡（D infra／文件）
+
+分類巡檢列了 10 張「其實是別張卡的變體」。實際查過後併了 6 張，另 4 張保留成獨立元件。
+
+- 只併卡片、產品頁沒動：Status dot → Badge、Segmented control → Segmented、NavigationMenu → Header、Settings nav → Section nav。變體卡的內容整段搬進原卡底部的「變體」段，原錨點保留（舊連結仍可用）；規格檔併進原卡規格（Settings nav 只補一段說明），總表刪掉這幾列，目錄拿掉這幾個連結。
+- Char counter → Field system：`.char-counter` 改名 `.field__counter`，樣式從 `message-modal.css` 搬到 `field-system.css`，粉絲管理的群發訊息與建立商品後的發文彈窗一起改名；字級、顏色、等寬數字不變。
+- Vault wizard → Wizard frame 的「蓋在頁面上」變體：`.vault-wizard` 改成 `.wizard--overlay`，規則搬進 `shared.css`、刪掉 `vault-wizard.css`，`media-vault.html` 與 `js/media-vault.js` 一起改；瀏覽器實測新增庫房仍蓋滿整個視窗、背後頁面不捲動。檢查 21 的提醒因此消失。
+- 保留成獨立元件（巡檢報告判斷過頭）：
+  - Card group：定義的是卡內分組的小標與分隔線，跟 Control row 的線框群組是不同層級。
+  - Review row：上下兩行加右側「編輯」的結構，跟 KV list 的左右一行不同。
+  - Project list：自己的七欄格線，還有三支 JS 依賴它的 class，改成 Product list 的修飾類要重寫整頁。
+  - Fact list：外觀跟 KV list 幾乎相同（只差列線顏色與長值換行），設計上應該合併；保留是因為搬遷成本——9 處（8 頁＋pickup-session-modal.js）要逐一改標記。已在 STYLE-DECISIONS 登記 Q140 待裁決。
+- 展示頁新增 `.ds-variant` 樣式（只用在設計系統頁），標出併進來的變體段。
+
+## 2026-11-09（五百零四）· 只服務單一頁面的 50 張元件卡集中到「頁面專用元件」分頁（D infra／文件）
+
+分類巡檢（`docs/元件庫巡檢-2026-11-09.md`）找出 51 張只有一頁或一個功能在用的卡，使用者裁決標成「頁面專用」分區。CSS 與產品頁都沒動，只搬卡片與改文件。
+
+- 新分頁 `design-system-components-pages.html`：50 張卡依功能分 11 組（媒體庫、首頁展示版型、組合包編輯器、專案詳情與專案列表、IP 詳情、建立活動、活動詳情、商品與組合包詳情、商店設定、現場核銷與掃碼、其他單頁），每組標出使用頁面；左側目錄加「頁面專用元件」分組，所有指到這些卡的連結改到新分頁，總覽元件表的名稱後加 📄。
+- Pickup management 改回一般元件：`pickup.css` 實際有 10 頁在用，巡檢報告列錯。
+- 總表 49 列（對到 44 支 CSS 檔，幾列共用一支）的狀態欄改成「📄 頁面專用：功能（頁面）」（Project card 沒有總表列，沿用原狀）。
+- 速查版 `ds-index.md` 的元件段另分「頁面專用元件」小段，列尾寫出只能在哪些頁用。
+- `check_ds_sync.py` 新增檢查 22：頁面專用元件的 CSS 出現在標示以外的產品頁就提醒升格。第一次跑就抓到媒體庫彈窗頁沒標，已補進總表。
+- 定義寫進 4.0（名詞與狀態標記）、入口 `design-system.md`、展示頁 4.0、`project-ui-creator` skill 與各層 CLAUDE.md／AGENTS.md；新的單頁樣式仍留在頁面，不為它開頁面專用元件。
+
+## 2026-11-09（五百零三）· 定義 pattern，判斷順序改成兩段式流程（D infra／文件）
+
+使用者以「設計商品詳情頁」為例確認流程後，把 pattern 的定義與做頁面的流程寫清楚。只改文件，沒有整理既有卡片。
+
+- 定義（`ds-pillars/5-pattern.md` 開頭與展示頁 Pillar 5 開頭）：pattern＝為了完成某一類使用者任務，把幾個元件組在一起的固定做法，本身沒有樣式檔；變體＝同一做法的固定分支，寫在同一張卡；實例＝照它做出來的頁面，列在卡片底部；不是 pattern 的：單一元件、頁面骨架與網格（Pillar 6）、產品規則。Pillar 5 分「組裝做法」（5.1）與「全站通則」（5.2–5.4）兩區。
+- 流程：先看產品規格 → 找 pattern（照做；大致適用就加變體、不改原 pattern；會重複用才建新 pattern，只有這頁就記 BUILD-SPEC）→ 找元件（用現成；加變體；單頁樣式留頁面；才建新元件）→ 把這頁記成 pattern 卡的實例。寫進入口 `design-system.md`、4.0（AI 文件與展示頁）、速查表檔頭與共編文件。
+- 5.1.5 Multi-step wizard 補上變體（整頁、整頁＋右側預覽、蓋在頁面上）與實例（建立專案、活動、商品、組合包、新增庫房）；5.5 流程清單併進 5.1.5，原本列的步驟名稱一併帶過去。
+
+## 2026-11-09（五百零二）· 設計系統加上固定的判斷順序：pattern 先於元件（D infra／文件）
+
+盤點發現有些功能畫面被開成獨立元件卡（4.248 Vault wizard 只是精靈外框蓋在頁面上；4.215 等四張粉絲頁是同一支 CSS 的四種變體）。原因是規則只要求「有新 CSS 就開元件」，而速查表看不到 pattern。這次只改規則與工具，沒有整理任何既有卡片（留給之後的分類巡檢）。
+
+- 速查版 `ds-index.md`：新增「Pillar 5 速查」，列 12 種 pattern 的類型、什麼時候用與展示頁連結；三段順序改成 pattern → 元件 → token，檔頭寫明讀法與找不到時的判斷順序。
+- 判斷順序（前面成立就停）：既有 pattern → pattern 的新變體或實例 → 現成元件 → 既有元件的變體 → 只有一頁用就留在頁面 → 以上都不是才開新元件。寫進入口 `design-system.md` 對照表、`ds-pillars/4-component.md` 與展示頁 Pillar 4 總覽的 4.0 分類規則、共編文件 `CLAUDE.md`／`AGENTS.md`。
+- 4.0 分類判斷法：從「是不是一支檔案」改成「能不能在不同情境獨立使用」，並定義「元件變體」與「pattern 實例」。
+- 收尾檢查新增第 21 項：一支元件 CSS 的規則六成以上寫在別支元件的 class 上，就提醒「可能是變體」。目前只有 `vault-wizard.css` 命中。
+
+## 2026-11-09（五百零一）· 設計系統文件追上現況：9 處過時或前後矛盾（D infra／文件）
+
+依 `docs/展示頁內容巡檢-2026-11-09.md`「過時或矛盾」9 處，使用者核准照建議改。只讓文件跟上已經發生的事，不改任何設計；過時說法不刪，改成補充註記（規格檔標「舊，日期前」），正文只寫現況。展示頁與對應的 `ds-specs/` 一起改。
+
+- 上傳格：刪掉叫人用已退場 `--hero` 的「該做」（唯一真刪）。
+- 段落大綱：用途改成一句現況並補上 2026-10-28 起的列尾記號，改版前的長相改成註記，「狀態圓」改稱「狀態記號」。
+- 商店設定：正文改成獨立頁面，popup 說法改成註記；`js/sidebar.js` 同步改註解。
+- 粉絲活動頁：D334、D340 兩段改成註記，正文留 D354 現況。
+- 媒體庫：用途改成「外殼與共用樣式，見 Vault list／stage／open／wizard」，改版前的 9 段改成註記。
+- 代碼選擇器：歷史說明改成註記。
+- 發布前預覽、算式列表：「該做與別做」移出預設收起的區塊。
+- 規格檔：`4.22h0-section-nav.md` 誤收的進度時間軸一節併進 `4.51b-progress-timeline.md` 後移除；4.51b 的軸點尺寸（20px，窄螢幕 24px）與更新列底色改成現況，`progress-timeline.css` 檔頭註解同步。
+- 顯示更多：HTML 裡的 Markdown 粗體符號改成真正的粗體。
+
+## 2026-11-09（五百）· 展示頁批次收起工程資訊、隱藏段落開頭的日期與編號（D infra／文件）
+
+依 `docs/展示頁內容巡檢-2026-11-09.md` 第 3 類的批次部分。只改標記，文字一個字都沒改。
+
+- 整段收起：開頭是「樣式來源／消費頁／採用頁／實際由／Evidence」（英文 Style source／Consumers／Generated by）的段落，共 39 段改成補充註記，瀏覽時收進「工程細節」；6 個只有英文的「Consumers」小標，由 `ds-tail.js` 把底下的清單收成「消費頁」摺疊。
+- 隱藏開頭標記：113 段開頭的日期與決策編號（例如「2026-10-15（D443）：」）包成 `.ds-hist`，畫面不顯示、原文保留；段落本身照常顯示。沒有整段收起，是因為很多以日期開頭的段落其實是現行規則，整段收起會讓設計師看不到。
+- 還沒處理：段落中間夾的日期括號、整段沿革但沒有固定開頭的段落，以及「過時或矛盾」9 處，要逐張改寫或逐條確認。
+
+## 2026-11-09（四百九十九）· 展示頁元件卡：放錯卡的段落搬回原卡、刪掉重複說明（D infra／文件）
+
+依 `docs/展示頁內容巡檢-2026-11-09.md` 的前兩類處理。只改展示頁文字，示範、class、id 都沒動；AI 文件 `ds-specs/` 本來就寫在正確位置，不用改。原則是「同一件事留一處」，被刪那段若有別處沒有的資訊（數值、例外、理由、決策編號），先併進保留處。
+
+- 搬回原卡：「算式列表在卡內去框」從 Form section 搬到 Calc list；「js/table-sort.js 也認 .product-list__head」從 Table 搬到 Sortable；「Embed modal 遮罩改黑」從 Media vault 搬到 Embed modal；Session list 裡重講 Row disclosure 結構的部分改成一句連結，原段的設計理由移進 Row disclosure 的補充註記。原處都留一句「見某元件」連過去。
+- 刪重複：Chip、Input、Nest、Amount field、Picker、Tag input、Card、Preview card（說明縮短）、Restock modal、Payout、Publish preview、Table 與 Tabs 的作業備忘、Row disclosure、Vault list、Cond list、Ticket tier card、Calc list（112px 舊版併進 124px 段）；Zselect 三段改成補充註記並補上英文。
+- 沒動：Chart（段落在示範裡面）、Nav（sidebar 模式沒有自己的卡）、Vault overview 與 Field source tag（看起來是內容過時，不是重複，留待逐條裁決）。
+- 驗收抓到 3 處刪除時資訊會遺失（Vault access 的「分享連結不是鑰匙」、Stock tip 的沿革、Row disclosure 的「把手為什麼放列首」），已還原或補回。
+
+## 2026-11-09（四百九十八）· 按鈕卡去掉重複說明，放錯卡的時間軸規則搬回原卡（D infra／文件）
+
+整理展示頁的第一張範本卡。只動展示頁 `design-system-components-basic.html`、`-lists.html` 與共用的 `ds-tail.js`；AI 文件 `ds-specs/4.2-button.md`、`4.51b-progress-timeline.md` 本來就寫在正確位置，不用改。
+
+- 按鈕卡（4.2）：刪掉兩段重複兩張表格的說明（「Outline vs Soft」前半、「一句話：soft 只活在白底」）；「目前沒有紅色 destructive 變體」改成補充註記，收進工程細節。
+- 「收合的單位是兩顆里程碑之間」這段原本誤放在按鈕卡，搬回進度時間軸卡（4.51b），跟規格檔一致。
+- 設計師檢視的收合清單補上「Class API」「Token 使用」開頭的段落（29 張卡用這兩種小標寫工程內容）。
+
+## 2026-11-09（四百九十七）· 設計系統規格頁預設只顯示給設計師看的內容（D infra／文件）
+
+規格頁每張元件卡把設計師要看的（用途、示範、該做與別做）和工程要看的（class 規格、行為細節、結構、日期與題號註記）混在一起。改成預設只顯示前者，後者各自收成一個標著「工程細節」的摺疊，要看再一個一個點開；網址直接連到摺疊裡的位置時會自動展開。內容一字不刪，只在瀏覽時收合。
+
+- 收起：小標為「規格」「行為細節」「結構」的段落、補充註記（field-note）。
+- 維持顯示：用途、視覺展示、該做與別做、元件關係，以及其他段落裡「什麼時候用哪個」這類設計指引表格。
+- 只改共用的 `ds-tail.js`（收合程式）與 `ds-head.js`（摺疊樣式），12 頁一起生效；元件圖鑑不受影響。
+
+## 2026-11-09（四百九十六）· 設計系統展示頁的左側目錄只展開本頁（D infra／文件）
+
+拆頁後每一頁的左側目錄仍列出全部 251 條，在哪一頁看起來都一樣長。改成只展開本頁的分組，其他分組收成一行標題，點標題可展開或收起；展開後點連結照常跳到該頁。只改 `ds-toc.js` 與 `ds-head.js` 的目錄樣式，內容不變。
+
+## 2026-11-09（四百九十五）· 圓角文件追上實際 token，展示頁示範改吃 token（D infra／文件）
+
+2026-08-28 r2.3 換裝把圓角整組調大（`--radius-sm`／`--radius` 10px、`--radius-lg` 16px、`--radius-xl` 24px、`--radius-shell` 30px），設計系統文件和展示頁一直寫舊值 3／6／8／16／28，展示頁的圓角示範方塊也寫死舊值，設計師看到的是舊圓角。畫面元件本身不變。
+
+- `ds-pillars/1-foundation.md` §1.4：token 表、語意角色表與敘述改成現值，註明換裝時的舊值。
+- `design-system-foundation.html` 1.4：說明文字改成現值；六個示範方塊改成直接吃 `var(--radius-*)`，之後 token 再改也不會脫節。
+- `ds-pillars/appendix.md` 的 CSS 與 JSON 交付範例、`ds-specs/wizard-frame.md` 與對應展示頁的 `--radius-lg` 8px 一併改成現值。
+- 入口的總覽、Quick Reference、風格裁決 Q2／Q16（md 與展示頁）改成現值，並註明裁決當時的值；`ds-specs/4.11-card.md`、`4.12-kpi.md`、`form-section.md`、`4.96-checkbox.md`、`4.90-list-toolbar.md`、`4.91-funding-panel.md` 的圓角描述同步；`list-toolbar.css`、`form-section.css` 兩處寫舊值的註解一併更正（只改註解，樣式不變）。
+- `design-system-changelog.md` 記一筆。
+- 收尾檢查新增第 20 項：文件寫成「token＋值」的地方跟 `_tokens.css` 不一致就提醒。
+
 ## 2026-11-09（四百九十四）· 設計系統展示頁拆成入口＋各 Pillar 分頁（D infra／文件）
 
 `design-system.html` 有 2.7MB，元件區就佔 2.3MB，跟上一筆拆好的 AI 文件對不起來。這次照同樣分法拆頁，內容與示範逐字搬移，畫面不變。

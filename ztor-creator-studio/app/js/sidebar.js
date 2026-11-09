@@ -475,8 +475,8 @@
     /* E-Shop dropdown (D065, partial rollback of D028; +取貨管理 D111): three
        items — 電子商店 E-Shop (landing page) + 訂單管理 Orders + 取貨管理
        Pickup management (on-site QR redemption workspace, sibling of Orders).
-       Store settings left the dropdown (D065): it is now a popup opened from the
-       E-Shop page F3 toolbar; store-settings.html stays as the popup's full spec
+       Store settings left the dropdown (D065): it is now reached from the
+       E-Shop page F3 toolbar; store-settings.html is a standalone page (D184)
        and is matched here so E-Shop nav highlights on it. Product detail /
        create-product / create-bundle / order-detail are in-page sub-routes.
        scanner.html is the standalone mobile scanner (spec 5.1.5.11 F7) — a

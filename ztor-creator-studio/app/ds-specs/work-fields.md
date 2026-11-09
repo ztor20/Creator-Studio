@@ -2,6 +2,8 @@
 
 ### Work fields
 
+**Pattern** — 5.1.6 Form assembly 的實例（影片上架欄位），見 [5-pattern.md](../ds-pillars/5-pattern.md)。
+
 #### 總表紀錄（原 §4.1 · Work fields）
 
 - `_layer`：🟠 organism
