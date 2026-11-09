@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sched-restore.css?v=r2.2"><!-- 重新上架時保存的排程有問題的提示（D488） -->
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
@@ -2123,26 +2122,17 @@
     /* 事件委派：清單會分批插入新列（載入更多／persona 換列），逐顆綁定會漏掉後來的列。 */
     /* 2026-09-11（D263）：開關獨立成欄，點了先問——顯示／隱藏會直接改粉絲看得到什麼，
        一顆在列上的開關太容易誤觸；確認彈窗借 leave-dialog 的殼，標題帶商品名、內文講後果。 */
-    /* 彈窗 markup 在 </body> 前、這段 script 在它之前執行，所以每次用時才查 */
-    const getShownDialog = () => document.querySelector('[data-eshop-shown-dialog]');
-    let shownPending = null;   // { row, on }
+    /* 2026-11-09（STYLE-DECISIONS Q141）：改用共用彈窗 ztorDialog（.payout-dialog--narrow），不再借 leave-dialog 的殼。 */
     function askShopState(row, on) {
-      const shownDialog = getShownDialog();
-      if (!shownDialog) return setShopState(row, on);
       const name = (row.querySelector('.product-list__title') || {}).textContent || '';
-      const title = shownDialog.querySelector('[data-eshop-shown-title]');
-      const body = shownDialog.querySelector('[data-eshop-shown-body]');
       const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
-      if (title) title.textContent = T(on ? 'e-shop.shown.show-title' : 'e-shop.shown.hide-title', on ? 'Show “{n}” in your shop?' : 'Hide “{n}” from your shop?').replace('{n}', name.trim());
-      if (body) body.textContent = T(on ? 'e-shop.shown.show-body' : 'e-shop.shown.hide-body', on ? 'It goes back on the storefront; its private link stops working.' : 'Fans won’t find it in the shop. Anyone with the private link can still buy it, and bundles that include it keep selling.');
-      shownPending = { row, on };
-      shownDialog.setAttribute('data-open', '');
-      const c = shownDialog.querySelector('[data-eshop-shown-confirm]'); if (c) c.focus();
+      window.ztorDialog.confirm({
+        title: T(on ? 'e-shop.shown.show-title' : 'e-shop.shown.hide-title', on ? 'Show “{n}” in your shop?' : 'Hide “{n}” from your shop?').replace('{n}', name.trim()),
+        body: T(on ? 'e-shop.shown.show-body' : 'e-shop.shown.hide-body', on ? 'It goes back on the storefront; its private link stops working.' : 'Fans won’t find it in the shop. Anyone with the private link can still buy it, and bundles that include it keep selling.'),
+        okLabel: T('e-shop.shown.confirm', 'Confirm'), cancelLabel: T('e-shop.shown.cancel', 'Cancel')
+      }).then(ok => { if (ok) setShopState(row, on); });
     }
-    function closeShownDialog() { shownPending = null; const d = getShownDialog(); if (d) d.removeAttribute('data-open'); }
     document.addEventListener('click', e => {
-      if (e.target.closest('[data-eshop-shown-confirm]')) { const p = shownPending; closeShownDialog(); if (p) setShopState(p.row, p.on); return; }
-      if (e.target.closest('[data-eshop-shown-cancel]')) { closeShownDialog(); return; }
       const btn = e.target.closest('[data-eshop-shop]');
       if (!btn) return;
       if (btn.getAttribute('aria-disabled') === 'true') return;   /* 已下架：不可調（D265） */
@@ -2154,7 +2144,6 @@
       askShopState(row, turnOn);
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && shownPending) { closeShownDialog(); return; }
       if ((e.key === ' ' || e.key === 'Enter') && e.target.matches && e.target.matches('.switch[data-eshop-shop]')) { e.preventDefault(); e.target.click(); }
     });
     /* ── 粉絲分級門檻（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）──────────
@@ -2331,37 +2320,14 @@
     /* ── 確認彈窗（封存／顯示隱藏／草稿刪除／零成交刪除與擋下）：借 leave-dialog 的殼（站上唯一的確認彈窗語彙），
        多一段 .leave-dialog__list 列受影響的組合包或未上架成員（2026-09-18 promote 進 leave-dialog.css）。
        noCancel＝純告知（擋下）只留一顆主鈕。彈窗 markup 在 </body> 前，每次用時才查。 */
-    const getConfirmDialog = () => document.querySelector('[data-eshop-confirm-dialog]');
-    let confirmPending = null;   /* { onConfirm } */
+    /* 2026-11-09（STYLE-DECISIONS Q141）：改用共用彈窗 ztorDialog（.payout-dialog--narrow），受影響項目用 items 列出；呼叫介面不變。 */
     function askConfirm(opts) {
-      const d = getConfirmDialog();
-      if (!d) { if (opts.onConfirm) opts.onConfirm(); return; }
-      const title = d.querySelector('[data-eshop-confirm-title]');
-      const body = d.querySelector('[data-eshop-confirm-body]');
-      const list = d.querySelector('[data-eshop-confirm-list]');
-      const ok = d.querySelector('[data-eshop-confirm-ok]');
-      if (title) title.textContent = opts.title || '';
-      if (body) body.textContent = opts.body || '';
-      if (list) {
-        const items = opts.items || [];
-        list.hidden = !items.length;
-        list.innerHTML = items.map(n => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' + esc(n) + '</span></li>').join('');
-        if (items.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
-      }
-      if (ok) {
-        ok.classList.toggle('btn--destructive', !!opts.destructive);
-        ok.classList.toggle('btn--primary', !opts.destructive);
-        const sp = ok.querySelector('span') || ok;
-        sp.setAttribute('data-i18n', opts.okKey || 'e-shop.shown.confirm');
-        sp.textContent = T(opts.okKey || 'e-shop.shown.confirm', opts.okFallback || 'Confirm');
-      }
-      const cancelBtn = d.querySelector('.leave-dialog__actions [data-eshop-confirm-cancel]');
-      if (cancelBtn) cancelBtn.hidden = !!opts.noCancel;
-      confirmPending = { onConfirm: opts.onConfirm };
-      d.setAttribute('data-open', '');
-      if (ok) ok.focus();
+      window.ztorDialog.confirm({
+        title: opts.title || '', body: opts.body || '', items: opts.items || [],
+        okLabel: T(opts.okKey || 'e-shop.shown.confirm', opts.okFallback || 'Confirm'), cancelLabel: T('e-shop.shown.cancel', 'Cancel'),
+        danger: !!opts.destructive, noCancel: !!opts.noCancel
+      }).then(ok => { if (ok && opts.onConfirm) opts.onConfirm(); });
     }
-    function closeConfirm() { confirmPending = null; const d = getConfirmDialog(); if (d) d.removeAttribute('data-open'); }
     const rowName = row => ((row.querySelector('.product-list__title') || {}).textContent || '').trim();
     const rowsOfBundle = id => [...document.querySelectorAll('.product-list__row[data-bundle-id="' + id + '"]')];
 
@@ -2451,8 +2417,6 @@
       });
     }
     document.addEventListener('click', e => {
-      if (e.target.closest('[data-eshop-confirm-ok]')) { const p = confirmPending; closeConfirm(); if (p && p.onConfirm) p.onConfirm(); return; }
-      if (e.target.closest('[data-eshop-confirm-cancel]')) { closeConfirm(); return; }
       const rel = e.target.closest('[data-eshop-relist]');
       if (rel) { const row = rel.closest('.product-list__row'); if (row) doRelist(row); return; }
       const arch = e.target.closest('[data-eshop-archive]');
@@ -2462,7 +2426,6 @@
       const rm = e.target.closest('[data-eshop-remove]');
       if (rm) { const row = rm.closest('.product-list__row'); if (row) askDelete(row); }
     });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && confirmPending) closeConfirm(); });
 
     /* products-store 換完列（persona／語言切換）後由它呼叫，讓推導重新跑一遍。 */
     window.ztorEshopStatus = {
@@ -3056,34 +3019,10 @@
 </script>
 <!-- 顯示於商店的確認彈窗（2026-09-11 使用者：「將顯示的 toggle 改到欄位中，並且點擊時有確認彈窗」；D263）：
      借 leave-dialog 的殼（站上唯一的確認彈窗語彙），標題依開／關兩態換句，內文講清楚後果（§7.14 顯示軸：隱藏≠下架）。 -->
-<div class="leave-dialog" data-eshop-shown-dialog role="dialog" aria-modal="true" aria-labelledby="eshop-shown-title">
-  <div class="leave-dialog__scrim" data-eshop-shown-cancel></div>
-  <div class="leave-dialog__card">
-    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-eshop-shown-cancel><i data-lucide="x" class="ztor-icon"></i></button>
-    <h2 class="leave-dialog__title" id="eshop-shown-title" data-eshop-shown-title></h2>
-    <p class="leave-dialog__body" data-eshop-shown-body></p>
-    <div class="leave-dialog__actions">
-      <button class="btn btn--primary" type="button" data-eshop-shown-confirm data-i18n="e-shop.shown.confirm">Confirm</button>
-      <button class="btn btn--outline" type="button" data-eshop-shown-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
-    </div>
-  </div>
-</div>
 <!-- 封存／重新上架擋下／草稿刪除的確認彈窗（2026-09-18 · D284／D288，§7.14「封存與不可刪除」「下架確認與組合包連動」）：
      同一個 leave-dialog 殼、三種內容由 JS 填——封存＝標題帶品名＋後果（只看已下架、不再列組合包，D288）；
      組合包重新上架（D289）＝有已下架成員時列出「會一起重新上架的成員」＋主鈕「一併重新上架」；有已封存成員時擋下、列出、單一主鈕「知道了」（noCancel）；
      草稿刪除＝主鈕換 .btn--destructive。取消／✕／Esc 都不動資料。下架確認在細節頁（清單沒有下架入口）。 -->
-<div class="leave-dialog" data-eshop-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="eshop-confirm-title">
-  <div class="leave-dialog__scrim" data-eshop-confirm-cancel></div>
-  <div class="leave-dialog__card">
-    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-eshop-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
-    <h2 class="leave-dialog__title" id="eshop-confirm-title" data-eshop-confirm-title></h2>
-    <p class="leave-dialog__body" data-eshop-confirm-body></p>
-    <ul class="leave-dialog__list" data-eshop-confirm-list hidden></ul>
-    <div class="leave-dialog__actions">
-      <button class="btn btn--primary" type="button" data-eshop-confirm-ok><span data-i18n="e-shop.shown.confirm">Confirm</span></button>
-      <button class="btn btn--outline" type="button" data-eshop-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
-    </div>
-  </div>
-</div>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

@@ -47,6 +47,8 @@
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- D503：掃碼領點建立彈窗的 QR 列（partials/pickup-session-modal.js .stack） -->
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
+<link rel="stylesheet" href="ds-components/export-dialog.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 5.1.5.15 取貨場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
@@ -1633,7 +1635,17 @@
       });
     }
     var exp = document.querySelector('[data-pk-export]');
-    if (exp) exp.addEventListener('click', function () { flash(exp, 'pk.log.exported', 'Exported'); });
+    /* 2026-11-09（pattern 5.1.12 匯出確認）：先開匯出確認講筆數（目前篩選下看得到的紀錄），不從按鈕直接下載；原型確認後仍只回饋。 */
+    if (exp) exp.addEventListener('click', function () {
+      var n = Array.prototype.filter.call(document.querySelectorAll('[data-pk-log-row]'), function (r) { return !r.hidden && r.offsetParent !== null; }).length;
+      var fire = function () { flash(exp, 'pk.log.exported', 'Exported'); };
+      if (!window.ztorCsv) { fire(); return; }
+      window.ztorCsv.confirm({
+        title: (window.i18nT && window.i18nT('pk.log.export.title')) || 'Export redemption log',
+        count: n, unit: (window.i18nT && window.i18nT('pk.log.export.unit')) || 'entries', scope: 'pickup-log', filters: [],
+        onExport: fire
+      });
+    });
 
     /* F4 取貨／入場名單（D240 一物一碼）：狀態篩選 ＋ 搜尋，兩層資料——
        單位列（一列一件，帶自己的狀態與領取碼）與買家群組列（買多件的買家）。
@@ -1746,5 +1758,6 @@
 <script src="js/points-qr.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="partials/list-scroll.js?v=r2.2"></script>
+<script src="js/csv-export.js?v=r2.2"></script><!-- 匯出確認（pattern 5.1.12） -->
 </body>
 </html>

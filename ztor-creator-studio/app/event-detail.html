@@ -3311,7 +3311,7 @@
         title: T('event-detail.unlist.confirm.title', 'Unlist this event?'),
         body: '<p>' + lines.join(' ') + '</p>' + bundlesHtml,
         okLabel: T('event-detail.unlist.confirm.ok', 'Unlist'),
-        danger: true,
+        danger: false,  /* 下架可以復原：一般確認鈕，紅色只給收不回來的動作（STYLE-DECISIONS Q144） */
         onOk: () => {
           window.ztorEvents.setUnlisted(ev.id, true);
           ev.unlisted = true;
@@ -3464,7 +3464,7 @@
       /* D416：匯出交易（交易明細）開確認視窗並真的產 CSV；匯出名單不在本次範圍，維持原型不產檔 */
       if (exp.dataset.edExport === 'transactions' && txExportOn()) { openTxExport(); return; }
       /* 原型不產檔（同站上其他匯出鈕的既有限制），但按了要有回饋 */
-      alert(T('event-detail.export.stub', 'Export is not wired up in the prototype — the file would land in your downloads.'));
+      window.ztorDialog.notice({ title: T('dlg.t.export', 'Export'), body: T('event-detail.export.stub', 'Export is not wired up in the prototype — the file would land in your downloads.') });
       return;
     }
   });
@@ -8167,5 +8167,6 @@
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

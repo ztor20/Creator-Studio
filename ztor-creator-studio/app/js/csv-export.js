@@ -9,8 +9,8 @@
      · download(name, text)   → 瀏覽器端產檔下載（Blob + <a download>）。
      · confirm(opts)          → 匯出視窗：這次匯出什麼（筆數＋篩選條件）、（訂單管理才有）「包含收件資料」核取框、
                                 這個範圍的匯出紀錄（最近 3 筆，可展開全部）、匯出 N 筆／取消。
-                                opts: { title, count, withShip, note, scope, filters, onExport(includeShip) }
-                                2026-10-28 使用者：匯出紀錄改在這個視窗看，工具列的「匯出紀錄」鈕退場（openLog 保留給舊呼叫）。
+                                opts: { title, count, unit?, withShip, note, scope, filters, onExport(includeShip) }
+                                2026-10-28 使用者：匯出紀錄改在這個視窗看，工具列的「匯出紀錄」鈕退場（openLog 已於 2026-11-09 退場）。
      · fileRange(from, to)    → 檔名用的起訖日期字串；兩邊都沒填回傳「全部」。
      · safeName(s)            → 檔名不能含的字元換成空白。
      · run(opts)              → 匯出中提示＋產檔下載＋寫一筆匯出紀錄（D424 決定 3、4，2026-10-15）。
@@ -18,7 +18,6 @@
                                 右下角 toast「匯出中…」（ztorToast place:'corner' tone:'busy'），約 1 秒後原地轉成
                                 「匯出完成」並觸發下載；同一刻寫進匯出紀錄。版本閘 O41 關閉時不顯示匯出中提示、
                                 直接下載＋底部完成 toast（O39 原行為）；O42 關閉時不寫紀錄。
-     · openLog(opts)          → 匯出紀錄視窗：誰、何時、篩選條件、筆數、檔名，新的在上。opts: { scope, title }
      · log(scope)             → 讀某個範圍的紀錄陣列（新的在前）。
 
    匯出紀錄（D424 決定 4）：創作者與 Admin 都看得到；原型存在 localStorage（key ztor.export.log，重新整理保留，
@@ -133,7 +132,8 @@
     m.querySelector('[data-csv-title]').textContent = opts.title;
     /* 這次匯出什麼：大字筆數＋單位；下一行寫「照目前的篩選結果」＋篩選條件（同紀錄列的寫法，上下讀法一致） */
     m.querySelector('[data-csv-num]').textContent = n.toLocaleString('en-US');
-    m.querySelector('[data-csv-unit]').textContent = T('csv.unit', 'orders');
+    /* opts.unit（選填，2026-11-09）：匯出的不是訂單時，由呼叫端給單位字（例：筆核銷紀錄、件內容） */
+    m.querySelector('[data-csv-unit]').textContent = opts.unit || T('csv.unit', 'orders');
     m.querySelector('[data-csv-filters]').textContent = n
       ? T('csv.scope', 'Following your current filters — {filters}').replace('{filters}', filterText(opts.filters))
       : T('csv.none', 'No orders match your current filters, so there is nothing to export.');
@@ -312,23 +312,9 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !logModal.hidden) closeLog(); });
     return logModal;
   }
-  function openLog(opts) {
-    var m = ensureLog();
-    var rows = log(opts.scope);
-    m.querySelector('[data-csv-log-title]').textContent = opts.title || T('csv.log.title', 'Export history');
-    m.querySelector('[data-csv-log-sub]').textContent = T('csv.log.sub', 'Every export from this page — who, when, which filters, how many orders and the file name. Creators and Admins both see it.');
-    m.querySelector('[data-csv-log-list]').innerHTML = rows.map(function (r) { return logRowHTML(r, false); }).join('');
-    m.querySelector('[data-csv-log-list]').hidden = !rows.length;
-    var empty = m.querySelector('[data-csv-log-empty]');
-    empty.hidden = !!rows.length;
-    empty.textContent = T('csv.log.empty', 'No exports yet. Each export you make shows up here.');
-    m.querySelector('[data-csv-log-done]').textContent = T('csv.close', 'Close');
-    m.querySelector('[data-csv-log-close][aria-label]').setAttribute('aria-label', T('csv.close', 'Close'));
-    m.hidden = false;
-    document.body.classList.add('is-modal-open');
-    m.querySelector('[data-csv-log-done]').focus();
-  }
+  /* 墓碑 2026-11-09：openLog()（匯出紀錄獨立視窗）退場——2026-10-28 起紀錄改列在匯出視窗下半部，全庫已無呼叫者（彈窗普查 #51）。 */
+
 
   window.ztorCsv = { build: build, download: download, confirm: confirm, fileRange: fileRange, safeName: safeName, cell: cell,
-                     run: run, log: log, openLog: openLog };
+                     run: run, log: log };
 })();

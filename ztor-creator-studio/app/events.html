@@ -23,7 +23,6 @@
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">   <!-- 草稿刪除確認彈窗（D294，同 e-shop 草稿刪除的殼） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* F3 工作列＋狀態列（比照電子商店 e-shop）：list-toolbar（時段 tabs＋搜尋收合＋建立鈕）在上、
@@ -84,6 +83,7 @@
   }
 </style>
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 共用確認／告知彈窗 ztorDialog 的外殼 -->
 </head>
 <body data-sheet-nav>
 <div class="app">
@@ -2457,8 +2457,6 @@
     });
     apply(); syncKpis();
   }
-  const getEvDialog = () => document.querySelector('[data-ev-confirm-dialog]');   /* 彈窗 markup 在 </body> 前、比本段晚解析，每次用時才查（同 e-shop） */
-  let evPending = null;
   function evAskDelete(row) {
     const titleEl = row.querySelector('.product-list__title');
     const name = ((titleEl && titleEl.textContent) || '').trim() || T('event-detail.untitled', 'Untitled event');
@@ -2481,28 +2479,14 @@
     const autos = (EVS && EVS.draftBundlesOf && draftId) ? EVS.draftBundlesOf(decodeURIComponent(draftId)) : [];
     const baseRemove = doRemove;
     const removeAll = () => { if (EVS && EVS.removeDraft && draftId) EVS.removeDraft(decodeURIComponent(draftId)); baseRemove(); };
-    const evDialog = getEvDialog();
-    if (!evDialog) return removeAll();
-    const t = evDialog.querySelector('[data-ev-confirm-title]');
-    const b = evDialog.querySelector('[data-ev-confirm-body]');
-    const list = evDialog.querySelector('[data-ev-confirm-list]');
-    if (t) t.textContent = T('events.delete.title', 'Delete draft “{n}”?').replace('{n}', name);
-    if (b) b.textContent = T('events.delete.body', 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.')
-      + (autos.length ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') + T('events.delete.auto-bundles', 'These bundles include its tickets and are deleted with it:') : '');
-    if (list) {
-      list.hidden = !autos.length;
-      list.innerHTML = autos.map(x => '<li class="leave-dialog__list-item"><i data-lucide="package" class="ztor-icon"></i><span>' +
-        String(x.name || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) + '</span></li>').join('');
-      if (autos.length && window.ztorIcons) window.ztorIcons.applyIcons(list);
-    }
-    evPending = removeAll;
-    evSetOkLabel(evDialog, 'events.delete.confirm', 'Delete');   /* 同一個彈窗也給封存用，主鈕字每次開啟時重設 */
-    evDialog.setAttribute('data-open', '');
-    const ok = evDialog.querySelector('[data-ev-confirm-ok]'); if (ok) ok.focus();
-  }
-  function evSetOkLabel(dlg, key, fb) {
-    const sp = dlg.querySelector('[data-ev-confirm-ok] span');
-    if (sp) { sp.setAttribute('data-i18n', key); sp.textContent = T(key, fb); }
+    /* 2026-11-09（STYLE-DECISIONS Q141）：改用共用彈窗 ztorDialog（.payout-dialog--narrow），不再借 leave-dialog 的殼 */
+    window.ztorDialog.confirm({
+      title: T('events.delete.title', 'Delete draft “{n}”?').replace('{n}', name),
+      body: T('events.delete.body', 'This draft has not been created yet — no tickets, no switches, no fan page — so deleting it affects no one. A deleted draft cannot be recovered.')
+        + (autos.length ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') + T('events.delete.auto-bundles', 'These bundles include its tickets and are deleted with it:') : ''),
+      items: autos.map(x => String(x.name || '')),
+      okLabel: T('events.delete.confirm', 'Delete'), cancelLabel: T('e-shop.shown.cancel', 'Cancel'), danger: true
+    }).then(ok => { if (ok) removeAll(); });
   }
 
   /* 已下架列的「封存」與已封存列的「解除封存」（2026-10-20 · D457；5.1.6 F1，比照商品清單 D298；取代原「取消活動」列操作）：
@@ -2543,27 +2527,21 @@
     const id = evIdOf(row);
     const ev = EVS && id ? EVS.get(id) : null;
     if (!ev || !ev.unlisted || ev.archived) return;
-    const evDialog = getEvDialog();
-    if (!evDialog) return;
     const titleEl = row.querySelector('.product-list__title');
     const name = ((titleEl && titleEl.textContent) || '').trim() || T('event-detail.untitled', 'Untitled event');
     const notEnded = ['scheduled', 'on-sale', 'live'].indexOf(ev.status) >= 0;
-    const t = evDialog.querySelector('[data-ev-confirm-title]');
-    const b = evDialog.querySelector('[data-ev-confirm-body]');
-    const ul = evDialog.querySelector('[data-ev-confirm-list]');
-    if (t) t.textContent = T('events.archive.title', 'Archive “{n}”?').replace('{n}', name);
-    if (b) b.textContent = T('event-detail.archive.confirm.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; tickets already sold, orders and revenue are not affected. You can unarchive it anytime.') +
+    /* 2026-11-09：改用共用彈窗 ztorDialog（封存可以解除＝確認後執行，一般主鈕，Q141／Q144） */
+    const cfTitle = T('events.archive.title', 'Archive “{n}”?').replace('{n}', name);
+    const cfBody = T('event-detail.archive.confirm.body', 'It leaves the main list and only shows under Archived. Its page turns read-only; tickets already sold, orders and revenue are not affected. You can unarchive it anytime.') +
       (notEnded ? (/^zh/.test(document.documentElement.lang) ? '' : ' ') + T('event-detail.archive.confirm.notended', 'This event hasn’t ended yet. Any pending listing schedule is cancelled, and nothing can change on it until you unarchive.') : '');
-    if (ul) { ul.hidden = true; ul.innerHTML = ''; }
-    evPending = () => {
+    const doArchive = () => {
       /* 封存時一併取消尚未生效的上架排程〔推導，比照商品〕 */
       if (ev.listing && ev.listing.from && EVS.saveEdits) EVS.saveEdits(id, { listing: Object.assign({}, ev.listing, { from: '' }) });
       EVS.setArchived(id, true);
       applyArchived(); syncArchiveItems(); syncRowActions(); apply(); syncKpis();
     };
-    evSetOkLabel(evDialog, 'e-shop.archive.confirm', 'Archive');
-    evDialog.setAttribute('data-open', '');
-    const ok = evDialog.querySelector('[data-ev-confirm-ok]'); if (ok) ok.focus();
+    window.ztorDialog.confirm({ title: cfTitle, body: cfBody, okLabel: T('e-shop.archive.confirm', 'Archive'), cancelLabel: T('e-shop.shown.cancel', 'Cancel') })
+      .then(ok => { if (ok) doArchive(); });
   }
   syncArchiveItems();
   document.addEventListener('i18n:applied', syncArchiveItems);
@@ -2611,7 +2589,6 @@
   syncRowActions();
   document.addEventListener('i18n:applied', syncRowActions);
 
-  function evCloseDelete() { evPending = null; const d = getEvDialog(); if (d) d.removeAttribute('data-open'); }
   document.addEventListener('click', e => {
     const del = e.target.closest('[data-ev-delete]');
     if (del) { const row = del.closest('.product-list__row'); if (row) evAskDelete(row); return; }
@@ -2623,10 +2600,7 @@
       if (id && window.ztorEvents) { window.ztorEvents.setArchived(id, false); applyArchived(); syncArchiveItems(); syncRowActions(); apply(); syncKpis(); }
       return;
     }
-    if (e.target.closest('[data-ev-confirm-ok]')) { const p = evPending; evCloseDelete(); if (p) p(); return; }
-    if (e.target.closest('[data-ev-confirm-cancel]')) { evCloseDelete(); }
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && evPending) evCloseDelete(); });
 
   apply();
 })();
@@ -2639,19 +2613,6 @@
 <!-- 草稿刪除的確認彈窗（2026-09-21 · D294，5.1.6 F1 草稿列操作／主規格 §7.14「封存與不可刪除」活動比照）：
      借 e-shop 草稿刪除同一個 leave-dialog 殼與文案節奏——標題帶活動名、內文說明「草稿還沒真正建立，刪除不影響任何人」＋不可復原、
      主鈕 .btn--destructive。只有草稿列的 kebab 放 [data-ev-delete]；發布過的列沒有刪除入口（D281／D294）。取消／✕／Esc 都不動資料。 -->
-<div class="leave-dialog" data-ev-confirm-dialog role="dialog" aria-modal="true" aria-labelledby="ev-confirm-title">
-  <div class="leave-dialog__scrim" data-ev-confirm-cancel></div>
-  <div class="leave-dialog__card">
-    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-ev-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
-    <h2 class="leave-dialog__title" id="ev-confirm-title" data-ev-confirm-title></h2>
-    <p class="leave-dialog__body" data-ev-confirm-body></p>
-    <!-- D331 決定四／D340：草稿活動裡含本活動票券的組合包，隨活動一起刪除的名單（沒有就收起；D429 起只剩創作者自建的） -->
-    <ul class="leave-dialog__list" data-ev-confirm-list hidden></ul>
-    <div class="leave-dialog__actions">
-      <button class="btn btn--destructive" type="button" data-ev-confirm-ok><span data-i18n="events.delete.confirm">Delete</span></button>
-      <button class="btn btn--outline" type="button" data-ev-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
-    </div>
-  </div>
-</div>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

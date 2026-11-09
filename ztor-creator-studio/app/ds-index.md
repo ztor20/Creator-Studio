@@ -16,7 +16,7 @@
 - 5.1.5 Multi-step wizard（Workflow） ｜ 什麼時候用：A create flow with 3–4 dependent steps — 建立一件東西、步驟彼此相依（見下方實例）。 ｜ 展示頁 `design-system-pattern.html#pattern-wizard`
 - 5.1.6 Form assembly（Workflow） ｜ 什麼時候用：Any create / edit form — wizard steps, settings forms, create-product / -event / -project sections. ｜ 展示頁 `design-system-pattern.html#pattern-form-assembly`
 - 5.1.7 Settings page（Layout） ｜ 什麼時候用：A page of read-mostly toggles and account values（Settings 主頁、店鋪設定、通知設定）. ｜ 展示頁 `design-system-pattern.html#pattern-settings`
-- 5.1.8 Modal shell（Interaction） ｜ 什麼時候用：Any interruptive, complete-one-thing task — request payout, broadcast message, new product post, manual entry. ｜ 展示頁 `design-system-pattern.html#pattern-modal`
+- 5.1.8 Modal types 彈窗類型（Interaction） ｜ 什麼時候用：任何打斷目前頁面、要使用者完成一件事的浮層。 ｜ 展示頁 `design-system-pattern.html#pattern-modal`
 - 5.1.9 Split preview（Layout） ｜ 什麼時候用：Editing where the creator needs a live fan-side view — create-product / create-auction preview, e-shop "See a… ｜ 展示頁 `design-system-pattern.html#pattern-split-preview`
 - 5.1.10 Detail + persistent rail（Layout） ｜ 什麼時候用：An entity page where editing is split across tabs, but a handful of read-only facts must never leave view — p… ｜ 展示頁 `design-system-pattern.html#pattern-detail-rail`
 - 5.1.11 Destructive confirm（Interaction） ｜ 什麼時候用：一個按下去就收不回來的動作——作廢明細、刪除商品／草稿／活動、停用帳號。可逆的動作（存草稿、下架、切換顯示）不走這張卡，直接做完給 toast。 ｜ 展示頁 `design-system-pattern.html#pattern-destructive-confirm`

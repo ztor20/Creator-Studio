@@ -12,7 +12,7 @@
 - **不是 pattern 的東西**：單一元件（Pillar 4）；頁面骨架、網格與模板（Pillar 6）；產品規則，例如「付款資訊要在確認步驟重述」屬於 `documents/`，pattern 只說要在哪裡、用什麼方式呈現。
 - **Pillar 5 分兩區**：「組裝做法」＝5.1 的 pattern 卡；「全站通則」＝5.2 文案語氣、5.3 狀態與互動、5.4 資料視覺化。原本的 5.5 流程清單已併進 5.1.5 的實例。
 
-**做頁面或新樣式時怎麼用**：先看產品規格 → 找 pattern（有就照做；大致適用但要不同分支就加變體，不改原 pattern——只有所有實例都該跟著改時才改原 pattern並同步每個實例；沒有的話，會重複用才建新 pattern，只有這一頁就記進 `BUILD-SPEC.md`）→ 找元件（用現成；差一點加變體；只有一頁用就留在頁面；都沒有才建新元件）→ 把這頁加進用到的 pattern 卡「實例」。
+**做頁面或新樣式時怎麼用**：先看產品規格 → 找 pattern（元件有多種用途時先看它的類型總卡判斷是哪一類，例如 5.1.8 彈窗類型；都不像先檢討分類；有就照做；大致適用但要不同分支就加變體，不改原 pattern——只有所有實例都該跟著改時才改原 pattern 並同步每個實例；沒有的話，會重複用才建新 pattern，只有這一頁就記進 `BUILD-SPEC.md`）→ 找元件（用現成；差一點加變體；只有一頁用就留在頁面；都沒有才建新元件）→ 把這頁加進用到的 pattern 卡「實例」。
 
 ### 5.1 Pattern cards
 
@@ -29,7 +29,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 | 5.1.5 | Multi-step wizard | `#pattern-wizard` |
 | 5.1.6 | Form assembly | `#pattern-form-assembly` |
 | 5.1.7 | Settings page | `#pattern-settings` |
-| 5.1.8 | Modal shell | `#pattern-modal` |
+| 5.1.8 | Modal types 彈窗類型 | `#pattern-modal` |
 | 5.1.9 | Split preview | `#pattern-split-preview` |
 | 5.1.10 | Detail + persistent rail | `#pattern-detail-rail` |
 | 5.1.11 | Destructive confirm | `#pattern-destructive-confirm` |
@@ -100,15 +100,36 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 - **must-not**: Never mix instant-apply and save-button rows in the same card; never put two controls in one row's right slot; never bury a destructive action mid-list.
 - **_edge-cases**: `empty` → hide the group, not an empty card; `error` → row-level inline `Alert --row`; `new-user` → defaults pre-selected, no forced tour; `mobile` → nav collapses above the cards; `offline` → toggles disabled with a stale banner.
 
-#### 5.1.8 Modal shell (Interaction) · `#pattern-modal`
+#### 5.1.8 Modal types 彈窗類型 (Interaction) · `#pattern-modal`
 
-- **trigger**: Any interruptive, complete-one-thing task — request payout, broadcast message, new product post, manual entry.
-- **must**: Reuse the single canonical dialog chrome（`.payout-dialog` head / body / foot, `payout-modal.css`）+ backdrop + `is-modal-open` scroll-lock; destructive / money actions add a confirm gate before commit.
-- **should**: Focus-trap inside the dialog; primary action right-aligned in the foot; body reuses Field / Data-list rather than bespoke layouts.
-- **must-not**: Never roll a new modal chrome per feature; never stack two modals; never let backdrop-click discard unsaved money input without confirm.
+2026-11-09 由「Modal shell」改成彈窗的類型總卡（依同日全站普查：138 個浮層，見 `docs/彈窗普查-2026-11-09.md`）。彈窗分兩層：**元件層**是外殼本身（§4.61 Modal shell：`.payout-modal`／`.payout-dialog` 頭身腳、遮罩、寬度修飾類）；**本卡**規定彈窗有哪些類型、每一類放什麼、按鈕怎麼排、用哪個寬度。
+
+- **trigger**: 任何打斷目前頁面、要使用者完成一件事的浮層。
+- **怎麼用**：
+  1. 先判斷需求是下表哪一類，照那一類的寬度、內容順序與按鈕做。
+  2. 都不像時，先檢討分類本身要不要改（加一類、拆一類或改定義），寫進本卡並更新實例；不要硬塞進最接近的一類，也不要在頁面另寫一種。
+  3. 類型確定後，元件（§4.61）做不出來，才改元件（例如加寬度修飾類）。
+- **類型**：
+
+| 類型 | 使用者在做什麼 | 外殼與寬度 | 內容順序 | 按鈕 | 實例 |
+|---|---|---|---|---|---|
+| 1 填寫送出 | 填一張小表單後送出 | 預設 620px（欄位多、要並排時用 `--wide` 880px） | 標題 → 欄位（Field system）→ 必要的費用或影響摘要 | 取消＋主動作（動詞，例「申請撥款」） | 申請撥款、補貨、補登收入、建立優惠碼、群發訊息、建立商品後發文、上傳資料檔、費率例外 |
+| 2 確認後執行 | 確認一個可以復原的動作 | `--narrow` 460px | 做什麼 → 會發生什麼（可列出受影響項目） | 取消＋一般主鈕 `.btn--primary`；不用紅色（Q144） | 下架、封存、重新上架、登入語言確認 |
+| 3 破壞性確認 | 確認一個收不回來的動作 | `--narrow` 460px | 見 5.1.11 四段 | 取消＋紅色確認鈕（與入口同級） | 見 5.1.11 |
+| 4 匯出 | 確認筆數後下載檔案 | 預設 620px | 見 5.1.12 | 取消＋「匯出 N 筆」 | 見 5.1.12 |
+| 5 挑選 | 從清單裡選一個或多個 | `--wide` 880px；清單只有一欄勾選（例：標籤）時用預設 620px | 搜尋／篩選 → 清單 → 已選數量 | 取消＋「加入（N）」 | 加入組合物、選商品、選作品 |
+| 6 看細節 | 唯讀看一筆資料的完整內容 | 單獨看一筆用彈窗（預設或 `--wide`）；要跟清單逐筆對照著看用側邊抽屜 Drawer（Q143） | 標題（是哪一筆）→ 唯讀欄位（KV list）→ 明細 | 只有關閉；要動作時放頁尾 | 交易明細、粉絲紀錄、核銷紀錄 |
+| 7 提示告知 | 只需要知道（被擋下的原因、說明） | `--narrow` 460px | 發生什麼 → 為什麼 → 怎麼處理 | 一顆「知道了」；可附「前往處理」 | 發布被擋、條件說明 |
+| 8 離開未存 | 有未存的變更要離開 | Leave dialog（§4.77） | 有哪些變更沒存 | 繼續編輯＋捨棄 | 建立與編輯流程 |
+| 9 選擇做法 | 二選一決定流程往哪走 | 預設 620px | 問句 → 選擇卡（Selection card） | 選了就前進，或取消 | 要怎麼建這些門票 |
+| 10 開另一頁 | 在原頁上開另一個頁面 | Embed modal 全畫面 | iframe 內容 | 關閉 | 商店設定、預覽 |
+| 11 整頁工作區 | 一整個功能裝進浮層 | 全畫面浮層：`--xwide` 1180px（與 Embed modal 同上限） | 依功能 | 依功能 | 粉絲分級設定、媒體庫彈窗版 |
+
+- **must**（所有類型共通）: Reuse the single canonical dialog chrome（`.payout-dialog` head / body / foot, `payout-modal.css`）+ backdrop + `is-modal-open` scroll-lock；寬度只用 `--narrow`（460）／預設（620）／`--wide`（880）／`--xwide`（1180），跟著類型走，不寫行內寬度（Q142）。「確認後執行」「破壞性確認」「提示告知」三類一律用 `.payout-dialog --narrow`；Leave dialog 只給「離開未存」（Q141）。
+- **should**: Focus-trap inside the dialog; primary action right-aligned in the foot; body reuses Field / Data-list / KV list rather than bespoke layouts.
+- **must-not**: 不用瀏覽器原生 `confirm()`／`alert()`；never roll a new modal chrome per feature; never stack two modals; never let backdrop-click discard unsaved money input without confirm；可以復原的動作不用紅色確認鈕（Q144）。
 - **_edge-cases**: `empty` → open with sensible defaults; `error` → inline `Alert --row` inside the body, dialog stays open; `new-user` → helper line under the title; `mobile` → dialog goes full-width bottom-sheet-like; `offline` → submit disabled with reason.
-
-- **實例**（共用的彈窗殼在 §4.61 Modal shell／Payout picker）：申請撥款（`earnings.html`）· 群發訊息（Message composer §4.64，含 Token chip §4.65）· 建立商品後發文（New product post §4.39）· 補貨（Restock §4.62）· 補登收入（Manual entry modal §4.126）· 登入語言確認（Login lang prompt §4.131）· 重新上架確認（Schedule restore §4.77a 是彈窗裡的提示區塊）· 上傳資料檔（Source upload modal，`fan-analytics.html`）· 費率例外（Fee exception modal，`admin-platform-fees.html`）。破壞性動作與匯出另有自己的做法：5.1.11、5.1.12。
+- **待收斂**（2026-11-09 普查發現；同日已收斂：原生 confirm／alert 全部換成 `js/ztor-dialog.js`、6 個功能的確認改用窄版彈窗、寬度寫死與不合類型的 6 處、受眾報告與核銷紀錄的下載改走匯出確認、`partials/publish-preview.js` 與 `ztorCsv.openLog()` 退場）：收入「貼文報表」的「Export .xlsx」按鈕沒有任何動作，要先定匯出規格；同類重複實作待收成共用（優惠碼建立 3 份、規格圖片 2 份、收益明細 4 份、create-bundle 兩個同名「加入組合物」）；其餘 100 多個彈窗的寬度還沒逐一對照類型。
 
 #### 5.1.9 Split preview (Layout) · `#pattern-split-preview`
 
@@ -128,19 +149,19 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 
 #### 5.1.11 Destructive confirm (Interaction) · `#pattern-destructive-confirm`
 
-2026-09-08 建，第一個消費者是訂單詳情的「作廢品項」（`order-detail.html` 的 `#od-void-modal`）。站上原本每個破壞性動作各自處置（刪除商品、刪草稿都在頁內註「確認流程待規格」、原型暫用原生 `confirm()`），這張卡把做法定下來：**沒有新的 modal CSS——它是既有 Modal shell（§5.1.8）加上 `.btn--destructive` 的組裝規則**，所以規則寫在 Pattern、不寫成元件。
+2026-09-08 建，第一個消費者是訂單詳情的「作廢品項」（`order-detail.html` 的 `#od-void-modal`）。站上原本每個破壞性動作各自處置（刪除商品、刪草稿都在頁內註「確認流程待規格」、原型暫用原生 `confirm()`），這張卡把做法定下來：**沒有新的 modal CSS——它是5.1.8 彈窗類型的共用外殼（§4.61）加上 `.btn--destructive` 的組裝規則**，所以規則寫在 Pattern、不寫成元件。
 
 - **trigger**: 一個按下去就收不回來的動作——作廢明細、刪除商品／草稿／活動、停用帳號。可逆的動作（存草稿、下架、切換顯示）不走這張卡，直接做完給 toast。
 - **must**: 入口用 `.btn--ghost.btn--destructive`（紅字、不搶焦點），確認那一顆才是 `.btn--destructive`（透明底＋紅框紅字，Q37 2026-08-06 裁決）；彈窗重用 canonical 對話框殼（`.payout-modal` ／ `.payout-dialog` 頭／身／腳）；內容順序固定四段——**動到哪一項**（具體名稱與數量，不只說「這個項目」）→ **前置條件**（要先在別的系統做完什麼，例如「請先在 Stripe 完成人工退款」）→ **會發生什麼**（逐條列後果：憑證失效、庫存回補、寄信給誰）→ **不可逆**；完成後給 toast 說出實際發生了什麼，不是只說「成功」。
 - **should**: 停用的入口按鈕保留在畫面上並用 `title` 說明為什麼不能按（不可作廢、沒有權限），不要直接隱藏——看不到的按鈕會被讀成「這個功能不存在」；後果條目照「使用者最在意的」排序（買家會收到什麼放最後一條，因為那是唯一會傳出去的動作）。
 - **must-not**: 不可用原生 `confirm()`；不可把後果寫成一句籠統的「此操作無法復原」就了事；不可讓確認鈕成為整個彈窗唯一的視覺焦點以外的東西（不要同時放兩顆紅的）；不可在確認前就先改畫面狀態。
 - **2026-10-15 補（目視檢查 C1，STYLE-DECISIONS Q134）**：確認鈕不得比入口弱——入口是 `.btn--ghost.btn--destructive` 時確認鈕照上面用 `.btn--destructive`（紅框）；入口已是淡紅底 `.btn--soft.btn--destructive`（Q 2026-09-11 清單列每列一顆的撤銷、訂單詳情頁首的整單撤銷）時，確認鈕用同一款淡紅底（同級）。**前置條件與不可逆兩段改用 `Alert --row`**（前置＝`--warning`、不可逆＝`--error`，放在原因欄上方），不再是兩行灰色 hint——它們是警告、不是說明。前置條件不適用時整條收起（例：免費訂單〔金額 0、不經金流〕不出現 Stripe 退款提醒）。首個消費者：`order-detail.html` `#od-void-modal`（單品與整單同一個視窗）。
-- **2026-10-15 全站套用（Q134）**：活動詳情的共用確認視窗（`event-detail.html` `openConfirm()`，`danger:true`）所有破壞性動作的確認鈕一律 `.btn--soft.btn--destructive`——撤銷全部剩餘票券、撤銷單張票、下架活動、移除場次、捨棄變更（取消活動於 2026-10-20 D457 退場）。同一個視窗服務多個入口，確認鈕取最強入口那一級（撤銷全部剩餘票券的淡紅底），任何入口都不會比它重。自帶視窗、入口是紅框、ghost、選單項或圖示鈕的頁面（刪除商品、刪除草稿、刪除 IP 等）維持紅框確認鈕：與入口同級，符合本規則。
+- **2026-10-15 全站套用（Q134）**：活動詳情的共用確認視窗（`event-detail.html` `openConfirm()`，`danger:true`）所有破壞性動作的確認鈕一律 `.btn--soft.btn--destructive`——撤銷全部剩餘票券、撤銷單張票、移除場次、捨棄變更（取消活動於 2026-10-20 D457 退場；下架可以復原，2026-11-09 起改用一般確認鈕，Q144）。同一個視窗服務多個入口，確認鈕取最強入口那一級（撤銷全部剩餘票券的淡紅底），任何入口都不會比它重。自帶視窗、入口是紅框、ghost、選單項或圖示鈕的頁面（刪除商品、刪除草稿、刪除 IP 等）維持紅框確認鈕：與入口同級，符合本規則。
 - **_edge-cases**: `empty` → 沒有可作廢對象時不開窗，入口本來就該停用；`error` → 失敗時彈窗留著、body 內用 `Alert --row` 說明，不要關窗吞掉；`new-user` → 不需要導覽，四段內容本身就是說明；`mobile` → 對話框滿寬，兩顆動作維持右對齊；`offline` → 確認鈕停用並說明原因。
 
 #### 5.1.12 Export confirm (Interaction) · `#pattern-export-confirm`
 
-2026-10-15 建（D416），第一批消費者是訂單管理的「匯出」（`orders.html`）與活動詳情交易明細的「匯出交易」（`event-detail.html`）。**沒有新的 modal CSS**——它是既有 Modal shell（§5.1.8）加上 `.zcheck`，由 `js/csv-export.js` 的 `ztorCsv.confirm()` 在第一次開啟時建立、整頁共用；CSV 本體由 `ztorCsv.build()` 在瀏覽器端產生並以 `ztorCsv.download()` 下載。
+2026-10-15 建（D416），第一批消費者是訂單管理的「匯出」（`orders.html`）與活動詳情交易明細的「匯出交易」（`event-detail.html`）。**沒有新的 modal CSS**——它是5.1.8 彈窗類型的共用外殼（§4.61）加上 `.zcheck`，由 `js/csv-export.js` 的 `ztorCsv.confirm()` 在第一次開啟時建立、整頁共用；CSV 本體由 `ztorCsv.build()` 在瀏覽器端產生並以 `ztorCsv.download()` 下載。
 
 - **trigger**: 創作者已篩好一份清單、要把它拿成檔案——訂單管理、活動交易明細。檔案照目前的篩選結果，所以下載前先講會有幾筆。
 - **must**: 重用 canonical 對話框殼（`.payout-modal`／`.payout-dialog--narrow`）；內容順序固定——**筆數**（「將匯出 N 筆訂單（照目前的篩選結果）」）→ 選填的個資核取框（`.zcheck`）與一行說明 → 腳（取消＝`.btn--ghost`、匯出＝`.btn--primary`）；核取框每次開窗都回到不勾，個資預設不外流；零筆時匯出鈕停用並講明沒有可匯出的內容。
@@ -153,7 +174,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 - **2026-10-28 改版（使用者：「匯出紀錄可以在這（匯出視窗）查看，工具列就不用放」，先想 UX 再做 UI；UI-CHANGES 三百七十七）**：工具列的「匯出紀錄」鈕退場（訂單管理、活動詳情交易明細兩處），紀錄改列在匯出視窗下半部。視窗由 `--narrow` 回到預設 620px。body 兩塊（`ds-components/export-dialog.css`）：
   - `.export-summary`：大字筆數（`__num`，`--fs-28` 數字字型）＋單位，下一行「照目前的篩選結果：{篩選條件}」——篩選條件用匯出紀錄同一種寫法（`filterText`），按匯出前不必回頭看清單上方開了哪些篩選。
   - `.export-history`（版本閘 O42 關閉時整塊不出現）：上緣一道 `--border-soft` 細線和上半部分開；標題＋一句說明；最近 3 筆 `.data-list__row`，多於 3 筆時「顯示全部 N 筆」就地展開／收回；和這次篩選相同的紀錄右側 `.badge--neutral`「同樣的篩選」（比對時不看「收件資料」那一項——它是匯出選項、不是篩選），讓人按匯出前就看得到剛剛是不是已經匯過同一份。沒有紀錄時一句「還沒有匯出過，這次匯出後會記在這裡」。
-  - 主鈕寫筆數「匯出 N 筆」（零筆時停用、寫「匯出」）。`ztorCsv.confirm()` 多收 `scope`、`filters`；`openLog()` 保留給舊呼叫，頁面已不用。
+  - 主鈕寫筆數「匯出 N 筆」（零筆時停用、寫「匯出」）。`ztorCsv.confirm()` 多收 `scope`、`filters`；`openLog()` 已於 2026-11-09 退場（全庫無呼叫者）。
 
 #### 5.1.13 Pre-publish preview (Workflow) · `#pattern-prepublish`
 
