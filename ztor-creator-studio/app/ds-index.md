@@ -30,7 +30,7 @@
 - 5.4 Data Visualization
 - 5.5 Workflow patterns
 
-## Pillar 4 速查 · 元件（ds-components/，共 140 支；主 class 前 5 個 ｜ 用途 ｜ 規格檔）
+## Pillar 4 速查 · 元件（ds-components/，共 139 支；主 class 前 5 個 ｜ 用途 ｜ 規格檔）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Collapsible sections (chevron-rotate, height transition) ｜ 規格 `ds-specs/4.14-accordion.md`
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列 ｜ 規格 `ds-specs/admin-ip-bank-table.md`
@@ -76,7 +76,6 @@
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ 建立活動粉絲視角活動卡（即時預覽） ｜ 規格 `ds-specs/4.22p-event-preview-card.md`
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ 欄位旁 info 圖示開正式說明彈窗，取代重複提示 ｜ 規格 `ds-specs/4.98-explainer.md`
 - `export-dialog.css` — .export-summary, .export-summary__count, .export-summary__num, .export-summary__unit, .export-summary__filters ｜ 匯出視窗的內容區，上方顯示這次匯出摘要，下方列匯出紀錄 ｜ 規格 `ds-specs/export-dialog.md`
-- `fact-list.css` — .fact-list, .fact-list__item ｜ 唯讀事實列，左邊放欄目名、右邊放值，用於詳情彈窗 ｜ 規格 `ds-specs/fact-list.md`
 - `fan-phone.css` — .fan-phone, .preview-col--tall, .wizard-split__rail, .preview-col ｜ 建立流程右欄的粉絲頁手機版鏡像框，商品與活動預覽共用 ｜ 規格 `ds-specs/4.243-fan-phone.md`
 - `fan-shop.css` — .fep-shop, .fep-shop--event ｜ 粉絲端頁面的 1:1 鏡像（活動、商品、組合包、專案四種頁），給發布前預覽用（pattern 5.1.13）；fan-shop.css 不得被其他頁引用 ｜ 規格 `ds-specs/4.215-fan-event-page.md`
 - `fan-store.css` — .fan-store, .fan-store__overline, .fan-store__page, .fan-store__profile, .fan-store__avatar ｜ 電子商店與商店設定預覽用的粉絲端創作者頁手機版鏡像 ｜ 規格 `ds-specs/fan-store-preview.md`
@@ -96,7 +95,7 @@
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ 圖表下單行自動洞察（無洞察隱藏） ｜ 規格 `ds-specs/4.22k-insight-row.md`
 - `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ 待辦事項面板：把「還等著創作者處理的事」整批攤開，依來源模組分組、一次展開一則 ｜ 規格 `ds-specs/issue-panel.md`
 - `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ 儀表板與收入頁的關鍵指標卡，以大字顯示單一數字 ｜ 規格 `ds-specs/4.12-kpi.md`
-- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__sub, .kv__sub--over ｜ 唯讀鍵值列（鍵左值右、逐列 hairline）：詳情頁 meta 卡、狀態摘要 ｜ 規格 `ds-specs/4.50-kv-list.md`
+- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__sub, .kv__sub--over ｜ 唯讀鍵值列（鍵左值右、逐列 hairline；2026-11-09 Fact list 併入，Q140）：詳情頁 meta 卡、狀態摘要 ｜ 規格 `ds-specs/4.50-kv-list.md`
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title ｜ 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用 ｜ 規格 `ds-specs/leave-dialog.md`
 - `limit-set.css` — .limit-set, .limit-set__head, .limit-set__sub, .limit-set__act, .limit-set__fields ｜ 限購：一欄＋一句輔助說明、只換單位（件／組／張） ｜ 規格 `ds-specs/4.234-limit-set.md`
 - `link-field.css` — .linkf, .linkf__label, .linkf__row, .linkf__input, .linkf__act ｜ 系統產生、不可編輯、要能整條帶走的連結：唯讀等寬輸入框吃滿寬、行尾複製與重置、底下一行說明 ｜ 規格 `ds-specs/4.206-link-field.md`

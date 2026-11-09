@@ -102,7 +102,6 @@ document.write(String.raw`  <aside class="toc">
     <a class="toc__link toc__link--sub" href="design-system-components-lists.html#filter-row">Filter row</a>
     <a class="toc__link toc__link--sub" href="design-system-components-lists.html#list-toolbar">List toolbar</a>
     <a class="toc__link toc__link--sub" href="design-system-components-lists.html#empty">Empty stub</a>
-    <a class="toc__link toc__link--sub" href="design-system-components-lists.html#fact-list">Fact list</a>
     <a class="toc__link toc__link--sub" href="design-system-components-lists.html#progress-mark">Progress mark</a>
     <a class="toc__link toc__link--sub" href="design-system-components-lists.html#section-nav">Section nav</a>
     <a class="toc__link toc__link--sub" href="design-system-components-lists.html#section-outline">Section outline</a>
