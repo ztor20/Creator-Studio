@@ -611,7 +611,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
      var info = window.ZTOR_PARTIALS.bindPickupSessionInfo(selectEl, hostEl);
      info.addCreated(session)   // 彈窗 onCreate 交來的物件 → 新增一個選項、選中並列出資訊
 
-   host 是頁面放好的 .fact-list，裡面用 data-*-si-loc / -time / -status / -link 標出各格
+   host 是頁面放好的 .kv 列容器（2026-11-09 前是 .fact-list），裡面用 data-*-si-loc / -time / -status / -link 標出各格
    （前綴由 host 的 data-*-session-info 屬性決定）。
    已知的示範場次對應 pickup-detail 既有的 i18n key，切語言跟著換；剛建的場次是使用者輸入，
    直接顯示字面值。 */
@@ -698,7 +698,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
      api.refresh()   // 成員變了就重畫成員列
      api.get()       // 目前的值（開關關＝null）
    畫面：成員列（.data-list，每列寫出該成員勾的取貨方式與場次）＋開關列「改用組合包自己的場次」（.control-group，
-   開了才出現場次下拉與場次資訊 .fact-list，沿用上面的 bindPickupSessionInfo）。
+   開了才出現場次下拉與場次資訊 .kv 列，沿用上面的 bindPickupSessionInfo）。
    開關開著但還沒選場次＝沒有自己的場次，存成 null（＝繼承；ASSUMPTIONS UIA-291）。 */
 (function () {
   'use strict';
@@ -720,11 +720,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
             '<option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>' +
             '<option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>' +
           '</select>' +
-          '<div class="fact-list" data-bp-session-info hidden>' +
-            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.loc">Location</span><span data-bp-si-loc></span></div>' +
-            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.time">Time</span><span data-bp-si-time></span></div>' +
-            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.status">Status</span><span><span class="badge" data-bp-si-status><span></span></span></span></div>' +
-            '<div class="fact-list__item"><span data-i18n="cp.delivery.session.manage">Pickup management</span><span><a class="card__link" href="pickup-detail.html" data-bp-si-link data-view-safe data-i18n="cp.delivery.session.view">View session</a></span></div>' +
+          '<div data-bp-session-info hidden>' +
+            '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.loc">Location</span><span class="kv__v" data-bp-si-loc></span></div>' +
+            '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.time">Time</span><span class="kv__v" data-bp-si-time></span></div>' +
+            '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.status">Status</span><span class="kv__v"><span class="badge" data-bp-si-status><span></span></span></span></div>' +
+            '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.manage">Pickup management</span><span class="kv__v"><a class="card__link" href="pickup-detail.html" data-bp-si-link data-view-safe data-i18n="cp.delivery.session.view">View session</a></span></div>' +
           '</div>' +
         '</div>' +
       '</div>' +

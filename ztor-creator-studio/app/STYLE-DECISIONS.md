@@ -129,6 +129,7 @@
 
 | 編號 | 角色/題目 | 裁決 | 日期 | 理由 | 執行狀態 |
 |---|---|---|---|---|---|
+| Q140 | 唯讀鍵值列：Fact list 與 KV list 兩支 | A 合併：只留 KV list（`.kv`／`.kv__k`／`.kv__v`），線色 `--border-soft`、值加 `overflow-wrap: anywhere`；`fact-list.css` 改墓碑 | 2026-11-09 | 同一個視覺角色只留一種做法；兩支差別只在線色與長值換行 | ✅ 已執行（建立商品、商品詳情、組合包頁的取貨場次資訊、專案詳情更新紀錄；`ds-specs/4.50-kv-list.md`） |
 
 ## 待裁決
 
@@ -628,15 +629,6 @@ Q39 顯示端續作把清單縮圖與卡片封面收斂成單一直式 `--img-po
 - 選項與取捨：**A** 維持現況，兩者都是 component-scoped、不升級，未來每個元件自己需要就各刻一個（成本：往後每多一個「這格超標」場景就會重複同一段 CSS）；**B** 把 `.fc-hint--over` 升級成 field-system 層的通用修飾（例如 `.field__hint--error`，定義在 `field-system.css`），`bundle-editor.css` 兩個既有 class 都改吃它，之後任何欄位要表達「超過上限」都有現成答案（成本：要重新測試 field-system 的載入順序與既有消費者不受影響）；**C** 只統一命名、不搬家（兩個 class 改同名但仍留在 `bundle-editor.css`，不升級成 DS 級）。
 - 建議：B——欄位級錯誤提示是任何表單都可能需要的通用需求，不應該是套組編輯器的專屬能力；但涉及 field-system.css 載入順序與既有 8 處以上消費頁，屬於需要使用者確認才動的範圍。
 - **2026-08-04 追加第三份同構實作**：`.field__hint.tier-card__err`（`ds-components/ticket-tier-card.css`，票種卡的欄位級驗證訊息）用的是與現況 B 完全相同的配方——同樣疊在 `.field__hint` 上、同樣 `--status-error`、同樣寫成兩個 class 提高權重。本輪不擅自升級成 DS 級（那是本題要裁決的事），只登記證據：這已經是第三次為同一件事各刻一份 CSS，選項 B 的成本理由又多一個消費者。
-
-### Q140：唯讀鍵值列有兩支——Fact list 與 KV list（2026-11-09 提出，待裁決）
-
-同一個視覺角色（唯讀「名稱 → 值」，一項一行、值靠右）有兩支元件：`fact-list.css:25–50` 與 `kv-list.css:30–71`。版面、間距、字級都相同，只差兩點：
-- 列線：fact-list 用 `color-mix(in srgb, var(--border) 40%, transparent)`，kv 用 `--border-soft`（Q72 裁定列線用 `--border-soft`）。
-- 長值：fact-list 的值有 `overflow-wrap: anywhere`，kv 沒有。
-
-fact-list 用在 create-bundle、bundle-detail、create-product、pickup-detail、project-detail、pickup、product-detail 與 `partials/pickup-session-modal.js`。
-選項：**A** 合併：kv 補上 `overflow-wrap`，fact-list 各處改用 `.kv` 標記，線色跟著 Q72 統一成 `--border-soft`；**B** 維持兩支，在兩支規格檔寫明分工。暫依現況（兩支並存），未新增第三種。裁決權在使用者。
 
 ### Q35：原價刪除線有兩種做法，字級不同（2026-07-30 提出，待裁決）
 

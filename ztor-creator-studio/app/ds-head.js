@@ -77,7 +77,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/step-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/post-composer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">

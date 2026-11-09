@@ -142,7 +142,6 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Ticket tier card](../ds-specs/4.114-ticket-tier-card.md) | 🟡 molecule | ✓ App | 建立活動時的票種卡，可收合檢視價格與數量，展開後編輯 | [ticket-tier-card.css](../ds-components/ticket-tier-card.css) |
 | [Readiness card](../ds-specs/4.22g-readiness-card.md) | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner | [readiness.css](../ds-components/readiness.css) |
 | [Post composer](../ds-specs/post-composer.md) | 🟡 molecule | 📄 頁面專用：專案詳情與專案列表（project-detail.html、projects.html） | 發文框，用於進度時間軸、發布更新彈窗與總覽進度摘要的入口 | [post-composer.css](../ds-components/post-composer.css) |
-| [Fact list](../ds-specs/fact-list.md) | 🔵 atom | ✓ App | 唯讀事實列，左邊放欄目名、右邊放值，用於詳情彈窗 | [fact-list.css](../ds-components/fact-list.css) |
 | [Progress mark](../ds-specs/progress-mark.md) | 🔵 atom | ✓ App | 進度記號：一顆記號、兩個消費者共用（時間軸與總覽的進度摘要） | [progress-mark.css](../ds-components/progress-mark.css) |
 | [Step list](../ds-specs/step-list.md) | 🟡 molecule | 📄 頁面專用：專案詳情與專案列表（project-detail.html、projects.html） | 階段清單：一串回答「走到第幾步」的列，不是時間軸——沒有日期欄、沒有今天、不能往回捲 | [step-list.css](../ds-components/step-list.css) |
 | [Progress timeline](../ds-specs/4.51b-progress-timeline.md) | 🟠 organism | 📄 頁面專用：專案詳情與專案列表（project-detail.html） | 交付時間軸：一條由真實日期驅動的垂直時間流，未來在上、今天在中、過去在下 | [progress-timeline.css](../ds-components/progress-timeline.css) |
@@ -249,7 +248,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Funding panel](../ds-specs/4.91-funding-panel.md) | 🟡 molecule | 📄 頁面專用：專案詳情與專案列表（project-detail.html） | 募資概況面板：已募金額＋支持人數／目標／進度條＋百分比藥丸／倒數＋募資期間／口徑註記，一個區塊講完 | [funding-panel.css](../ds-components/funding-panel.css) |
 | [Rental card](../ds-specs/rental-card.md) | 🟡 molecule | 📄 頁面專用：IP 詳情（ip-detail.html） | Rental / bidding terms and CTA card | [shared.css](../shared.css) |
 | [Meta cell](../ds-specs/meta-cell.md) | 🟢 atom | ✓ Project | Compact label/value stack in dense commercial panels | [shared.css](../shared.css) |
-| [KV list](../ds-specs/4.50-kv-list.md) | 🟢 atom | ✓ Project | 唯讀鍵值列（鍵左值右、逐列 hairline）：詳情頁 meta 卡、狀態摘要 | [kv-list.css](../ds-components/kv-list.css) |
+| [KV list](../ds-specs/4.50-kv-list.md) | 🟢 atom | ✓ Project | 唯讀鍵值列（鍵左值右、逐列 hairline；2026-11-09 Fact list 併入，Q140）：詳情頁 meta 卡、狀態摘要 | [kv-list.css](../ds-components/kv-list.css) |
 | [Calc list](../ds-specs/4.217-calc-list.md) | 🟡 molecule | ✓ App | 算式列表：一行一項、列首一個運算子（＋ − ＝）、末列是結果 | [calc-list.css](../ds-components/calc-list.css) |
 | [Stock bar](../ds-specs/4.51-stock-bar.md) | 🟢 atom | ✓ Project | 5px 細長量條（庫存水位／用量比例），必與精確數字並列 | [stock-bar.css](../ds-components/stock-bar.css) |
 | [Points QR card](../ds-specs/4.51c-points-qr-card.md) | 🟡 molecule | 📄 頁面專用：現場核銷與掃碼（pickup-detail.html） | 掃碼領點的 QR 卡，含 QR 名稱、每次點數、用量條與下載鈕 | [points-qr.css](../ds-components/points-qr.css) |
