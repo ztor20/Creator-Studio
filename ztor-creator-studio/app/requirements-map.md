@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-09 D522 原型同步（UI-CHANGES 四百八十八）**：5.1.2.2.1 F14 作品定價幣種改用全站幣別清單 → `partials/work-fields.js` 下拉吃 `js/currency.js`，`publish-work.html`、`create-project.html` 載入 `js/currency.js`。
+
+> **2026-11-09 D521 原型同步（UI-CHANGES 四百八十七、ASSUMPTIONS UIA-339；tier 🟢 release2.2／🔵 release2.3，只寫標籤、尚未 port）**：5.1.5.11、5.1.5.12、5.1.5.14、5.1.5.15、5.1.6.1、5.1.6.3 → 取貨場次、活動票券 scanner、掃碼領點場次建立後就能掃／領，開始與結束時間只用於顯示狀態：`scanner.html` 移除未開始／已結束阻擋畫面與 `.scanner-block`，早於提前入場時間只顯示提示卡、核銷照常；`create-event.html`、`event-detail.html` 移除「仍可入場／不能入場」二選一，掃碼器卡從已排程起顯示；`partials/pickup-session-modal.js` 時間欄位下加說明、`pickup-detail.html` 與 `js/i18n.js` 文案同步。
+
 > **2026-11-06 D517 原型同步（UI-CHANGES 四百八十、ASSUMPTIONS UIA-337；release2.3，不進 release2.2）**：§7.15 換匯手續費併進售價、費率不逐創作者覆寫、新增幣別 → `admin-platform-fees.html`、`partials/fee-exception-modal.js`、`js/currency.js`；Creator Studio 價格展開 → `order-detail.html`、`js/orders-store.js`；bookyay 以創作者幣別帶入、港幣鎖定退場 → `js/events-store.js`、`create-event.html`、`event-detail.html`、`create-bundle.html`；幣別值域 → `creators.html`、`partials/manual-entry-modal.js`、`earnings.html`、`earnings-overview.html`、`earnings-ztor.html`。
 > **2026-11-05 D514 原型同步（UI-CHANGES 四百六十九、ASSUMPTIONS UIA-334；release2.3，不進 release2.2）**：§7.15 單一基準價、價格表與覆寫退場 → `js/publish-stage.js`、`js/events-store.js`（`priceIn`）、`create-product.html`／`create-bundle.html`／`create-event.html`／`create-project.html`／`publish-work.html`、`product-localization.html`／`event-localization.html`、`event-detail.html`、`bundle-detail.html`；5.1.0.3 換匯手續費 → `admin-platform-fees.html`、`partials/fee-exception-modal.js`（S134）；5.1.5.3.1 §2.3.2 換匯手續費明細 → `order-detail.html`、`js/orders-store.js`（O41）。
 > **2026-11-05 D514 決定三原型同步（UI-CHANGES 四百七十三、ASSUMPTIONS UIA-336；release2.3，不進 release2.2）**：預覽與發布的「幣別」演示退場，預覽只用創作者幣別 → `js/publish-stage.js`、`partials/publish-preview.js`、`create-product.html`／`create-bundle.html`／`create-event.html`／`create-project.html`／`publish-work.html`、`product-localization.html`／`event-localization.html`。

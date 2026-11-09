@@ -96,7 +96,7 @@ table.stage td:nth-child(4){width:12%}
 <div class="toc"></div>
 
 <h2 id="stage"><span class="n"></span>取貨場次的階段</h2>
-<p>一個取貨場次依開始與結束時間，從尚未開始走到已結束，創作者封存後轉為已封存。每個階段誰能做什麼見<a href="#stage-who">各階段誰能做什麼</a>。</p>
+<p>一個取貨場次依開始與結束時間，從尚未開始走到已結束，創作者封存後轉為已封存；階段只用來顯示，不影響能不能核銷。每個階段誰能做什麼見<a href="#stage-who">各階段誰能做什麼</a>。</p>
 <div class="flow">
   <span class="tag">尚未開始</span><span class="arr">→</span><span class="tag ok">進行中</span><span class="arr">→</span><span class="tag off">已結束</span>
   <span class="flow__alt">創作者封存 → <span class="tag off">已封存</span></span>
@@ -107,34 +107,31 @@ table.stage td:nth-child(4){width:12%}
 <div class="tablewrap"><table class="stage">
   <thead><tr><th>階段</th><th>什麼時候進入</th><th>創作者能做</th><th>Admin 額外能做</th><th>Scanner</th></tr></thead>
   <tbody>
-    <tr><td><span class="tag">尚未開始</span><div class="k">Scheduled</div></td><td>建立後，開始時間還沒到</td><td>編輯場次<br>把 Scanner 網址交給工作人員</td><td>—</td><td>阻擋核銷，顯示場次未開始</td></tr>
+    <tr><td><span class="tag">尚未開始</span><div class="k">Scheduled</div></td><td>建立後，開始時間還沒到</td><td>編輯場次<br>把 Scanner 網址交給工作人員</td><td>—</td><td>可以核銷</td></tr>
     <tr><td><span class="tag ok">進行中</span><div class="k">Active</div></td><td>開始時間到，結束時間還沒到</td><td>查看名單與核銷紀錄<br>反轉錯誤核銷</td><td>—</td><td>可以核銷</td></tr>
-    <tr><td><span class="tag off">已結束</span><div class="k">Ended</div></td><td>結束時間過了</td><td>查看名單與核銷紀錄、匯出<br>反轉錯誤核銷<br>延長結束時間</td><td>—</td><td>阻擋新核銷，顯示場次已結束</td></tr>
+    <tr><td><span class="tag off">已結束</span><div class="k">Ended</div></td><td>結束時間過了</td><td>查看名單與核銷紀錄、匯出<br>反轉錯誤核銷</td><td>—</td><td>可以核銷</td></tr>
     <tr><td><span class="tag off">已封存</span><div class="k">Archived</div></td><td>創作者封存</td><td>只能查看歷史紀錄</td><td>—</td><td><span class="tag wait">尚待確認</span></td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.5.11 頁面狀態；5.1.5.15 頁面狀態（尚未開始可編輯）；主規格 §7.2「取貨場次」；D455。</p>
+<p class="note">依據：5.1.5.11 頁面狀態；5.1.5.15 頁面狀態（尚未開始可編輯）；主規格 §7.2「取貨場次」；D455、D521。</p>
 
 <h2 id="stage-time"><span class="n"></span>場次時間怎麼管核銷</h2>
 <ul class="plain">
-  <li>開始與結束時間就是這個場次可以核銷的範圍；結束時間必須晚於開始時間</li>
-  <li>目前時間不在範圍內時，Scanner 顯示場次未開始或已結束，並阻擋核銷</li>
-  <li>場次結束後，沒核銷的件維持待核銷，不會轉成其他狀態，領取碼也不會因此失效</li>
-  <li>場次結束後還有人沒來領，創作者延長結束時間，見<a href="#actions">場次的動作</a></li>
+  <li>場次建立後就能核銷；開始與結束時間只用來顯示尚未開始、進行中、已結束的徽章，不阻擋核銷；結束時間必須晚於開始時間</li>
+  <li>場次結束後，沒核銷的件維持待核銷，不會轉成其他狀態，領取碼也不會因此失效，Scanner 照常可以核銷</li>
 </ul>
-<p class="note">依據：5.1.5.11 頁面狀態；5.1.5.14 F1.3；主規格 §7.2「核銷為二元」；D122。</p>
+<p class="note">依據：5.1.5.11 頁面狀態；5.1.5.14 F1.3；主規格 §7.2「核銷為二元」；D122、D521。</p>
 
 <h2 id="actions"><span class="n"></span>場次的動作</h2>
 <div class="tablewrap"><table>
   <thead><tr><th style="width:20%">動作</th><th style="width:20%">什麼時候能做</th><th>效果</th></tr></thead>
   <tbody>
-    <tr><td>編輯</td><td>尚未開始<br>已結束，用來延長結束時間<br>進行中與其他欄位：<span class="tag wait">尚待確認</span></td><td>開啟建立取貨場次的同一個視窗，見<a href="pickup-create.html#edit">編輯既有場次</a></td></tr>
-    <tr><td>延長結束時間</td><td>已結束</td><td>用「編輯」把結束時間往後調並儲存，不另設入口、按鈕或欄位<br>場次依新時間回到進行中，Scanner 恢復可以核銷<br>Scanner 網址與密碼不變，工作人員用原本的網址繼續掃</td></tr>
+    <tr><td>編輯</td><td>尚未開始<br>進行中與其他欄位：<span class="tag wait">尚待確認</span></td><td>開啟建立取貨場次的同一個視窗，見<a href="pickup-create.html#edit">編輯既有場次</a></td></tr>
     <tr><td>封存</td><td><span class="tag wait">尚待確認</span></td><td>場次轉為已封存，只供查看歷史紀錄</td></tr>
     <tr><td>重設、停用 Scanner 網址</td><td>—</td><td>見取貨場次詳情的<a href="pickup-detail.html#scanner-life">密碼與網址的有效期</a></td></tr>
   </tbody>
 </table></div>
-<p class="note">依據：5.1.5.12 F1「建立後的欄位編輯性」；5.1.5.15 F1；D337、D338。</p>
+<p class="note">依據：5.1.5.12 F1「建立後的欄位編輯性」；5.1.5.15 F1；D337、D338、D521。</p>
 
 <h2 id="scope"><span class="n"></span>場次能核銷哪些商品與票券</h2>
 <p>一個場次可以同時放好幾個取貨商品與好幾種活動票券，取貨與入場共用同一個 Scanner。能放什麼見<a href="#scope-what">能加入的項目</a>；商品與場次怎麼綁見<a href="#scope-bind">一個商品只屬於一個場次</a>；拿掉項目會怎樣見<a href="#scope-remove">加入與移除項目</a>。</p>
@@ -230,8 +227,8 @@ table.stage td:nth-child(4){width:12%}
   <summary>來源與尚待確認</summary>
   <p class="k">來源</p>
   <ul>
-    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.12）；<code>5.1.5.12-建立取貨場次.md</code>（v1.17）F1、F2、編輯規則；<code>5.1.5.14-手機Scanner.md</code>（v1.16）F1.2～F1.4、F2；<code>5.1.5.15-取貨場次詳情.md</code>（v1.20）F1、F5.2、頁面狀態；<code>0-設計規格書.md</code>（v5.39）§7.2、§7.6</li>
-    <li>決策：D122、D240、D242、D252、D253、D337、D338、D339、D393、D394、D401、D453、D455、D470、D471、D472</li>
+    <li>規格：<code>5.1.5.11-取貨管理.md</code>（v2.14）；<code>5.1.5.12-建立取貨場次.md</code>（v1.18）F1、F2、編輯規則；<code>5.1.5.14-手機Scanner.md</code>（v1.17）F1.2～F1.4、F2；<code>5.1.5.15-取貨場次詳情.md</code>（v1.21）F1、F5.2、頁面狀態；<code>0-設計規格書.md</code>（v5.49）§7.2、§7.6</li>
+    <li>決策：D122、D240、D242、D252、D253、D337、D338、D339、D393、D394、D401、D453、D455、D470、D471、D472、D521</li>
   </ul>
   <p class="k">尚待確認</p>
   <ul>
@@ -240,7 +237,7 @@ table.stage td:nth-child(4){width:12%}
     <li>「前往領取場次」在這場活動的組合包商品分屬多個取貨場次（不同成員商品各在不同場次，或組合包另設了場次）、或還沒有取貨場次時怎麼處理（推導：多個時進取貨管理並預先篩出相關場次，沒有時提示先建立）</li>
     <li>已核銷之後才被撤銷的件（只會出現在歷史資料）在名單上怎麼呈現</li>
   </ul>
-  <p class="k">最近同步：2026-11-05（逐條對照規格；主規格 v5.39、5.1.5.11 v2.12、5.1.5.12 v1.17、5.1.5.14 v1.16、5.1.5.15 v1.20）</p>
+  <p class="k">最近同步：2026-11-09（D521 取貨場次建立後就能核銷、取消延長結束時間；對照規格主規格 v5.49、5.1.5.11 v2.14、5.1.5.12 v1.18、5.1.5.14 v1.17、5.1.5.15 v1.21）</p>
 </details>
 </div>
 </body>

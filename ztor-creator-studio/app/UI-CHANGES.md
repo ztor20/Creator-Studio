@@ -15,6 +15,44 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-09（四百八十九）· 購買條件的「新增條件」下拉不再被外框切掉（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者回報：release2.4 購買條件的下拉被遮住。
+
+- `ds-components/rules-group.css`：`.rules-group` 平常維持 `overflow:hidden`（列的細線靠圓角裁齊），群組內有展開中的 `details`（「新增條件」選單）時改 `overflow:visible`，選單可以超出外框。
+- `ds-specs/4.240-rules-group.md` 同步。消費頁（create-bundle、bundle-detail、bundle-editor）都吃同一份樣式，不用逐頁改。
+
+---
+
+## 2026-11-09（四百八十八）· 作品定價的幣種改成全站幣別清單（B 反饋導入 · D522）
+
+使用者：「改成全站清單」。
+
+- `partials/work-fields.js`：F14 幣種由 HKD／TWD 兩顆分段鈕改成下拉，選項吃 `js/currency.js` 的全站幣別清單（預設五種＋Admin 新增），預設選創作者幣別；換幣種時畫質價格欄的幣別符號跟著換。
+- `publish-work.html`、`create-project.html`：載入 `js/currency.js`（排在 `work-fields.js` 前面）。
+- 規格 5.1.2.2.1 F14（D522）；規則手冊 `project-publish-step3`、`project-create-video` 同步。
+
+---
+
+## 2026-11-09（四百八十七）· 掃描與領點不再受場次時間阻擋，活動早到只提示（C 撤除＋B 反饋導入 · D521）
+
+**標籤**：release2.2、release2.3
+
+- 動機：使用者裁決取貨場次（現場核銷）、活動票券 scanner、掃碼領點場次一律「建立後就能掃／領」。開始、結束時間只用來顯示場次狀態，不再擋掃描或發點；活動早到處理簡化成只提示，核銷照常。
+- `scanner.html`：
+  - 移除「場次尚未開始／已結束」整層阻擋畫面與切換場次時間的示範鈕；狀態徽章只顯示「進行中」。
+  - 活動票券早於提前入場時間時，結果卡照常是「有效」，多一張提示卡「這張票最早可入場時間是 X」，下方仍是一般「核銷」鈕，不需額外確認。
+  - 示範鈕「早到：仍可入場／不能入場」合併成單一「早到」。
+- `create-event.html`、`event-detail.html`：場次的「早於提前入場時間入場」仍可入場／不能入場二選一整組移除（含資料欄位 `early`、套用第一場、bookyay 帶入的對應），只留開關＋時間；開關說明改成「早於這個時間掃描會提示最早可入場時間，仍可核銷」。
+- `event-detail.html`：掃碼器卡（連結、密碼、複製與分享）從已排程起就顯示並可用，自建活動與 bookyay 活動一樣；名單分頁的「開啟掃描器」也從已排程起顯示。複製與分享的接線從「進行中才初始化」拆出成 `initScannerLink()`。
+- `partials/pickup-session-modal.js`：開始、結束時間下加一行說明「僅用於顯示場次狀態，不影響掃描」（現場核銷與掃碼領點兩類共用）；步驟與停用開關的說明刪掉「不論時間」「時間範圍」等字樣。
+- `pickup-detail.html`：停用開關提示文字同步。已結束場次的「延長結束時間」在原型早已沒有入口（D338 墓碑），此次無須再移除。
+- `js/i18n.js`：新增 `sc.note.early`、`sc.demo.early`、`pks.f.time.hint`；刪除 `sc.state.notyet`／`.ended`、`sc.block.*`、`sc.demo.time`、`sc.demo.earlyok`／`earlyno`、`sc.res.early`／`earlyno`／`confirmearly`、`sc.note.early.allow`／`block`、`sc.early.policy`／`allow`／`block`、`ed.early.*`；`create-event.html` 內嵌字典的 `d.early.*` 同。
+- 設計系統：`.scanner-block` 元件退場（`ds-components/scanner.css` 留墓碑、`design-system.html` 的 demo 卡與元件清單、`ds-specs/mobile-scanner.md`、`BUILD-SPEC.md` 同步）；`design-components.html` 已重生。
+- 呈現假設見 `ASSUMPTIONS.md` UIA-339。
+
 ## 2026-11-08（四百八十六）· 商品細節頁新增「貼文」分頁（A spec · D520）
 
 - 動機：新品貼文只在建立完成時彈一次，略過就沒有入口、發出後也不能改。使用者裁決在商品細節頁新增商品相關貼文，可以發布、編輯、管理；範圍只收新品貼文面板發出的（規格 5.1.5.1 §2.21、5.1.5.7「發布後的編輯與管理」）。
