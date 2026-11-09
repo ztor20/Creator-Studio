@@ -15,6 +15,75 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-09（四百九十四）· 設計系統展示頁拆成入口＋各 Pillar 分頁（D infra／文件）
+
+`design-system.html` 有 2.7MB，元件區就佔 2.3MB，跟上一筆拆好的 AI 文件對不起來。這次照同樣分法拆頁，內容與示範逐字搬移，畫面不變。
+
+- 入口 `design-system.html`：Identity、新增的「各頁在哪」導覽、Quick Reference、Do / Don't、風格裁決 Q1–Q12、Pillar 0。
+- 各 Pillar 一頁：
+  - `design-system-foundation.html`（Pillar 1）
+  - `design-system-role-mode.html`（Pillar 2–3）
+  - `design-system-components.html`（Pillar 4 總覽：分類、總表、元件分頁導覽）
+  - `design-system-components-basic／forms／lists／cards／flow／new.html`（220 張元件卡，依左側目錄原本的分組放）
+  - `design-system-pattern.html`（Pillar 5）
+  - `design-system-structure.html`（Pillar 6 與附錄、完整性報告）
+- 共用部分各只有一份：`ds-head.js`（樣式與 192 支元件 CSS）、`ds-toc.js`（左側目錄，連結寫「檔名#位置」，指向本頁的自動改回「#位置」）、`ds-tail.js`（示範用 JS、語言與版寬切換、目錄捲動同步）。
+- 頁內與跨頁連結全部改寫成「檔名#位置」；順手修好兩條原本就斷的元件小標籤：`#dropdown` → `#dropdown-menu`、`#progress-stepper` → `#stepper`。
+- `scripts/gen_design_gallery.py` 改讀六頁元件分頁，圖鑑的「Spec →」連到元件所在的那一頁；卡內的元件小標籤維持在圖鑑頁內跳轉。
+- `scripts/audit_ids.py` 排除新分頁；三處 md 錨點連結改指到新頁。
+- 拆頁前的原檔備份在 `docs/_backup/design-system.html.bak-20261109.html`。
+
+## 2026-11-09（四百九十三）· 設計系統文件分成速查、入口、完整版三層（D infra／文件）
+
+`design-system.md` 拆出元件規格後仍有 239KB，AI 要修改前讀不完。這次把各 Pillar 搬成獨立檔，入口只留每次修改都要看的部分。只動文件結構與檢查腳本，畫面不變。
+
+- 入口 `design-system.md`（21KB）：檔頭、新增的「對照表」（要做什麼 → 讀哪一份）、Identity、Do / Don't、Quick Reference、Pillar 0。
+- 完整版搬進新資料夾 `ds-pillars/`，內容原樣搬移、相對連結改成 `../`：
+  - `1-foundation.md`（67KB）
+  - `2-3-role-mode.md`（28KB）
+  - `4-component.md`（53KB，含 4.1 元件總表）
+  - `5-pattern.md`（33KB）
+  - `6-structure.md`（14KB）
+  - `appendix.md`（7KB，實作說明與兩個附錄）
+- 4.2+ 元件規格索引原本 143 條、和總表重複，縮成「未進總表的規格檔」，只留總表還沒連到的 10 支。
+- 速查版 `ds-index.md` 兩段改名為「Pillar 1 速查」「Pillar 4 速查」；元件那句用途改從總表第 4 欄抄（原本抓 CSS 檔頭、截在 48 字）。
+- `check_ds_sync.py`：讀檔範圍加上 `ds-pillars/`；檢查 17 新增「Pillar 檔沒進對照表」與 Pillar 檔 120KB 上限；檢查 19 的位置欄連到 `design-system.md` 時連 `ds-pillars/` 一起比對。
+- 拆檔前的原檔備份在 `docs/_backup/design-system.md.bak-20261109.md`。
+- 其他檔案裡 34 處「`design-system.md` §x.x」的舊章節引用，改指到新位置：§4.x 有規格檔的指到 `ds-specs/`，其餘指到 `ds-pillars/` 對應那一份並保留章節編號；`§4.131` 墓碑早已不存在，改指接替的 `ds-specs/login-lang-prompt.md`。`docs/_port/` 的舊移植文件與歷史紀錄不改。
+- 速查版補上「沒有獨立 CSS 的元件」一段（26 支：寫在 shared.css、純 JS 或頁級技法），從總表抄名稱、位置、用途與規格檔；原本這些在速查表找不到，要再翻總表。總表補填 6 列漏掉的 CSS 欄（KPI、Bundle editor、Earnings feed、Canvas home、Field system、Stock history），速查表的用途因此改抄總表的中文。
+- 總表補上 10 列原本只有 CSS 和規格檔、沒有總表列的元件（Condition list、Entry list、Fan phone、Field source tag、Owner lookup、Publish stage、Quick result list、Size chart editor、Source import、Venue map），層級與用途依各自規格檔判斷，狀態一律 ✓ App；Wizard frame、Publish preview 兩列補連 `preview-dock.css`、`publish-preview.css`。4.2+「未進總表的規格檔」只剩 Section card。
+
+## 2026-11-09（四百九十二）· 風格裁決的已裁決段縮成索引，規則補進設計系統（D infra／文件）
+
+使用者要求把已定案的風格裁決整理進設計系統，`STYLE-DECISIONS.md` 不再同時存全文。只動文件與 CSS 註解，畫面不變。
+
+- `STYLE-DECISIONS.md`：已裁決 104 條改成一行一條的索引（題目、日期、現行規則位置、備註）；原文逐字搬到新檔 `STYLE-DECISIONS-archive.md`；新增空的「近期裁決」表，之後的新裁決照舊寫完整一列。待裁決與裁決流程不動。檔案 272KB → 131KB。
+- 設計系統裡已過期的內容改成現行：
+  - Q46 活動圖片只有直式（2026-08-05 推翻橫式例外）：`ds-specs/4.7b-upload-tile.md`、`design-system.md`、`design-system.html`（建立活動示範拿掉橫幅格）、`ds-components/upload-tile.css` 註解。
+  - Q94 走勢圖 63 點、縱軸 3 段：`ds-specs/sparkline.md`。
+  - Q98 調參器定案的數值（玻璃底 0.05、薄膜 0.085、加強模糊 50px、發光面字色 1、暗紗 0%）：`design-system.md` 與 `design-system.html` 的 token 表、`ds-specs/4.97-detail-sheet.md`。
+  - 同一批過期百分比：`design-system.md`、`design-system.html` 的玻璃 7%→5%、薄膜 6%→8.5%；`ds-components/_tokens.css`、`upload-tile.css` 註解裡的活動橫幅例外。
+  - Q124 建立流程底列 2026-10-28 已改膠囊：`design-system.html` wizard 段三處描述跟上 `ds-specs/wizard-frame.md`。
+- 設計系統缺的規則補上：Q77 表面材質原則（`design-system.md`、`design-system.html`）、Q79 模糊半徑判準（`design-system.md`、`design-system.html`）、Q85 Admin 表格頁也套星空漸消（`design-system.md`）、Q114 標籤輸入欄內 chip 的對比（`ds-specs/tag-input.md`、`design-system.html`）。
+- 只影響單頁的 5 條（Q86、Q87、Q130、Q131、Q132）寫進 `BUILD-SPEC.md` 新增的 §4m。
+- 逐條核對索引後再補：Q34 清單列 hover 改寫成現行的玻璃浮起（`design-system.md` 原寫「只換底色」、`ds-specs/4.27-product-list.md` 原寫 `--muted`，都與 CSS 不符）；Q135 淺色模式關閉、Q80 選中態五種語彙（`design-system.md`、`design-system.html`）；第二個 Q25 右欄可放跨分頁互動設定（`ds-specs/4.52-detail-rail.md`）。索引裡 16 條指到順帶引用處的位置改成真正寫規則的檔案。
+
+- 新增收尾檢查 `check_ds_sync` 第 19 項「風格裁決寫回設計系統」（改在 `project-ui-creator` skill）：索引列連到的檔案要寫到題號，完整列格式的題號要出現在設計系統文件或 `BUILD-SPEC.md`；存量記在 `ds-baseline.json` 的 `style`，只准變少。為了讓檢查認得，27 題在規則所在處補上題號（13 支規格檔末加「風格裁決依據」一行、`design-system.md` 4 處行內標註，含 Q3 卡片邊界段補「後續修訂」）。Q44 標「不寫回」（原則在 skill 鐵律 12）。目前 104 題全數寫回。
+---
+
+## 2026-11-09（四百九十一）· 新增「修改庫存」（A spec-derived 新增 · D525）
+
+**標籤**：release2.3
+
+使用者要求在電子商店加一個減庫存的功能（D523，原本做成補貨視窗第三張卡「減少庫存」）；看過原型後改成「另外有一個修改庫存的功能」（D525）：拿掉第三張卡，改用獨立的修改庫存，直接填新的在庫數。D523 的版本沒有 commit 過，本筆直接寫最終做法。功能編號 S145，使用者指示從 release2.3 起生效（🔵）。
+
+- `partials/restock-modal.js`：補貨方式維持兩張卡。同一個彈窗多一個修改庫存模式（`openAdjust`／`openAdjustSingle`）：標題「修改庫存」，不顯示方式卡、供應商與預計到貨；三欄改成目前數量／新的在庫數（預填目前，可增可減）／差額（+N／−N）。每列下限＝目前－呼叫端給的 `max`（未鎖定可賣），名稱下一行「最低 N」；低於下限那格紅框（共用 `.input[aria-invalid]`）、表下錯誤字、送出停用。新的在庫數等於目前＝那列不改。
+- `product-detail.html`：庫存管理卡頭「修改庫存」（改全部組合）、列尾 ⋯ 多一項「修改庫存」（只改那列，排在補貨底下）；送出後在庫改成新數字、`pool.total` 跟著改，庫存歷史紀錄多一筆「修改庫存」（逐組合「改前 → 改後（差額）」、備註、已完成）。封存閘門的收起清單加 `[data-adjust-open]`。順手讓立即補貨同步 `pool.total`，原本補完再開鎖定彈窗看到的上限是舊數字。
+- `e-shop.html`：單售商品列的選單在「補貨」底下多一項「修改庫存」（選單打開時才補；組合包列不加）；多選項從 store 逐組合帶下限；送出後跳「庫存已更新」（載入 `js/toast.js`），清單數字不示範改動。
+- `js/i18n.js`：`restock.adjust.*`、`restock.col.new`、`restock.col.diff`、`stock.history.type.adjust`；`restock.history.hint` 補上修改庫存。
+- 設計系統：`design-system.html` 補貨表示範加修改庫存模式；`ds-specs/4.29c-restock-order.md`、`design-system.md` 總表列、`design-system-changelog.md` 同步；沒有新 class 或 token。
+- `feature-scope-map.md` 補登 S145 🔵 release2.3；`js/devtools.js` 加 `S145: 'release2.3'`；兩個入口都掛 `data-feat="S145"`，JS 畫的選單項先問 `ztorDevState.featOn('S145')`。
+
 ## 2026-11-09（四百九十）· 商品與組合包的購買條件拿掉「限時購買」（C 撤除 · D524）
 
 **標籤**：release2.4

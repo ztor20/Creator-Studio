@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ztor Creator Studio · R 2.2 · Pillar 6 · Structure & Appendix</title>
+<!-- 共用檔頭、目錄、檔尾各只有一份：ds-head.js、ds-toc.js、ds-tail.js（2026-11-09 拆頁） -->
+<script src="ds-head.js?v=r2.2"></script>
+</head>
+<body>
+<nav class="dsn" aria-label="Design">
+  <a class="dsn__brand" href="design-tokens.html">Ztor Creator Studio <span>Design</span></a>
+  <div class="dsn__tabs">
+    <a href="design-tokens.html">Tokens</a>
+    <a href="design-layers.html">Layers</a>
+    <a href="design-components.html">Components</a>
+    <a href="design-system.html" aria-current="page">Spec</a>
+  </div>
+  <!-- 2026-10-15 淺色模式暫時關閉（STYLE-DECISIONS Q135）：亮／暗切換收起，js/theme.js 一律套深色 -->
+  <div class="segmented dsn__theme" role="group" aria-label="Theme" hidden>
+    <button class="segmented__btn" type="button" data-theme-set="light">亮</button>
+    <button class="segmented__btn" type="button" data-theme-set="dark">暗</button>
+  </div>
+</nav>
+<div class="doc">
+<script src="ds-toc.js?v=r2.2"></script>
+  <main class="doc-main" id="top">
+
+    <!-- PILLAR 6 -->
+    <section class="pillar" id="structure">
+      <div><span class="pillar__num">06 · Structure</span></div>
+      <h2 class="pillar__title"><span data-en>Layout templates and page composition.</span><span data-zh>版型模板與頁面組成</span></h2>
+      <p class="pillar__intro" data-en>Structure assembles components + patterns into page skeletons.</p>
+      <p class="pillar__intro" data-zh>Structure 把 components + patterns 組裝成頁面骨架。</p>
+
+      <!-- 6.0.1 表面階層（Q66，2026-08-13）：疊上去的一層要比父層亮 -->
+      <div class="sub" id="surface-layers">
+        <div class="sub__head"><h3 class="sub__title">6.0.1 <span data-en>Surface layers</span><span data-zh>表面階層</span></h3></div>
+        <p class="sub__desc" data-en>From Figma <code>856:27798</code> (visualised in <code>design-layers.html</code>): L0 canvas solid → L1 card solid → L2 translucent film that brightens whatever it sits on, and can stack → L3 stops filling and keeps only a hairline.</p>
+        <p class="sub__desc" data-zh>模型出自 Figma <code>856:27798</code>（<code>design-layers.html</code> 有可視化）：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮一階，可再疊）→ L3 不再疊填色、只留線框。</p>
+
+        <div class="demo demo--preview"><div class="ds-preview" style="padding:var(--sp-20); background:var(--surface-page); border-radius:var(--radius-lg)">
+          <div class="card" style="padding:var(--sp-16)">
+            <p class="field-label" style="margin:0 0 var(--sp-10)"><span data-en>L1 card</span><span data-zh>L1 卡片</span></p>
+            <div class="card card--muted" style="padding:var(--sp-14)">
+              <p class="field-label" style="margin:0 0 var(--sp-10)"><span data-en>L2 grouped block — brighter</span><span data-zh>L2 分組面 — 比卡亮</span></p>
+              <div style="padding:var(--sp-12); border:1px solid var(--nest-line, var(--border)); border-radius:var(--radius-md)">
+                <span class="field-text" data-en>L3 — hairline only</span><span class="field-text" data-zh>L3 — 只留線框</span>
+              </div>
+            </div>
+          </div>
+        </div></div>
+
+        <table class="spec"><tbody>
+          <tr><td><span data-en>Brighter (stacked on top)</span><span data-zh>往亮（疊上去的一層）</span></td>
+            <td><code>--nest-surface</code> + <code>--nest-line</code>. <span data-en>Consumers</span><span data-zh>消費者</span>: <code>.nest</code>, <code>.card--muted</code>, <code>.bd-sec</code>. <span data-en>Light mode has both layers white, so the hairline is what separates them.</span><span data-zh>亮色兩層同為白，靠線框才分得出來。</span></td></tr>
+          <tr><td><span data-en>Darker (a well cut into the surface)</span><span data-zh>往暗（挖出來的凹槽）</span></td>
+            <td><code>--muted</code>. <span data-en>Consumers</span><span data-zh>消費者</span>: <code>.segmented</code> <span data-en>track</span><span data-zh>軌道</span>, <span data-en>media wells (image placeholders)</span><span data-zh>媒體井（圖片佔位格）</span>, <span data-en>progress bar troughs</span><span data-zh>進度條底</span>. <span data-en>Not in scope of the flip.</span><span data-zh>不在翻向範圍。</span></td></tr>
+          <tr><td><span data-en>Controls (buttons on a surface)</span><span data-zh>控件（浮在表面上的按鈕）</span></td>
+            <td><code>--control-raise</code> (<span data-en>dark</span><span data-zh>深色</span> <code>rgba(222,223,233,.04)</code> / <span data-en>light</span><span data-zh>亮色</span> <code>var(--card)</code>). <span data-en>Consumer</span><span data-zh>消費者</span>: <code>.btn--outline</code>. <span data-en><strong>Never an absolute surface colour</strong> — hardcoding <code>--card</code> made the same button read brighter on canvas, identical inside a card, and darker inside an L2 block (Q67).</span><span data-zh><strong>不要用絕對表面色</strong>——寫死 <code>--card</code> 時，同一顆按鈕在畫布上比底亮、在卡裡同色、在 L2 分組面裡反而更暗（Q67）。</span></td></tr>
+          <tr><td><span data-en>Clickable cards (hover)</span><span data-zh>可點卡片（hover）</span></td>
+            <td><code>--clickable-card-lift</code> (<code>-4px</code>) + <code>--clickable-card-hover-bg</code> (<span data-en>aliases</span><span data-zh>別名</span> <code>--control-raise-hover</code>: <span data-en>dark</span><span data-zh>深色</span> <code>rgba(222,223,233,.12)</code> / <span data-en>light</span><span data-zh>亮色</span> <code>var(--accent)</code>). <span data-en>Declared in both theme blocks of <code>_tokens.css</code> so the alias resolves the dark value. Consumers and exceptions: see §5.3 · Clickable card hover.</span><span data-zh>亮暗兩個主題區塊都宣告，別名才吃得到暗色值。消費者與例外見 §5.3「可點卡片 hover」。</span></td></tr>
+          <tr><td><span data-en>Rule of thumb</span><span data-zh>判斷句</span></td>
+            <td><span data-en>Is this a layer stacked on the container, or a well cut into it? Former brightens, latter darkens.</span><span data-zh>這塊東西是「疊在容器上的一層」還是「容器上挖出來的一個凹槽」？前者往亮，後者往暗。</span></td></tr>
+          <tr><td><code>.form-section--outlined</code></td>
+            <td><span data-en>Page-level grouping — <strong>never put it inside a card or dialog</strong>. It takes the absolute <code>--surface-shell</code> <code>#1C1D1E</code>, which reads correctly against the <code>#0C0D0D</code> canvas but is <em>darker</em> than <code>--card</code> <code>#212223</code>, so nesting it sinks a level. Use the brighter set instead.</span><span data-zh>頁面層的分組——<strong>不要放進卡或彈窗</strong>。它吃絕對色 <code>--surface-shell</code> <code>#1C1D1E</code>，坐在畫布 <code>#0C0D0D</code> 上方向正確，但比 <code>--card</code> <code>#212223</code> <em>暗</em>，一放進卡就往下沉一階。卡／彈窗內要分組請用上面往亮那組。</span></td></tr>
+          <tr><td><span data-en>Audit</span><span data-zh>稽核</span></td>
+            <td><code>docs/階層稽核-2026-08-13.md</code> — <span data-en>53 pages measured by composited luminance; 1 violation found and fixed.</span><span data-zh>53 頁逐頁量合成後亮度，找到 1 處並已修正。</span> STYLE-DECISIONS Q24 / Q42 / Q66.</td></tr>
+        </tbody></table>
+      </div>
+      <p class="field-label" data-en>Grid (canonical token form)</p>
+      <p class="field-label" data-zh>Grid(canonical token 形式)</p>
+      <table class="spec"><tbody>
+        <tr><td><code>grid.columns</code></td><td>12 (<code>.bento</code>)</td></tr>
+        <tr><td><code>grid.gutter</code></td><td>16px</td></tr>
+        <tr><td><code>grid.margin</code></td><td><span data-en>32px / 24px desktop / mobile</span><span data-zh>32px / 24px 桌機 / 手機</span></td></tr>
+        <tr><td><code>grid.max-width</code></td><td>1280px<span class="field-note" data-en> (<code>.page--narrow</code>: 1056px)</span><span class="field-note" data-zh>（<code>.page--narrow</code>：1056px）</span></td></tr>
+        <tr><td><code>grid.breakpoint.lg</code></td><td><span data-en>900px (topbar nav collapses, bento → span-12, hero single-column)</span><span data-zh>900px(topbar nav 收合,bento → span-12,hero 變單欄)</span></td></tr>
+      </tbody></table>
+      <p class="field-label" data-en>Page templates</p>
+      <p class="field-label" data-zh>頁面模板</p>
+      <table class="spec"><thead><tr><th><span data-en>Template</span><span data-zh>模板</span></th><th><span data-en>Regions</span><span data-zh>區域</span></th><th><span data-en>Key components</span><span data-zh>主要元件</span></th></tr></thead><tbody>
+        <tr><td><code>app-dashboard</code></td><td><span data-en>topbar · full-bleed hero · KPI bento · data-list + alerts · trend + source</span><span data-zh>topbar · 滿版 hero · KPI bento · data-list + alerts · trend + source</span></td><td><span data-en>Header · Alert · KPI · Data list · Chart · Bento</span><span data-zh>Header · Alert · KPI · Data list · Chart · Bento</span></td></tr>
+        <tr><td><code>app-tabbed</code></td><td><span data-en>topbar · page-intro · tabs · 4 tab-panels</span><span data-zh>topbar · page-intro · tabs · 4 個 tab-panel</span></td><td><span data-en>Header · Tabs · Card · KPI · Table</span><span data-zh>Header · Tabs · Card · KPI · Table</span></td></tr>
+        <tr><td><code>wizard-focus</code></td><td><span data-en>NO topbar · close X + stepper · step body · sticky action bar</span><span data-zh>無 topbar · 關閉 X + stepper · 步驟主體 · 固定動作列</span></td><td><span data-en>Stepper · Selection card · Input · Button</span><span data-zh>Stepper · Selection card · Input · Button</span></td></tr>
+        <tr><td><code>settings-sidebar</code></td><td><span data-en>topbar · page-intro · sidebar nav + scrollable content</span><span data-zh>topbar · page-intro · sidebar nav + 可捲動內容</span></td><td><span data-en>Header · Card · Selection card · Switch · Footer</span><span data-zh>Header · Card · Selection card · Switch · Footer</span></td></tr>
+        <tr><td><code>empty-stub</code></td><td><span data-en>topbar · page-intro · centered empty-stub block</span><span data-zh>topbar · page-intro · 置中的 empty-stub 區塊</span></td><td><span data-en>Header · Empty stub · Chip</span><span data-zh>Header · Empty stub · Chip</span></td></tr>
+      </tbody></table>
+      <div class="viz"><div class="wire-grid">
+        <div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__b wire__b--hero"></div><div class="wire__kpi"><div class="wire__b"></div><div class="wire__b"></div><div class="wire__b"></div><div class="wire__b"></div></div><div class="wire__row wire__row--grow"><div class="wire__b"></div><div class="wire__b"></div></div></div><div class="wire__cap"><code>app-dashboard</code></div></div>
+        <div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__row"><div class="wire__b" style="height:13px;background:var(--primary);opacity:.5"></div><div class="wire__b" style="height:13px"></div><div class="wire__b" style="height:13px"></div></div><div class="wire__b wire__b--grow"></div></div><div class="wire__cap"><code>app-tabbed</code></div></div>
+        <div class="wire"><div class="wire__frame" style="align-items:center"><div class="wire__row" style="justify-content:center;width:100%"><span class="wire__b" style="width:10px;height:10px;border-radius:999px;background:var(--primary);opacity:.6"></span><span class="wire__b" style="width:10px;height:10px;border-radius:999px"></span></div><div class="wire__b wire__b--grow" style="width:70%"></div><div class="wire__b" style="height:16px;width:100%;background:var(--primary);opacity:.5"></div></div><div class="wire__cap"><code>wizard-focus</code></div></div>
+        <div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__row wire__row--grow"><div class="wire__b wire__b--side"></div><div class="wire__b wire__b--grow"></div></div></div><div class="wire__cap"><code>settings-sidebar</code></div></div>
+        <div class="wire"><div class="wire__frame"><div class="wire__b wire__b--top"></div><div class="wire__frame" style="flex:1;justify-content:center;align-items:center;padding:0"><div class="wire__b" style="width:50%;height:10px"></div><div class="wire__b" style="width:34%;height:18px;margin-top:5px;background:var(--primary);opacity:.5"></div></div></div><div class="wire__cap"><code>empty-stub</code></div></div>
+      </div></div>
+    </section>
+
+    <!-- APPENDIX -->
+    <section class="pillar" id="appendix-a">
+      <div><span class="pillar__num">Appendix A</span></div>
+      <h2 class="pillar__title"><span data-en>Output formats.</span><span data-zh>輸出格式</span></h2>
+      <p class="pillar__intro" data-en>DSS v1.4 is output-agnostic. Ztor Creator Studio · R 2.2 ships as CSS Custom Properties (canonical form in <code>ds-components/_tokens.css</code>); below are equivalent representations for other targets.</p>
+      <p class="pillar__intro" data-zh>DSS v1.4 不綁定輸出形式。Ztor Creator Studio · R 2.2 以 CSS Custom Properties 交付(canonical 形式在 <code>ds-components/_tokens.css</code>);以下是給其他目標的等效表示。</p>
+      <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>Code example — for developers</span><span data-zh>程式碼範例 — 給工程師</span></summary><pre class="code">:root {
+  --background:         #FFFFFF;
+  --card:            #FFFFFF;
+  --primary:            #ffa33f;
+  --primary-foreground: #171717;
+  --border:             #EAEAEA;
+  --status-success:     #22C55E;
+}</pre></details>
+      <p class="field-text" data-en>Also expressible as Tailwind v4 <code>@theme</code> tokens and W3C DTCG JSON (<code>{ "color": { "primary": { "$value": "#ffa33f", "$type": "color" } } }</code>).</p>
+      <p class="field-text" data-zh>也可表示成 Tailwind v4 <code>@theme</code> tokens 與 W3C DTCG JSON(<code>{ "color": { "primary": { "$value": "#ffa33f", "$type": "color" } } }</code>)。</p>
+    </section>
+
+    <section class="pillar" id="appendix-b">
+      <div><span class="pillar__num">Appendix B</span></div>
+      <h2 class="pillar__title"><span data-en>DSS v1.4 JSON skeleton.</span><span data-zh>DSS v1.4 JSON 骨架</span></h2>
+      <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>Code example — for developers</span><span data-zh>程式碼範例 — 給工程師</span></summary><pre class="code">{
+  "record": { "name": "Ztor Creator Studio · R 2.2", "source": "Ztor Creator Studio", "version": "R 2.2" },
+  "foundation": { "palette": { "orange": { "500": "#ffa33f" }, "neutral": { "50": "#FFFFFF", "900": "#171717" } } },
+  "role": { "color": { "primary": { "bg": "palette.orange.500", "fg": "palette.neutral.900" } } },
+  "mode": { "dark": { "color": { "bg": { "canvas": "palette.neutral.900" } } } },
+  "component": { "_inventory": "button · badge · … (23 units, each with _layer)" },
+  "pattern": { "_cards": { "dashboard-home": {}, "tabbed-section-view": {}, "filter-and-list": {}, "lifecycle-states": {}, "multi-step-wizard": {} } },
+  "structure": "(see Pillar 6)"
+}</pre></details>
+    </section>
+
+    <section class="pillar" id="impl">
+      <div><span class="pillar__num">Implementation Notes</span></div>
+      <h2 class="pillar__title"><span data-en>Technical-stack landing.</span><span data-zh>技術堆疊總覽</span></h2>
+      <p class="pillar__intro" data-en>A static prototype — no build step, no framework.</p>
+      <p class="pillar__intro" data-zh>一個靜態原型 — 沒有 build step,也沒有 framework。</p>
+      <table class="spec"><tbody>
+        <tr><td><span data-en>Markup / styling</span><span data-zh>Markup / styling</span></td><td><span data-en>Hand-written HTML + CSS; one CSS file per component in <code>ds-components/</code>, all token-driven</span><span data-zh>手寫 HTML + CSS;每個元件在 <code>ds-components/</code> 各有一個 CSS 檔,全部由 token 驅動</span></td></tr>
+        <tr><td><span data-en>Tokens</span><span data-zh>Tokens</span></td><td><span data-en><code>ds-components/_tokens.css</code> — Foundation + Role + Mode in one layer</span><span data-zh><code>ds-components/_tokens.css</code> — Foundation + Role + Mode 放在同一層</span></td></tr>
+        <tr><td><span data-en>Theme</span><span data-zh>Theme</span></td><td><span data-en><code>theme.js</code> — light / dark / system, persisted</span><span data-zh><code>theme.js</code> — light / dark / system,會記住</span></td></tr>
+        <tr><td><span data-en>Icons</span><span data-zh>Icons</span></td><td><span data-en><code>icons.js</code> — Tabler registry, injected per page</span><span data-zh><code>icons.js</code> — Tabler registry,逐頁注入</span></td></tr>
+        <tr><td><span data-en>i18n</span><span data-zh>i18n</span></td><td><span data-en><code>i18n.js</code> — en / zh-Hant dictionary, topbar toggle</span><span data-zh><code>i18n.js</code> — en / zh-Hant 字典,topbar 切換</span></td></tr>
+        <tr><td><span data-en>Fonts</span><span data-zh>Fonts</span></td><td><span data-en>self-hosted woff2/ttf in <code>fonts/</code> — no CDN</span><span data-zh>自架的 woff2/ttf 放在 <code>fonts/</code> — 不用 CDN</span></td></tr>
+        <tr><td><span data-en>Component API</span><span data-zh>Component API</span></td><td><span data-en>CSS classes only (no JS API) — spec cards use HTML examples; Props/API = N/A</span><span data-zh>只有 CSS classes(沒有 JS API)— spec 卡用 HTML 範例;Props/API = N/A</span></td></tr>
+        <tr><td><span data-en>Self-contained</span><span data-zh>Self-contained</span></td><td><span data-en>the folder runs standalone — no asset or link depends on anything outside this directory</span><span data-zh>整個資料夾可獨立運作 — 沒有任何 asset 或連結依賴此目錄外的東西</span></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="sub" id="admin-ip-bank-table">
+      <h3 class="sub__title">Admin IP Bank table</h3>
+      <p class="sub__desc">Film allocation and reporting table wrapper, including the inline Film and date-range filter row. 2026-07-31 user: <code>.admin-table__thumb</code> turned portrait — was 36×36 square, now height-locked, width-derived: <code>height:36px</code> / <code>width:calc(36px * var(--img-portrait))</code> (≈29px, 29×36), same recipe as <code>.ztor-table__thumb</code>（2026-07-31 使用者：改直式，原 36×36 正方，改鎖高算寬，29×36）。</p>
+      <div class="admin-report-filters"><label class="field"><span class="field__label">Film</span><select class="select"><option>海上霸王 - 鄭一嫂</option></select></label><div class="admin-report-filters__range"><label class="field"><span class="field__label">Start date</span><input class="input" type="date" value="2026-05-01"></label><span class="admin-report-filters__separator">—</span><label class="field"><span class="field__label">End date</span><input class="input" type="date" value="2026-05-31"></label></div></div>
+      <div class="admin-table-wrap"><table class="ztor-table"><thead><tr><th>Film</th><th>Owner</th><th>Share</th></tr></thead><tbody><tr><td><div class="admin-table__film"><span class="admin-table__thumb"></span>海上霸王 - 鄭一嫂</div></td><td><div class="admin-table__owner"><span class="admin-table__avatar">D</span>Denise Wong</div></td><td class="admin-table__share">20.00%</td></tr></tbody></table></div>
+      <p class="field-label" data-en>Rows with a kebab menu <span class="field-note">(<code>--menu</code>, 2026-08-20 · D212)</span></p>
+      <p class="field-label" data-zh>列尾是 kebab 選單的清單 <span class="field-note">（<code>--menu</code>，2026-08-20 · D212）</span></p>
+      <p class="sub__desc" data-en>The wrapper's <code>overflow-x:auto</code> clips vertically too, so a row menu opening downward gets cut in half — always on the last row. <code>.admin-table-wrap--menu</code> lets the menu escape and drops the 840px min-width (that figure belongs to the much wider Admin IP Bank table); with overflow released the wrapper's radius no longer clips, so the head row and last row round their own corners. Same approach as <code>variant-table-wrap--menu</code>. Used by the size-guide and discount-code lists in Store settings.</p>
+      <p class="sub__desc" data-zh>外框的 <code>overflow-x:auto</code> 連縱向一起裁，列尾選單往下長出去就只剩半截（最後一列必中，2026-08-20 使用者回報）。<code>.admin-table-wrap--menu</code> 放行 overflow（外框與 <code>.ztor-table</code> 兩層都要——表格自己也是 <code>overflow:hidden</code>，只放行外框選單仍然出不來），並把 840px 最小寬歸零——那個寬度是給欄位多得多的 Admin IP 銀行表用的，三欄的清單硬留著只會逼出一條沒必要的橫捲。overflow 放行後外框圓角不再 clip 內容，所以首列表頭與末列自己補圓角貼齊內緣。做法沿用 <code>variant-table-wrap--menu</code>。消費頁：商店設定的尺寸指南與優惠碼兩張清單。</p>
+      <p class="sub__desc" data-en>ztorUI reskin (2026-08-28 Wave 3 · B-grade sweep fix): <code>.admin-table-wrap</code> now uses the glass card recipe (<code>--ztu-glass-bg</code> + <code>backdrop-filter: blur(var(--ztu-blur-glass))</code> + 1px <code>--border</code> + <code>--shadow-card</code>/<code>--shadow-edge-top</code>, same formula as <code>.card</code>/Q77), replacing the old solid <code>--card</code> fill with a single <code>--shadow-card</code>. The nested <code>.ztor-table</code> keeps its own header/hover tokens unchanged — verified readable on admin-ip-bank, admin-platform-fees, admin-video-review and store-settings.</p>
+      <p class="sub__desc" data-zh>ztorUI 換裝（2026-08-28 Wave 3 B 級巡檢補修）：<code>.admin-table-wrap</code> 外框改玻璃配方（<code>--ztu-glass-bg</code> ＋ <code>backdrop-filter: blur(var(--ztu-blur-glass))</code> ＋ 1px <code>--border</code> ＋ <code>--shadow-card</code>/<code>--shadow-edge-top</code>，同 <code>.card</code>／Q77 配方），取代原本實色 <code>--card</code> 底＋單層 <code>--shadow-card</code>。巢狀 <code>.ztor-table</code> 的表頭／hover token 不變——已在 admin-ip-bank、admin-platform-fees、admin-video-review、store-settings 四頁實測可讀。</p>
+      <p class="field-text" data-en>Style source: <code>ds-components/admin-ip-bank-table.css</code>.</p>
+      <p class="field-text" data-zh>樣式來源：<code>ds-components/admin-ip-bank-table.css</code>。</p>
+    </section>
+    <section class="pillar" id="validator">
+      <div><span class="pillar__num">Integrity Check</span></div>
+      <h2 class="pillar__title"><span data-en>Document graph health.</span><span data-zh>文件關係圖健康度</span></h2>
+      <p class="pillar__intro" data-en>This self-check runs in the browser and validates internal anchors, duplicate IDs, compose-chip targets, and linked local CSS files. It is documentation-only and does not affect product pages.</p>
+      <p class="pillar__intro" data-zh>這個自檢會在瀏覽器裡檢查內部錨點、重複 ID、compose-chip 目標，以及本地 CSS 連結。它只屬於文件，不影響產品頁。</p>
+      <pre class="code" id="ds-validator-report">Pending...</pre>
+    </section>
+
+  </main>
+</div>
+<script src="ds-tail.js?v=r2.2"></script>
+</body>
+</html>

@@ -4,6 +4,8 @@
 
 ## Changelog
 
+- **2026-11-09** — §4.29c Restock order：新增「修改庫存」模式（D525）——同一張表，不顯示方式卡、供應商與預計到貨；欄名換成目前／新的在庫數／差額，名稱下一行「最低 N」，低於下限用共用的 `.input[aria-invalid]` 紅框＋表下 `.field__error`、送出停用。同日稍早 D523 的第三張卡「減少庫存」撤回，方式卡維持兩張。沒有新增 class 或 token。design-system.html 補修改庫存模式示範。
+
 - **2026-08-26** — md 追上 html 這輪的大幅整理（版本號、Pattern cards 拆頁、Radius token 補完、三處內容過時）。
   - **版本標籤**：全檔 12 處「R 2.1」版本標籤（標題、Identity Overview、Pillar 0 Record、Pillar 1 Color 概述、Pillar 4 layer 表頭與範例、chart family、breakpoint、page templates、Appendix A/B）改 R 2.2；2 處歷史沿革句保留不動（`notes` 欄的「R 2.1.6」特定子版本事件、§3.3 dark surface 說明裡「原 r2.1 制」的新舊對照）。
   - **§5.1 Pattern cards** — html 這輪把十張卡從單一表格拆成十個獨立小節（各自掛錨點＋真元件渲染組合實例＋實際使用頁連結）；md 十張卡標題補上編號 5.1.1–5.1.10 與對應 html 錨點 id，並在小節開頭補一張「# / Pattern / html 錨點」對照表。內容核對後與 html 語意一致，未發現需要改寫的規則。
