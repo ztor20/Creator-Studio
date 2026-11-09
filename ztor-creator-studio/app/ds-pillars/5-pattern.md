@@ -80,7 +80,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
   - **整頁＋右側預覽**：右欄放粉絲端預覽，見 5.1.9 Split preview（建立商品、建立活動、建立組合包）。
   - **蓋在頁面上**：精靈外框以全畫面覆蓋開在原頁上，關掉回原頁（新增庫房）。
   - **單頁分步**：同一張表單分成幾步顯示、不拆成幾頁；其他步驟的區段收起，欄位值、即時預覽與就緒檢查都讀同一張表單（建立商品、建立組合包的「設定 → 上架設定 → 預覽與發布」；元件 [Form steps](./4-component.md) §4.241）。
-- **實例**：建立專案 `create-project.html`（4 步：About → Showcase → Monetization → Review，送出前揭露 IP 租用）· 建立活動 `create-event.html`（3 步：Type → Date & venue → Cover）· 建立商品 `create-product.html`（4 步，主要／次要分類分開記）· 建立組合包 `create-bundle.html` · 新增庫房（`media-vault.html` 內開啟，3 步：取名 → 放內容 → 誰開得了）。
+- **實例**：建立專案 `create-project.html`（4 步：About → Showcase → Monetization → Review，送出前揭露 IP 租用）· 建立活動 `create-event.html`（規格 5.1.6.1 的 7 步：入口閘門（活動類型與 bookyay 帶入）→ 基本資料 → 場次 → 票種與票務 → 票務商品（選用）→ 發布設定 → 預覽與發布）· 建立商品 `create-product.html`（4 步，主要／次要分類分開記）· 建立組合包 `create-bundle.html` · 新增庫房（`media-vault.html` 內開啟，3 步：取名 → 放內容 → 誰開得了）。
 
 #### 5.1.6 Form assembly (Workflow) · `#pattern-form-assembly`
 
@@ -164,7 +164,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 - **should**: 預覽只用創作者幣別（D514）；預覽區的購買類按鈕保持不動作。
 - **must-not**: 不用浮層做這一步（舊的 Publish preview 彈窗 §4.130 已退場）；`fan-shop.css` 只給前台鏡像用，不得被其他頁引用；不在預覽裡另做一套跟前台不同的版面。
 - **變體**：
-  - **精靈最後一步**（mode `publish`）：多步驟建立流程的最後一步「預覽與發布」，例如建立活動第 7 步。
+  - **精靈最後一步**（mode `publish`）：多步驟建立流程的最後一步「預覽與發布」，例如建立活動的最後一步（規格第 7 步）。
   - **發布後的獨立頁**（mode `save`）：「預覽與在地化」，主鈕換成「儲存」。
 - **實例**：建立活動 `create-event.html` · 建立商品 `create-product.html` · 建立組合包 `create-bundle.html` · 建立專案 `create-project.html` · 作品上架 `publish-work.html` · 活動的預覽與在地化 `event-localization.html` · 商品的預覽與在地化 `product-localization.html`。
 - **跟 5.1.9 Split preview 的分工**：Split preview 是編輯時的即時預覽欄（唯讀摘要）；本做法是送出前的最後確認，側欄是可操作的控制台。
