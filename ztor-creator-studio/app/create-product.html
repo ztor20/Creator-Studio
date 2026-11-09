@@ -3218,96 +3218,11 @@
   })();
 </script>
 
-<!-- 逐規格圖片彈窗（2026-08-10 使用者指示）：列首那顆 34px 縮圖點開就是這裡。
-     殼沿用站上通用的 .payout-modal / .payout-dialog；內容沿用建立活動「票種圖片」
-     同一個 pattern（.upload-tile-aside ＝ 直式上傳格＋旁邊一句說明＋還原鈕），
-     兩處講的是同一件事：這一列自己的圖，沒給就沿用上一層的圖。 -->
-<div class="payout-modal" id="cp-vimg-modal" hidden>
-  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="cp-vimg-title">
-    <div class="payout-dialog__head">
-      <h2 class="payout-dialog__title" id="cp-vimg-title"></h2>
-      <button class="btn btn--icon" type="button" data-vimg-close aria-label="Close" data-i18n-aria-label="cp.var.img.close"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body" id="cp-vimg-body"></div>
-    <div class="payout-dialog__foot">
-      <span class="field__hint" style="margin:0" data-i18n="cp.var.img.auto">Changes apply straight away.</span>
-      <button class="btn btn--primary" type="button" data-vimg-close data-i18n="cp.var.img.done">Done</button>
-    </div>
-  </section>
-</div>
-
+<!-- 逐規格圖片彈窗（2026-08-10 使用者指示）：列首那顆 34px 縮圖點開就是這裡。2026-11-09 起與商品詳情共用
+     partials/variant-image-modal.js（原本兩頁各一份），本頁只設定開啟鈕屬性與「改了就生效」的頁尾說明。 -->
+<script src="partials/variant-image-modal.js?v=r2.2"></script>
 <script>
-/* ---- 逐規格圖片彈窗控制器（2026-08-10）------------------------------------------
-   狀態只有一個來源：varData[key].img（有值＝這個規格自己的圖，沒值＝沿用商品主圖）。
-   彈窗裡的上傳格走站上共用的互動上傳格（partials/upload-tile.js），所以選圖、
-   假進度、hover 替換／刪除全都跟其他上傳格一致，這裡只接 upload:change 把結果寫回。 */
-(function () {
-  const modal = document.getElementById('cp-vimg-modal');
-  if (!modal) return;
-  const body = document.getElementById('cp-vimg-body');
-  const title = document.getElementById('cp-vimg-title');
-  let openKey = null;
-
-  const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
-  const api = () => window.ztorVariantImage || null;   // 由主控制器掛上（讀寫 varData、重畫列）
-
-  function render() {
-    const a = api(); if (!a || !openKey) return;
-    const own = a.getOwn(openKey);
-    const hero = a.heroSrc();
-    const src = own || hero;
-    const hintKey = own ? 'cp.var.img.own' : (hero ? 'cp.var.img.inherit' : 'cp.var.img.none');
-    body.innerHTML =
-      '<div class="upload-tile-aside">' +
-        /* 只收圖片（2026-09-10）：這一格產出的是規格表列首那顆 34px 的辨識小圖，不是展示素材，
-           而且下面的 upload:change 只把 <img> 的 src 寫回規格——收了影片會靜默存不進去。 */
-        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-upload-accept="image/*" data-vimg-tile>' +
-          (src ? '<img class="upload-tile__thumb" src="' + src + '" alt="">'
-               : '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span>') +
-        '</div>' +
-        '<div class="upload-tile-aside__side">' +
-          '<p class="field__hint" style="margin:0" data-i18n="' + hintKey + '">' + T(hintKey, '') + '</p>' +
-          (own ? '<button type="button" class="btn btn--outline btn--sm" data-vimg-reset data-i18n="cp.var.img.reset">' + T('cp.var.img.reset', 'Back to the product image') + '</button>' : '') +
-        '</div>' +
-      '</div>';
-    if (window.ztorIcons) window.ztorIcons.applyIcons(body);
-    if (window.ztorUploadTile) body.querySelectorAll('.upload-tile[data-upload]').forEach(window.ztorUploadTile.enhance);
-  }
-
-  function open(key) {
-    openKey = key;
-    title.textContent = T('cp.var.img', 'Variant image') + ' · ' + key;
-    render();
-    modal.hidden = false;
-    document.body.classList.add('is-modal-open');
-  }
-  function close() { modal.hidden = true; openKey = null; document.body.classList.remove('is-modal-open'); }
-
-  document.addEventListener('click', e => {
-    const open_ = e.target.closest('[data-vimg]');
-    if (open_) { open(open_.dataset.vimg); return; }
-    if (e.target.closest('[data-vimg-close]')) { close(); return; }
-    if (e.target.closest('[data-vimg-reset]')) {
-      const a = api(); if (a && openKey) { a.setOwn(openKey, ''); render(); }
-      return;
-    }
-    /* 點背景關閉：只認彈窗最外層，點到對話框內部不算 */
-    if (e.target === modal) close();
-  });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
-
-  /* 上傳格傳完 → 把縮圖寫回這個規格；刪除 → 回到沿用主圖 */
-  modal.addEventListener('upload:change', e => {
-    const a = api(); if (!a || !openKey) return;
-    const tile = e.target.closest('[data-vimg-tile]'); if (!tile) return;
-    if (e.detail && e.detail.filled) {
-      const img = tile.querySelector('.upload-tile__thumb');
-      if (img && img.src) { a.setOwn(openKey, img.src); render(); }
-    } else if (e.detail && e.detail.state === 'empty') {
-      a.setOwn(openKey, ''); render();
-    }
-  });
-})();
+  window.ZtorVariantImageModal.mount({ trigger: 'data-vimg', hintKey: 'cp.var.img.auto', hintFallback: 'Changes apply straight away.' });
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>

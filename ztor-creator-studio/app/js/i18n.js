@@ -11152,6 +11152,7 @@
     'dlg.cancel':  { en: 'Cancel',  zh: '取消' },
     'dlg.confirm': { en: 'Confirm', zh: '確認' },
     'dlg.close':   { en: 'Close',   zh: '關閉' },
+    'vault.item.delete': { en: 'Delete', zh: '刪除' },
     'dlg.t.blocked':   { en: "Can't publish yet", zh: '還不能發布' },
     'dlg.t.saved':     { en: 'Saved',             zh: '已儲存' },
     'dlg.t.draft':     { en: 'Draft saved',       zh: '已存成草稿' },

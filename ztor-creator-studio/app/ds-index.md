@@ -3,11 +3,11 @@
 > 由 `gen_ds_index.py` 從 `ds-components/` 與設計系統文件產生；Stop hook 與 check_ds_sync 沒有 FAIL 時自動重生，
 > 手動重生：專案根執行 `python3 ../../Skills/project-ui-creator/scripts/gen_ds_index.py "site/app"`。
 > 用途：**動手改 UI 前先掃這頁，照順序看**：要拼畫面或流程先找 Pillar 5 的 pattern（照它挑元件、排版）→ 再找 Pillar 4 的元件 → 值一律用 Pillar 1 的 token，不寫死。
-> 流程：先看產品規格 → 找 pattern（照做／大致適用就加變體、不改原 pattern／會重複用才建新 pattern，只有這頁就記 BUILD-SPEC）→ 找元件（用現成／差一點加變體／只有一頁用就留在頁面／都沒有才建新元件）→ 把這頁記成 pattern 卡的實例。
+> 流程：先看產品規格 → 找 pattern（有多種用途的元件先看它的類型總卡判斷是哪一類／照做／大致適用就加變體——只有所有實例都該跟著改時才改原 pattern／會重複用才建新 pattern，只有這頁就記 BUILD-SPEC）→ 找元件（用現成／差一點加變體／只有一頁用就留在頁面／都沒有才建新元件）→ 把這頁記成 pattern 卡的實例。
 > 本檔是設計系統的**速查版**（Pillar 5、4、1）；要修改時先讀入口 `design-system.md`（Do / Don't＋對照表），
 > 再照對照表讀完整版（`ds-pillars/`）或元件列尾的 `ds-specs/` 規格檔；人看的是 `design-system.html`。只列亮色值，暗色屬 Pillar 3。
 
-## Pillar 5 速查 · Pattern（拼畫面與流程的做法，共 13 種）
+## Pillar 5 速查 · Pattern（拼畫面與流程的做法，共 14 種）
 
 - 5.1.1 Dashboard home（Layout） ｜ 什麼時候用：The landing surface after login — the creator needs a one-glance read of money, alerts, and what to do next. ｜ 展示頁 `design-system-pattern.html#pattern-dashboard`
 - 5.1.2 Tabbed section view（Layout） ｜ 什麼時候用：One entity has parallel sub-views of the same dataset (Earnings: Overview / Transactions / Payouts / Tax · E-… ｜ 展示頁 `design-system-pattern.html#pattern-tabbed`
@@ -22,6 +22,7 @@
 - 5.1.11 Destructive confirm（Interaction） ｜ 什麼時候用：一個按下去就收不回來的動作——作廢明細、刪除商品／草稿／活動、停用帳號。可逆的動作（存草稿、下架、切換顯示）不走這張卡，直接做完給 toast。 ｜ 展示頁 `design-system-pattern.html#pattern-destructive-confirm`
 - 5.1.12 Export confirm（Interaction） ｜ 什麼時候用：創作者已篩好一份清單、要把它拿成檔案——訂單管理、活動交易明細。檔案照目前的篩選結果，所以下載前先講會有幾筆。 ｜ 展示頁 `design-system-pattern.html#pattern-export-confirm`
 - 5.1.13 Pre-publish preview（Workflow） ｜ 什麼時候用：要對粉絲公開的東西（活動、商品、組合包、專案、作品）建立或改完、送出之前，讓創作者看一次粉絲端長什麼樣，順便檢查各語系的內容；發布後回頭改語系或內容時也用同一個畫面。 ｜ 展示頁 `design-system-pattern.html#pattern-prepublish`
+- 5.1.14 Drawer types 抽屜類型（Interaction） ｜ 什麼時候用：從側邊或底部滑出、不離開目前頁面的面板。 ｜ 展示頁 `design-system-pattern.html#pattern-drawer`
 
 ### 其他通則（文案、狀態、資料視覺化、流程）
 

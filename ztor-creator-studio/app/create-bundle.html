@@ -599,7 +599,10 @@
   </footer>
 </div>
 
-<!-- 「加入組合物」彈窗（2026-10-12 改版）：借 payout-modal 的殼。兩個分頁：商品（候選清單＋建立新商品）／活動票券（活動清單）。
+<!-- ⚠ 2026-11-09 起不再開啟：使用者只會看到下方新版「組合物挑選彈窗」（data-cb-addm）。原本唯一的另一個入口「換一場活動」（data-cb-tier-back）按鈕已不在頁面上；程式裡那條路也改成開新版（活動篩選）。
+     這份 markup 暫時保留，因為新版挑選窗的商品候選仍讀這裡的 #cb-recent 清單（addmPaint、加入時查列）；
+     把候選資料改成直接讀商品資料後即可整段刪除（待重構）。
+     原說明：「加入組合物」彈窗（2026-10-12 改版）：借 payout-modal 的殼。兩個分頁：商品（候選清單＋建立新商品）／活動票券（活動清單）。
      一個組合包只能有一場活動（D292 裁決十六）。D433（2026-10-16）：「活動票券」分頁一律可點（原本已有票券時整個分頁停用、點了沒反應）；
      分頁裡已加入的那場標「已加入」、點了關彈窗並展開該列門票勾選，其他活動整列停用，面板頂就地說明為什麼。 -->
 <div class="payout-modal" data-cb-member-modal hidden>
@@ -2048,10 +2051,12 @@
     addmNote.hidden = !(evLocked || addmEvOn());
     if (window.ztorIcons) window.ztorIcons.applyIcons(addmList);
   }
-  function addmOpen() {
+  /* filter（選填，2026-11-09）：'all'／'item'／'event'——「換一場活動」直接開在活動篩選，不再另開舊版分頁式挑選窗 */
+  function addmOpen(filter) {
     if (!addm) return;
-    addmPicked = new Set(); addmFilt = 'all'; addmQ.value = '';
-    addmF.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.f === 'all'));
+    const f0 = (filter === 'item' || filter === 'event') ? filter : 'all';
+    addmPicked = new Set(); addmFilt = f0; addmQ.value = '';
+    addmF.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.f === f0));
     addm.hidden = false; document.body.classList.add('is-modal-open');
     addmPaint(); addmQ.focus();
   }
@@ -2060,7 +2065,7 @@
     addm.hidden = true;
     if ((!addModal || addModal.hidden) && (!memberModal || memberModal.hidden)) document.body.classList.remove('is-modal-open');
   }
-  document.querySelectorAll('[data-cb-addm-open]').forEach(b => b.addEventListener('click', addmOpen));
+  document.querySelectorAll('[data-cb-addm-open]').forEach(b => b.addEventListener('click', () => addmOpen()));
   document.querySelectorAll('[data-cb-addm-close]').forEach(b => b.addEventListener('click', addmClose));
   if (addm) {
     addm.addEventListener('click', e => { if (e.target === addm) addmClose(); });
@@ -2081,7 +2086,7 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !addm.hidden && (!addModal || addModal.hidden)) addmClose(); });
   }
   function showTixStage(stage) {
-    if (stage === 'events') { openMemberModal('tix'); return; }
+    if (stage === 'events') { addmOpen('event'); return; }   /* 2026-11-09：改開新版挑選窗（活動篩選），舊版分頁式不再開啟 */
     if (stage === 'tiers') tixOpen = true;
     renderTixRow();
   }

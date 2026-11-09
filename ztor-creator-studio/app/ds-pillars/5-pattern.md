@@ -35,6 +35,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 | 5.1.11 | Destructive confirm | `#pattern-destructive-confirm` |
 | 5.1.12 | Export confirm | `#pattern-export-confirm` |
 | 5.1.13 | Pre-publish preview | `#pattern-prepublish` |
+| 5.1.14 | Drawer types 抽屜類型 | `#pattern-drawer` |
 
 #### 5.1.1 Dashboard home (Layout) · `#pattern-dashboard`
 
@@ -118,18 +119,18 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 | 3 破壞性確認 | 確認一個收不回來的動作 | `--narrow` 460px | 見 5.1.11 四段 | 取消＋紅色確認鈕（與入口同級） | 見 5.1.11 |
 | 4 匯出 | 確認筆數後下載檔案 | 預設 620px | 見 5.1.12 | 取消＋「匯出 N 筆」 | 見 5.1.12 |
 | 5 挑選 | 從清單裡選一個或多個 | `--wide` 880px；清單只有一欄勾選（例：標籤）時用預設 620px | 搜尋／篩選 → 清單 → 已選數量 | 取消＋「加入（N）」 | 加入組合物、選商品、選作品 |
-| 6 看細節 | 唯讀看一筆資料的完整內容 | 單獨看一筆用彈窗（預設或 `--wide`）；要跟清單逐筆對照著看用側邊抽屜 Drawer（Q143） | 標題（是哪一筆）→ 唯讀欄位（KV list）→ 明細 | 只有關閉；要動作時放頁尾 | 交易明細、粉絲紀錄、核銷紀錄 |
+| 6 看細節 | 唯讀看一筆資料的完整內容 | 沒有細節頁、只是一筆資料時用彈窗（預設或 `--wide`）；有完整細節頁用 5.1.14 第 1 類整頁細節覆蓋；要邊看清單邊比對用 5.1.14 第 4 類（Q143） | 標題（是哪一筆）→ 唯讀欄位（KV list）→ 明細 | 只有關閉；要動作時放頁尾 | 交易明細、粉絲紀錄、核銷紀錄 |
 | 7 提示告知 | 只需要知道（被擋下的原因、說明） | `--narrow` 460px | 發生什麼 → 為什麼 → 怎麼處理 | 一顆「知道了」；可附「前往處理」 | 發布被擋、條件說明 |
 | 8 離開未存 | 有未存的變更要離開 | Leave dialog（§4.77） | 有哪些變更沒存 | 繼續編輯＋捨棄 | 建立與編輯流程 |
 | 9 選擇做法 | 二選一決定流程往哪走 | 預設 620px | 問句 → 選擇卡（Selection card） | 選了就前進，或取消 | 要怎麼建這些門票 |
 | 10 開另一頁 | 在原頁上開另一個頁面 | Embed modal 全畫面 | iframe 內容 | 關閉 | 商店設定、預覽 |
-| 11 整頁工作區 | 一整個功能裝進浮層 | 全畫面浮層：`--xwide` 1180px（與 Embed modal 同上限） | 依功能 | 依功能 | 粉絲分級設定、媒體庫彈窗版 |
+| 11 整頁工作區 | 一整個功能裝進浮層 | 全畫面浮層：`--xwide` 1180px（與 Embed modal 同上限） | 依功能 | 依功能 | 粉絲分級設定、媒體庫彈窗版、組合包編輯器、票務設定、受眾報告完整清單（欄位多的大表）、翻譯表（`drawer --full`，Publish stage 內） |
 
 - **must**（所有類型共通）: Reuse the single canonical dialog chrome（`.payout-dialog` head / body / foot, `payout-modal.css`）+ backdrop + `is-modal-open` scroll-lock；寬度只用 `--narrow`（460）／預設（620）／`--wide`（880）／`--xwide`（1180），跟著類型走，不寫行內寬度（Q142）。「確認後執行」「破壞性確認」「提示告知」三類一律用 `.payout-dialog --narrow`；Leave dialog 只給「離開未存」（Q141）。
 - **should**: Focus-trap inside the dialog; primary action right-aligned in the foot; body reuses Field / Data-list / KV list rather than bespoke layouts.
 - **must-not**: 不用瀏覽器原生 `confirm()`／`alert()`；never roll a new modal chrome per feature; never stack two modals; never let backdrop-click discard unsaved money input without confirm；可以復原的動作不用紅色確認鈕（Q144）。
 - **_edge-cases**: `empty` → open with sensible defaults; `error` → inline `Alert --row` inside the body, dialog stays open; `new-user` → helper line under the title; `mobile` → dialog goes full-width bottom-sheet-like; `offline` → submit disabled with reason.
-- **待收斂**（2026-11-09 普查發現；同日已收斂：原生 confirm／alert 全部換成 `js/ztor-dialog.js`、6 個功能的確認改用窄版彈窗、寬度寫死與不合類型的 6 處、受眾報告與核銷紀錄的下載改走匯出確認、`partials/publish-preview.js` 與 `ztorCsv.openLog()` 退場）：收入「貼文報表」的「Export .xlsx」按鈕沒有任何動作，要先定匯出規格；同類重複實作待收成共用（優惠碼建立 3 份、規格圖片 2 份、收益明細 4 份、create-bundle 兩個同名「加入組合物」）；其餘 100 多個彈窗的寬度還沒逐一對照類型。
+- **待收斂與不收的**（2026-11-09 普查後處理完）：原生 confirm／alert、Leave dialog 借殼、寬度不符、匯出確認、無入口彈窗都已收斂；重複實作收成共用的有：分級說明 2 份（`partials/tier-explains.js`）、規格圖片 2 份（`partials/variant-image-modal.js`）、收入去向與項目收入明細 3 頁（`partials/earnings-modals.js`）；建立組合包的舊版挑選窗已沒有入口（只剩新版），舊 markup 暫留當新版的商品候選資料來源（待重構）。**刻意不收**：建立優惠碼三份（平台、商店、商品頁快速建立）分屬三個情境、欄位不同，合併等於改產品規則；收入「版稅來源／全部內容／內容詳情」在主收入頁與 Sony 示範頁只差示範資料。仍待規格：收入「貼文報表」的 Export .xlsx。
 
 #### 5.1.9 Split preview (Layout) · `#pattern-split-preview`
 
@@ -189,6 +190,27 @@ Best-practice assembly recipes — how components combine to meet a creator's go
   - **發布後的獨立頁**（mode `save`）：「預覽與在地化」，主鈕換成「儲存」。
 - **實例**：建立活動 `create-event.html` · 建立商品 `create-product.html` · 建立組合包 `create-bundle.html` · 建立專案 `create-project.html` · 作品上架 `publish-work.html` · 活動的預覽與在地化 `event-localization.html` · 商品的預覽與在地化 `product-localization.html`。
 - **跟 5.1.9 Split preview 的分工**：Split preview 是編輯時的即時預覽欄（唯讀摘要）；本做法是送出前的最後確認，側欄是可操作的控制台。
+
+#### 5.1.14 Drawer types 抽屜類型 (Interaction) · `#pattern-drawer`
+
+2026-11-09 建，依同日抽屜普查（25 個側邊或底部面板，見 `docs/抽屜普查-2026-11-09.md`）。比照 5.1.8 彈窗類型：**元件層**是外殼（§Drawer：`.drawer` 頭／身／頁尾、480／`--wide` 880／`--full`；§Detail sheet；Scanner 的底部 sheet），**本卡**定有哪些類型、每類放什麼、按鈕放哪。
+
+- **trigger**: 從側邊或底部滑出、不離開目前頁面的面板。
+- **怎麼用**：先判斷是下表哪一類；都不像先檢討分類本身；類型確定後元件不夠才改元件。
+- **跟彈窗怎麼分**（Q143，2026-11-09 改寫）：清單點一列，**有完整細節頁**的用第 1 類整頁細節覆蓋；**沒有細節頁、只是一筆資料**的用彈窗第 6 類「看細節」；要邊看清單邊比對時才用第 4 類逐筆對照抽屜。打斷式、做完一件事就關的任務（確認、填一張小表單）用彈窗，不用抽屜。
+- **類型**：
+
+| 類型 | 使用者在做什麼 | 外殼與尺寸 | 內容順序 | 按鈕 | 實例 |
+|---|---|---|---|---|---|
+| 1 整頁細節覆蓋 | 從清單點一列，看那一筆的完整細節頁，看完回到原本的清單位置 | Detail sheet（最寬 1440，背後模糊） | 細節頁本身（iframe） | ✕ 關閉＋「整頁開啟」 | 商品、活動、訂單、項目、粉絲、IP、取貨場次等 15 處清單 |
+| 2 編輯設定 | 在頁面旁改一件東西的一組設定，背後的東西還看得見 | Drawer 480px，按鈕放 `.drawer__foot` | 標題（改的是哪一件）→ 預覽 → 欄位 | 頁尾：主要動作靠右；刪除放最左並走破壞性確認（5.1.11）；改了就即時生效的抽屜（例：媒體庫內容設定）沒有儲存鈕，頁尾只放刪除 | 媒體庫「內容設定」、創作者細節 |
+| 3 管理清單 | 在抽屜裡增刪一串項目 | Drawer 480px | 新增區 → 現有項目清單 | 每列自己的動作；破壞性動作走確認 | 媒體庫「鑰匙」 |
+| 4 逐筆對照 | 一邊看清單、一邊看選中那一筆的摘要，點別列就切換 | Drawer 480px，背後清單不模糊、可點 | 摘要（KV list）→ 主要動作 →「開完整細節」 | 上一筆／下一筆、關閉 | 目前沒有；規則先定，有需求再做 |
+| 5 操作工作台（底部） | 手機上持續操作時，結果或輸入從底部升起 | 底部 sheet（Scanner） | 結果帶狀列 → 內容 → 動作 | 依操作；Esc 可關 | 掃碼結果、輸入代碼 |
+
+- **must**：抽屜、sheet 一律可按 Esc、點遮罩、按 ✕ 關閉；第 2 類的按鈕放 `.drawer__foot`（Q145），不塞在內容最底下；抽屜裡打開的確認與告知用 `js/ztor-dialog.js`，會疊在抽屜之上。
+- **must-not**：不在抽屜裡再開抽屜；收不回來的動作不能按下就做（要走 5.1.11）；整頁大表不叫抽屜——翻譯表（`drawer --full`）屬彈窗第 11 類「整頁工作區」。
+- **不列入**：預覽欄（屬 5.1.9 Split preview）。
 
 ### 5.2 Voice & Microcopy
 

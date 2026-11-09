@@ -824,7 +824,7 @@
           <p class="form-section__sub" data-i18n="product-detail.edit.combos-sub">Price, SKU and cost per combination. Add stock via Restock.</p>
         </div>
         <div class="variant-table-wrap">
-          <!-- 逐組合縮圖（2026-09-11 · D268）併在規格名格（Q117）：檢視態唯讀縮圖、編輯態可點開「規格圖片」彈窗（data-pd-vimg-modal）換圖 -->
+          <!-- 逐組合縮圖（2026-09-11 · D268）併在規格名格（Q117）：檢視態唯讀縮圖、編輯態可點開「規格圖片」彈窗（partials/variant-image-modal.js）換圖 -->
           <div class="variant-table variant-table--preview" data-pd-edit-table>
             <div class="variant-table__head">
               <span data-i18n="cp.var.col.variant">Variant</span>
@@ -4444,99 +4444,14 @@
   })();
 </script>
 
-<!-- 規格圖片彈窗（2026-09-11 · D268 每個選項組合各一張商品圖）：編輯態組合表列首那顆 34px 縮圖點開就是這裡。
-     移植自 create-product.html 的 #cp-vimg-modal（2026-08-10），ID 改 pd- 前綴；殼沿用 .payout-modal／.payout-dialog--narrow，
-     內容沿用 .upload-tile-aside（直式上傳格＋一句說明＋還原鈕）。狀態存在編輯草稿 DRAFT.variants[vi].img，
-     按「儲存變更」才寫回商品——所以底下那句提示跟建立商品的「改了就生效」不同。 -->
-<div class="payout-modal" id="pd-vimg-modal" data-pd-vimg-modal hidden>
-  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="pd-vimg-title">
-    <div class="payout-dialog__head">
-      <h2 class="payout-dialog__title" id="pd-vimg-title"></h2>
-      <button class="btn btn--icon" type="button" data-pd-vimg-close aria-label="Close" data-i18n-aria-label="cp.var.img.close"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body" id="pd-vimg-body"></div>
-    <div class="payout-dialog__foot">
-      <span class="field__hint" style="margin:0" data-i18n="pd.var.img.auto">Saved with the product when you save changes.</span>
-      <button class="btn btn--primary" type="button" data-pd-vimg-close data-i18n="cp.var.img.done">Done</button>
-    </div>
-  </section>
-</div>
-
+<!-- 規格圖片彈窗（2026-09-11 · D268 每個選項組合各一張商品圖）：編輯態組合表列首縮圖點開就是這裡。
+     2026-11-09 起與建立商品共用 partials/variant-image-modal.js；狀態存在編輯草稿，按「儲存變更」才寫回，所以頁尾說明不同。 -->
+<script src="partials/variant-image-modal.js?v=r2.2"></script>
 <script>
-/* ---- 規格圖片彈窗控制器（2026-09-11 · D268，移植自 create-product.html 2026-08-10 版）----
-   狀態只有一個來源：window.ztorVariantImage（由上方主控制器掛上，讀寫 DRAFT.variants[vi].img、重畫列）。
-   彈窗裡的上傳格走站上共用的互動上傳格（partials/upload-tile.js），選圖、假進度、hover 替換／刪除
-   全都跟其他上傳格一致，這裡只接 upload:change 把結果寫回。 */
-(function () {
-  var modal = document.getElementById('pd-vimg-modal');
-  if (!modal) return;
-  var body = document.getElementById('pd-vimg-body');
-  var title = document.getElementById('pd-vimg-title');
-  var openVi = null;
-
-  var T = function (k, fb) { return (window.i18nT ? window.i18nT(k) : null) || fb; };
-  var api = function () { return window.ztorVariantImage || null; };
-  function resolve(v) { return /^(data:|blob:|https?:|\/|images\/)/.test(v) ? v : 'images/products/' + v; }
-
-  function render() {
-    var a = api(); if (!a || openVi === null) return;
-    var own = a.getOwn(openVi);
-    var hero = a.heroSrc();
-    var src = own ? resolve(own) : hero;
-    var hintKey = own ? 'cp.var.img.own' : (hero ? 'cp.var.img.inherit' : 'cp.var.img.none');
-    body.innerHTML =
-      '<div class="upload-tile-aside">' +
-        /* 只收圖片：這一格產出的是組合表列首那顆 34px 的辨識小圖，不是展示素材 */
-        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-upload-accept="image/*" data-pd-vimg-tile>' +
-          (src ? '<img class="upload-tile__thumb" src="' + src.replace(/"/g, '&quot;') + '" alt="">'
-               : '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span>') +
-        '</div>' +
-        '<div class="upload-tile-aside__side">' +
-          '<p class="field__hint" style="margin:0" data-i18n="' + hintKey + '">' + T(hintKey, '') + '</p>' +
-          (own ? '<button type="button" class="btn btn--outline btn--sm" data-pd-vimg-reset data-i18n="cp.var.img.reset">' + T('cp.var.img.reset', 'Follow the main image') + '</button>' : '') +
-        '</div>' +
-      '</div>';
-    if (window.ztorIcons) window.ztorIcons.applyIcons(body);
-    if (window.ztorUploadTile) body.querySelectorAll('.upload-tile[data-upload]').forEach(window.ztorUploadTile.enhance);
-  }
-
-  function open(vi) {
-    var a = api(); if (!a) return;
-    openVi = vi;
-    title.textContent = T('cp.var.img', 'Variant image') + ' · ' + a.labelOf(vi);
-    render();
-    modal.hidden = false;
-    document.body.classList.add('is-modal-open');
-  }
-  function close() { modal.hidden = true; openVi = null; document.body.classList.remove('is-modal-open'); }
-
-  document.addEventListener('click', function (e) {
-    var open_ = e.target.closest('[data-pd-vimg]');
-    if (open_) { open(open_.getAttribute('data-pd-vimg')); return; }
-    if (e.target.closest('[data-pd-vimg-close]')) { close(); return; }
-    if (e.target.closest('[data-pd-vimg-reset]')) {
-      var a = api(); if (a && openVi !== null) { a.setOwn(openVi, ''); render(); }
-      return;
-    }
-    /* 點背景關閉：只認彈窗最外層，點到對話框內部不算 */
-    if (e.target === modal) close();
+  window.ZtorVariantImageModal.mount({
+    trigger: 'data-pd-vimg', hintKey: 'pd.var.img.auto', hintFallback: 'Saved with the product when you save changes.',
+    resolve: function (v) { return /^(data:|blob:|https?:|\/|images\/)/.test(v) ? v : 'images/products/' + v; }
   });
-  /* 以 openVi 判斷、不看 modal.hidden：頁面另有一個通用 Esc 處理器會先把所有 .payout-modal 藏掉，
-     這裡若只認 hidden 就不會走 close()，body 的 is-modal-open 會留著。 */
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && openVi !== null) close(); });
-
-  /* 上傳格傳完 → 把縮圖寫回這個組合；刪除 → 回到沿用主圖 */
-  modal.addEventListener('upload:change', function (e) {
-    var a = api(); if (!a || openVi === null) return;
-    var tile = e.target.closest('[data-pd-vimg-tile]'); if (!tile) return;
-    if (e.detail && e.detail.filled) {
-      var img = tile.querySelector('.upload-tile__thumb');
-      if (img && img.src) { a.setOwn(openVi, img.src); render(); }
-    } else if (e.detail && e.detail.state === 'empty') {
-      a.setOwn(openVi, ''); render();
-    }
-  });
-})();
 </script>
 <script>
   /* 「⋯」下拉（#pd-more，2026-10-28）：全部項目都收起時整顆收起；點項目或點外面時收起（原生 <details> 不會自己關）。 */
