@@ -35,6 +35,7 @@
 
 | 要做的事 | 讀這份 |
 |---|---|
+| 要拼一個畫面或流程 | 先看 [ds-index.md](./ds-index.md) 的 Pillar 5 速查找對應的 pattern，再讀 [ds-pillars/5-pattern.md](./ds-pillars/5-pattern.md) 那一張 |
 | 只是用現成的 token 或元件 | [ds-index.md](./ds-index.md) 就夠，不必往下讀 |
 | 改某一個元件 | ds-index.md 該元件列尾的 `ds-specs/` 規格檔 |
 | 新增元件、改元件分類或總表 | [ds-pillars/4-component.md](./ds-pillars/4-component.md) |
@@ -45,6 +46,22 @@
 | 實作說明、輸出格式、DSS JSON 骨架 | [ds-pillars/appendix.md](./ds-pillars/appendix.md) |
 | 某個規則什麼時候改、為什麼改 | [design-system-changelog.md](./design-system-changelog.md) |
 
+**做頁面或新樣式的流程**（前面成立就停；pattern 層先於元件層。pattern 的定義見 [ds-pillars/5-pattern.md](./ds-pillars/5-pattern.md) 開頭，元件分類見 [ds-pillars/4-component.md](./ds-pillars/4-component.md) 的 4.0）：
+
+1. **先看產品規格**（`documents/`）：頁面放什麼、有哪些狀態與規則，由它決定；pattern 只管怎麼組、怎麼排。
+2. **找 pattern**（Pillar 5）：
+   - 有適用的 → 照做。
+   - 大致適用、但要不同分支 → 加成那張 pattern 的**變體**，不改原 pattern；只有所有實例都該跟著改時才改原 pattern，並同步每個實例。
+   - 沒有 → 這種組法會重複用（兩頁以上，或同一類任務）才建新 pattern；只有這一頁 → 記進 `BUILD-SPEC.md`。
+3. **找元件**（Pillar 4）：
+   - 有現成的 → 直接用。
+   - 差一點 → 加成那支元件的**變體**（修飾類、規格、demo），不開新卡。
+   - 只有一頁用的樣式 → 留在該頁，記進 `BUILD-SPEC.md`。
+   - 都沒有 → 才開新元件（CSS＋規格檔＋總表列＋demo）。
+4. **收尾**：在用到的 pattern 卡「實例」加上這一頁。
+
+**頁面專用元件**（📄）：有自己的 CSS，但只服務一個頁面或一個功能（例：媒體庫的 Vault list）。總表狀態欄寫「📄 頁面專用：功能（頁面）」，展示卡跟同類元件放在同一個分類頁，標題後加 📄、卡頂寫出只能在哪些頁用。只在標示的頁面使用；第二個功能要用時先升格：卡片搬回一般分頁、名稱與說明改通用、狀態欄改回一般（check_ds_sync 檢查 22 會提醒）。新的單頁樣式仍照第 3 步留在該頁，不開頁面專用元件。
+
 給人看的展示頁照同樣分法拆頁（2026-11-09）：`design-system.html` 是入口（Identity、Do / Don't、各頁導覽），每份 Pillar 一頁 `design-system-*.html`。
 
 | AI 文件 | 對應的展示頁 |
@@ -53,7 +70,7 @@
 | `ds-pillars/1-foundation.md` | `design-system-foundation.html` |
 | `ds-pillars/2-3-role-mode.md` | `design-system-role-mode.html` |
 | `ds-pillars/4-component.md`（分類與總表） | `design-system-components.html` |
-| `ds-specs/` 各元件規格 | `design-system-components-*.html` 六頁，依目錄分組：basic、forms、lists、cards、flow、new |
+| `ds-specs/` 各元件規格 | `design-system-components-*.html` 五頁，依元件類型分：basic（基礎元素、選擇控件、回饋）、forms（表單與欄位）、lists（清單與表格）、cards（卡片、資料視覺化、頁面區塊）、flow（導覽、建立流程、預覽、浮層、資料與行為模組）；不照版本或建立時間分 |
 | `ds-pillars/5-pattern.md` | `design-system-pattern.html` |
 | `ds-pillars/6-structure.md`＋`appendix.md` | `design-system-structure.html` |
 
@@ -71,7 +88,7 @@
 
 **Tags** — `creator-economy`, `operations-dashboard`, `satoshi-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-orange-primary`.
 
-**Overview** — Ztor Creator Studio · R 2.2 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Satoshi for UI / display / body (Geist and Inter kept only as Latin fallbacks), LINE Seed TW for CJK headings / Chiron Hei HK for CJK body-UI (2026-07-28 rebrand), subtle 6px radii, and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally for CTAs, active tabs, selection-card selected state, hero fills and pre-order pills (nav active states stay neutral gray — Q8). Informational banners stay neutral gray. Hairlines stay at `#EAEAEA`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
+**Overview** — Ztor Creator Studio · R 2.2 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Satoshi for UI / display / body (Geist and Inter kept only as Latin fallbacks), LINE Seed TW for CJK headings / Chiron Hei HK for CJK body-UI (2026-07-28 rebrand), 10px control radii (24px cards), and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally for CTAs, active tabs, selection-card selected state, hero fills and pre-order pills (nav active states stay neutral gray — Q8). Informational banners stay neutral gray. Hairlines stay at `#EAEAEA`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
 
 **Similar systems** — [Notion](https://notion.so) (highlighter-orange accent, editorial chrome), [Linear](https://linear.app) (Geist + neutral tokens, dense data UI), [Vercel](https://vercel.com) (Geist origin, subtle radii, rim+drop shadows), [Attio](https://attio.com) (dashboard-as-hero, CRM-style data density), [Stripe Dashboard](https://stripe.com) (finance-honest tables, transparent money / payout states).
 
@@ -112,11 +129,11 @@ System-level discipline. Component-level Do / Don't lives inside each component 
   可篩選／可點的膠囊（chip、filter-tabs）＝全圓 `--radius-pill`。
   純顯示徽章（badge、field-pill、metric-pill）＝小圓角矩形 `--radius`。
   新元件照此選形狀，不得混用。
-- **Q2 控制項圓角統一 6px**
-  `--radius` 與 `--radius-md` 同值（6px），`--radius-md` 是別名——用於控制項與按鈕。
-  例外：`--radius-pill`（9999px）、shell（28px）、`--radius-lg`（8px，dropdown/nav 浮層）、`--radius-xl`（16px，卡片/面板級，見 Q16）。
-- **Q16 卡片/面板級圓角＝16px（`--radius-xl`）**
-  card／kpi／預覽卡／選擇卡／表格容器／資訊 banner／上傳卡／彈窗 dialog 等「內容容器」統一 16px，與 form-section 一致；控制項維持 6px（形狀＝角色，呼應 Q1）。
+- **Q2 控制項圓角統一用 `--radius`（現值 10px；裁決當時 6px）**
+  `--radius` 與 `--radius-md` 同值（現值 10px；裁決當時是 6px，2026-08-28 r2.3 換裝整組上調），`--radius-md` 是別名——用於控制項與按鈕。
+  例外：`--radius-pill`（9999px）、shell（30px）、`--radius-lg`（16px，dropdown/nav 浮層）、`--radius-xl`（24px，卡片/面板級，見 Q16）。
+- **Q16 卡片/面板級圓角＝`--radius-xl`（現值 24px；裁決當時 16px）**
+  card／kpi／預覽卡／選擇卡／表格容器／資訊 banner／上傳卡／彈窗 dialog 等「內容容器」統一用 `--radius-xl`（現值 24px），與 form-section 一致；控制項維持 `--radius`（現值 10px）（形狀＝角色，呼應 Q1）。
 - **Q3 卡片預設＝1px 純邊框**
   `.card` / `.kpi` / `.ztor-card` 預設用 `border: 1px solid var(--border)`，不用陰影。〔後續修訂：2026-07-26 STYLE-DECISIONS Q32 把 `.card`／`.kpi` 統一成陰影版（`border:0`＋`--shadow-card`＋`--shadow-edge-top`）；2026-08-28 換裝後卡片家族改為玻璃＋1px `--border`＋同組陰影，現行寫法見「表面材質原則」（Q77）〕
   只有可點／浮起的強調卡（`.ztor-card--clickable` hover、`.selection-card`）才有 hover 回饋；2026-10-20 起回饋改為「上浮＋底色換按鈕 hover 階」，不再升級陰影（見 5.3「可點卡片 hover」）。
@@ -209,7 +226,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Display font | `Satoshi`, all-caps (H1) · CJK `LINE Seed TW` |
 | UI font | `Satoshi` (H2-H4, buttons, nav) · CJK `Chiron Hei HK` |
 | Body font | `Satoshi` (paragraphs) · CJK `Chiron Hei HK`, `Noto Sans TC` fallback |
-| Primary radius | `6px` controls/buttons · `16px` card/panel-level（`--radius-xl`, Q16 2026-07-17）· `8px` dropdown 浮層 |
+| Primary radius | `10px` controls/buttons（`--radius`）· `24px` card/panel-level（`--radius-xl`, Q16 2026-07-17）· `16px` dropdown 浮層（`--radius-lg`） |
 | Pill radius | `1000px` / `100%` (status dots, avatars) |
 | Base spacing | Dense scale — 1, 4, 6, 8, 10, 12, 14, 16, 24 |
 | Card shadow | `0 2px 8px -1px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` (rim + drop, softened 2026-07-13 — more diffuse, lower alpha) — used at rest by selection-card / dropdown-item / table / composer / cookie-banner; **`.card`（連同 `.funding-panel--card`／`.fc-bundle`）與 `.kpi` 2026-07-26 起也改用 `--shadow-card`＋`--shadow-edge-top` 浮起（Q23 決 C，取代 Q3 的純邊框）；`.kpi` 疊在 `.card`／`.form-section--outlined`／`.ip-hero` 內的 8 處用 scoped override 維持 `--input-surface` 底避免糊色，其餘沿用新預設；`.ztor-card` 仍維持 Q3 的 1px `--border`（docs-only、產品頁未使用，未列入本輪），shadow 保留給 clickable hover** |

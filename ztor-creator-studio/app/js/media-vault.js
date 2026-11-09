@@ -1029,14 +1029,14 @@
   function openWizard() {
     state.wiz = { step: 1, vid: null };
     els.wiz.hidden = false;
-    document.documentElement.classList.add("vault-wizard-open");
+    document.documentElement.classList.add("wizard-overlay-open");
     renderWizard();
   }
   function closeWizard(silent) {
     var had = state.wiz && state.wiz.vid;
     state.wiz = null;
     els.wiz.hidden = true;
-    document.documentElement.classList.remove("vault-wizard-open");
+    document.documentElement.classList.remove("wizard-overlay-open");
     renderRail(); renderMain();
     if (had && !silent && window.ztorToast) window.ztorToast.show(L("vault.wiz.toast.draft"), { tone: "success" });
   }

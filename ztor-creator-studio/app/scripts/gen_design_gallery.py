@@ -164,7 +164,7 @@ def prune_style(style: str, used_html: str) -> str:
 # 共用檔頭與檔尾在 ds-head.js、ds-tail.js。照這個順序讀元件分頁；沒拆頁時退回讀單一 design-system.html。
 P4_ORDER = ["design-system-components-basic.html", "design-system-components-forms.html",
             "design-system-components-lists.html", "design-system-components-cards.html",
-            "design-system-components-flow.html", "design-system-components-new.html"]
+            "design-system-components-flow.html"]
 
 
 def _js_payload(path):
@@ -180,7 +180,7 @@ def load_sources():
         bodies = []
         for f in p4_pages:
             s = f.read_text(encoding="utf-8")
-            a = s.index('<section class="pillar" id="component"')
+            a = s.index('<section class="pillar" id="')
             bodies.append((f.name, s[a:s.rindex("</main>")]))
         return _js_payload(ROOT / "ds-head.js"), _js_payload(ROOT / "ds-tail.js"), bodies
     html = SRC.read_text(encoding="utf-8")
