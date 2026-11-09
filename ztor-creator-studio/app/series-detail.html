@@ -28,7 +28,7 @@
      與項目詳情、活動詳情同日的裁決一致——同一組按鈕不該有兩個家、兩套顯隱規則。 -->
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2"><!-- D390：儲存並同步前的影響確認（同活動清單的確認殼） -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 共用確認／告知彈窗 ztorDialog 的外殼 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* series-detail 專屬：場次表的欄寬（比照 events.html 的做法，欄數為本頁專屬故留頁內）。
@@ -763,9 +763,7 @@
     const fmtNum = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     /* 2026-10-16 修正：確認窗的 markup 排在這支 script 之後，script 執行當下查不到——改成點擊時才查（原本永遠走「直接存」） */
-    let dlg = null;
-    const done = n => alert(T('sd.save.done.n', 'Saved. The change is now on all {n} dates.').replace('{n}', n));
-    const close = () => { if (dlg) dlg.removeAttribute('data-open'); };
+    const done = n => window.ztorDialog.notice({ title: T('dlg.t.saved', 'Saved'), body: T('sd.save.done.n', 'Saved. The change is now on all {n} dates.').replace('{n}', n) });
     /* D436 決定三（2026-10-16）：同步屬 ztor 端修改，不自動下架子場——只套用到已下架（或未上架）的子場；
        上架中的子場（已發布＝已排程／售票中／進行中，未下架、定時上架時間已到）不套用，確認窗列出「要先下架這些場次才能同步」。
        取代原本「已開賣場次照套、只說明影響」的確認（D390 稽核第 8 條的寫法；已下架的場次沒有人能買，影響說明不再需要）。 */
@@ -775,48 +773,30 @@
       return !(!isNaN(t) && t > Date.now());
     };
     window.sdListedNow = listedNow;
+    /* 2026-11-09（STYLE-DECISIONS Q141）：同步前的影響確認改用共用彈窗 ztorDialog（.payout-dialog--narrow），不再借 leave-dialog 的殼；
+       沒有場次能同步時是「提示告知」（只有知道了）。 */
     btn.addEventListener('click', () => {
-      if (!dlg) {
-        dlg = document.querySelector('[data-sd-confirm]');
-          }
       const S = window.sdSeries;
       const legs = (S && S.legs) || [];
       const skip = legs.filter(listedNow);
       const apply = legs.length - skip.length;
-      if (!skip.length || !dlg) { done(legs.length || 3); return; }
-      dlg.querySelector('[data-sd-confirm-title]').textContent = apply
-        ? T('sd.confirm.title.some', 'Sync to {n} of {m} dates?').replace('{n}', apply).replace('{m}', legs.length)
-        : T('sd.confirm.title.none', 'No dates can be synced yet');
-      dlg.querySelector('[data-sd-confirm-body]').textContent = T('sd.confirm.body.listed',
-        'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.').replace('{n}', skip.length);
-      dlg.querySelector('[data-sd-confirm-list]').innerHTML = skip.map(e =>
-        '<li class="leave-dialog__list-item"><i data-lucide="calendar" class="ztor-icon"></i><span>' +
-        esc((e.date || '').replace(/-/g, '/') + ' · ' + (e.venue || '')) + '</span></li>').join('');
-      const ok = dlg.querySelector('[data-sd-confirm-ok]');
-      ok.hidden = !apply;
-      if (window.ztorIcons) window.ztorIcons.applyIcons(dlg);
-      dlg.setAttribute('data-open', '');
-      ok.onclick = () => { close(); done(apply); };
+      if (!skip.length) { done(legs.length || 3); return; }
+      const opts = {
+        title: apply
+          ? T('sd.confirm.title.some', 'Sync to {n} of {m} dates?').replace('{n}', apply).replace('{m}', legs.length)
+          : T('sd.confirm.title.none', 'No dates can be synced yet'),
+        body: T('sd.confirm.body.listed', 'These {n} dates are listed, so they won’t be updated. Unlist them first to sync — then relist them yourself.').replace('{n}', skip.length),
+        items: skip.map(e => (e.date || '').replace(/-/g, '/') + ' · ' + (e.venue || '')), itemIcon: 'calendar'
+      };
+      if (!apply) { window.ztorDialog.notice(opts); return; }
+      window.ztorDialog.confirm(Object.assign(opts, { okLabel: T('sd.save', 'Save and sync'), cancelLabel: T('e-shop.shown.cancel', 'Cancel') }))
+        .then(ok => { if (ok) done(apply); });
     });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="partials/list-scroll.js?v=r2.2"></script>
-<!-- 儲存並同步前的影響確認（D390；同 events.html 的 leave-dialog 殼＋清單）：內容由上方 sd-save 的處理填 -->
-<div class="leave-dialog" data-sd-confirm role="dialog" aria-modal="true" aria-labelledby="sd-confirm-title">
-  <div class="leave-dialog__scrim" data-sd-confirm-cancel></div>
-  <div class="leave-dialog__card">
-    <button class="leave-dialog__close" type="button" aria-label="Close" data-i18n-aria-label="e-shop.shown.close" data-sd-confirm-cancel><i data-lucide="x" class="ztor-icon"></i></button>
-    <h2 class="leave-dialog__title" id="sd-confirm-title" data-sd-confirm-title></h2>
-    <p class="leave-dialog__body" data-sd-confirm-body></p>
-    <ul class="leave-dialog__list" data-sd-confirm-list></ul>
-    <div class="leave-dialog__actions">
-      <button class="btn btn--primary" type="button" data-sd-confirm-ok><span data-i18n="sd.save">Save and sync</span></button>
-      <button class="btn btn--outline" type="button" data-sd-confirm-cancel data-i18n="e-shop.shown.cancel">Cancel</button>
-    </div>
-  </div>
-</div>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

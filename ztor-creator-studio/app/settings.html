@@ -724,11 +724,15 @@
     });
   });
 
+  /* 2026-11-09：原生 confirm() 換成共用彈窗 ztorDialog（捨棄未儲存的變更＝破壞性確認，5.1.11），改成回傳 Promise */
   function confirmDiscard() {
-    if (!dirty) return true;
-    const ok = window.confirm("Discard changes? You have unsaved changes that will be lost.");
-    if (ok) dirty = false;
-    return ok;
+    if (!dirty) return Promise.resolve(true);
+    const zh = (document.documentElement.lang || '').startsWith('zh');
+    return window.ztorDialog.confirm({
+      title: zh ? '放棄未儲存的變更？' : 'Discard changes?',
+      body: zh ? '這一頁有還沒儲存的變更，切換後會遺失。' : 'You have unsaved changes on this page. They will be lost if you switch.',
+      okLabel: zh ? '放棄變更' : 'Discard', cancelLabel: zh ? '繼續編輯' : 'Keep editing', danger: true
+    }).then(ok => { if (ok) dirty = false; return ok; });
   }
 
   links.forEach(link => link.addEventListener("click", event => {
@@ -736,9 +740,12 @@
     const id = link.getAttribute("href").slice(1);
     if (!validIds.has(id)) return;
     const current = requestedSection();
-    if (id !== current && !confirmDiscard()) return;
-    if (location.hash !== "#" + id) history.pushState({ settingsSection: id }, "", "#" + id);
-    activateSection(id);
+    const go = () => {
+      if (location.hash !== "#" + id) history.pushState({ settingsSection: id }, "", "#" + id);
+      activateSection(id);
+    };
+    if (id === current) { go(); return; }
+    confirmDiscard().then(ok => { if (ok) go(); });
   }));
 
   // Discard button in the page header clears the dirty flag.
@@ -837,5 +844,6 @@
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>

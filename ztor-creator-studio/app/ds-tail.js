@@ -33,7 +33,6 @@ document.write(String.raw`
 <script src="js/fan-product-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.215（商品頁） Fan product page 的 demo，也是 §4.216 Publish stage 商品側 previewRender 的同一支 -->
 <script src="js/fan-bundle-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.215（組合包頁） Fan bundle page 的 demo，也是 §4.216 Publish stage 組合側 previewRender 的同一支 -->
 <script src="js/fan-project-page.js?v=r2.2"></script>  <!-- 2026-09-23：§4.215（專案頁） Fan project page 的 demo，也是 §4.216 Publish stage 專案側 previewRender 的同一支 -->
-<script src="partials/publish-preview.js?v=r2.2"></script>
 <script src="js/publish-stage.js?v=r2.2"></script>  <!-- 2026-09-22：§4.216 Publish stage（D310 全頁版）的 demo -->
 <script src="partials/login-lang-prompt.js?v=r2.2"></script>
 <script src="js/components.js?v=r2.2"></script>
@@ -338,27 +337,6 @@ document.write(String.raw`
     };
     window.ztorFanProjectPage.render(fpjFundHost, fpjFundModel, fpjApi(fpjFundVals));
   }
-  function openPpDemo() {
-    if (!window.ztorPublishPreview) return;
-    window.ztorPublishPreview.open({
-      fields: [
-        { key: 'name', el: ppDemoName, kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
-        { key: 'highlight', el: ppDemoHl, kind: 'input', labelKey: 'pp.field.highlight', labelFallback: 'Highlight' },
-        { key: 'desc', el: ppDemoDesc, kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' },
-        { key: 'tier-a', el: ppDemoTierA, kind: 'input', labelKey: null, labelFallback: 'Ticket type name', group: 'Ticket types' },
-        { key: 'tier-b', el: ppDemoTierB, kind: 'input', labelKey: null, labelFallback: 'Ticket type name', group: 'Ticket types' }
-      ],
-      prices: ppDemoPrices,
-      baseCurrency: 'TWD',
-      mode: 'publish',
-      shell: 'fan',
-      previewRender: function (host, api) {
-        if (!window.ztorFanEventPage) return;
-        window.ztorFanEventPage.render(host, ppDemoModel(), api);
-      },
-      onConfirm: function () {}
-    });
-  }
   /* §4.216 Publish stage demo：與 §4.130 同一份示範資料，改用全頁版（D310）就地掛載。
      checks() 故意留一項未過，示範「主鈕被擋住」與「點一項跳回該步驟」兩件事。 */
   var psHost = document.querySelector('[data-ds-pstage-demo]');
@@ -394,10 +372,6 @@ document.write(String.raw`
     });
   }
 
-  var ppBtn1 = document.getElementById('ds-pp-demo-btn');
-  var ppBtn2 = document.getElementById('ds-pp-demo-btn-zh');
-  if (ppBtn1) ppBtn1.addEventListener('click', openPpDemo);
-  if (ppBtn2) ppBtn2.addEventListener('click', openPpDemo);
 
   /* §4.131 Login lang prompt demo：手動 API，不走 sessionStorage 旗標——固定示範
      「登入時選了繁中、帳號預設是英文」這組情境。 */

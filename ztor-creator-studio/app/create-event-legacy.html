@@ -1107,7 +1107,7 @@
   });
   document.querySelector("[data-action=save-exit]").addEventListener("click", () => {
     markSaved();
-    alert(T('ce.saveexit-alert', "Draft saved. You can come back from Events → Draft."));
+    window.ztorDialog.notice({ title: T('dlg.t.draft', 'Draft saved'), body: T('ce.saveexit-alert', "Draft saved. You can come back from Events → Draft.") });
   });
 
   document.querySelectorAll(".progress-stepper__label").forEach(s => {
@@ -1249,18 +1249,18 @@
       step = goStep; render();
       const badInStep = reqEls.find(el => (stepOf[el.getAttribute("data-ce")] || 0) === goStep && !el.value.trim());
       if (badInStep) { badInStep.focus(); }
-      alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
+      window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields.") });
       return;
     }
     /* 票種數量加總超過容量＝Review 的彙整阻擋項（spec §4.5 F11）：
        不擋切步（草稿可以先超標），但發布前一定要回步驟 4 調完。 */
     if (!isWP() && overCapacity()) {
       step = 4; render();
-      alert(T("ce.publish-blocked-cap", "Tier quantities add up to more than the capacity. Adjust the tiers or the capacity."));
+      window.ztorDialog.notice({ title: T('dlg.t.blocked', "Can't publish yet"), body: T("ce.publish-blocked-cap", "Tier quantities add up to more than the capacity. Adjust the tiers or the capacity.") });
       return;
     }
     markSaved();
-    alert(T("ce.publish-alert", "Event would be published here. (Prototype)"));
+    window.ztorDialog.notice({ title: T('dlg.t.published', 'Published'), body: T("ce.publish-alert", "Event would be published here. (Prototype)") });
   }
 
   /* ---- A6：圖片/影片上傳格點擊填入示意（demo）。必填 3 圖（主視覺／橫式橫幅／圖庫，D164）填齊才反映就緒。
@@ -2273,5 +2273,6 @@
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>
 </html>
