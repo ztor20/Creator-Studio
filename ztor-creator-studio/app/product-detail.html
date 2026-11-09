@@ -272,6 +272,7 @@
             <div class="form-section__head-actions">
               <button class="btn btn--outline btn--sm" type="button" data-pd-lock-all><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="stock.bulk-lock">Bulk lock</span></button>
               <button class="btn btn--outline btn--sm" type="button" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="stock.bulk-restock">Bulk restock</span></button>
+              <button class="btn btn--outline btn--sm" type="button" data-adjust-open data-feat="S145"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="restock.adjust.open">Adjust stock</span></button><!-- D525 修改庫存：一次改全部選項組合 -->
             </div>
           </div>
           <div class="variant-table-wrap variant-table-wrap--menu">
@@ -1554,6 +1555,8 @@
       return p
         ? { name: p.name,
             current: parseInt(p.stock, 10) || 0,
+            /* D525：修改庫存的下限＝目前－未鎖定可賣（ListingState.freeQty＝在庫－各管道鎖定－未鎖定格的保留） */
+            max: window.ListingState ? window.ListingState.freeQty(p) : undefined,
             threshold: parseInt(p.threshold, 10) || 0,
             status: p.status }
         : { name: 'Pirate Queen zine vol. 02', current: 3, threshold: 4, status: 'low' };
@@ -1571,7 +1574,8 @@
         var label = onlyVi != null ? (v.combo || []).join(' / ') : comboName(v, two);
         /* 唯讀縮圖（2026-09-11 D268，5.1.5.6 §4 ①；併在名稱格，Q117）：該組合自己的圖或沿用主圖 */
         var thumb = (window.ProductsStore && window.ProductsStore.variantThumb) ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '';
-        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb };
+        /* D525：逐組合的下限＝目前－該組合沒被任何管道鎖走的量（ListingState.variantFree） */
+        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb, max: window.ListingState ? window.ListingState.variantFree(v) : undefined };
         var gl = two ? (v.combo || [])[0] : null;
         if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
         byLabel[gl].items.push(item);
@@ -1583,6 +1587,26 @@
       if (isMulti(p)) restock.openProduct(variantGroups(p, onlyVi));
       else restock.openSingle(singleItem(p));
     }
+    /* D525 修改庫存：同一個彈窗的另一種模式；卡頭改全部、列尾 ⋯ 只改那一列 */
+    function openAdjust(onlyVi) {
+      var p = storeProduct();
+      if (isMulti(p)) restock.openAdjust(variantGroups(p, onlyVi));
+      else restock.openAdjustSingle(singleItem(p));
+    }
+    /* D525：把在庫直接改成新的數字（多選項逐組合、單一規格整件），pool.total 跟著在庫走 */
+    function applySet(entries) {
+      var p = storeProduct();
+      if (!p) return;
+      if (isMulti(p)) {
+        entries.forEach(function (en) { var v = en.vi != null ? p.variants[en.vi] : null; if (v) v.stock = String(Math.max(0, en.to)); });
+        p.stock = String(p.variants.reduce(function (n, v) { return n + (parseInt(v.stock, 10) || 0); }, 0));
+      } else if (entries[0]) {
+        p.stock = String(Math.max(0, entries[0].to));
+      }
+      if (p.pool && p.pool.total !== 'unlimited' && isFinite(Number(p.pool.total))) p.pool.total = Number(p.stock);
+      if (window.pdRefreshStock) window.pdRefreshStock();
+      document.dispatchEvent(new CustomEvent('pd:stock', { detail: p }));
+    }
     /* 立即補貨：把數量加回 store（多選項逐組合、單一規格加總量），再讓庫存卡與表格重畫 */
     function applyNow(entries) {
       var p = storeProduct();
@@ -1593,9 +1617,13 @@
           if (v) v.stock = String((parseInt(v.stock, 10) || 0) + en.qty);
         });
         p.stock = String(p.variants.reduce(function (n, v) { return n + (parseInt(v.stock, 10) || 0); }, 0));
+        if (p.pool && p.pool.total !== 'unlimited' && isFinite(Number(p.pool.total))) p.pool.total = Number(p.stock);   /* 同下方單一規格 */
       } else {
         var add = entries.reduce(function (n, en) { return n + en.qty; }, 0);
         p.stock = String((parseInt(p.stock, 10) || 0) + add);
+        /* 單一規格的庫存池總量跟著在庫走（鎖定與可售量都從 pool.total 算；實體商品 pool.total＝在庫，products-store poolTotal）。
+           2026-11-09 補上：原本立即補貨沒同步，補完再開鎖定彈窗看到的上限是舊數字。 */
+        if (p.pool && p.pool.total !== 'unlimited' && isFinite(Number(p.pool.total))) p.pool.total = Number(p.stock);
       }
       if (window.pdRefreshStock) window.pdRefreshStock();
       document.dispatchEvent(new CustomEvent('pd:stock', { detail: p }));
@@ -1634,7 +1662,10 @@
     function summaryHTML(h) {
       return h.items.map(function (i) { return (i.combo && i.combo !== '—' ? esc(i.combo) + ' ' : '') + '<span class="shist__delta">' + esc(deltaText(i.delta)) + '</span>'; }).join('<span class="text-sub"> · </span>');
     }
-    function typeBadge(h) { return h.type === 'lock' ? '<span class="badge badge--neutral"><span data-i18n="stock.history.type.lock">Lock</span></span>' : '<span class="badge badge--info"><span data-i18n="stock.history.type.restock">Restock</span></span>'; }
+    function typeBadge(h) {
+      if (h.type === 'adjust') return '<span class="badge badge--outline"><span data-i18n="stock.history.type.adjust">Adjust</span></span>';   /* D525 */
+      return h.type === 'lock' ? '<span class="badge badge--neutral"><span data-i18n="stock.history.type.lock">Lock</span></span>' : '<span class="badge badge--info"><span data-i18n="stock.history.type.restock">Restock</span></span>';
+    }
     function stateBadge(h) { return h.state === 'restocking' ? '<span class="badge badge--warning"><span data-i18n="restock.status.restocking">Restocking</span></span>' : '<span class="badge badge--success"><span data-i18n="restock.status.done">Completed</span></span>'; }
     /* 「— → 1」的「—」是示範資料寫的佔位，畫面上讀成「未指定 → 1」（2026-09-11 使用者） */
     function deltaText(d) { return String(d || '').replace(/^—(?=\s*→)/, T('stock.history.unset', 'Unset')); }
@@ -1643,7 +1674,10 @@
     }
     function groupHTML(h, scope) {
       const gid = scope + '-' + h.id;
-      const meta = h.type === 'restock' ? esc(supplierOf(h) || '—') + ' · ' + modeText(h) : esc((h.items[0] && toOf(h.items[0])) || '');
+      /* 修改庫存（D525）沒有供應商與方式，主列副標只寫備註 */
+      const meta = h.type === 'restock' ? esc(supplierOf(h) || '—') + ' · ' + modeText(h)
+        : h.type === 'adjust' ? (h.note ? esc(h.note) : '<span class="text-sub">—</span>')
+        : esc((h.items[0] && toOf(h.items[0])) || '');
       let out = '<div class="rowdis__group rowdis__group--gutter">' +
         '<div class="data-list__row rowdis__head" data-rowdis-row="' + gid + '">' +
           '<div class="data-list__row-main"><span class="shist__date">' + esc(h.date) + '</span><span class="shist__type">' + typeBadge(h) + '</span>' +
@@ -1658,6 +1692,7 @@
           h.state === 'restocking' ? '<button class="btn btn--outline btn--xs" type="button" data-pd-receive="' + h.id + '"><span data-i18n="restock.receive">Mark received</span></button>' : '');
         out += kv(gid, '<span data-i18n="stock.history.k.note">Note</span>', h.note ? esc(h.note) : '<span class="text-sub">—</span>');
       }
+      if (h.type === 'adjust') out += kv(gid, '<span data-i18n="stock.history.k.note">Note</span>', h.note ? esc(h.note) : '<span class="text-sub">—</span>');
       return out + '</div>';
     }
     function renderHistory() {
@@ -1723,6 +1758,15 @@
         var p = storeProduct();
         var sched = mode === 'scheduled';
         var first = (entries || [])[0] || {};
+        /* D525 修改庫存：一次送出一筆、類型「修改庫存」、逐組合寫 改前 → 改後（差額）、已完成；送出即改在庫 */
+        if (mode === 'adjust') {
+          window.pdStockHistory.add({
+            type: 'adjust', note: first.note || '', state: 'done',
+            items: (entries || []).map(function (en) { return { combo: isMulti(p) ? en.name : '—', vi: en.vi == null ? 'single' : en.vi, delta: en.current + ' → ' + en.to + ' (' + (en.qty > 0 ? '+' + en.qty : '−' + (-en.qty)) + ')', qty: en.qty }; })
+          });
+          applySet(entries || []);
+          return;
+        }
         /* 一張單一筆：單據層的供應商／預計到貨／備註＋逐組合數量；計時補貨進「補貨中」，到貨確認才入庫 */
         window.pdStockHistory.add({
           type: 'restock', mode: sched ? 'scheduled' : 'now', supplier: first.supplier || '', eta: first.eta || '', note: first.note || '',
@@ -1751,6 +1795,14 @@
         var vi = row && row.getAttribute('data-vi');
         openRestock(vi != null && vi !== 'single' ? parseInt(vi, 10) : null);
         var dd = ro.closest('details.dropdown'); if (dd) dd.removeAttribute('open');
+      }
+      var ao = e.target.closest('[data-adjust-open]');
+      if (ao) {
+        e.preventDefault();
+        var arow = ao.closest('.variant-table__row[data-vi]');
+        var avi = arow && arow.getAttribute('data-vi');
+        openAdjust(avi != null && avi !== 'single' ? parseInt(avi, 10) : null);
+        var add = ao.closest('details.dropdown'); if (add) add.removeAttribute('open');
       }
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') restock.close(); });
@@ -2732,7 +2784,7 @@
       const listing = document.querySelector('[data-pd-listing]');
       /* 逐列「⋯」的三個項目（上架開關／補貨／鎖定）都是會改資料的動作，封存時全部收起（D288 盤點的漏洞）；
          選單裡沒有查看類項目可留，所以整顆「⋯」一併收起，不留空選單。 */
-      const PRUNE = '[data-pd-editmode],[data-pd-edit-cancel],[data-pd-lock-all],[data-restock-open],[data-pd-lock-edit],[data-pd-receive],[data-pd-lock-open],[data-variant-listed],[data-variant-lock]';
+      const PRUNE = '[data-pd-editmode],[data-pd-edit-cancel],[data-pd-lock-all],[data-restock-open],[data-adjust-open],[data-pd-lock-edit],[data-pd-receive],[data-pd-lock-open],[data-variant-listed],[data-variant-lock]';
       let observer = null;
       const KEBAB = '.variant-table__row details.dropdown';
       const prune = () => {
@@ -3498,6 +3550,7 @@
         + '<div class="dropdown__menu" role="menu">'
         + '<button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="' + (listed ? 'true' : 'false') + '" data-variant-listed data-keep-open><span data-i18n="product-detail.var.listed">Listed</span><span class="switch' + (listed ? ' switch--on' : '') + '" aria-hidden="true"></span></button>'
         + '<button class="dropdown__item" type="button" role="menuitem" data-restock-open><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button>'
+        + ((!window.ztorDevState || !window.ztorDevState.featOn || window.ztorDevState.featOn('S145')) ? '<button class="dropdown__item" type="button" role="menuitem" data-adjust-open data-feat="S145"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="restock.adjust.open">Adjust stock</span></button>' : '')   /* D525 只改這一列；目前版本沒有 S145 就不畫 */
         + '<button class="dropdown__item" type="button" role="menuitem" data-variant-lock><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="product-detail.var.lock">Lock stock</span></button>'
         + '</div></details>';
     }

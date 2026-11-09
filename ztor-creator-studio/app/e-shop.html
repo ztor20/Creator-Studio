@@ -1212,6 +1212,7 @@
      products-store 在載入當下就抓 window.ListingState 來回答 statusOf/bundleQtyOf。 -->
 <script src="js/listing-state.js?v=r2.2"></script>
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script><!-- D525：修改庫存送出提示 -->
 <script src="js/events-store.js?v=r2.2"></script><!-- 活動組合包（各場 bundles[]）併入 Bundles 分頁（2026-09-21 · D292／D294） -->
 <script src="js/currency.js?v=r2.2"></script><!-- 創作者幣別（D316b，2026-09-23）：側欄底部幣別列讀這支的 CREATOR，與 settings.html 同一支 -->
 <script src="partials/date-input.js?v=r2.2"></script>
@@ -2691,7 +2692,20 @@
     (function () {
       const rhost = document.querySelector('[data-restock-modal-host]');
       if (!rhost || !window.ZTOR_PARTIALS || !window.ZTOR_PARTIALS.createRestock) return;
-      const restock = window.ZTOR_PARTIALS.createRestock(rhost);
+      /* D525：修改庫存送出後提示一聲（清單列的數字示範不改，改庫存與紀錄在商品細節頁示範） */
+      const restock = window.ZTOR_PARTIALS.createRestock(rhost, {
+        onSubmit: function (entries, mode) {
+          if (mode !== 'adjust' || !window.ztorToast) return;
+          window.ztorToast.show((window.i18nT && window.i18nT('restock.adjust.toast')) || 'Stock updated');
+        }
+      });
+      /* D525：列 → store 商品（從「編輯」連結的 ?id 對回去），用來算修改庫存的下限（目前－未鎖定可賣） */
+      function storeProductOfRow(row) {
+        const a = row.querySelector('a[href*="product-detail.html?id="]');
+        const id = a ? new URL(a.getAttribute('href'), location.href).searchParams.get('id') : null;
+        return (id && window.ProductsStore) ? window.ProductsStore.get(id) : null;
+      }
+      function freeOf(p) { return (p && window.ListingState) ? window.ListingState.freeQty(p) : undefined; }
 
       function rowItem(row) {
         const name = row.getAttribute('data-name') || 'Product';
@@ -2701,7 +2715,7 @@
         const status = (row.getAttribute('data-status') === 'soldout' || current === 0) ? 'out' : 'low';
         /* No cap on a generic list row → threshold unknown; the restock line
            hides the "· threshold N" meta when threshold is absent (D105). */
-        return { name: name.trim(), current, status };
+        return { name: name.trim(), current, status, max: freeOf(storeProductOfRow(row)) };
       }
 
       /* 2026-10-20 D455（B1，5.1.5.6 §2 入口 3）：組合補貨的成員從商品資料推導——實體成員全部列入（限量與不限量都列、
@@ -2717,7 +2731,7 @@
           const p = PS.get(m.productId);
           if (!p || p.cat === 'digital') return;
           const vs = p.variant === 'multiple' ? (p.variants || []) : [];
-          if (!vs.length) { out.push({ name: p.name, current: parseInt(p.stock, 10) || 0, status: p.status }); return; }
+          if (!vs.length) { out.push({ name: p.name, current: parseInt(p.stock, 10) || 0, status: p.status, max: freeOf(p) }); return; }
           const two = (vs[0].combo || []).length >= 2;
           const groups = [], byLabel = {};
           vs.forEach((v, i) => {
@@ -2725,13 +2739,48 @@
             const gl = two ? combo[0] : null;
             const thumb = PS.variantThumb ? PS.variantThumb(p, v, { label: combo.join(' / ') }) : '';
             if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
-            byLabel[gl].items.push({ name: (two ? combo.slice(1) : combo).join(' / '), current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb });
+            byLabel[gl].items.push({ name: (two ? combo.slice(1) : combo).join(' / '), current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb, max: window.ListingState ? window.ListingState.variantFree(v) : undefined });
           });
           out.push({ name: p.name, matrix: groups });
         });
         return out.length ? out : null;
       }
 
+      /* D525 修改庫存：單售實體商品列的選單在「補貨」底下多一項（組合包不提供，〔推導〕）。
+         列是靜態 markup＋persona 會重寫，所以在選單打開時才補，不逐列手改 HTML。 */
+      document.addEventListener('toggle', e => {
+        const dd = e.target;
+        if (!dd.matches || !dd.matches('details.dropdown') || !dd.open) return;
+        const row = dd.closest('.product-list__row');
+        const rb = dd.querySelector('[data-eshop-restock]');
+        if (!row || !rb || row.getAttribute('data-type') === 'bundle' || dd.querySelector('[data-eshop-adjust]')) return;
+        if (window.ztorDevState && window.ztorDevState.featOn && !window.ztorDevState.featOn('S145')) return;   /* 目前版本沒有 S145 就不畫 */
+        rb.insertAdjacentHTML('afterend', '<button class="dropdown__item" type="button" role="menuitem" data-eshop-adjust data-feat="S145"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="restock.adjust.open">Adjust stock</span></button>');
+        const b = dd.querySelector('[data-eshop-adjust]');
+        if (window.ztorIcons) window.ztorIcons.applyIcons(b);
+        if (window.applyI18n) window.applyI18n(b);
+      }, true);
+      document.addEventListener('click', e => {
+        const at = e.target.closest('[data-eshop-adjust]');
+        if (!at) return;
+        e.preventDefault();
+        const row = at.closest('.product-list__row');
+        const dd = at.closest('details.dropdown'); if (dd) dd.removeAttribute('open');
+        if (!row) return;
+        const p = storeProductOfRow(row);
+        const PS = window.ProductsStore;
+        if (p && p.variant === 'multiple' && (p.variants || []).length) {
+          const vs = p.variants, two = (vs[0].combo || []).length >= 2, groups = [], byLabel = {};
+          vs.forEach((v, i) => {
+            const combo = v.combo || [], gl = two ? combo[0] : null;
+            if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
+            byLabel[gl].items.push({ name: (two ? combo.slice(1) : combo).join(' / '), current: parseInt(v.stock, 10) || 0, vi: i, thumb: PS && PS.variantThumb ? PS.variantThumb(p, v, { label: combo.join(' / ') }) : '', max: window.ListingState ? window.ListingState.variantFree(v) : undefined });
+          });
+          restock.openAdjust(groups, row);
+        } else {
+          restock.openAdjustSingle(rowItem(row), row);
+        }
+      });
       document.addEventListener('click', e => {
         const trig = e.target.closest('[data-eshop-restock]');
         if (!trig) return;

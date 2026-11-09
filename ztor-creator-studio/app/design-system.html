@@ -8495,6 +8495,32 @@ Letterpress cover, uncoated stock.</textarea></div>
       <!-- 供應商／備註：移到表格下方（計時補貨另在最上方加「預計到貨時間」）-->
       <label class="field mt-16"><span class="field__label">Supplier (optional)</span><input class="input" placeholder="—"></label>
       <label class="field mt-16"><span class="field__label">Notes (optional)</span><input class="input" placeholder="—"></label>
+      <!-- 2026-11-09 D525：修改庫存模式——同一張表，不顯示方式卡、供應商與預計到貨；欄名換成 目前｜新的在庫數（預填目前）｜差額；
+           名稱下一行「最低 N」（鎖定＋保留），低於下限那格 aria-invalid 紅框＋表下錯誤字 -->
+      <p class="field-label mt-16" data-en>Mode · Adjust stock</p><p class="field-label mt-16" data-zh>模式 · 修改庫存</p>
+      <div class="restock-table">
+        <div class="restock-table__head">
+          <span></span>
+          <span class="restock-table__col" data-en>Current</span><span class="restock-table__col" data-zh>當前</span>
+          <span class="restock-table__col" data-en>New stock</span><span class="restock-table__col" data-zh>新的在庫數</span>
+          <span class="restock-table__col" data-en>Change</span><span class="restock-table__col" data-zh>差額</span>
+        </div>
+        <div class="restock-table__row">
+          <div class="restock-table__id"><span class="restock-table__img"><i data-lucide="package" class="ztor-icon"></i></span><span class="restock-table__name">Small / Black</span></div>
+          <input class="input restock-table__ro" value="12" readonly tabindex="-1" aria-label="Current stock">
+          <input class="input" value="15" inputmode="numeric" aria-label="New stock">
+          <input class="input restock-table__ro" value="+3" readonly tabindex="-1" aria-label="Difference">
+        </div>
+        <div class="restock-table__row">
+          <div class="restock-table__id"><span class="restock-table__img"><i data-lucide="package" class="ztor-icon"></i></span><span class="restock-table__name">Small / White<br><small class="text-sub">Min 4 · 最低 4</small></span></div>
+          <input class="input restock-table__ro" value="5" readonly tabindex="-1" aria-label="Current stock">
+          <input class="input" value="2" inputmode="numeric" aria-invalid="true" aria-label="New stock">
+          <input class="input restock-table__ro" value="−3" readonly tabindex="-1" aria-label="Difference">
+        </div>
+      </div>
+      <p class="field__hint" data-en>Stock can't go below what's locked to sales channels or reserved by unpaid orders. To go lower, lower the lock first.</p>
+      <p class="field__hint" data-zh>在庫不能低於鎖給販售管道的量加上下單未付款的保留量；要再低，先把鎖定調低。</p>
+      <p class="field__error">Some items are below their minimum · 有品項低於最低在庫數</p>
       <p class="field-note" style="margin-top:8px" data-en>Three number columns per row: <strong>Current</strong> and <strong>After</strong> are read-only (<code>.restock-table__ro</code>, muted, not typeable); only <strong>Restock</strong> takes input, and After recomputes live as current + restock.</p>
       <p class="field-note" style="margin-top:8px" data-zh>每列三欄數字：<strong>當前</strong>與<strong>補後</strong>唯讀（<code>.restock-table__ro</code>，靜音底、不可打字），只有<strong>補貨</strong>可填，補後隨補貨即時算成「當前＋補貨」。</p>
       <p class="field-note" style="margin-top:8px" data-en>Rows group by option-1 via <code>.restock-table__group</code> (Small / Medium). A bundle shows one member tab per product, each tab its own table; a single-variant product is one table with a single row and no group header.</p>
