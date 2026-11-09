@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="ds-components/stock-readout.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/variant-builder.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/restock-log.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -118,7 +118,7 @@
   .lab-bench { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: var(--sp-16); align-items: start; }
   .lab-bench__rail { display: flex; flex-direction: column; gap: var(--sp-16); }
   .lab-bench .form-section--outlined { margin-top: 0; }
-  .lab-bench .fact-list { margin-top: var(--sp-8); }
+  .lab-bench .lab-facts { margin-top: var(--sp-8); }
 
   /* ── KPI 磚的單位（2026-09-11 使用者指示「單位補在數字右下角小字」）：與數字同一行、對齊基線，
      小一階、輔助色；定案後 promote 成 kpi.css 的 .kpi__unit ── */
@@ -450,17 +450,17 @@
   function candC(d) {
     var h = headline(d);
     var onhand = sum(d.rows, 'onhand'), single = sum(d.rows, 'single'), bundle = sum(d.rows, 'bundle'), free = sum(d.rows, 'free'), inc = sum(d.rows, 'incoming');
-    var facts = '<div class="fact-list">' +
-      '<div class="fact-list__item"><span>在庫</span><span>' + onhand + ' / ' + d.cap + '</span></div>' +
-      '<div class="fact-list__item"><span>單售可售</span><span>' + (single + free) + '</span></div>' +
-      '<div class="fact-list__item"><span>鎖給組合</span><span>' + bundle + '</span></div>' +
-      '<div class="fact-list__item"><span>補貨中</span><span>' + inc + '</span></div></div>';
+    var facts = '<div class="lab-facts">' +
+      '<div class="kv"><span class="kv__k">在庫</span><span class="kv__v">' + onhand + ' / ' + d.cap + '</span></div>' +
+      '<div class="kv"><span class="kv__k">單售可售</span><span class="kv__v">' + (single + free) + '</span></div>' +
+      '<div class="kv"><span class="kv__k">鎖給組合</span><span class="kv__v">' + bundle + '</span></div>' +
+      '<div class="kv"><span class="kv__k">補貨中</span><span class="kv__v">' + inc + '</span></div></div>';
     return '<div class="lab-bench"><div class="lab-tab">' +
         card(d.single ? '庫存明細' : '各選項組合', null, table(d, { noFast: true }), headActions()) +
         card('庫存歷史紀錄', null, logTable(d, 3), moreLink('查看全部')) +
       '</div><div class="lab-bench__rail">' +
         card('狀態', null, '<div class="lab-headline">' + h.badge + '</div><p class="lab-headline__text" style="margin-top:var(--sp-8)">' + h.text + '</p>' + facts + '<div style="margin-top:var(--sp-12)">' + split(d) + '</div>') +
-        (d.incoming.length ? card('補貨中', null, d.incoming.map(function (i) { return '<div class="fact-list"><div class="fact-list__item"><span>' + esc(i.combo) + ' ＋' + i.qty + '</span><span>' + esc(i.eta).slice(5) + '</span></div></div><button class="btn btn--outline btn--sm btn--block" type="button" style="margin-top:var(--sp-12)">到貨確認</button>'; }).join('')) : '') +
+        (d.incoming.length ? card('補貨中', null, d.incoming.map(function (i) { return '<div class="lab-facts"><div class="kv"><span class="kv__k">' + esc(i.combo) + ' ＋' + i.qty + '</span><span class="kv__v">' + esc(i.eta).slice(5) + '</span></div></div><button class="btn btn--outline btn--sm btn--block" type="button" style="margin-top:var(--sp-12)">到貨確認</button>'; }).join('')) : '') +
         card('庫存去向', null, destList(d)) +
       '</div></div>';
   }
