@@ -17,7 +17,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card-group.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/check-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/waterfall.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/funding-panel.css?v=r2.2">
@@ -69,7 +68,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/venue-map.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-task.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/vault-overview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-access.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/media-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/collapse-group.css?v=r2.2">
@@ -124,7 +122,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/points-qr.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-outline.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/roster-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/row-disclosure.css?v=r2.2">
 <!-- D241 上架三開關與庫存池（spec §7.14，2026-09-04） -->
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
@@ -149,7 +146,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/profile-avatar-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/social-links.css?v=r2.2">
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
-<link rel="stylesheet" href="ds-components/artist-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tier-overview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/brand-card.css?v=r2.2">
@@ -187,7 +183,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/vault-list.css?v=r2.2"><!-- §4.245 Vault list（UI-CHANGES 439） -->
 <link rel="stylesheet" href="ds-components/vault-stage.css?v=r2.2"><!-- §4.246 Vault stage（UI-CHANGES 439） -->
 <link rel="stylesheet" href="ds-components/vault-open.css?v=r2.2"><!-- §4.247 Vault open（UI-CHANGES 439） -->
-<link rel="stylesheet" href="ds-components/vault-wizard.css?v=r2.2"><!-- §4.248 Vault wizard（UI-CHANGES 439） -->
 <!-- 2026-09-22：D310 發布前預覽確認改為全頁畫面（publish-stage.css，§4.216） -->
 <link rel="stylesheet" href="ds-components/publish-stage.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -220,6 +215,17 @@ html[data-lang="zh"] [data-en] { display: none !important; }
 .toc__group { font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-regular); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-foreground); margin: 18px 0 6px; }
 /* Pillar 4 內的功能次分組標籤（比 Pillar 標題輕，靠左小標）*/
 .toc__subgroup { font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-regular); color: var(--foreground-muted); margin: 11px 0 2px; padding-left: 8px; }
+.toc__unit-head { cursor: pointer; }
+.toc__unit-head:hover { color: var(--foreground); }
+.toc__caret { display: inline-block; width: 1.1em; color: var(--muted-foreground); }
+.ds-eng { margin: var(--sp-12) 0; border: 1px solid var(--border); border-radius: var(--radius); }
+.ds-eng > summary { cursor: pointer; padding: var(--sp-8) var(--sp-12); font-size: var(--fs-12); color: var(--muted-foreground); display: flex; align-items: center; gap: var(--sp-8); }
+.ds-eng > summary:hover { color: var(--foreground); }
+.ds-eng__tag { margin-left: auto; font-size: var(--fs-11); color: var(--muted-foreground); }
+.ds-eng[open] > summary { border-bottom: 1px solid var(--border); }
+.ds-eng > :not(summary) { margin-left: var(--sp-12); margin-right: var(--sp-12); }
+/* 設計師檢視：段落開頭的日期與決策編號（2026-10-15（D443）：）原文保留、畫面不顯示 */
+.ds-hist { display: none; }
 .toc__link { display: block; font-size: var(--fs-13); color: var(--foreground-muted); text-decoration: none; padding: 4px 8px; border-radius: var(--radius-sm, 4px); }
 .toc__link:hover { background: var(--accent); color: var(--foreground); }
 .toc__link.is-active { background: color-mix(in srgb, var(--primary) 22%, transparent); color: var(--foreground); font-weight: var(--fw-regular); }
@@ -235,6 +241,8 @@ html[data-lang="zh"] [data-en] { display: none !important; }
 .pillar__intro { color: var(--foreground-muted); font-family: var(--type-body-lg-family); font-size: var(--type-body-lg-size); font-weight: var(--type-body-lg-weight); line-height: var(--type-body-lg-line-height); letter-spacing: var(--type-body-lg-tracking); max-width: 72ch; }
 .sub { padding: 32px 0 10px; border-top: 1px solid var(--border); margin-top: 32px; }
 .sub__head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.ds-variant { margin-top: var(--sp-32); padding-top: var(--sp-16); border-top: 1px dashed var(--border); }  /* 併進原卡的變體段（2026-11-09） */
+.ds-variant__title { font-family: var(--type-h4-family); font-size: var(--fs-15); font-weight: var(--type-h4-weight); margin: 0 0 var(--sp-8); }
 .sub__title { font-family: var(--type-h4-family); font-size: var(--type-h4-size); font-weight: var(--type-h4-weight); letter-spacing: var(--type-h4-tracking); line-height: var(--type-h4-line-height); margin: 0; }
 .sub__desc { color: var(--foreground-muted); font-family: var(--type-body-family); font-size: var(--type-body-size); font-weight: var(--type-body-weight); line-height: var(--type-body-line-height); letter-spacing: var(--type-body-tracking); max-width: none; margin: 4px 0 16px; }
 .layer { display: inline-flex; align-items: center; font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-regular); padding: 2px 8px; border-radius: var(--radius-pill, 999px); white-space: nowrap; }

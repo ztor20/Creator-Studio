@@ -570,12 +570,12 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
   - **版面**：`.vault-shell` 兩欄——左 `aside.vault-list`（庫房列，第一列虛線「新增庫房」），右 `.vault-stage`：`.vault-bar` 標頭（名稱就地改名、狀態、排程、分享・主要動作・⋯刪除）→ `.vault-bento` 成效三格（S93、S114）→ 檢視身分提示／上鎖卡（S113，沿用）→ `.vault-pool` 灰底容器內三欄直式卡片 `.vault-card`（末張「添加」）→ `.vault-open` 開啟方式開關（條件開啟、鑰匙開啟；鑰匙屬 S123）。窄於 900px 左欄變橫向捲動，窄於 640px 卡片兩欄。
   - **添加入口兩種（2026-11-05，UI-CHANGES 四百六十七）**：空庫房拿掉 `.vault-pool` 灰底（`--empty`），只留滿版投放區 `.upload-tile.vault-drop`（大加號、「添加內容」、一行檔案類型，UI-CHANGES 四百六十八）；已有內容時 `.vault-card--add` 是卡片牆最後一張，與內容卡同高，正中央寫「添加」與一行檔案類型。庫房頁與建立流程第 2 步共用 `poolHtml`。
   - **卡片**：縮圖 2:3（`--img-portrait`）、名稱、一行任務（S86）＋看得到的人數；檢視身分開著時人數換成已解開／需要條件／未解開／上鎖小標；點整張卡開單件設定抽屜（原型原有，預覽加 `.mpreview--portrait`）。
-  - **建立流程**：左欄「新增庫房」開全畫面 `.wizard.vault-wizard`（取名 → 放內容 → 誰開得了）；第 1 步繼續＝建立草稿；第 2、3 步與頁面共用 `poolHtml`／`openHtml`；發布走頁面同一個發布彈窗。第 3 步底列只有上一步與上架，草稿自動存（UI-CHANGES 四百七十）。
+  - **建立流程**：左欄「新增庫房」開全畫面 `.wizard.wizard--overlay`（2026-11-09 前叫 `.vault-wizard`）（取名 → 放內容 → 誰開得了）；第 1 步繼續＝建立草稿；第 2、3 步與頁面共用 `poolHtml`／`openHtml`；發布走頁面同一個發布彈窗。第 3 步底列只有上一步與上架，草稿自動存（UI-CHANGES 四百七十）。
   - **開啟方式開關（2026-11-05，UI-CHANGES 四百七十、UIA-335）**：`openHtml` 由分頁改成兩列 `.vault-open__row`，每列一個 `.switch[data-vault-way]`；`toggleWay` 處理。`state.wayOpen` 記條件開關（進庫方法改成橫卡、再加一種方法是外框按鈕，UI-CHANGES 四百七十五），`state.rulesOff` 收著關掉時的方法；鑰匙開關是庫房欄位 `keyWay`（`V.keyWay`，D515）。
   - **分享連結**：標頭「分享」開 `[data-vault-sharepop]` 彈窗（Link field，草稿與已下架停用），取代存取權限分頁的分享卡。
   - **檢視身分**：仍在頁首下拉（`lens()`、`renderGate`、`renderViewAs` 不變）；左欄人數、成效第一格、卡片小標跟著換。
   - **JS**：`renderRail`／`renderHead`／`renderBento`／`renderMain`（含 `cardHtml`、`openHtml`）／`renderWizard`；事件委派在 document（`data-vault-act`、`data-vault-way`、`data-rule-add`、`data-wiz*`），因為頁面與建立流程畫的是同一份。`renderDoor`、總覽與存取權限分頁、`startDraft`、`askDelete`／`startRename` 已撤除（墓碑註解留在檔內）。
-  - **樣式**：新 `vault-list.css`（§4.245）、`vault-stage.css`（§4.246）、`vault-open.css`（§4.247）、`vault-wizard.css`（§4.248）；`vault-overview.css`、`vault-access.css` 等這頁不再連結，退場待元件巡檢。
+  - **樣式**：新 `vault-list.css`（§4.245）、`vault-stage.css`（§4.246）、`vault-open.css`（§4.247）；蓋版精靈改用 `shared.css` 的 `.wizard--overlay`（原 `vault-wizard.css`，2026-11-09 併入 Wizard frame）；`vault-overview.css`、`vault-access.css` 等這頁不再連結，退場待元件巡檢。
   - **文案**：新字進 i18n `vault.*`（見 UI-CHANGES 四百三十九），JS 用 `L(key, vars)`。
 - **2026-11-02 D497 對齊（UI-CHANGES 四百四十、UIA-323）**：
   - **資料層**（`js/vault-store.js`）：`rules: []`＝無條件（`noCondition()`，`ruleMatches` 回 true、`fanWays().open`、`publishCheck().open`）；`LIMITS = { items: 10, methods: 5 }`；`CATALOGUE.backed.solo`（只有「曾支持過此藝人」）、`bought` 的票券選項 `ticket:true`（`shopProducts()` 排除）、`attended` 加 Watch Party、`earned` 改三項；`itemPlays()`／`vaultPlays()` 示範查看／播放人數（種子內容 `seedViews`）。
