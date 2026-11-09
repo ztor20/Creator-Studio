@@ -21,7 +21,7 @@ import re, glob, os
 from collections import Counter
 
 pages = sorted(p for p in glob.glob('*.html')
-               if not p.startswith(('demo-', 'section-test')) and p != 'design-system.html')
+               if not p.startswith(('demo-', 'section-test', 'design-system-')) and p != 'design-system.html')
 bad_dup, bad_stale = [], []
 for p in pages:
     s = open(p, encoding='utf-8').read()

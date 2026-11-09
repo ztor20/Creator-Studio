@@ -160,42 +160,71 @@ def prune_style(style: str, used_html: str) -> str:
     return "\n".join(r.strip() for r in out if r.strip())
 
 
-def build(only=None, check=False):
+# 2026-11-09 起 design-system.html 拆成多頁：Pillar 4 在 design-system-components-*.html，
+# 共用檔頭與檔尾在 ds-head.js、ds-tail.js。照這個順序讀元件分頁；沒拆頁時退回讀單一 design-system.html。
+P4_ORDER = ["design-system-components-basic.html", "design-system-components-forms.html",
+            "design-system-components-lists.html", "design-system-components-cards.html",
+            "design-system-components-flow.html", "design-system-components-new.html"]
+
+
+def _js_payload(path):
+    s = path.read_text(encoding="utf-8")
+    return s[s.index("String.raw`") + len("String.raw`"):s.rindex("`);")]
+
+
+def load_sources():
+    """回傳 (head_html, tail_html, [(頁名, Pillar 4 內容)])"""
+    p4_pages = sorted(ROOT.glob("design-system-components-*.html"),
+                      key=lambda f: (P4_ORDER.index(f.name) if f.name in P4_ORDER else len(P4_ORDER), f.name))
+    if p4_pages and (ROOT / "ds-head.js").exists() and (ROOT / "ds-tail.js").exists():
+        bodies = []
+        for f in p4_pages:
+            s = f.read_text(encoding="utf-8")
+            a = s.index('<section class="pillar" id="component"')
+            bodies.append((f.name, s[a:s.rindex("</main>")]))
+        return _js_payload(ROOT / "ds-head.js"), _js_payload(ROOT / "ds-tail.js"), bodies
     html = SRC.read_text(encoding="utf-8")
+    p4 = html.index('<section class="pillar" id="component"')
+    p5 = html.index('<section class="pillar" id="pattern', p4)
+    return html, html[html.rindex("</section>"):], [(SRC.name, html[p4:p5])]
+
+
+def build(only=None, check=False):
+    head_html, tail, bodies = load_sources()
+    html = head_html
     # 不用行首行尾錨點：design-system.html 有一行黏了 16 支 <link>（2026-09-16 驗收抓到的漏洞）
     # 從整份文件收集（DS 頁有幾支 <link> 是後來在 body 裡補掛的），去重保序
     links = [l for l in dict.fromkeys(re.findall(r'<link rel="stylesheet"[^>]*>', html)) if "ds-doc.css" not in l]   # ds-doc.css 由下方固定加一次
     style = re.search(r"<style>(.*?)</style>", html, re.S).group(1)
-    # Pillar 4 範圍
-    p4 = html.index('<section class="pillar" id="component"')
-    p5 = html.index('<section class="pillar" id="pattern', p4)
-    body = html[p4:p5]
     cards = []
-    for m in re.finditer(r'<section class="sub" id="([^"]+)">', body):
-        sid = m.group(1)
-        if sid in ("classification", "inventory"):
-            continue
-        if only and sid not in only:
-            continue
-        end = body.index("\n</section>", m.start())
-        sec = body[m.end():end]
-        title_m = re.search(r'<h3 class="sub__title">(.*?)</h3>', sec, re.S)
-        title = text_of(title_m.group(1)) if title_m else sid
-        num, _, name = title.partition(" ")
-        layer_m = re.search(r'<span class="layer[^"]*">.*?</span>', sec, re.S)
-        layer = layer_m.group(0) if layer_m else ""
-        desc_m = re.search(r'<p class="sub__desc" data-zh>(.*?)</p>', sec, re.S)
-        one = first_sentence(text_of(desc_m.group(1))) if desc_m else ""
-        blocks, rest = extract_render_blocks(sec)
-        if blocks:
-            render = '<div class="dg-card__render">\n' + blocks[0] + '\n</div>'
-            if len(blocks) > 1:
-                render += f'\n<details class="dg-more dsd-fold"><summary>更多示範（{len(blocks) - 1}）</summary><div class="dg-card__render">\n' + "\n".join(blocks[1:]) + '\n</div></details>'
-        else:
-            render = '<p class="dg-empty">這張卡在規格全文裡沒有渲染區。</p>'
-        tier = "atom" if "layer--atom" in layer else "molecule" if "layer--molecule" in layer else "organism" if "layer--organism" in layer else "other"
-        cards.append((tier, name, sid, f"""<article class="dg-card" id="{sid}" data-search="{(title + ' ' + one).lower().replace('"', '')}">
-  <div class="dg-card__head"><span class="dg-card__num">{num}</span><h2 class="dg-card__title">{name}</h2>{layer}<a class="dg-card__link" href="design-system.html#{sid}">Spec →</a></div>
+    for page, body in bodies:
+      for m in re.finditer(r'<section class="sub" id="([^"]+)">', body):
+          sid = m.group(1)
+          if sid in ("classification", "inventory"):
+              continue
+          if only and sid not in only:
+              continue
+          end = body.index("\n</section>", m.start())
+          sec = body[m.end():end]
+          # 拆頁後卡內的跨頁連結寫成「design-system-xxx.html#位置」；圖鑑裡同一批卡都在本頁，改回「#位置」維持頁內跳轉
+          sec = re.sub(r'href="design-system[\w-]*\.html#', 'href="#', sec)
+          title_m = re.search(r'<h3 class="sub__title">(.*?)</h3>', sec, re.S)
+          title = text_of(title_m.group(1)) if title_m else sid
+          num, _, name = title.partition(" ")
+          layer_m = re.search(r'<span class="layer[^"]*">.*?</span>', sec, re.S)
+          layer = layer_m.group(0) if layer_m else ""
+          desc_m = re.search(r'<p class="sub__desc" data-zh>(.*?)</p>', sec, re.S)
+          one = first_sentence(text_of(desc_m.group(1))) if desc_m else ""
+          blocks, rest = extract_render_blocks(sec)
+          if blocks:
+              render = '<div class="dg-card__render">\n' + blocks[0] + '\n</div>'
+              if len(blocks) > 1:
+                  render += f'\n<details class="dg-more dsd-fold"><summary>更多示範（{len(blocks) - 1}）</summary><div class="dg-card__render">\n' + "\n".join(blocks[1:]) + '\n</div></details>'
+          else:
+              render = '<p class="dg-empty">這張卡在規格全文裡沒有渲染區。</p>'
+          tier = "atom" if "layer--atom" in layer else "molecule" if "layer--molecule" in layer else "organism" if "layer--organism" in layer else "other"
+          cards.append((tier, name, sid, f"""<article class="dg-card" id="{sid}" data-search="{(title + ' ' + one).lower().replace('"', '')}">
+  <div class="dg-card__head"><span class="dg-card__num">{num}</span><h2 class="dg-card__title">{name}</h2>{layer}<a class="dg-card__link" href="{page}#{sid}">Spec →</a></div>
   <p class="dg-card__one">{one}</p>
 {render}
   <details class="dg-rules dsd-fold"><summary>規則與說明</summary>
@@ -219,7 +248,6 @@ def build(only=None, check=False):
     # DS 頁尾的 JS：示範有一部分是 JS 畫的（zselect、date-input、upload-tile…）。
     # <script src> 全搬（icons-all.js 1.8MB 例外：圖鑑用產品頁 registry 就夠）；
     # 頁尾 inline script 逐塊包 try/catch——它們有些只服務 DS 頁的目錄／語言切換，元素不在時會丟錯，包起來不讓一塊炸掉其餘。
-    tail = html[html.rindex("</section>"):]
     tail_srcs = [t for t in re.findall(r'<script src="[^"]+"></script>', tail) if "icons-all.js" not in t]
     inline = re.findall(r"<script>(?!\(function\(\)\{var h=)(.*?)</script>", tail, re.S)
     tail_inline = "\n".join("<script>try {\n" + blk + "\n} catch (e) { console.warn('[gallery] DS 頁尾 script 略過：', e.message); }</script>" for blk in inline)

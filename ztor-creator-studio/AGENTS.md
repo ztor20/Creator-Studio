@@ -88,4 +88,9 @@ merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者�
 
 - 版本與治理見 [README.md](README.md)：`site/` 不得把畫面、截圖、互動或既有程式靜默反向同步成產品規則。
 - 共用大檔（`app/js/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。
-- 設計系統文件分三處（2026-11-07 起）：`app/design-system.md` 只放總則、元件總表（一列一句）與索引；元件規格一支一檔在 `app/ds-specs/`；改版歷史在 `app/design-system-changelog.md`。改元件只讀總表和該元件的規格檔。改完 `design-system.html` 要重跑 `python3 app/scripts/gen_design_gallery.py` 重生 `design-components.html`；它是生成檔，撞到衝突就重跑腳本，不要手動合併。
+- 設計系統文件分三層（2026-11-09 起）：
+  - 速查版 `app/ds-index.md`：Pillar 1（token）與 Pillar 4（元件、用途、規格檔）的速查，腳本產生、不手改；每次動手前先掃。
+  - 入口 `app/design-system.md`：Identity、Do / Don't、Quick Reference 與「對照表」；要修改時先讀，再照對照表只讀需要的那一份。
+  - 完整版：各 Pillar 在 `app/ds-pillars/`（元件總表在 `4-component.md`），元件規格一支一檔在 `app/ds-specs/`，改版歷史在 `app/design-system-changelog.md`。
+- 展示頁也分頁（2026-11-09 起）：`app/design-system.html` 是入口，各 Pillar 一頁 `app/design-system-*.html`（元件分六頁 `design-system-components-*.html`）；共用檔頭、左側目錄、檔尾各只有一份：`app/ds-head.js`、`app/ds-toc.js`、`app/ds-tail.js`。新增元件：CSS 加進 `ds-head.js`、demo 卡寫進對應分組那一頁、目錄在 `ds-toc.js` 加一行。
+- 改完任何一頁 `design-system*.html` 要重跑 `python3 app/scripts/gen_design_gallery.py` 重生 `design-components.html`；它是生成檔，撞到衝突就重跑腳本，不要手動合併。
