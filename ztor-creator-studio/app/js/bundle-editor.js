@@ -1063,7 +1063,7 @@
       if (!b.conds || !b.conds.conds) b.conds = { conds: {} };
       if (host._pc) { host._pc.refresh(); host._pc.check(); return; }
       host._pc = PC.mount(host, { rules: b.conds, scope: 'bundle', times: function () { var c = tbCtx(b); return c ? c.et : null; },
-        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnS, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); } },
+        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnS, types: PC.UNI_TYPES, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); } },
         onChange: function (r) { b.conds = r; uSyncLimits(b); syncSplit(card, b); onChange(BUNDLES); } });
     }
     function limitsErrCount(b) {
