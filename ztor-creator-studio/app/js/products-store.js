@@ -1509,8 +1509,8 @@
       listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 0,
       discountPct: null, discount: null,
-      /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件＝限時購買（D400；S94），期間內才買得到 */
-      conds: { conds: { buyTime: { from: '2026-10-01T12:00', to: '2026-12-31T23:59' } } },
+      /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件（D400；S94） */
+      conds: { conds: {} },   /* D524（2026-11-09）：購買條件沒有限時購買了，原示範的限時購買 2026-10-01～12-31 移除（墓碑），示範預設不限 */
       sales: { units: 7, gross: '$245', net: '$196' }
     },
     /* 定時下架到期的自動連動示範（2026-09-18 · D288）：seed 寫成上架中，但成員 coaster 的 unlistAt 已過——
@@ -1553,8 +1553,8 @@
       listed: true, listAt: null, unlistAt: null,
       shown: true, privateLink: null, saleStart: null, saleEnd: null, lowThreshold: 3,
       discountPct: 20, discount: null,
-      /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件＝限時購買（D400；S94） */
-      conds: { conds: { buyTime: { from: '2026-10-01T12:00', to: '2026-12-31T23:59' } } },
+      /* 2026-10-16 示範資料補齊（稽核 S2）：純商品組合包的購買條件（D400；S94） */
+      conds: { conds: {} },   /* D524（2026-11-09）：購買條件沒有限時購買了，原示範的限時購買 2026-10-01～12-31 移除（墓碑），示範預設不限 */
       sales: { units: 38, gross: 'NT$227,240', net: 'NT$193,150' },
       films: ['film-neon-harbor'],
       projects: [{ titleKey: 'product-detail.ref.row1', href: 'create-project.html' }],

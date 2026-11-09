@@ -22,10 +22,12 @@
      periodWins(rules) / periodErrs(rules, et, T) / syncPeriod(host, rules, et, T)
                                               期間檢查（D342／D363；D389 起活動詳情同用）：有時間窗的條件須落在活動上架區間內、
                                               限時購買的結束不晚於活動停售；回傳 / 寫入 [data-rule-tl-err] 紅字。建立流程與活動詳情共用
-     UNI_FEAT / uniOn()                       D463（2026-10-21）：商品與組合包共用七種條件只在最終版（S105 ⚪）；uniOn()＝目前版本有沒有 S105
+     UNI_FEAT / uniOn()                       D463（2026-10-21）：商品與組合包共用的條件只在最終版（S105 ⚪）；uniOn()＝目前版本有沒有 S105
+     UNI_TYPES / usable(ctx)                  D524（2026-11-09）：商品與組合包的條件拿掉限時購買，只剩六種（UNI_TYPES，呼叫端放進 ctx.types）；
+                                              usable(ctx)＝依 ctx.types 與 ctx.featOn，目前版本有沒有任何一種可加（沒有就整個購買條件區塊不畫）
      legacyConds({ rules, def, limits, sale })
                                               D463 決定 5〔推導〕舊組合包資料 → 自己的條件（回傳只含推導出的那幾種，呼叫端不覆蓋已有的）：
-                                              rules（D342 另設的購買條件；null＝跟隨所含門票→改讀 def＝TB.defaults 推導值）→ buyTier／buyTime；
+                                              rules（D342 另設的購買條件；null＝跟隨所含門票→改讀 def＝TB.defaults 推導值）→ buyTier（D524 起不再產出 buyTime）；
                                               limits（{ person }）→ cap；sale（舊排程特價 { pct, from, to, base }，base＝組合包售價）→ discTime
                                               （2026-10-22 使用者裁決：組合包的排程特價就是「限時折扣」條件）。bundle-detail 與 bundle-editor 共用
      summary(rules, unit) / errCount(rules, et, Tr)
@@ -54,6 +56,9 @@
     { k: "discTier", icon: "percent",        feat: "S82" },
     { k: "discBoth", icon: "percent",        feat: "S82" }   // D367 決定三：限時＋限粉絲分級的組合折扣，只在最終版
   ];
+  /* D524（2026-11-09）：商品（單售）與組合包的購買條件拿掉「限時購買」——可買時間只看上架與開賣設定；活動門票保留七種。
+     商品與組合包的呼叫端把 UNI_TYPES 放進 ctx.types；門票不給 types（全部）。 */
+  const UNI_TYPES = TYPES.map(c => c.k).filter(k => k !== "buyTime");
   const FIELDS = {
     buyTime:  { from: "", to: "" },
     buyTier:  { tier: "fan" },
@@ -153,7 +158,8 @@
     const featOn = ctx.featOn || (() => true);
     const srcChip = ctx.srcChip || (() => "");
     const pctReadout = ctx.pctReadout || (() => "—");
-    /* ctx.types（D400，2026-10-12）：只開放哪幾種條件——組合包的購買條件只用 buyTime／buyTier；缺＝全部（活動） */
+    /* ctx.types（D400，2026-10-12）：只開放哪幾種條件；缺＝全部（活動門票）。D524 起商品與組合包傳 UNI_TYPES（沒有 buyTime）；
+       release 版組合包只傳 ['buyTier']（S82 收起時整塊不畫，見 usable） */
     const ALLOW = ctx.types ? TYPES.filter(c => ctx.types.indexOf(c.k) >= 0) : TYPES;
     const dis = l => l ? " disabled" : "";
     const ruleField = (label, control, l) =>
@@ -449,7 +455,7 @@
     const src = r ? { tier: has("tier") ? r.tier : null, timed: has("time"), from: r.from, to: r.to }
       : (d ? { tier: d.tier, timed: d.timed, from: d.from, to: d.to } : {});
     if (src.tier) out.buyTier = { tier: src.tier };
-    if (src.timed) out.buyTime = { from: at(src.from, "00:00"), to: at(src.to, "23:59") };
+    /* D524：src.timed（舊資料的限時購買）不再轉入——商品與組合包沒有限時購買 */
     const PLx = window.ztorPurchaseLimits;
     const lim = o.limits ? (PLx && PLx.norm ? PLx.norm(o.limits) : o.limits) : null;
     if (lim && lim.person) out.cap = { person: String(lim.person) };
@@ -462,9 +468,17 @@
     return out;
   }
 
+  /* D524：這份 ctx 在目前版本有沒有任何一種條件可加（ctx.types 缺＝全部；種類的 feat 與 ctx.typeFeat 都經 ctx.featOn 判斷）。
+     沒有就呼叫端整個不畫購買條件區塊（標題、「Who can buy」、新增條件鈕）。 */
+  function usable(ctx) {
+    ctx = ctx || {};
+    const featOn = ctx.featOn || (() => true);
+    return TYPES.some(c => (!ctx.types || ctx.types.indexOf(c.k) >= 0) && featOn(featFor(c.k, null, ctx)));
+  }
+
   window.ztorPurchaseConds = {
     TYPES: TYPES, FIELDS: FIELDS, FAN_TIERS: FAN_TIERS, STRINGS: STRINGS, TIX_FEAT: TIX_FEAT, featFor: featFor,
-    UNI_FEAT: UNI_FEAT, uniOn: uniOn, summary: summary, errCount: errCount,
+    UNI_FEAT: UNI_FEAT, uniOn: uniOn, UNI_TYPES: UNI_TYPES, usable: usable, summary: summary, errCount: errCount,
     t: t, isDiscK: isDiscK, fields: fields, norm: norm,
     condPrice: condPrice, pctOf: pctOf, pctText: pctText,
     html: html, paint: paint, release: release, syncWarn: syncWarn, discTimeBad: discTimeBad, capErrKey: capErrKey, capBad: capBad, mount: mount,
