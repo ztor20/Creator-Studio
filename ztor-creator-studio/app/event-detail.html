@@ -1749,8 +1749,8 @@
         </div>
 
         <!-- D423 決定五（2026-10-15）：「匯出參加者名單」搬到售票與名單工作列最右邊（[data-nav-act="roster"]）；開啟掃描器留在原位 -->
-        <div class="flex-row mt-16" style="gap:8px" data-stage-show="live ended">
-          <button class="btn btn--ghost" type="button" data-stage-show="live ended" data-i18n="event-detail.att.scanner">Open scanner</button>
+        <div class="flex-row mt-16" style="gap:8px" data-stage-show="scheduled on-sale live ended">
+          <button class="btn btn--ghost" type="button" data-stage-show="scheduled on-sale live ended" data-i18n="event-detail.att.scanner">Open scanner</button>
         </div>
 
         <div class="info-banner mt-16" data-stage-show="live ended">
@@ -2833,7 +2833,7 @@
     if (card && slot) {
       if (!card._home) card._home = { parent: card.parentNode, next: card.nextSibling };
       const online = typeof ONLINE_TYPES !== 'undefined' && ONLINE_TYPES.indexOf(ev.type) >= 0;
-      const early = bky && !online && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0;
+      const early = !online && ['scheduled', 'on-sale'].indexOf(ev.status) >= 0;   // D521：不分 bookyay／自建，已排程起就顯示掃碼器
       if (early && card.parentNode !== slot) slot.appendChild(card);
       if (!early && card.parentNode === slot) card._home.parent.insertBefore(card, card._home.next);
       slot.hidden = !early;
@@ -2848,25 +2848,9 @@
     });
   }
 
-  function initLive() {
-    /* 純線上的活動沒有 QR 報到（共看派對 D149，線上活動同理），進行中也不開現場報到台。
-       2026-08-17 從 watchparty 一種擴成 ONLINE_TYPES：這裡只擋了共看派對，所以第一場
-       進行中的線上活動一進來就把整張報到台掀開——`data-hide-type` 在初始化時關掉的東西，
-       被這一行又打開了。 */
-    if (ONLINE_TYPES.indexOf(ev.type) >= 0) return;
-    /* 2026-08-17：這裡原本還有一行 `$('#ed-checkin-snapshot').hidden = true;`。
-       報到快照卡當天已併進結案卡、元素不存在了，這一行於是對 null 設值直接拋錯——
-       initLive() 整個中斷在第二行，後面的 roster、paintLive、掃碼連結全都沒跑，
-       畫面上就是「活動進行中但每個數字都是破折號」。
-       改用 setHidden() 容錯：找不到就跳過，不再讓一個過期的引用拖垮整段初始化。 */
-    const setHidden = (sel, v) => { const el = $(sel); if (el) el.hidden = v; };
-    setHidden('#ed-live', false);
-    setHidden('#ed-live-roster', false);
-    setHidden('#ed-att-sample', true);
-    roster = window.ztorEvents.roster(ev.id);
-    arrived = roster.filter(r => r.arrived).length;
-    recent = [1, 1, 1];
-
+  /* 掃碼器連結與複製／分享（D521，2026-11-09）：場次建立後就能掃，所以從已排程起就要有可用的網址與複製鈕——
+     不再等進行中才由 initLive 接線。線上活動沒有現場報到，不接。 */
+  function initScannerLink() {
     // 掃碼連結：顯示的就是真的可以開的絕對網址（顯示一個、複製另一個＝小小的謊）
     const url = new URL('scanner.html', location.href);
     url.searchParams.set('event', ev.id);
@@ -2875,9 +2859,6 @@
     if (!isBky()) $('#ed-live-open').href = abs;   // D375 決定五：匯入活動的報到台停用，不給可開的連結
     /* 掃碼器的 QR 已於 2026-08-17 拿掉（使用者裁決）：這一頁上出現 QR 會被讀成
        「票的 QR」，而那是來賓手上的東西。現場人員需要的只是一條網址。 */
-    renderLiveRhythm();
-    renderLiveWhere();
-
     /* 2026-08-17：複製鈕收成一顆 icon 之後沒有 <span> 可以換字，於是改閃 title／aria-label——
        純圖示的按鈕本來就靠這兩個屬性說話，回饋走同一個管道才不會「按了沒反應」。 */
     function flash(btn, key, fb) {
@@ -2919,6 +2900,28 @@
       if (navigator.clipboard) navigator.clipboard.writeText(abs).catch(() => {});
       flash($('#ed-live-share'), 'event-detail.live.scanner.copiedfallback', 'Copied — paste it to your staff');
     });
+  }
+  function initLive() {
+    /* 純線上的活動沒有 QR 報到（共看派對 D149，線上活動同理），進行中也不開現場報到台。
+       2026-08-17 從 watchparty 一種擴成 ONLINE_TYPES：這裡只擋了共看派對，所以第一場
+       進行中的線上活動一進來就把整張報到台掀開——`data-hide-type` 在初始化時關掉的東西，
+       被這一行又打開了。 */
+    if (ONLINE_TYPES.indexOf(ev.type) >= 0) return;
+    /* 2026-08-17：這裡原本還有一行 `$('#ed-checkin-snapshot').hidden = true;`。
+       報到快照卡當天已併進結案卡、元素不存在了，這一行於是對 null 設值直接拋錯——
+       initLive() 整個中斷在第二行，後面的 roster、paintLive、掃碼連結全都沒跑，
+       畫面上就是「活動進行中但每個數字都是破折號」。
+       改用 setHidden() 容錯：找不到就跳過，不再讓一個過期的引用拖垮整段初始化。 */
+    const setHidden = (sel, v) => { const el = $(sel); if (el) el.hidden = v; };
+    setHidden('#ed-live', false);
+    setHidden('#ed-live-roster', false);
+    setHidden('#ed-att-sample', true);
+    roster = window.ztorEvents.roster(ev.id);
+    arrived = roster.filter(r => r.arrived).length;
+    recent = [1, 1, 1];
+
+    renderLiveRhythm();
+    renderLiveWhere();
 
     document.querySelectorAll('[data-att-filter]').forEach(b => b.addEventListener('click', () => {
       attFilter = b.dataset.attFilter;
@@ -4168,8 +4171,8 @@
   function applyReadonly(root, ro) {
     root.querySelectorAll('input, textarea').forEach(el => { if (!editExempt(el)) el.readOnly = ro; });
     root.querySelectorAll('select').forEach(el => { if (!editExempt(el)) el.disabled = ro; });
-    // 早到政策的選項卡與場次的增刪是按鈕不是 input，得自己鎖
-    root.querySelectorAll('[data-sess-early], [data-sess-remove], #ed-sess-add').forEach(el => { el.disabled = ro; });
+    // 場次的增刪是按鈕不是 input，得自己鎖
+    root.querySelectorAll('[data-sess-remove], #ed-sess-add').forEach(el => { el.disabled = ro; });
     /* 條款與細則的開關（D362）：檢視模式鎖住；條款及細則在 bookyay 帶入者不分模式一律鎖 */
     root.querySelectorAll('[data-ed-term]').forEach(sw => {
       const lock = ro || (sw.dataset.edTerm === 'tnc' && typeof isBky === 'function' && isBky());
@@ -4183,7 +4186,7 @@
     /* 場次（D365；5.1.6.1 F21「各場日期與時間」鎖定）：bookyay 帶入者不分模式一律鎖——日期、開始／結束時間、結束日期、
        開放入場與早到處理都唯讀，場次不能增刪（2026-10-07 補：原本只鎖了開放入場一組，日期與時間與 F21 不一致） */
     if (typeof isBky === 'function' && isBky()) {
-      root.querySelectorAll('[data-sess-f], [data-sess-early], [data-sess-remove], #ed-sess-add').forEach(el => {
+      root.querySelectorAll('[data-sess-f], [data-sess-remove], #ed-sess-add').forEach(el => {
         if ('readOnly' in el && el.tagName === 'INPUT') el.readOnly = true; else el.disabled = true;
       });
       /* 場地名稱與完整地址（5.1.6.1 F21，D329；2026-10-07 補，原本編輯模式可改）：標記見 lockVenueFromBky */
@@ -4286,7 +4289,7 @@
         blk.setAttribute('data-mode', 'view'); blk.setAttribute('data-ed-stocklock', '');
         blk.querySelectorAll('input, textarea').forEach(el => { if (!editExempt(el)) el.readOnly = true; });
         blk.querySelectorAll('select').forEach(el => { if (!editExempt(el)) el.disabled = true; });
-        blk.querySelectorAll('[data-sess-early], [data-sess-remove], #ed-sess-add, #ed-lineup-add').forEach(el => { el.disabled = true; });
+        blk.querySelectorAll('[data-sess-remove], #ed-sess-add, #ed-lineup-add').forEach(el => { el.disabled = true; });
         blk.querySelectorAll('[data-ed-term], [data-sess-md], [data-sess-doors]').forEach(sw => {
           sw.disabled = true; sw.classList.add('switch--locked'); sw.setAttribute('aria-disabled', 'true');
         });
@@ -4325,9 +4328,9 @@
   /* 活動紀錄 → 場次清單（2026-10-09 抽成一支：初次載入、捨棄、高影響比對三處共用同一份合成規則） */
   function sessFromEv() {
     const list = ((ev.sessions && ev.sessions.length) ? ev.sessions : [{
-      id: 's1', name: '', date: ev.date, start: ev.start, end: ev.end, doors: ev.doors, early: ev.early || 'warn',
+      id: 's1', name: '', date: ev.date, start: ev.start, end: ev.end, doors: ev.doors,
       endDate: ev.endDate || ''
-    }]).map(s => Object.assign({ early: 'warn' }, JSON.parse(JSON.stringify(s)), { multiDay: !!(s.multiDay || s.endDate) }));   // 跨日（D328）：有 endDate＝跨日
+    }]).map(s => Object.assign({}, JSON.parse(JSON.stringify(s)), { multiDay: !!(s.multiDay || s.endDate) }));   // 跨日（D328）：有 endDate＝跨日
     /* 開演前幾分鐘（doorsMin）由開始與開放入場推算補齊——bookyay 帶入者改開始時間時以它為準（D365，見 input handler） */
     list.forEach(s => {
       if ((s.doorsMin == null || s.doorsMin === '') && hhmmToMin(s.start) != null && hhmmToMin(s.doors) != null)
@@ -4485,7 +4488,7 @@
       '</div>' +
       /* D396（2026-10-12 使用者指示；同建立流程）：「開放入場（選填）」改名「提前入場時間」，改成跟跨日同一種開關列＋揭示區
          （.control-group＋.control-row＋.switch）。開＝露出時間／開演前兩格與早於提前入場時間入場的處理；關＝收起並清空
-         （doors／doorsMin 清空、處理回到「仍可入場」）。bookyay 帶入者開關不分模式一律鎖（applyReadonly），標題旁掛來源標記；
+         （doors／doorsMin 清空；D521 起早到只在 scanner 提示）。bookyay 帶入者開關不分模式一律鎖（applyReadonly），標題旁掛來源標記；
          有過早入場值＝開著、沒有＝關著（D365）。開關掛 data-view-safe：檢視態也看得到開或關（Q119 例外：開關是狀態展示）。
          墓碑 2026-10-12（D396）：原本的 .control-group--plain 線框、「（選填）」字樣，以及「時間有值才露出早到處理」。 */
       '<div class="control-group' + (bky ? ' is-source-locked' : '') + '" data-sess-doors-group>' +
@@ -4508,20 +4511,7 @@
               '<input class="input amount-field__input" type="number" min="0" step="5" placeholder="0" data-sess-f="doorsMin" value="' + tixEsc(mins) + '">' +
               '<span class="amount-field__unit">' + tixEsc(T('ed.min', 'min')) + '</span>' +
             '</span></label>' +
-        /* 單選卡是狀態展示（Q119 例外）：標 data-view-safe 讓檢視態看得到選了哪個，
-           不可點由 applyReadonly 的 disabled ＋ shared.css 的 .segmented.radio-cards pointer-events 擋。
-           2026-10-27：同建立活動，放進同一個 form-grid 佔滿整列（.form-grid__full），原 .rule-sub 退場 */
-        '<div class="field form-grid__full" data-early-block>' +
-          '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before early entry time')) + (bky ? bkySrcChip() : '') + '</div>' +
-          '<div class="segmented radio-cards" role="radiogroup"' + (bky ? ' aria-disabled="true"' : '') + '>' +
-            ['warn', 'block'].map(v => '<button type="button" class="segmented__btn' +
-              ((s.early || 'warn') === v ? ' segmented__btn--active' : '') + '" role="radio" aria-checked="' +
-              ((s.early || 'warn') === v ? 'true' : 'false') + '" data-view-safe data-sess-early="' + v + '">' +
-              tixEsc(T(v === 'warn' ? 'ed.early.warn' : 'ed.early.block', v === 'warn' ? 'Allow entry' : 'Deny entry')) + '</button>').join('') +
-          '</div>' +
-          /* 墓碑（2026-08-13 使用者指示「刪除」）：「票種可以各自提前入場…」那句退場，
-             同 create-event。 */
-        '</div>' +
+        /* 墓碑 2026-11-09（D521）：「早於提前入場時間入場」仍可入場／不能入場二選一退場，只留開關＋時間。 */
         '</div>' +   /* form-grid */
         '</div>' +
       '</div>' +
@@ -4594,20 +4584,15 @@
       if (edBaseline) syncDirty();
       return;
     }
-    /* 提前入場時間開關（D396）：就地翻開關與揭示區；關掉清空時間、分鐘，早到處理回到「仍可入場」。 */
+    /* 提前入場時間開關（D396）：就地翻開關與揭示區；關掉清空時間、分鐘（D521 起早到只在 scanner 提示）。 */
     const dr = e.target.closest('[data-sess-doors]');
     if (dr && s && !dr.disabled) {
       const on = !doorsOnOf(s);
       s.doorsOn = on;
       const grp = dr.closest('[data-sess-doors-group]');
       if (!on) {
-        s.doors = ''; s.doorsMin = ''; s.early = 'warn';
+        s.doors = ''; s.doorsMin = '';
         grp?.querySelectorAll('[data-sess-f]').forEach(x => { x.value = ''; x.dispatchEvent(new Event('change')); });
-        grp?.querySelectorAll('[data-sess-early]').forEach(b => {
-          const act = b.dataset.sessEarly === 'warn';
-          b.classList.toggle('segmented__btn--active', act);
-          b.setAttribute('aria-checked', act ? 'true' : 'false');
-        });
       }
       dr.classList.toggle('switch--on', on);
       dr.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -4618,16 +4603,6 @@
       if (sum) sum.outerHTML = sessSummaryHTML(s);
       refreshTix();
       if (edBaseline) syncDirty();
-      return;
-    }
-    const pick = e.target.closest('[data-sess-early]');
-    if (pick && s && !pick.disabled) {
-      s.early = pick.dataset.sessEarly;
-      pick.parentElement.querySelectorAll('[data-sess-early]').forEach(b => {
-        const on = b === pick;
-        b.classList.toggle('segmented__btn--active', on);
-        b.setAttribute('aria-checked', on ? 'true' : 'false');
-      });
       return;
     }
     if (e.target.closest('[data-sess-remove]') && s && edSessions.length > 1 && edPreSale() && !sessBky()) {
@@ -4686,7 +4661,7 @@
     const s0 = edSessions[0] || {};
     /* 新場次帶入第一場的時間（多數活動每場時間相同、只有日期不同），日期留空。 */
     const added = { id: 's' + (edSessions.length + 1) + '-' + Date.now(), name: '', date: '',
-      start: s0.start || '', end: s0.end || '', doors: s0.doors || '', early: s0.early || 'warn' };
+      start: s0.start || '', end: s0.end || '', doors: s0.doors || '' };
     edSessions.push(added);
     /* 剛加的那一場自動展開；第 2 場出現時第 1 場才第一次有折疊的意義，順手收起來。 */
     sessOpen.add(added.id);
@@ -8041,6 +8016,7 @@
   initTx();                // 內部呼叫 renderTx()，已一併處理作廢紀錄／已作廢票券 KPI（2026-09-09 D253）
   renderFinance();         // 2026-08-19：收支分頁，依賴 initTx() 填好的 txAll
   if (isLive) initLive();
+  if (ONLINE_TYPES.indexOf(ev.type) < 0) initScannerLink();   // D521：掃碼器從已排程起就可用
   renderTodo();
   syncNavSections();
   /* 每一排的作用中預設落在**第一個看得到的**分節（2026-08-17 使用者指示

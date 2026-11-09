@@ -3824,9 +3824,6 @@
   const newSession = init => Object.assign(
     /* 場地不在場次上：所有場次共用 [data-ce=venue] 那幾格（D340 只做定點；逐站場地的 venue／addr／meet／transit 欄位退場）。 */
     { id: "sess-" + (++series.seq), name: "", date: "", start: "", end: "", doors: "",
-      /* 未到入場時間的處理，每一場各自一份（2026-08-11 使用者指示）：預設「仍可入場」，
-         擋下是比較重的那一邊，要創作者自己選才生效。 */
-      early: "warn",
       /* 開放入場的另一種寫法：開演前幾分鐘。與 doors 互為換算，見 syncDoorsPair。 */
       doorsMin: "",
       /* 跨日活動（D328，5.1.6.1 F7）：每場一個開關、預設關；開了才有結束日期（必填、結束須晚於開始）。 */
@@ -3963,7 +3960,7 @@
   /* 開放入場 ＋ 掛在它底下的「未到入場時間」。
      這一組每一場各有一份（2026-08-11 使用者指示：每一場都可以設定不同的），所以控制項
      用 radio-list **不帶副標**的緊湊版——同一段字重複十場等於把清單灌長，選項名稱本身
-     已經把結果與機制都講完（提醒職員仍可放行／擋下不能入場）。 */
+     已經把結果與機制都講完。D521 起早到處理的二選一已取消，此段僅作歷史註記。 */
   /* 提前入場時間開關（D396）：s.doorsOn 有值照它；舊資料（含 bookyay 帶入）沒有這個鍵時，有填時間或分鐘就算開著。 */
   const doorsOnOf = s => (typeof s.doorsOn === "boolean") ? s.doorsOn
     : !!((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim());
@@ -3981,17 +3978,6 @@
     if (m) m.textContent = err;
   }
   function sessDoorsHTML(s) {
-    const cur = s.early || "warn";
-    /* 控制項用 `.segmented.radio-cards`（2026-08-11 使用者指示，比照建立商品的「商品選項」）：
-       兩張並排的寬卡＋右上小橘點，與流程裡其他二選一（上架方式、取票方式）同一種視覺，
-       整個流程裡的二選一因此只有一種長相。 */
-    const opt = (v, k) => '<button type="button" class="segmented__btn' +
-      (cur === v ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' +
-      (cur === v ? "true" : "false") + '" data-sess-early="' + v + '">' +
-      '<span class="radio-card__text">' +
-        '<span class="radio-card__title">' + esc(dT(k)) + '</span>' +
-        '<span class="radio-card__sub">' + esc(dT(k + ".sub")) + '</span>' +
-      '</span></button>';
     /* 開放入場與早到規則整併成**一個項目**（2026-08-11 使用者指示「整理成一個項目、
        重新定義它的功能」）。想清楚使用情境之後的定義是：
        這一格問的是「這一場幾點放人進來」，**留空就是不限制**——沒有入場時間，
@@ -4013,7 +3999,7 @@
        第三層以後一律用線框表達層級，所以這裡用線框不用底色。 */
     /* D396（2026-10-12 使用者指示）：「開放入場（選填）」改名「提前入場時間」，改成跟跨日同一種開關列＋揭示區
        （.control-group＋.control-row＋.switch）。開＝露出時間／開演前兩格與早於提前入場時間入場的處理；
-       關＝收起並清空（doors／doorsMin 清空、處理回到預設「仍可入場」）。開關狀態存在 s.doorsOn，
+       關＝收起並清空（doors／doorsMin 清空；D521 起早到只在 scanner 提示）。開關狀態存在 s.doorsOn，
        舊資料沒有這個鍵時由有沒有值推得（doorsOnOf）。bookyay 帶入（sessLocked）時開關鎖定、標題旁掛來源標記：
        有過早入場值＝開著、沒有＝關著（D365 的「留空並鎖定」）。
        墓碑 2026-10-12（D396）：原本的 .control-group--plain 線框＋「（選填）」標籤，以及「時間有值才露出早到處理」的規則。 */
@@ -4044,15 +4030,7 @@
               '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span>' +
             '</span>' +
           '</label>' +
-          /* 2026-10-27（使用者：「間距要照 DS 做出來」）：早到處理是同一組的第三格，不是下一層——放進同一個 form-grid 佔滿整列，
-             列距交給格線（--sp-28）；原本接在格子後面的 .rule-sub（縮排＋左邊線、上距 12）退場。 */
-          '<div class="field form-grid__full" data-early-block>' +
-            '<div class="field__label">' + esc(dT("d.early.policy")) + (sessLocked ? srcChip() : '') + '</div>' +
-            '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '"' +
-              (sessLocked ? ' aria-disabled="true"' : '') + '>' +
-              opt("warn", "d.early.warn") + opt("block", "d.early.block") +
-            '</div>' +
-          '</div>' +
+          /* 墓碑 2026-11-09（D521）：「早於提前入場時間入場的處理」二選一（仍可入場／不能入場）退場——只留開關＋時間，掃描時早到只提示、核銷照常。 */
         '</div>' +
       '</div>' +
     '</div>';
@@ -4269,7 +4247,7 @@
       syncReview(); scheduleSave();
       return;
     }
-    /* 提前入場時間開關（D396）：就地翻開關與揭示區。關掉＝清空時間、分鐘，早到處理回到預設「仍可入場」，
+    /* 提前入場時間開關（D396）：就地翻開關與揭示區。關掉＝清空時間、分鐘（D521 起早到只在 scanner 提示），
        再打開是空的（跟跨日不同：跨日關掉留著結束日期，這裡依指示清掉）。bookyay 帶入時鎖住。 */
     const dr = e.target.closest("[data-sess-doors]");
     if (dr && s) {
@@ -4278,13 +4256,8 @@
       s.doorsOn = on;
       const grp = dr.closest("[data-sess-doors-group]");
       if (!on) {
-        s.doors = ""; s.doorsMin = ""; s.early = "warn";
+        s.doors = ""; s.doorsMin = "";
         grp?.querySelectorAll("[data-sess-f]").forEach(x => { x.value = ""; x.dispatchEvent(new Event("change")); });
-        grp?.querySelectorAll("[data-sess-early]").forEach(b => {
-          const act = b.dataset.sessEarly === "warn";
-          b.classList.toggle("segmented__btn--active", act);
-          b.setAttribute("aria-checked", act ? "true" : "false");
-        });
       }
       dr.classList.toggle("switch--on", on);
       dr.setAttribute("aria-checked", on ? "true" : "false");
@@ -4296,25 +4269,11 @@
       syncReview(); scheduleSave();
       return;
     }
-    /* 未到入場時間：只改那一場的值，不重繪整份清單——重繪會把使用者剛填到一半的
-       日期或時間欄的游標彈掉。這一組是純 DOM 狀態，就地換 active 就好。 */
-    const pick = e.target.closest("[data-sess-early]");
-    if (pick && s) {
-      if (sessLocked) return;          // D365：bookyay 帶入的早到處理鎖定（CSS 已擋點擊，這裡再守一次資料）
-      s.early = pick.dataset.sessEarly;
-      pick.parentElement.querySelectorAll("[data-sess-early]").forEach(b => {
-        const on = b === pick;
-        b.classList.toggle("segmented__btn--active", on);
-        b.setAttribute("aria-checked", on ? "true" : "false");
-      });
-      scheduleSave();
-      return;
-    }
     /* 套用第一場的設定：複製時間、跨日與入場規則，日期與名稱留著——那兩個本來就該各場不同。 */
     if (e.target.closest("[data-sess-copy1]") && s) {
       const s0 = series.list[0];
       if (s0 && s0 !== s) {
-        ["start", "end", "doors", "doorsMin", "doorsOn", "early"].forEach(k => { s[k] = s0[k]; });
+        ["start", "end", "doors", "doorsMin", "doorsOn"].forEach(k => { s[k] = s0[k]; });
         /* 跨日一起套用（2026-10-12 使用者指示）：開關狀態跟著第一場走；第一場是跨日時，
            結束日期＝這一場自己的開始日期＋第一場「結束日期 − 開始日期」的天數（時間已一起複製，兩端對得上）。
            這一場還沒填開始日期、或第一場的天數算不出來時，結束日期留空交給必填驗證——不拿第一場的絕對日期硬蓋。
@@ -5254,7 +5213,7 @@
     /* 早到處理（2026-08-11 使用者指示）：門口的政策，一個活動只設一份，
        跟票種無關（2026-10-21 D462 起門票也沒有自己的提前入場，一律看所屬場次）。
        文案同日第二輪改寫（使用者：「這些詞句可以優化嗎」）：
-       ① 兩個選項由講機制（提示／擋下）改成講**結果**（仍可入場／不能入場）——
+       ① 兩個選項由講機制改成講**結果**（D521 起二選一取消，僅留歷史註記）——
           創作者在這裡決定的是「要不要放人進來」，機制是職員那邊的事，降到副標。
           兩個標題也因此對稱（都以入場為主詞），一眼比得出差別。
        ② 說明只留真正需要知道的那件事：早不早是跟**每張票自己的**入場時間比，
@@ -5269,11 +5228,7 @@
     "d.min":              { en: "min",               zh: "分鐘" },
     "d.doors.hint":       { en: "Fill either one and the other works itself out. Both empty means fans can come in any time.",
                             zh: "兩格填一個就好，另一格會自動算；都留空就是不限制。" },
-    "d.early.policy":     { en: "Arriving before early entry time", zh: "早於提前入場時間入場" },   // D396 改稱呼
-    "d.early.warn":       { en: "Allow entry",        zh: "仍可入場" },
-    "d.early.warn.sub":   { en: "Staff can confirm and let them through.", zh: "票務人員可人工確認。" },
-    "d.early.block":      { en: "Deny entry",         zh: "不能入場" },
-    "d.early.block.sub":  { en: "Staff can't override it.", zh: "票務人員限制操作。" },
+    /* 墓碑 2026-11-09（D521）：d.early.policy／.warn／.warn.sub／.block／.block.sub（早到「仍可入場／不能入場」二選一）隨二選一退場。 */
     /* 墓碑 2026-10-21（D462）：d.early.mode.follow／.custom（門票層「跟隨場次／自訂」）、d.tier.early.bky／.bky.none（bookyay 票的跟隨場次讀數）退場。 */
     /* 墓碑 2026-10-21（D462）：d.early.policy.hint（「票種可以各自提前入場，在票種那一步設定」）退場——門票層沒有提前入場。 */
     "d.tier.type":    { en: "Ticket type",       zh: "票種" },
@@ -5790,7 +5745,7 @@
      每筆帶 type（2026-09-01）：admin 從創作者活動管理頁的「繼續設定」深連結（?import=）直接進來時沒有類型閘門，
      bookyay 自己知道活動是哪一種，跟著資料走。
      過早入場（D365，5.1.6.1 F21「過早入場 → 開放入場」）：每個時段帶 `earlyEntryInMin`（bookyay「過早入場提示」，
-     開演前幾分鐘可入場）與 `earlyMode`（「過早入場的處理」：'warn'＝提示職員→仍可入場、'block'＝限制操作→不能入場）。
+     開演前幾分鐘可入場）（bookyay「過早入場的處理」二選一欄位已於 D521 取消，示範資料不再帶）。
      帶入成該場的開放入場（doorsMin＝分鐘、doors＝開始時間往前推算）與早於開放時間入場（s.early），鎖定。
      bky-5 刻意不設，示範 bookyay 沒設定時開放入場留空並鎖定（推導〔產品待確認〕）。
      票價幣別（D330，取代 D306 起的港幣基準）：bookyay 原幣港幣，`priceHkd` 帶入時換算成創作者幣別當基準價（`types[].price`、鎖），
@@ -5834,9 +5789,9 @@
       /* D440 示範（2026-10-16）：營運開三個同時間的時段、每個只放一種門票，各設自己的時段人數上限——帶入後合成同一場、三張門票。
          墓碑 2026-10-16（D440）：原本一個時段 cap 100、types [0, 1, 2]。 */
       slots: [
-        { startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn", cap: 100, types: [0] },
-        { startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn", cap: 300, types: [1] },
-        { startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn", cap: 100, types: [2] }
+        { startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, cap: 100, types: [0] },
+        { startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, cap: 300, types: [1] },
+        { startD: "2026-09-12", startT: "19:30", endD: "2026-09-12", endT: "22:00", earlyEntryInMin: 60, cap: 100, types: [2] }
       ] },
     /* 2026-10-13 D410 決定四（示範資料）：release2.3 只開放演唱會，候選清單裡原本是見面會、音樂節、發表會的條目一律改成演唱會；
        對應到站上示範活動的三筆（bky-2、bky-12、bky-14）名稱一起改，其餘只改類型、名稱不動。 */
@@ -5868,9 +5823,9 @@
       ],
       sessionNames: ["Day 1", "Day 2", "Day 3"],
       slots: [
-        { startD: "2026-10-02", startT: "19:00", endD: "2026-10-02", endT: "21:30", earlyEntryInMin: 60, earlyMode: "block", cap: 151, types: [0] },
-        { startD: "2026-10-03", startT: "19:00", endD: "2026-10-03", endT: "21:30", earlyEntryInMin: 60, earlyMode: "block", cap: 200, types: [0] },
-        { startD: "2026-10-04", startT: "19:00", endD: "2026-10-04", endT: "21:30", earlyEntryInMin: 60, earlyMode: "block", cap: 200, types: [0] }
+        { startD: "2026-10-02", startT: "19:00", endD: "2026-10-02", endT: "21:30", earlyEntryInMin: 60, cap: 151, types: [0] },
+        { startD: "2026-10-03", startT: "19:00", endD: "2026-10-03", endT: "21:30", earlyEntryInMin: 60, cap: 200, types: [0] },
+        { startD: "2026-10-04", startT: "19:00", endD: "2026-10-04", endT: "21:30", earlyEntryInMin: 60, cap: 200, types: [0] }
       ] },
     { id: "bky-3", type: "concert",
       label: "城市之聲 2026 巡迴演唱會 — 台北站",
@@ -5892,7 +5847,7 @@
       isPrivate: false,
       maxPurchaseCnt: 4,   // D366 示範：活動限購＋門票的折扣優惠
       ticketTypes: [{ name: "一日票", priceHkd: "445", persons: 1, discount: { priceHkd: "399" } }],
-      slots: [{ startD: "2026-11-08", startT: "14:00", endD: "2026-11-09", endT: "02:00", earlyEntryInMin: 60, earlyMode: "warn",
+      slots: [{ startD: "2026-11-08", startT: "14:00", endD: "2026-11-09", endT: "02:00", earlyEntryInMin: 60,
                 cap: 2000, types: [0] }] },
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
@@ -5912,7 +5867,7 @@
       showTncs: true,
       tncs: "<p>實體收藏票券以順豐寄送，寄出後恕不退換。</p><ul><li>收件地址僅限台灣本島。</li><li>票券遺失或毀損不補發，請妥善保管。</li><li>演後簽名每人限簽一件，限本場販售之黑膠商品。</li></ul>",
       ticketTypes: [{ name: "演唱會入場", priceHkd: "690", persons: 1, limit: { maxPurchaseCnt: 1, maxPurchaseTime: 1 } }],   // D366 示範：只有本門票限購
-      slots: [{ startD: "2026-12-06", startT: "19:00", endD: "2026-12-06", endT: "21:00", earlyEntryInMin: 60, earlyMode: "block", cap: 400, types: [0] }] },
+      slots: [{ startD: "2026-12-06", startT: "19:00", endD: "2026-12-06", endT: "21:00", earlyEntryInMin: 60, cap: 400, types: [0] }] },
     { id: "bky-5", type: "concert",
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
@@ -5947,7 +5902,7 @@
       isPrivate: false,
       /* 免費門票：bookyay 沒有現價（priceHkd 留空）；帶入時票價一律 0 */
       ticketTypes: [{ name: "免費入場", priceHkd: "", persons: 1 }],
-      slots: [{ startD: "2026-11-21", startT: "15:00", endD: "2026-11-21", endT: "17:00", earlyEntryInMin: 30, earlyMode: "warn", cap: 120, types: [0] }] },
+      slots: [{ startD: "2026-11-21", startT: "15:00", endD: "2026-11-21", endT: "17:00", earlyEntryInMin: 30, cap: 120, types: [0] }] },
     { id: "bky-10", type: "concert", ticketMode: "none",
       label: "創作者線上演唱會之夜",
       note:  "2026/12/12 · 線上（不設門票）",
@@ -5976,9 +5931,9 @@
       /* 重覆活動：bookyay 的產生設定（不帶入，D369 決定五）＋已展開的時段（帶入） */
       repeat: { type: "weekly", days: ["sat"], durationMin: 90, intervalMin: 0, times: 3 },
       slots: [
-        { startD: "2026-11-07", startT: "14:00", endD: "2026-11-07", endT: "15:30", earlyEntryInMin: 15, earlyMode: "warn", cap: 40, types: [0] },
-        { startD: "2026-11-14", startT: "14:00", endD: "2026-11-14", endT: "15:30", earlyEntryInMin: 15, earlyMode: "warn", cap: 40, types: [0] },
-        { startD: "2026-11-21", startT: "14:00", endD: "2026-11-21", endT: "15:30", earlyEntryInMin: 15, earlyMode: "warn", cap: 40, types: [0] }
+        { startD: "2026-11-07", startT: "14:00", endD: "2026-11-07", endT: "15:30", earlyEntryInMin: 15, cap: 40, types: [0] },
+        { startD: "2026-11-14", startT: "14:00", endD: "2026-11-14", endT: "15:30", earlyEntryInMin: 15, cap: 40, types: [0] },
+        { startD: "2026-11-21", startT: "14:00", endD: "2026-11-21", endT: "15:30", earlyEntryInMin: 15, cap: 40, types: [0] }
       ] },
     /* D383（2026-10-09）bookyay 套票的單一時段示範：release2.3 只收單一時段、不重覆的活動，bky-2（三個時段）在 release2.3 標不能帶入（D440 起不再擋），
        所以另備這一場一個時段的二人套票，release2.3 與最終版都能走——D429（2026-10-16）起帶入後：
@@ -6005,12 +5960,12 @@
       ticketTypes: [{ name: "二人套票", priceHkd: "560", persons: 2,
         limit: { maxPurchaseCnt: 2 }, discount: { priceHkd: "504" },
         early: { priceHkd: "448", endD: "2026-11-05", endT: "23:59" } }],
-      slots: [{ startD: "2026-11-28", startT: "20:00", endD: "2026-11-28", endT: "22:00", earlyEntryInMin: 60, earlyMode: "warn", cap: 121, types: [0] }] },
+      slots: [{ startD: "2026-11-28", startT: "20:00", endD: "2026-11-28", endT: "22:00", earlyEntryInMin: 60, cap: 121, types: [0] }] },
     /* bky-15（2026-10-12）：「條件全開」示範——想一次看完所有帶入與鎖定的樣子就選這一筆。
        刻意用：二人套票（D429 起帶入成一張普通門票、301 張）＋本門票限購三項＋折扣優惠＋早鳥，
        其後同一個時段再列兩種票（單人票、學生票）——D440 起照 D328 只帶第一種（二人套票），單人票、學生票列進略過提示「每個場次只帶入第一種票」
        （「一個時段多種門票」的主要示範；D439 期間曾三種都帶）；單一跨夜時段（自動開跨日活動並帶結束日期）、
-       人上限 301、提前入場 90 分鐘且不能入場；
+       人上限 301、提前入場 90 分鐘；
        活動限購三項、條款及細則（含清單與連結）、四種語言、兩張圖、私人活動（顯示設定＝隱藏）、定時開賣與停售日期、
        多段描述（含鎖定的圖片區塊、粗體斜體連結、清單）。
        D417（2026-10-15）之後：活動限購三項、門票的限購次數、折扣優惠、早鳥在 bookyay 端仍設滿，但 ztor 不帶入——
@@ -6043,7 +5998,7 @@
         { name: "單人票", priceHkd: "520", persons: 1 },
         { name: "學生票", priceHkd: "390", persons: 1 }
       ],
-      slots: [{ startD: "2026-12-19", startT: "18:00", endD: "2026-12-20", endT: "02:00", earlyEntryInMin: 90, earlyMode: "block", cap: 301, types: [0, 1, 2] }] },
+      slots: [{ startD: "2026-12-19", startT: "18:00", endD: "2026-12-20", endT: "02:00", earlyEntryInMin: 90, cap: 301, types: [0, 1, 2] }] },
     /* bky-21（2026-10-27）：「多票種」示範——想看一場活動帶入很多種門票就選這一筆（假資料，非產品規則）。
        九種門票，依 D440 營運實務各放一個同時間的時段（一個時段多種票只會帶第一種），合成同一場、九張門票；
        張數＝各自時段人數上限。第 1 種帶本門票限購（每人總限購帶入、其餘不帶），第 9 種現價 0（免費票照常帶入，票價一律 0）。 */
@@ -6073,15 +6028,15 @@
         { name: "兒童免費票", priceHkd: "0", persons: 1 }
       ],
       slots: [
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 100, types: [0] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 200, types: [1] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 400, types: [2] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 300, types: [3] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 300, types: [4] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 150, types: [5] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 120, types: [6] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 20, types: [7] },
-        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, earlyMode: "warn", cap: 50, types: [8] }
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 100, types: [0] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 200, types: [1] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 400, types: [2] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 300, types: [3] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 300, types: [4] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 150, types: [5] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 120, types: [6] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 20, types: [7] },
+        { startD: "2026-12-05", startT: "18:30", endD: "2026-12-05", endT: "21:30", earlyEntryInMin: 60, cap: 50, types: [8] }
       ] },
     /* bky-12（2026-10-09 D385 決定五補原始資料）：活動清單裡那筆 bookyay 草稿（events-store `khh-countdown-draft`，`bkyId: 'bky-12'`；
        js/sidebar.js BOOKYAY_EVENTS 的 bky-12，創作者活動管理「草稿」那一列）。原本只有清單摘要、沒有 bookyay 原始欄位，
@@ -6089,7 +6044,7 @@
        已經在 ztor 上（存成草稿）＝匯入清單照樣列出、標已匯入不能再選（imported），同 bky-6～8。
        內容對齊草稿：高雄駁二跨年、二人套票 HK$550（D429 起帶入成一張普通門票 × 200 張）、沒設定過早入場（開放入場留空並鎖定，D365）。 */
     { id: "bky-12", imported: true, type: "concert",
-      /* 2026-10-13 D410 決定四：草稿狀態的 bookyay 演唱會全選項示範（events-store khh-countdown-draft）——跨日時段、提前入場 60 分鐘且不能入場、
+      /* 2026-10-13 D410 決定四：草稿狀態的 bookyay 演唱會全選項示範（events-store khh-countdown-draft）——跨日時段、提前入場 60 分鐘、
          活動限購三項、條款及細則、兩種語言、多段描述（含圖片、粗體、斜體、連結、清單）、兩張圖；
          二人套票帶本門票限購（D429 起落在這張門票本身；折扣、早鳥 D417 起不帶入），第二種票 General admission 示範「只帶第一種」的略過提示（D328；D439 期間曾兩種都帶，D440 恢復）。 */
       label: "Kaohsiung countdown concert",
@@ -6116,7 +6071,7 @@
           early: { priceHkd: "460", endD: "2026-11-30", endT: "23:59" } },
         { name: "General admission", priceHkd: "300", persons: 1 }
       ],
-      slots: [{ startD: "2026-12-31", startT: "21:00", endD: "2027-01-01", endT: "00:30", earlyEntryInMin: 60, earlyMode: "block", cap: 200, types: [0, 1] }] },
+      slots: [{ startD: "2026-12-31", startT: "21:00", endD: "2027-01-01", endT: "00:30", earlyEntryInMin: 60, cap: 200, types: [0, 1] }] },
     /* bky-14（2026-10-09 D385 決定五）：順豐寄送的 bookyay 示範，已帶入成活動詳情的 `hsinchu-vinyl-sf`（已排程）——清單只標已匯入。 */
     { id: "bky-14", imported: true, type: "concert",
       label: "Vinyl release concert — Hsinchu",
@@ -6320,7 +6275,7 @@
       const md = !!(sl.endD && sl.endD !== sl.startD);
       /* 過早入場（D365）：bookyay 的 earlyEntryInMin（開演前幾分鐘）→ 開放入場的「開演前幾分鐘」，
          絕對時間由開始時間往前推（同 syncDoorsPair 的換算）；過早入場的處理 → 早於開放時間入場
-         （提示職員→仍可入場 warn、限制操作→不能入場 block）。沒設定時兩格留空，早到規則因此不出現（推導〔產品待確認〕）。 */
+         （D521 起二選一取消，早到只在 scanner 提示）。沒設定時兩格留空，早到規則因此不出現（推導〔產品待確認〕）。 */
       const em = sl.earlyEntryInMin;
       const hasEm = em != null && em !== "";
       const startM = hhmmToMin(sl.startT || "");
@@ -6329,7 +6284,6 @@
         date: sl.startD, start: sl.startT || "", end: sl.endT || "",
         doorsMin: hasEm ? String(em) : "",
         doors: hasEm && startM != null ? minToHhmm(startM - Number(em)) : "",
-        early: sl.earlyMode === "block" ? "block" : "warn",
         multiDay: md, endDate: md ? sl.endD : "" });
     });
     /* 門票（D440 決定二～四，2026-10-16，恢復 D328「只帶第一種」，取代 D439）：
