@@ -13,6 +13,8 @@
         「選擇日期」、旁邊還畫一個日曆——使用者圈出開放入場那一格。）
      3. 依 value 有無切 [data-empty]，空值才露 placeholder
      4. 點整格開原生日期選單（showPicker()，瀏覽器不支援就退回點原生欄位的預設行為）
+     5. （2026-11-09 Q146）datetime-local 不再畫成一格：拆成「日期＋時間」兩格（.date-input-pair），
+        原欄位留作值的載體，讀寫格式不變。見下方 splitDateTime。
 
    載入順序：icons.js 與 i18n.js 之後（注入的 icon 與文案要靠 applyIcons／applyI18n 渲染）。
    動態插入的節點（modal 等）呼叫 window.ZtorDateInput.mount(scope) 補掛。
@@ -83,10 +85,98 @@
     return wrap;
   }
 
+  /* ── Q146（2026-11-09）：日期時間一律「日期＋時間」兩格 ─────────────────────────
+     頁面照舊寫 <input class="input" type="datetime-local">，它從此只當「值的載體」：
+     執行期改成 type=hidden，前面長出一格 date、一格 time（.date-input-pair，與建立活動的兩格同樣子）。
+     頁面 JS 讀寫載體的 .value 仍是 'YYYY-MM-DDTHH:MM'，input／change 事件也從載體發出（target 不變），
+     所以各頁的存取、比較先後、預填、清空都不必改。合併規則照建立活動（create-event 的 ceDT）：
+     有日期沒時間＝00:00；沒日期＝空字串。載體的 disabled／readonly／aria-invalid／required／hidden
+     同步到兩格（archived-gate、鎖定、錯誤紅框照舊生效）；focus()、scrollIntoView() 轉給日期那格。 */
+  var NATIVE_VALUE = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  var MIRROR_ATTRS = ['disabled', 'readonly', 'aria-invalid', 'required'];
+
+  function splitDateTime(carrier) {
+    if (carrier.__dtPair || !carrier.parentNode) return [];
+    var initial = carrier.value || carrier.getAttribute('value') || '';
+
+    var pair = document.createElement('div');
+    pair.className = 'date-input-pair';
+    var d = document.createElement('input');
+    var t = document.createElement('input');
+    d.className = t.className = 'input';
+    d.type = 'date';
+    t.type = 'time';
+    /* 起訖兩格的自訂佔位（例：「開始」「結束」）放在日期那格；時間格用預設「選擇時間」。 */
+    ['data-ph-key', 'data-ph'].forEach(function (a) { if (carrier.hasAttribute(a)) d.setAttribute(a, carrier.getAttribute(a)); });
+    var al = carrier.getAttribute('aria-label');
+    if (al) { d.setAttribute('aria-label', al); t.setAttribute('aria-label', al); }
+
+    carrier.parentNode.insertBefore(pair, carrier);
+    pair.appendChild(d);
+    pair.appendChild(t);
+    pair.appendChild(carrier);
+    carrier.type = 'hidden';
+    carrier.__dtPair = { pair: pair, date: d, time: t };
+
+    var wraps = [enhance(d), enhance(t)];
+
+    function paint(v) {
+      var m = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}))?/.exec(v || '');
+      d.value = m ? m[1] : '';
+      t.value = m && m[2] ? m[2] : '';
+      wraps.forEach(function (w, i) { if (w) syncEmpty(w, i ? t : d); });
+    }
+
+    Object.defineProperty(carrier, 'value', {
+      configurable: true,
+      get: function () { return NATIVE_VALUE.get.call(carrier); },
+      set: function (v) {
+        var s = v == null ? '' : String(v);
+        NATIVE_VALUE.set.call(carrier, s);
+        paint(s);
+      }
+    });
+
+    function commit(e) {
+      e.stopPropagation();   /* 頁面只看得到載體發出的事件，跟改版前一樣 */
+      var dv = d.value, tv = t.value;
+      NATIVE_VALUE.set.call(carrier, dv ? dv + 'T' + (tv || '00:00') : '');
+      carrier.dispatchEvent(new Event(e.type, { bubbles: true }));
+    }
+    [d, t].forEach(function (c) {
+      c.addEventListener('input', commit);
+      c.addEventListener('change', commit);
+    });
+
+    function mirror() {
+      MIRROR_ATTRS.forEach(function (a) {
+        var on = carrier.hasAttribute(a);
+        [d, t].forEach(function (c) {
+          if (on) c.setAttribute(a, carrier.getAttribute(a)); else c.removeAttribute(a);
+        });
+      });
+      pair.hidden = carrier.hasAttribute('hidden');
+    }
+    mirror();
+    if (window.MutationObserver) {
+      new MutationObserver(mirror).observe(carrier, { attributes: true, attributeFilter: MIRROR_ATTRS.concat('hidden') });
+    }
+
+    carrier.focus = function (o) { d.focus(o); };
+    carrier.scrollIntoView = function (o) { pair.scrollIntoView(o); };
+
+    paint(initial);
+    return wraps.filter(Boolean);
+  }
+
   function mount(scope) {
     var root = scope || document;
     var added = [];
     root.querySelectorAll(SELECTOR).forEach(function (input) {
+      if ((input.getAttribute('type') || '').toLowerCase() === 'datetime-local') {
+        added = added.concat(splitDateTime(input));
+        return;
+      }
       var wrap = enhance(input);
       if (wrap) added.push(wrap);
     });

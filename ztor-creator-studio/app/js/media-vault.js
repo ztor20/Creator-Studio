@@ -870,14 +870,14 @@
     } else {
       /* 已解鎖人數（F3，D497）：格內常駐「N 位粉絲・佔全部 M 位的 X%」；標題依狀態。
          四分級「已／總」改成滑過或 focus 這一格才浮出的提示（D505，使用者裁決 2026-11-02：次要資訊不常駐），
-         沿用站上的 .stock-tip--anchored（與商店設定優惠碼「範圍」欄同一顆貼格浮卡）。
+         沿用站上的 .tip--anchored（與商店設定優惠碼「範圍」欄同一顆貼格浮卡）。
          四級的「已」加起來一定等於 N（同一份母體逐級算，見 vault-store reachInTierAll）。 */
       var N = V.reachAll(f), M = V.totalFans;
       v1 = num(N) + '<span class="vault-bento__of"> ' + esc(L("vault.ov.unlocked.unit")) + "</span>";
       l1 = L(listed ? "vault.ov.unlocked" : "vault.ov.unlocked.trial");
       s1 = L("vault.ov.unlocked.of", { m: num(M), p: M ? Math.round(N / M * 100) : 0 });
-      extra = '<div class="stock-tip__pop" role="tooltip" id="vault-tier-tip">' + V.tiers.map(function (t) {
-        return '<div class="stock-tip__row"><span class="stock-tip__name">' + esc(tierName(t.key)) + '</span><span class="stock-tip__qty">' + num(V.reachInTierAll(f, t.key)) + "/" + num(t.count) + "</span></div>";
+      extra = '<div class="tip__card" role="tooltip" id="vault-tier-tip">' + V.tiers.map(function (t) {
+        return '<div class="tip__row"><span class="tip__name">' + esc(tierName(t.key)) + '</span><span class="tip__qty">' + num(V.reachInTierAll(f, t.key)) + "/" + num(t.count) + "</span></div>";
       }).join("") + "</div>";
       /* 查看／播放（D506，使用者裁決 2026-11-02：次要資訊不常駐）：原本成效格下面那張常駐卡，改成點這一格開彈窗。
          掛在第一格是因為每件的百分比分母就是這格的已解鎖人數；滑過仍是上面的分級提示，點擊才開彈窗，兩者並存。
@@ -885,7 +885,7 @@
       plays = true;
     }
     function tile(feat, val, label, sub, more, open) {
-      var cls = "vault-bento__tile" + (more ? " stock-tip stock-tip--anchored stock-tip--follow" : "") + (open ? " vault-bento__tile--open" : "");
+      var cls = "vault-bento__tile" + (more ? " tip--card tip--anchored tip--follow" : "") + (open ? " vault-bento__tile--open" : "");
       var attrs = (more ? ' tabindex="0" aria-describedby="vault-tier-tip"' : "") +
         (open ? ' role="button" aria-haspopup="dialog" data-vault-plays-open' : "");
       return '<div class="' + cls + '"' + attrs + ' data-feat="' + feat + '"><div class="vault-bento__v">' + val + '</div><div class="vault-bento__l">' + esc(label) +
@@ -895,7 +895,7 @@
     els.bento.innerHTML = tile("S93", v1, l1, s1, extra, plays) +
       tile("S114", num(u.ever), L("vault.ov.unlock.ever"), L("vault.bento.ever.s")) +
       tile("S114", num(u.now), L(listed ? "vault.ov.unlock.now" : "vault.ov.unlock.now.trial"), L("vault.bento.now.s"));
-    els.bento.querySelectorAll(".stock-tip").forEach(wireTip);
+    els.bento.querySelectorAll(".tip--card").forEach(wireTip);
     var go = els.bento.querySelector("[data-vault-plays-open]");
     if (go) {
       go.addEventListener("click", function () { openPlays(f); });
@@ -906,11 +906,11 @@
   }
 
   /* 成效格的滑過提示：滑鼠移入、鍵盤 focus（觸控點一下也會 focus）時打開，移出、失焦或按 Esc 收起。
-     開向照商店設定那顆：觸發格在視窗下半就往上開（.stock-tip--up）。 */
+     開向照商店設定那顆：觸發格在視窗下半就往上開（.tip--up）。 */
   /* 提示出現在滑鼠停留的位置（游標右下方 14／18px），靠右或靠下放不下就翻到另一側；座標相對觸發格，所以格子上浮也不會錯位。
-     鍵盤聚焦沒有游標：清掉座標，退回貼著格子的位置（.stock-tip--anchored，開向看格子在視窗上半或下半）。 */
+     鍵盤聚焦沒有游標：清掉座標，退回貼著格子的位置（.tip--anchored，開向看格子在視窗上半或下半）。 */
   function wireTip(trigger) {
-    var pop = trigger.querySelector(".stock-tip__pop");
+    var pop = trigger.querySelector(".tip__card");
     function place(e) {
       var r = trigger.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
       var x = e.clientX + 14 + w > window.innerWidth - 8 ? e.clientX - w - 14 : e.clientX + 14;
@@ -921,12 +921,12 @@
     }
     function open(e) {
       if (e && e.clientX != null && e.type !== "focusin") {
-        trigger.classList.remove("stock-tip--up");
+        trigger.classList.remove("tip--up");
         place(e);
       } else {
         if (trigger.matches(":hover")) return;
         pop.style.left = pop.style.top = pop.style.bottom = "";
-        trigger.classList.toggle("stock-tip--up", trigger.getBoundingClientRect().top > window.innerHeight / 2);
+        trigger.classList.toggle("tip--up", trigger.getBoundingClientRect().top > window.innerHeight / 2);
       }
       trigger.classList.add("is-open");
     }
@@ -1209,7 +1209,7 @@
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.gate);
   }
 
-  /* 檢視身分那一列（F6，D477）：分頁內容最上面一條 Alert row。
+  /* 檢視身分那一列（F6，D477）：分頁內容最上面一條 Info banner（Q159，原 Alert row）。
        分級：這一級裡有幾人打得開（原本在總覽讀數卡底下的那一行，搬上來對三個分頁都有效）
        一位粉絲且進得了：他靠哪種方法或哪把鑰匙進來（可能不只一種）
        草稿／已下架：多一句「粉絲看不到；以下是上架後的樣子」
@@ -1573,12 +1573,14 @@
     /* — 剛產生的那一把：連結 ＋ 收尾動作 — */
     if (share.created) {
       var k = share.created;
-      out += '<div class="vshare__link">' +
-        '<input class="input" type="text" readonly value="' + esc(V.keyUrl(k.code)) + '" ' +
+      /* 系統值收成 .linkf（2026-11-09，輸入欄位普查 3.6）：原 .vshare__link／.vshare__copy 退場，
+         複製與「已複製」回饋交給 js/link-field.js（data-linkf 契約）。 */
+      out += '<div class="linkf" data-linkf><div class="linkf__row">' +
+        '<input class="input linkf__input" type="text" readonly value="' + esc(V.keyUrl(k.code)) + '" ' +
         'aria-label="' + esc(tx("Key link", "鑰匙連結")) + '" data-vshare-url>' +
-        '<button class="btn btn--primary vshare__copy" type="button" data-vshare-copy="' + esc(V.keyUrl(k.code)) + '">' +
+        '<button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy>' +
           icon("copy") + '<span>' + tx("Copy", "複製") + "</span></button>" +
-      "</div>";
+      "</div></div>";
       if (k.product || share.intent === "nfc") {
         out += '<a class="btn btn--outline" href="create-product.html?vaultkey=' + encodeURIComponent(k.code) +
           "&vault=" + encodeURIComponent(f.id) + '">' + icon("shopping-bag") +
@@ -2211,8 +2213,7 @@
         return;
       }
 
-      var copy = e.target.closest("[data-vshare-copy]");
-      if (copy) { copyLink(copy.getAttribute("data-vshare-copy"), copy); return; }
+      /* 墓碑 2026-11-09：[data-vshare-copy] 委派退場——剛產生的鑰匙連結改 .linkf，複製由 js/link-field.js 處理。 */
 
       var rowCopy = e.target.closest("[data-vkey-copy]");
       if (rowCopy) {
@@ -2367,8 +2368,8 @@
     els.wiz       = document.querySelector("[data-vault-wiz]");
     /* 檢視身分那一列與指定一位粉絲（F6，D477）。 */
     els.viewAs    = els.main.querySelector("[data-vault-viewas]");
-    els.viewAsTitle = els.viewAs && els.viewAs.querySelector(".alert__title");
-    els.viewAsDesc  = els.viewAs && els.viewAs.querySelector(".alert__desc");
+    els.viewAsTitle = els.viewAs && els.viewAs.querySelector(".info-banner__title");
+    els.viewAsDesc  = els.viewAs && els.viewAs.querySelector(".info-banner__desc");
     els.person    = document.querySelector("[data-vault-person]");
     els.personInput = els.person && els.person.querySelector("input");
     els.personResults = els.person && els.person.querySelector(".owner-lookup__results");

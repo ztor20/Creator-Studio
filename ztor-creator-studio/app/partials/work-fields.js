@@ -222,7 +222,7 @@
     }
     function add() {
       var card = document.createElement('div');
-      card.className = 'card card--muted' + (wrap.children.length ? ' mt-16' : '');
+      card.className = 'control-group control-group--plain' + (wrap.children.length ? ' mt-16' : '');
       card.setAttribute('data-pw-sub', '');
       card.innerHTML =
         '<div class="card__head">'
@@ -360,7 +360,7 @@
     }
     function add() {
       var card = document.createElement('div');
-      card.className = 'card card--muted' + (wrap.children.length ? ' mt-16' : '');
+      card.className = 'control-group control-group--plain' + (wrap.children.length ? ' mt-16' : '');
       card.setAttribute('data-pw-bts-card', '');
       card.innerHTML =
         '<div class="card__head">'
@@ -425,11 +425,13 @@
         正確結果（原型層屬呈現假設，見 ASSUMPTIONS.md）。opts.lsField 曾是 D220 的
         接線旗標（替 Title/Synopsis 掛 data-ls-field 給頁級 partials/lang-switch.js
         接手），D223 撤除 lang-switch.js 之後一併退場，publish-work.html 已不再傳。 */
+  /* Q161（2026-11-09 使用者裁決，照 Q71）：表單段裡的第 2 層用線框 .control-group--plain，不再用填色 .card--muted
+     （本檔四處子盒：分集、幕後花絮、名稱與簡介、畫質版本）。 */
   function renderCopy(host, opts) {
     opts = opts || {};
     var s = section(host, 'pw.info.copy.title', 'Name & synopsis', 'pw.info.copy.sub', 'Fans see the version matching their app language.');
     s.insertAdjacentHTML('beforeend',
-      '<div class="card card--muted" data-pw-copy>'
+      '<div class="control-group control-group--plain" data-pw-copy>'
       + '<div class="field">'
       + '<label class="field__label" for="pw-title" data-i18n="pw.info.title">' + esc(T('pw.info.title', 'Title')) + '</label>'
       + '<input class="input" id="pw-title" data-pw-title placeholder="' + esc(T('cpp.s1.title.ph', 'A name fans will remember')) + '" data-i18n-placeholder="cpp.s1.title.ph">'
@@ -549,7 +551,7 @@
       field.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
       tags.forEach(function (t, i) {
         var chip = document.createElement('span');
-        chip.className = 'chip chip--active chip--removable';
+        chip.className = 'chip chip--value chip--removable';
         chip.innerHTML = '<span>' + esc(t) + '</span><button class="chip__remove" type="button" data-tag-remove="' + i + '" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
         field.insertBefore(chip, entry);
       });
@@ -628,10 +630,8 @@
       if (e.key !== ' ' && e.key !== 'Enter') return;
       e.preventDefault(); paid.classList.toggle('switch--on'); togglePaid();
     });
-    function sym() {
-      var C = window.ztorCurrency;
-      return C ? C.symbol(curWrap.value) : curWrap.value;
-    }
+    /* Q147（2026-11-09）：租借價前綴寫幣別代碼（就是幣別欄選的值），不再轉成符號。 */
+    function sym() { return curWrap.value; }
     curWrap.addEventListener('change', function () {
       s.querySelectorAll('[data-pw-cur-sym]').forEach(function (x) { x.textContent = sym(); });
       emit();
@@ -643,14 +643,14 @@
     function syncAdd() { addBtn.disabled = QUALITY_PRESETS.every(function (q) { return usedQ().indexOf(q) >= 0; }); }
     function addQuality(name) {
       var card = document.createElement('div');
-      card.className = 'card card--muted mt-16';
+      card.className = 'control-group control-group--plain mt-16';
       card.setAttribute('data-pw-quality', name);
       card.innerHTML =
         '<div class="card__head"><h3 class="card__title">' + esc(name) + '</h3>'
         + '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-quality aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button></div>'
         + '<div class="form-grid">'
         + '<div class="field"><div class="field__label" data-i18n="pw.price.rent">' + esc(T('pw.price.rent', 'Rental price')) + '</div>'
-        + '<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym" data-pw-cur-sym>' + sym() + '</span></span>'
+        + '<span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit" data-pw-cur-sym>' + esc(sym()) + '</span>'
         + '<input class="input amount-field__input" inputmode="numeric" placeholder="38"></span></div>'
         + '<div class="field"><div class="field__label" data-i18n="pw.price.popcorn">' + esc(T('pw.price.popcorn', 'Popcorn kernels')) + '</div>'
         + '<input class="input" inputmode="numeric" placeholder="580"></div>'

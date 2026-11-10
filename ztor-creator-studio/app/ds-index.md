@@ -7,7 +7,7 @@
 > 本檔是設計系統的**速查版**（Pillar 5、4、1）；要修改時先讀入口 `design-system.md`（Do / Don't＋對照表），
 > 再照對照表讀完整版（`ds-pillars/`）或元件列尾的 `ds-specs/` 規格檔；人看的是 `design-system.html`。只列亮色值，暗色屬 Pillar 3。
 
-## Pillar 5 速查 · Pattern（拼畫面與流程的做法，共 14 種）
+## Pillar 5 速查 · Pattern（拼畫面與流程的做法，共 19 種）
 
 - 5.1.1 Dashboard home（Layout） ｜ 什麼時候用：The landing surface after login — the creator needs a one-glance read of money, alerts, and what to do next. ｜ 展示頁 `design-system-pattern.html#pattern-dashboard`
 - 5.1.2 Tabbed section view（Layout） ｜ 什麼時候用：One entity has parallel sub-views of the same dataset (Earnings: Overview / Transactions / Payouts / Tax · E-… ｜ 展示頁 `design-system-pattern.html#pattern-tabbed`
@@ -23,6 +23,11 @@
 - 5.1.12 Export confirm（Interaction） ｜ 什麼時候用：創作者已篩好一份清單、要把它拿成檔案——訂單管理、活動交易明細。檔案照目前的篩選結果，所以下載前先講會有幾筆。 ｜ 展示頁 `design-system-pattern.html#pattern-export-confirm`
 - 5.1.13 Pre-publish preview（Workflow） ｜ 什麼時候用：要對粉絲公開的東西（活動、商品、組合包、專案、作品）建立或改完、送出之前，讓創作者看一次粉絲端長什麼樣，順便檢查各語系的內容；發布後回頭改語系或內容時也用同一個畫面。 ｜ 展示頁 `design-system-pattern.html#pattern-prepublish`
 - 5.1.14 Drawer types 抽屜類型（Interaction） ｜ 什麼時候用：從側邊或底部滑出、不離開目前頁面的面板。 ｜ 展示頁 `design-system-pattern.html#pattern-drawer`
+- 5.1.15 List types 清單類型（Interaction） ｜ 什麼時候用：頁面上要列出一筆以上同類資料的地方——管理清單、歷史紀錄、報表、排行、屬性摘要、算式、表單裡的可增刪集合、檢查清單。 ｜ 展示頁 `design-system-pattern.html#pattern-list-types`
+- 5.1.16 Card types 卡片類型（Layout） ｜ 什麼時候用：頁面上任何「一塊有外框或底色、自成一區」的內容。 ｜ 展示頁 `design-system-pattern.html#pattern-card-types`
+- 5.1.17 Input types 輸入類型（Workflow） ｜ 什麼時候用：任何要使用者填值的欄位——建立流程、詳情頁編輯、設定、彈窗表單。 ｜ 展示頁 `design-system-pattern.html#pattern-input-types`
+- 5.1.18 Selection types 選擇控件類型（Interaction） ｜ 什麼時候用：使用者從幾個選項裡選、開關一件事、切換看法或篩選清單的地方。 ｜ 展示頁 `design-system-pattern.html#pattern-selection-types`
+- 5.1.19 Status types 狀態標記類型（Interaction） ｜ 什麼時候用：畫面上告訴使用者「這件東西現在怎樣、這格的值從哪來、還剩多少、有什麼要注意」的標記與訊息。 ｜ 展示頁 `design-system-pattern.html#pattern-status-types`
 
 ### 其他通則（文案、狀態、資料視覺化、流程）
 
@@ -31,7 +36,7 @@
 - 5.4 Data Visualization
 - 5.5 Workflow patterns
 
-## Pillar 4 速查 · 元件（ds-components/，共 139 支；主 class 前 5 個 ｜ 用途 ｜ 規格檔）
+## Pillar 4 速查 · 元件（ds-components/，共 137 支；主 class 前 5 個 ｜ 用途 ｜ 規格檔）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Collapsible sections (chevron-rotate, height transition) ｜ 規格 `ds-specs/4.14-accordion.md`
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列 ｜ 規格 `ds-specs/admin-ip-bank-table.md`
@@ -60,7 +65,7 @@
 - `cond-list.css` — .cond-list, .cond-list__item, .cond-list__head, .cond-list__title, .cond-list__remove ｜ 「好幾種條件各加一次」的清單，從新增條件選單挑一種加入，加過的種類不再出現 ｜ 規格 `ds-specs/4.227-condition-list.md`
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ 一列式設定框，左邊放標籤與說明、右邊放開關、數字或按鈕 ｜ 規格 `ds-specs/4.29-payout-bank-picker-dialog.md`
 - `data-list.css` — .data-list, .data-list__row, .data-list__group-label, .data-list__row-main, .data-list__row--disabled ｜ 收入、交易、撥款與商品等清單用的資料列，一列一筆資料 ｜ 規格 `ds-specs/4.22-data-list.md`
-- `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ 為日期與時間欄位加上「選擇日期」佔位字的裝飾層 ｜ 規格 `ds-specs/date-input-placeholder.md`
+- `date-input.css` — .date-input, .date-input__icon, .date-input__ph, .date-input-pair, .rule-row ｜ 為日期與時間欄位加上「選擇日期」佔位字的裝飾層；日期時間欄執行期拆成「日期＋時間」兩格（`.date-input-pair`） ｜ 規格 `ds-specs/date-input-placeholder.md`
 - `date-range.css` — .date-range, .date-range__label, .date-range__field, .date-range__sep, .date-range__clear ｜ 清單篩選列上的日期區間欄，兩個日期欄並排、可只填一邊 ｜ 規格 `ds-specs/4.238-date-range.md`
 - `demand-focus.css` — .demand-focus, .demand-focus__head, .demand-focus__titles, .demand-focus__kicker, .demand-focus__title ｜ 選定市場後的常駐面板，顯示預測售罄天數與各尺寸計畫生產量 ｜ 規格 `ds-specs/4.226-demand-focus.md`
 - `demand-table.css` — .demand-table__bar, .demand-table__title, .product-list--demand, .demand-market, .demand-market__name ｜ 市場需求表，列出各市場的需求指數、建議與計畫生產量及差距 ｜ 規格 `ds-specs/4.225-demand-table.md`
@@ -87,15 +92,15 @@
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs__dot ｜ 主分頁下方的次級狀態篩選膠囊，附即時筆數 ｜ 規格 `ds-specs/filter-tabs.md`
 - `follow-field.css` — .follow-fields, .follow-field, .follow-field__head, .follow-field__txt, .follow-field__t ｜ 跟隨活動或另設時間的設定列，用於票務商品的上架、下架、開賣與停售 ｜ 規格 `ds-specs/4.223-follow-field.md`
 - `form-grid.css` — .form-grid, .form-grid--3, .form-grid__full ｜ 2 欄或 3 欄的表單欄位排版輔助，窄螢幕自動改單欄 ｜ 規格 `ds-specs/form-grid.md`
-- `form-section.css` — .form-section, .form-section--dense, .form-section--outlined, .form-section__actions, .form-section__head ｜ 建立流程中的表單區段，含標題、說明與分隔線，可用外框變體 ｜ 規格 `ds-specs/form-section.md`
+- `form-section.css` — .form-section, .form-section--dense, .form-section--outlined, .form-section__actions, .bento ｜ 建立流程中的表單區段，含標題、說明與分隔線，可用外框變體 ｜ 規格 `ds-specs/form-section.md`
 - `form-steps.css` — .form-steps ｜ 把同一張表單分成多步顯示，用於建立商品與建立組合包 ｜ 規格 `ds-specs/4.241-form-steps.md`
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ 所有頁面共用的 64px 頂部導覽列，含下拉選單與動作群 ｜ 規格 `ds-specs/4.20-header.md`
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ 全站按鈕、導覽、提示與資料列共用的圖示集（Tabler） ｜ 規格 `ds-specs/4.9-icon.md`
-- `info-banner.css` — .info-banner, .info-banner__close, .info-banner--dismissible ｜ Contextual explanations (timing, region note, legal hint) ｜ 規格 `ds-specs/4.7-info-banner.md`
+- `info-banner.css` — .info-banner, .info-banner__text, .info-banner__title, .info-banner__desc, .info-banner__action ｜ Contextual explanations (timing, region note, legal hint) ｜ 規格 `ds-specs/4.7-info-banner.md`
 - `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Wizard fields, settings forms, search ｜ 規格 `ds-specs/4.8-input.md`
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ 圖表下單行自動洞察（無洞察隱藏） ｜ 規格 `ds-specs/4.22k-insight-row.md`
 - `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ 待辦事項面板：把「還等著創作者處理的事」整批攤開，依來源模組分組、一次展開一則 ｜ 規格 `ds-specs/issue-panel.md`
-- `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ 儀表板與收入頁的關鍵指標卡，以大字顯示單一數字 ｜ 規格 `ds-specs/4.12-kpi.md`
+- `kpi.css` — .kpi, .kpi__label, .kpi__value, .kpi__delta, .kpi__value-row ｜ 儀表板與收入頁的關鍵指標卡，以大字顯示單一數字；只放頁面層，卡裡的數字用 Stat row（Q162） ｜ 規格 `ds-specs/4.12-kpi.md`
 - `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__sub, .kv__sub--over ｜ 唯讀鍵值列（鍵左值右、逐列 hairline；2026-11-09 Fact list 併入，Q140）：詳情頁 meta 卡、狀態摘要 ｜ 規格 `ds-specs/4.50-kv-list.md`
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title ｜ 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用 ｜ 規格 `ds-specs/leave-dialog.md`
 - `limit-set.css` — .limit-set, .limit-set__head, .limit-set__sub, .limit-set__act, .limit-set__fields ｜ 限購：一欄＋一句輔助說明、只換單位（件／組／張） ｜ 規格 `ds-specs/4.234-limit-set.md`
@@ -104,7 +109,7 @@
 - `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar--filters, .list-toolbar__filters, .list-toolbar__filter ｜ 清單頁頭的工作列，左放主軸分頁、右放動作按鈕群 ｜ 規格 `ds-specs/4.90-list-toolbar.md`
 - `listing-controls.css` — .lctl, .lctl__row, .lctl--locked, .lctl__row--locked, .lctl__lock-note ｜ 上架、顯示於商店與開賣三個獨立開關並列的設定區塊 ｜ 規格 `ds-specs/4.205-listing-controls.md`
 - `lock-sets.css` — .lockset__sets, .lockset__sets-titles, .lockset__sets-title, .lockset__sets-hint, .lockset__sets-ctl ｜ 組合包鎖定套數區，設定鎖定幾套並逐項檢視各商品庫存分配 ｜ 規格 `ds-specs/4.210-lock-sets.md`
-- `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label ｜ 群發撰寫 modal（Compose＋History） ｜ 規格 `ds-specs/4.22m-message-composer.md`、`ds-specs/4.22o-token-chip.md`
+- `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-schedule-when, .msg-tokens ｜ 群發撰寫 modal（Compose＋History） ｜ 規格 `ds-specs/4.22m-message-composer.md`、`ds-specs/4.22o-token-chip.md`
 - `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ 逐項水位清單（名稱 → 量條 → 數字，三欄一線） ｜ 規格 `ds-specs/meter-list.md`
 - `nest.css` — .nest, .form-section--outlined ｜ 嵌在卡片底緣的滿版子層（左右下三邊切齊母卡外緣），用於「切換模式後長出一整組設定」 ｜ 規格 `ds-specs/4.53-nest.md`
 - `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__flag ｜ 依顯示名稱、帳號或 email 搜尋平台使用者，結果是連結帳號或待邀請的 email ｜ 規格 `ds-specs/4.??-owner-lookup.md`
@@ -150,19 +155,17 @@
 - `split-bar.css` — .split-bar, .split-bar__track, .split-bar__seg, .split-bar__legend, .split-bar__row ｜ 一個總數＋它的組成：分段長條與圖例 ｜ 規格 `ds-specs/split-bar.md`
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ 主操作加箭頭下拉相關動作的按鈕 ｜ 規格 `ds-specs/4.2-button.md`
 - `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ 區塊之間垂直間距的唯一規則：間距由容器承擔（`gap`），子元素不各自加 margin ｜ 規格 `ds-specs/stack.md`
-- `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ 卡內大數字排（取代把 `.kpi` 塞進卡片） ｜ 規格 `ds-specs/4.22h1-stat-row-meter-list-day-bars.md`
+- `stat-row.css` — .stat-row, .stat, .stat-row--even, .stat__label, .stat__value ｜ 卡內大數字排（取代把 `.kpi` 塞進卡片；Q162 起卡、hero、表單段裡的數字一律用它；`--even` 等寬欄） ｜ 規格 `ds-specs/4.22h1-stat-row-meter-list-day-bars.md`
 - `state-check.css` — .state-checks, .state-check, .state-check--on, .state-check__mark, .state-checks--stack ｜ 唯讀的開關狀態排，以圓形勾選標記顯示各項目的開或關 ｜ 規格 `ds-specs/4.209-state-check.md`
 - `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ 數字輸入框的上下增減鈕，取代原生 spin button ｜ 規格 `ds-specs/4.105-numeric-stepper.md`
 - `sticky-actions.css` — .sticky-actions, .sticky-actions__inner, .main ｜ 頂部 CTA 捲出畫面後在底部浮現複製版動作列；全站消費最廣的元件之一（15 頁）。詳見 §4.106 ｜ 規格 `ds-specs/4.106-sticky-actions.md`
 - `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ 5px 細長量條（庫存水位／用量比例），必與精確數字並列 ｜ 規格 `ds-specs/4.51-stock-bar.md`
 - `stock-history.css` — .shist__date, .shist__type, .shist__end, .shist__delta, .shist__child ｜ 庫存歷史紀錄，每筆補貨或鎖定一列，可展開看逐組合明細 ｜ 規格 `ds-specs/4.208-stock-history.md`
-- `stock-tip.css` — .stock-tip, .stock-tip__pop, .stock-tip__row, .stock-tip__name, .stock-tip__qty ｜ 圖示旁的說明提示（`.tip`，shared.css）；資訊卡型變體＝清單儲存格 hover 浮出的 Stock tip ｜ 規格 `ds-specs/tooltip.md`
 - `switch.css` — .switch, .switch--on, .switch--locked ｜ 設定頁通知、商店顯示、自動撥款等二選一開關的切換控件 ｜ 規格 `ds-specs/4.6-switch.md`
 - `table.css` — .ztor-table, .ztor-table-scroll, .card, .ztor-table__feature, .fee-tree__panel ｜ Earnings transactions 9-col table ｜ 規格 `ds-specs/4.23-table.md`
 - `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--count-plain ｜ 頁面內切換檢視的分頁籤，用於收入、商品類型與專案狀態 ｜ 規格 `ds-specs/4.15-tabs.md`
 - `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ 商品標籤輸入欄，已選標籤以 chip 呈現並提供建議標籤 ｜ 規格 `ds-specs/tag-input.md`
 - `ticket-tier-card.css` — .tier-grid, .tier-list, .tier-toolbar, .tier-toolbar__actions, .tier-add ｜ 建立活動時的票種卡，可收合檢視價格與數量，展開後編輯 ｜ 規格 `ds-specs/4.114-ticket-tier-card.md`
-- `tier-overview.css` — .tier-ov, .tier-ov--compact, .tier-ov__head, .tier-ov__row, .tier-ov__rowlabel ｜ 權益比較矩陣：一份權益目錄（列）× 四個粉絲分級（欄），取代舊版四張獨立分級卡。詳見 §4.93 ｜ 規格 `ds-specs/4.93-benefit-matrix.md`
 - `toast.css` — .ztor-toasts, .ztor-toast, .ztor-toast__icon, .ztor-toast--error, .ztor-toast__text ｜ 畫面底部中央的短暫確認提示（由下往上滑入）＋「未儲存/已儲存」狀態列（`.save-status`） ｜ 規格 `ds-specs/4.107-toast.md`
 - `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--slim, .upload-tile--video ｜ Create-flow upload slots（hero／thumbs／file drop，Add new item） ｜ 規格 `ds-specs/4.7b-upload-tile.md`
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ 建立商品多選項（spec 5.1.5.2 §4.1④，僅實體） ｜ 規格 `ds-specs/variant-builder.md`
@@ -221,7 +224,7 @@
 - `vault-stage.css` — .vault-bar, .vault-bar__title, .vault-bar__sched, .vault-bar__name, .vault-bar__nameinput ｜ 媒體庫主欄：庫房標頭、成效三格、灰底容器內固定三欄的直式內容卡片與「添加」卡。詳見 §4.246 ｜ 規格 `ds-specs/4.246-vault-stage.md` ｜ 只在 媒體庫（media-vault.html、media-vault-popup.html）
 - `vault-task.css` — .vault-tag, .vault-tag__text, .vault-tag--media, .vault-tag--plain, .vault-task ｜ 媒體庫每件內容的任務小標與單件抽屜的任務設定區 ｜ 規格 `ds-specs/4.229-vault-item-task.md` ｜ 只在 媒體庫（media-vault.html、media-vault-popup.html）
 
-### 沒有獨立 CSS 的元件（共 19 支：寫在 shared.css、純 JS 或頁級技法；從總表抄）
+### 沒有獨立 CSS 的元件（共 20 支：寫在 shared.css、純 JS 或頁級技法；從總表抄）
 
 - Global nav · sidebar mode — 位置 shared.css · sidebar.js ｜ 取代頂部導覽的 248px 左側導覽列，下拉選單改為可展開群組 ｜ 規格 `ds-specs/global-nav-sidebar-mode.md`
 - Admin-layer nav · Tier 0/1 — 位置 shared.css · sidebar.js ｜ 平台管理端的頂部導覽，標示創作者管理並鎖定第一層項目 ｜ 規格 `ds-specs/admin-layer-nav-tier-0-1.md`
@@ -242,6 +245,7 @@
 - IP market card cover — 位置 shared.css ｜ IP 市集上架卡的封面，無圖時顯示品牌漸層佔位與 IP 名 ｜ 規格 `ds-specs/ip-market-card-cover.md`
 - Rental card — 位置 shared.css ｜ Rental / bidding terms and CTA card ｜ 規格 `ds-specs/rental-card.md`
 - Meta cell — 位置 shared.css ｜ Compact label/value stack in dense commercial panels ｜ 規格 `ds-specs/meta-cell.md`
+- Tooltip — 位置 shared.css ｜ 圖示旁的說明提示（`.tip`，shared.css）；資訊卡型變體 `.tip--card`＝清單儲存格 hover 浮出的明細卡（Q172，原 Stock… ｜ 規格 `ds-specs/tooltip.md`
 
 ### 資料與行為模組（共 4 支：不是元件，沒有外觀，畫面從它們讀值；見附錄 C）
 

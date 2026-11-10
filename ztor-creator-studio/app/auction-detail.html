@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
@@ -26,7 +27,8 @@
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
@@ -36,6 +38,7 @@
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 共用確認／告知彈窗 ztorDialog 的外殼 -->
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2"><!-- Q170：出價活動空狀態 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* auction-detail · 競標進程／出價活動／拍賣資訊（spec 5.1.5.8）。出價數字為示意；2026-09-18 起狀態、三開關與封存走 ListingState（D285／D284）。
@@ -145,11 +148,11 @@
             <h3 class="form-section__title" data-i18n="ad.stats.title">Bidding stats</h3>
             <p class="form-section__sub" data-i18n="ad.stats.sub">Live figures from the bidding engine; not editable here.</p>
           </div>
-          <div class="bento" style="gap:var(--sp-10)">
-            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.current">Current bid</div><div class="kpi__value" style="font-size: var(--fs-22)" data-ad-topbid-text>$385</div></div>
-            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.bids">Bids</div><div class="kpi__value" style="font-size: var(--fs-22)" data-ad-bids-count>18</div></div>
-            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.bidders">Bidders</div><div class="kpi__value" style="font-size: var(--fs-22)" data-ad-bidders-count>9</div></div>
-            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.timeleft">Time left</div><div class="kpi__value" style="font-size: var(--fs-22)">2d 4h</div></div>
+          <div class="stat-row">
+            <div class="stat"><div class="stat__label" data-i18n="ad.stat.current">Current bid</div><div class="stat__value" data-ad-topbid-text>$385</div></div>
+            <div class="stat"><div class="stat__label" data-i18n="ad.stat.bids">Bids</div><div class="stat__value" data-ad-bids-count>18</div></div>
+            <div class="stat"><div class="stat__label" data-i18n="ad.stat.bidders">Bidders</div><div class="stat__value" data-ad-bidders-count>9</div></div>
+            <div class="stat"><div class="stat__label" data-i18n="ad.stat.timeleft">Time left</div><div class="stat__value">2d 4h</div></div>
           </div>
         </section>
 
@@ -179,7 +182,7 @@
             <p class="form-section__sub" data-i18n="ad.tags.sub">Editable until bidding opens.</p>
           </div>
           <div class="field" style="margin-bottom:0">
-            <div class="field__label"><span data-i18n="cp.tags">Product tags</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+            <div class="field__label"><span data-i18n="cp.tags">Product tags</span></div>
             <div class="field__hint" style="margin-bottom:var(--sp-8)" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</div>
             <div class="tag-input" id="ad-tags">
               <div class="tag-input__field" id="ad-tags-field">
@@ -213,22 +216,25 @@
             <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-bid-val="all" data-i18n="ad.bids.all">All</button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-bid-val="open" data-i18n="ad.bids.open">Open</button>
           </nav>
-          <div class="data-list">
-            <div class="data-list__row">
+          <!-- Q169（2026-11-09）：篩選要真的改變清單。每列標 data-bid-state（open＝仍是最高、未被超越；outbid＝已被超越），
+               「Open」只留 open 列。Open 的口徑規格寫「產品待確認」（5.1.5.8 §2.6），這裡取「未被超越」當呈現假設。
+               Q170：沒有出價時顯示空狀態（規格 §2.6 空狀態「尚無出價」）。 -->
+          <div class="data-list" data-ad-bid-list>
+            <div class="data-list__row" data-bid-state="open">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
                 <div class="data-list__body"><div class="data-list__title">yuki_stan <span class="badge badge--success" style="margin-left:4px" data-i18n="ad.bids.highest">New highest</span></div><div class="data-list__meta" data-i18n="ad.bids.time1">2h ago</div></div>
               </div>
               <span style="font-size: var(--fs-13)">$385</span>
             </div>
-            <div class="data-list__row">
+            <div class="data-list__row" data-bid-state="outbid">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
                 <div class="data-list__body"><div class="data-list__title">mar.co</div><div class="data-list__meta" data-i18n="ad.bids.time2">5h ago</div></div>
               </div>
               <span style="font-size: var(--fs-13)">$360</span>
             </div>
-            <div class="data-list__row">
+            <div class="data-list__row" data-bid-state="outbid">
               <div class="data-list__row-main">
                 <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
                 <div class="data-list__body"><div class="data-list__title">devon.w</div><div class="data-list__meta" data-i18n="ad.bids.time3">8h ago</div></div>
@@ -236,7 +242,13 @@
               <span style="font-size: var(--fs-13)">$330</span>
             </div>
           </div>
-          <a class="card__link" href="#" style="display:inline-block;margin-top:10px;font-size: var(--fs-13)" data-ad-bids-viewall>View all 18 bids</a>
+          <div class="empty-card" data-ad-bids-empty hidden>
+            <span class="empty-card__icon"><i data-lucide="gavel" class="ztor-icon"></i></span>
+            <h4 class="empty-card__title" data-i18n="ad.bids.empty">No bids yet</h4>
+            <p class="empty-card__text" data-i18n="ad.bids.empty.sub">Bids will show up here as they come in.</p>
+          </div>
+          <!-- 墓碑 2026-11-09（Q169）：「查看全部 N 筆出價」原本是 href="#" 的死連結（出價引擎不在原型範圍，
+               點了沒有任何作用），拿掉。出價次數已在 KPI（data-ad-bids-count）。規格 §2.6 的「查看全部」待有完整出價紀錄再做。 -->
           <div class="badge badge--success" style="margin-top:12px" data-ad-reserve-badge><span data-i18n="ad.bids.reserve">Reserve met</span></div>
         </section>
 
@@ -250,17 +262,18 @@
             <h3 class="form-section__title" data-i18n="ad.info.title">Auction info</h3>
             <p class="form-section__sub" data-i18n="ad.info.sub">Set when the auction was created; locked once bidding is live.</p>
           </div>
-          <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.status">Status</span></div><span class="badge badge--success" data-ad-badge-main><span data-i18n="e-shop.astatus.live">Live</span></span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.duration">Duration</span></div><span data-ad-duration data-i18n="ad.info.duration-v">7 days</span></div>
+          <!-- Q167（2026-11-09）：屬性摘要一律 kv（原本拿 data-list 當鍵值列，同頁右欄已是 kv）。 -->
+          <div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.status">Status</span><span class="kv__v"><span class="badge badge--success" data-ad-badge-main><span data-i18n="e-shop.astatus.live">Live</span></span></span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.duration">Duration</span><span class="kv__v" data-ad-duration data-i18n="ad.info.duration-v">7 days</span></div>
             <!-- 開始＝開賣日期與時間（對拍賣即開拍時間）、結束＝停售＝開拍＋時長，由 ListingState.auctionSaleEnd 算（§2.7，D285） -->
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.started">Started</span></div><span data-ad-start-text>Jun 10 2026</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.ends">Ends</span></div><span data-ad-end-text>Jun 17 2026</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.sealed">Sealed final round</span></div><span data-i18n="ad.info.off">OFF</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.elig">Eligibility</span></div><span data-i18n="ad.tag.elig">Inner Circle</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.start">Starting price</span></div><span>$100</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.reserve">Reserve</span></div><span data-ad-reserve-text>$300</span></div>
-            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.fee">Platform fee</span></div><span data-i18n="ad.info.fee-v">Per platform rates · E-Shop › Auction</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.started">Started</span><span class="kv__v" data-ad-start-text>Jun 10 2026</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.ends">Ends</span><span class="kv__v" data-ad-end-text>Jun 17 2026</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.sealed">Sealed final round</span><span class="kv__v" data-i18n="ad.info.off">OFF</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.elig">Eligibility</span><span class="kv__v" data-i18n="ad.tag.elig">Inner Circle</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.start">Starting price</span><span class="kv__v">$100</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.reserve">Reserve</span><span class="kv__v" data-ad-reserve-text>$300</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="ad.info.fee">Platform fee</span><span class="kv__v" data-i18n="ad.info.fee-v">Per platform rates · E-Shop › Auction</span></div>
           </div>
         </section>
 
@@ -372,27 +385,18 @@
             <p class="lctl__lock-note" data-ad-started-note hidden data-i18n="ad.sale.started-lock">Bidding has started — start time and duration are locked.</p>
             <div class="lctl__row lctl__row--choice">
               <div class="lctl__body">
-                <div class="radio-list radio-list--collapsible" id="ad-start-mode">
-                  <button class="radio-list__trigger" type="button" aria-expanded="false">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
-                    <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                <!-- 2026-11-09 Q153：開拍時機一律 .radio-cards（原收合式 radio-list） -->
+                <div class="segmented radio-cards radio-cards--3" id="ad-start-mode" role="radiogroup">
+                  <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-ad-start="follow">
+                    <span class="radio-card__text"><span class="radio-card__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-card__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
                   </button>
-                  <div class="radio-list__options" hidden>
-                    <button class="radio-list__item radio-list__item--active" type="button" data-ad-start="follow">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
-                    </button>
-                    <button class="radio-list__item" type="button" data-ad-start="schedule">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Start at a set time</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Fans can see it earlier; bidding opens then</span></span>
-                    </button>
-                    <!-- 未開拍（2026-09-18 · D290）：下架後開拍退回這一項、重新上架後也停在這；只有細節頁有 -->
-                    <button class="radio-list__item" type="button" data-ad-start="off">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.off">Not started</span><span class="radio-list__sub" data-i18n="ca.start.off-sub">Bidding stays closed until you set a start</span></span>
-                    </button>
-                  </div>
+                  <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ad-start="schedule">
+                    <span class="radio-card__text"><span class="radio-card__title" data-i18n="ca.start.schedule">Start at a set time</span><span class="radio-card__sub" data-i18n="ca.start.schedule-sub">Fans can see it earlier; bidding opens then</span></span>
+                  </button>
+                  <!-- 未開拍（2026-09-18 · D290）：下架後開拍退回這一項、重新上架後也停在這；只有細節頁有 -->
+                  <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ad-start="off">
+                    <span class="radio-card__text"><span class="radio-card__title" data-i18n="ca.start.off">Not started</span><span class="radio-card__sub" data-i18n="ca.start.off-sub">Bidding stays closed until you set a start</span></span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -483,8 +487,11 @@
       if (gallery && auction.gallery) gallery.innerHTML = auction.gallery.map(file => '<img src="images/products/' + esc(file) + '" alt="">').join('');
     }
     const bf = document.querySelector('[data-ad-bidfilter]');
+    /* Q169：篩選真的過濾出價列（原本只換外觀）。Open＝data-bid-state="open" 的列。 */
     if (bf) bf.querySelectorAll('.filter-tabs__item').forEach(btn => btn.addEventListener('click', () => {
       bf.querySelectorAll('.filter-tabs__item').forEach(b => { const on = b === btn; b.classList.toggle('filter-tabs__item--active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      const val = btn.dataset.bidVal;
+      document.querySelectorAll('[data-ad-bid-list] [data-bid-state]').forEach(r => { r.hidden = val === 'open' && r.dataset.bidState !== 'open'; });
     }));
 
     const panel = document.getElementById('ad-preview');
@@ -588,6 +595,10 @@
          出價清單仍是三筆示意列（出價引擎不在原型範圍）。 */
       const nBids = L.auctionBidCount ? L.auctionBidCount(a) : (Number(a.bids) || 0);
       document.querySelectorAll('[data-ad-bids-count]').forEach(el => { el.textContent = nBids; });
+      /* Q170：沒有出價時，示意列與篩選收起、改顯示空狀態（規格 §2.6「尚無出價」）。 */
+      const noBids = nBids === 0;
+      document.querySelectorAll('[data-ad-bid-list], [data-ad-bidfilter]').forEach(el => { el.hidden = noBids; });
+      document.querySelectorAll('[data-ad-bids-empty]').forEach(el => { el.hidden = !noBids; });
       if (a.bidders !== undefined) document.querySelectorAll('[data-ad-bidders-count]').forEach(el => { el.textContent = Number(a.bidders) || 0; });
       document.querySelectorAll('[data-ad-bids-viewall]').forEach(el => { el.textContent = T('ad.bids.viewall', 'View all {n} bids').replace('{n}', nBids); });
       return flags;
@@ -646,9 +657,8 @@
       const sched = a.saleStart !== null && a.saleStart !== undefined;
       const mode = L.isOnSale(a) ? (sched ? 'schedule' : 'follow') : 'off';
       if (startMode) {
-        startMode.querySelectorAll('.radio-list__item').forEach(it => it.classList.toggle('radio-list__item--active', it.dataset.adStart === mode));
-        const trig = startMode.querySelector('.radio-list__trigger .radio-list__text'), src = startMode.querySelector('.radio-list__item--active .radio-list__text');
-        if (trig && src) trig.innerHTML = src.innerHTML;
+        /* 2026-11-09 Q153：radio-cards */
+        startMode.querySelectorAll('.segmented__btn').forEach(it => { const on = it.dataset.adStart === mode; it.classList.toggle('segmented__btn--active', on); it.setAttribute('aria-checked', String(on)); });
       }
       if (startField) startField.hidden = mode !== 'schedule';
       if (startInput) startInput.value = toLocal(a.saleStart);
@@ -679,7 +689,7 @@
       tagsField.querySelectorAll('.chip').forEach(c => c.remove());
       a.tags.forEach((t, i) => {
         const chip = document.createElement('span');
-        chip.className = 'chip chip--active chip--removable';
+        chip.className = 'chip chip--value chip--removable';
         chip.innerHTML = '<span>' + escT(t) + '</span><button class="chip__remove" type="button" data-tag-remove="' + i + '" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
         tagsField.insertBefore(chip, tagsEntry);
       });
@@ -775,8 +785,11 @@
     const lt = document.getElementById('ad-listing-time'); if (lt) lt.addEventListener('change', () => { a.listAt = lt.value || null; paintCards(); });
     const ut = document.getElementById('ad-unlist-time'); if (ut) ut.addEventListener('change', () => { a.unlistAt = ut.value || ''; paintCards(); });
     if (startInput) startInput.addEventListener('change', () => { a.saleStart = startInput.value || ''; paintCards(); });
-    if (startMode) startMode.addEventListener('radio-list:change', e => {
-      const pick = e.detail.item.dataset.adStart;
+    if (startMode) startMode.addEventListener('click', e => {
+      const btn = e.target.closest('.segmented__btn[data-ad-start]');
+      if (!btn || btn.disabled) return;
+      startMode.querySelectorAll('.segmented__btn').forEach(it => { const on = it === btn; it.classList.toggle('segmented__btn--active', on); it.setAttribute('aria-checked', String(on)); });
+      const pick = btn.dataset.adStart;
       const follow = pick === 'follow';
       /* D290：「未開拍」＝onSale=false、開拍時間清空；另外兩項都是開拍（onSale=true）。改完寫進工作階段。 */
       a.onSale = pick !== 'off';

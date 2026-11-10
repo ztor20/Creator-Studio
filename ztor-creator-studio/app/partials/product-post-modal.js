@@ -45,28 +45,29 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
       </div>
 
       <!-- D520：編輯已發送的貼文時才出現——只改標題與內文、不再通知、已寄出的 Email 不會變 -->
-      <div class="alert alert--row alert--info" role="status" data-npp-sent-note hidden>
-        <span class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></span>
-        <div class="alert__body">
-          <div class="alert__title" data-i18n="npp.sent.title">This post has already been sent</div>
-          <div class="alert__meta" data-i18n="npp.sent.text">Saving updates the post fans see in the app and marks it as edited. Fans won't be notified again, and Emails already sent won't change.</div>
-        </div>
+      <!-- Q159：這段是「存檔會發生什麼」的規則說明，不是完成回饋——用 info-banner（原 .alert--row.alert--info） -->
+      <div class="info-banner" role="note" data-npp-sent-note hidden>
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span class="info-banner__text">
+          <span class="info-banner__title" data-i18n="npp.sent.title">This post has already been sent</span>
+          <span class="info-banner__desc" data-i18n="npp.sent.text">Saving updates the post fans see in the app and marks it as edited. Fans won't be notified again, and Emails already sent won't change.</span>
+        </span>
       </div>
 
       <div class="msg-compose">
         <!-- F4 · Title (limit reused from 5.1.7.1 ≤120) -->
-        <div class="msg-field">
-          <div class="msg-field__label">
-            <span class="msg-field__label-text"><span data-i18n="npp.field.title">Post title</span><span class="msg-field__req" aria-hidden="true">*</span></span>
+        <div class="field">
+          <div class="field__label field__label--split">
+            <span><span data-i18n="npp.field.title">Post title</span> <span class="field__req" aria-hidden="true">*</span></span>
             <span class="field__counter" data-npp-title-count>0 / 120</span>
           </div>
           <input class="input" data-npp-title maxlength="120" placeholder="e.g., New drop just landed" data-i18n-placeholder="npp.title.ph">
         </div>
 
         <!-- F4 · Body (limit reused from 5.1.7.1 ≤2000) + personalization tokens -->
-        <div class="msg-field">
-          <div class="msg-field__label">
-            <span class="msg-field__label-text"><span data-i18n="npp.field.body">Post</span><span class="msg-field__req" aria-hidden="true">*</span></span>
+        <div class="field">
+          <div class="field__label field__label--split">
+            <span><span data-i18n="npp.field.body">Post</span> <span class="field__req" aria-hidden="true">*</span></span>
             <span class="field__counter" data-npp-body-count>0 / 2000</span>
           </div>
           <textarea class="textarea" data-npp-body maxlength="2000" rows="5" placeholder="Tell your fans what makes it special…" data-i18n-placeholder="npp.body.ph"></textarea>
@@ -78,10 +79,8 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
         </div>
 
         <!-- F3 · Audience (segments reused from 5.1.7.1) -->
-        <div class="msg-field" data-npp-audience-field>
-          <div class="msg-field__label">
-            <span class="msg-field__label-text"><span data-i18n="msg.to">To</span><span class="msg-field__req" aria-hidden="true">*</span></span>
-          </div>
+        <div class="field" data-npp-audience-field>
+          <div class="field__label"><span data-i18n="msg.to">To</span> <span class="field__req" aria-hidden="true">*</span></div>
           <select class="select" data-npp-to>
             <option value="all" data-i18n="msg.to.all">All fans (1,283)</option>
             <option value="inner" data-i18n="msg.to.inner">Inner Circle (13)</option>
@@ -94,7 +93,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
         </div>
 
         <!-- F5 · Timing & delivery (schedule + tz reused from 5.1.7.1) -->
-        <div class="msg-field" data-npp-timing-field>
+        <div class="field" data-npp-timing-field>
           <div class="msg-schedule">
             <div class="msg-schedule__label">
               <span class="msg-schedule__title" data-i18n="msg.schedule">Schedule for later</span>
@@ -103,14 +102,14 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
             <button class="switch" type="button" role="switch" aria-checked="false" data-npp-sched aria-label="Schedule for later" data-i18n-aria-label="msg.schedule"></button>
           </div>
           <div class="msg-schedule-when" data-npp-when hidden>
-            <div class="msg-field">
-              <span class="msg-field__label-text" data-i18n="msg.schedule.date">Date</span>
+            <label class="field">
+              <span class="field__label" data-i18n="msg.schedule.date">Date</span>
               <input class="input" type="date" data-npp-date>
-            </div>
-            <div class="msg-field">
-              <span class="msg-field__label-text" data-i18n="msg.schedule.time">Time</span>
+            </label>
+            <label class="field">
+              <span class="field__label" data-i18n="msg.schedule.time">Time</span>
               <input class="input" type="time" data-npp-time>
-            </div>
+            </label>
             <p class="msg-schedule-when__tz" data-i18n="msg.schedule.tz">Earliest is now + 15 min · account time zone</p>
           </div>
           <p class="msg-schedule-when__tz" data-i18n="npp.delivery">Fans are notified in-app and by Email per their preferences.</p>

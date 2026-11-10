@@ -15,6 +15,159 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-09（五百二十三）· 2026-11-10 · 五類收斂補齊：空狀態、死連結、rank-bars 退場、篩選與類型徽章、register-ip 修正、類型總卡與裁決狀態（B 反饋導入 · D infra／文件）
+
+**標籤**：release2.4
+
+- **空狀態補齊（Q170，照 5.1.4）**：
+  - `scanner.html` 項目清單：取貨商品或活動票券沒有品項時留一列說明（新文案 `sc.items.empty.goods`／`.tickets`）。
+  - `store-settings.html` 代理碼彈窗「這組碼賣掉的」：新增中的碼顯示「這組碼還沒有賣出…」，編輯既有碼才顯示示範紀錄（`store-settings.codes.record.empty`）。
+  - `project-detail.html` 收益明細表與授權明細表：Cheat Codes Empty 時保留表頭、表身一列說明（`pd-earn.ledger.empty`、`pd-roy.deal.empty`）；空狀態 tbody 放在資料 tbody 後面，`table-sort.js` 只排第一個 tbody。
+  - `shared.css`：`.when-empty` 用在表格列時維持 `display: table-row`（原本會變 block）。
+  - `js/project-earnings-chart.js` 收益明細彈窗：該期間該類收益為 0 時表身一列說明（`pd-earn.detail.empty`）。
+  - `earnings.html`、`earnings-ztor.html` 提款紀錄：沒有任何提款時只留一列說明（`payouts.history.empty`）。
+  - 購買條件清單（`js/purchase-conds.js`）不加：2026-10-28 使用者指定空的時候只留「新增條件」鈕，記進 5.1.15 刻意不收。
+- **死連結（Q169）**：`earnings.html`、`earnings-ztor.html` 交易明細底部「Load more →」拿掉；`tx.showing`（含 persona 覆寫）句尾的「·」拿掉；`btn.load-more` 已無人用，從 i18n 刪除。
+- **Rank bars 走墓碑退場**（Q167 後零消費）：`chart.css` 的 rank-bars 段落改墓碑註解；`ds-specs/rank-bars-source-breakdown.md` 標退場、`ds-specs/4.24-chart.md` 拿掉 rank-bars 子樣式；`ds-pillars/4-component.md` 標 ✝；`design-system-components-cards.html` 刪掉 #rank-bars 卡與 Chart 卡裡的 rank-bars 示範，Chart 卡尾加墓碑說明；`ds-toc.js` 拿掉目錄行；`design-system-components.html` 元件總覽兩處、`ds-pillars/1-foundation.md`、`ds-pillars/appendix.md`、`perf-rank.css` 註解同步。`ds-head.js` 不用動（rank-bars 沒有自己的 CSS 檔，`chart.css` 仍有其他子樣式在用）。
+- **篩選改 filter-tabs（Q154）**：`earnings-ztor.html` 交易類別由 `.chip-group` 改 `.filter-tabs`（role=tab、aria-selected），篩選程式從共用的 chip 處理程式拆出來；稅務年度仍是 chip，共用處理程式只剩它。
+- **類型徽章改中性（Q156，5.1.19 第 4 類）**：`event-detail.html` 活動類型（演唱會等）與線上活動「僅線上」、`series-detail.html` 活動類型由藍改 `.badge--neutral`。
+- **register-ip 上架說明改 info-banner（Q159）**：原本私人用灰 badge、上架出租用橘色 `badge--orange`，改成 `.info-banner`（圖示＋文字）。
+- **register-ip 第 3 步「分潤請洽詢」**：發布前檢核原本只看數字，打開請洽詢仍不算完成；照規格 5.1.4.1 §6 改成「數字或請洽詢」都算（一次性授權費同理）。打開請洽詢時收掉該格紅字與紅框。
+- **錯誤行屬性修正（#520 帶進來的錯）**：`register-ip.html`、`create-event.html`、`create-event-legacy.html` 的 `.field__error` 寫成 `hiddendata-i18n=`（兩個屬性黏在一起），錯誤行一開頁就顯示、中文也不會套上；改回 `hidden data-i18n=`（共 20 處）。
+- **ASSUMPTIONS.md 新增 UIA-341**：拍賣出價篩選「Open」暫定為「還沒被別人超過的出價」（規格 5.1.5.8 寫產品待確認）。
+- **卡內第 3 層分工**：`ds-specs/card-group.md` 與 5.1.16「巢狀層分工」寫明——卡片中段的第 3 層用 `.card--muted`，`.nest` 只用在貼齊母卡底緣的最後一段。
+- **五張類型總卡（5.1.15–5.1.19，md 與 html）**：「實例（收斂中）」改「實例」；「待收斂」拆成已收斂（附 #516–#520 與本筆）、待收斂、刻意不收（附原因）；`.bmx--readonly`、`.tip--card` 拿掉「待建」。
+- **STYLE-DECISIONS Q146–Q172**：「執行狀態」由「待寫入類型總卡與收斂」改成實際狀態（✅ 或「部分：…見 5.1.x 刻意不收／待收斂」）。
+- 重跑 `scripts/gen_design_gallery.py`；check_ds_sync 全 PASS（WARN 7、13 為既有存量）。
+- 建立拍賣「誰能出價」三顆分段鈕在 iPhone 寬度橫向溢出（390px 視窗量到 442px，本輪前就存在）：照選擇控件 T2 改成 `.radio-cards--3`（手機直排三張），讀值仍看選中按鈕，補 `role="radio"`／`aria-checked`。
+- 停用的翻譯鍵 `cb.price.discount`、`store-settings.specs.h.hatinner.part`（中文仍寫「（選填）」）刪除，避免被誤用。
+- 新增 `tests/smoke-scenarios.json`（10 個重點頁，L1）：跨瀏覽器煙霧測試 WebKit iPhone 12 全過。
+
+## 2026-11-09（五百二十二）· 全站表格補上點欄名排序（B 反饋導入）
+
+**標籤**：release2.4
+
+使用者 2026-07-27 裁示「系統裡所有表格，點欄名都要能排序」，當時只接了收入總覽、品牌合作、粉絲名冊三頁。這次把其餘有 `.ztor-table` 的頁全部接上（第一次點高→低／A→Z、第二次反向、第三次回預設順序，與既有三頁同一支 `js/table-sort.js`）。
+
+- 共用排序元件 `js/table-sort.js`：
+  - 新增 `refresh(scope)`：頁面自己重畫表身列（篩選、切分頁籤、資料更新）之後呼叫，新的列當成預設順序、所有欄回到「未排序」，避免箭頭顯示的順序跟畫面不符。
+  - 表尾新加的列（新增優惠碼、複製）自動排在既有列之後當預設位置。
+  - 合計列掛 `data-sort-pin` 固定留在最後一列（首例：領取統計彈窗的「合計」）。
+  - 修正：金額的印刷體減號（−$5,202.50）原本被當成正數排，現在照負數排。
+  - `scan(table)` 傳入的範圍本身就是表格時也會掛上。
+- 接上的頁（括號內是張數）：
+  - Admin：IP Bank（1）、影片上架審核（1）、創作者活動管理（1）、平台費率設定（2：版本歷史、費率例外）、平台優惠設定（5）、平台忠誠點數設定（2）、IP Bank Reporting（1）。
+  - 創作者端：粉絲分析・報表（彈窗內 2）、粉絲分析（1：轉換漏斗）、商店設定（2：尺寸指南、優惠碼）、訂單詳情（1：門票）、Ztor 收入（2）、收入管理（5：交易明細、項目收入、貼文格式、貼文報告、全部內容彈窗）、取貨詳情（3 張彈窗表）、項目詳情（9，含收益明細彈窗）、活動詳情（7：票種、組合包、交易、到場名單兩張、作廢紀錄、收支明細）。
+- 顯示文字不能直接比大小的欄，給了排序值：「42 / 100」「EUR 1,326 → $1,410」「$500 → 10%」「3 小時／2 天」「50/60」、折扣 % 與 $ 混排（先分單位再比大小）。
+- 貼文報告有分頁：排序後回到第 1 頁，頁上顯示的是新順序的前 5 筆。收益明細彈窗的「#」名次隨排序重新編號（同收入總覽明細彈窗）。
+- 刻意不接：平台費率的六張費率輸入表（固定列的設定表）、粉絲分析的影響力四面向（四列單位各不相同）、項目詳情的兩張時程表（里程碑依時間固定排列）、在地化頁的翻譯表（逐欄位輸入）、儀表板元件的表格輸出（只剩 docs/ 探索稿在用）。
+- 設計系統同步：`ds-specs/4.104-sortable.md`（API、列標記、消費頁、不接清單）、`design-system-components-lists.html` 排序卡說明。
+
+## 2026-11-09（五百二十一）· 五張類型總卡：清單、卡片、輸入、選擇控件、狀態標記（D infra／文件）
+
+**標籤**：release2.4
+
+- 比照 5.1.8 彈窗、5.1.14 抽屜：全站普查（`docs/*普查-2026-11-09.md`）→ 草案（`docs/五類元件類型草案-2026-11-09.md`）→ 使用者照推薦裁決（STYLE-DECISIONS Q146–Q172）→ 寫總卡 → 收斂產品頁（#516–#520）。
+- `ds-pillars/5-pattern.md` 與 `design-system-pattern.html` 新增 5.1.15 清單類型（8 類）、5.1.16 卡片類型（8 類＋巢狀層分工）、5.1.17 輸入類型（7 類＋系統值）、5.1.18 選擇控件類型（T0–T5）、5.1.19 狀態標記類型（7 類＋Q156 五色表）；`ds-toc.js` 目錄同步。
+- 規格文字跟著裁決改：switch 可以用在要儲存的地方（Q151）；卡內第 2 層線框、第 3 層填色（Q161，Q66 舊說法作廢，card-group、nest、6.0.1 結構說明一併改寫）；5.1.2、5.1.3、5.3 的篩選說法改照 Q154。
+
+## 2026-11-09（五百二十）· 輸入欄位收斂：日期時間兩格、幣別代碼、選填改寫 placeholder、錯誤只用一套、群發欄位回歸 .field（B 反饋導入 · Q146–Q150）
+
+**標籤**：release2.4
+
+- **Q146 日期時間一律「日期＋時間」兩格**：`partials/date-input.js` 新增 `splitDateTime`，頁面照寫 `type=datetime-local`，執行期換成 `.date-input-pair`（date＋time 兩格），原欄位轉成 hidden 載體，`.value` 仍是 `YYYY-MM-DDTHH:MM`，事件、disabled、aria-invalid、focus 都同步。涵蓋 create-product、product-detail、create-bundle、bundle-detail、create-auction、auction-detail、create-project、media-vault，以及 ticket-bundle.js、purchase-conds.js、pickup-session-modal.js 動態產生的欄位。新變體 `.date-input-pair` 寫進 `ds-components/date-input.css`、`ds-specs/date-input-placeholder.md`、元件總表與 design-system-components-basic.html demo。media-vault 補載 date-input.css（普查 3.7 第 1 點）。
+- **Q147 金額前綴一律幣別代碼**：`js/currency.js` 新增 `data-currency-code`（創作者幣別）與 `data-currency-base-code`（平台基準幣別）掛勾；約 60 處「$」換成 `.amount-field--code`（admin-platform-fees、admin-platform-promotions、create-auction、create-campaign、create-event、create-product、create-project、project-detail、event-detail、product-detail、manage-ip、register-ip、settings、store-settings、payout-request-modal、work-fields、purchase-conds.js、bundle-editor.js）。新增 `.amount-field--hero.amount-field--code`，同步 `ds-specs/amount-field.md` 與四頁設計系統 demo。
+- **Q148 標籤不寫「（選填）」**：create-event、event-detail、create-auction、auction-detail、product-detail（標籤區副標改寫成用途說明）、register-ip、creators、creator-detail、create-project、project-detail、order-detail、brand-start-event.js、manual-entry／restock／pickup-session 三支彈窗拿掉標籤上的選填字樣；需要時改寫 placeholder（保留價「留空則不設保留價」、補登備註、補貨供應商與備註寫示例）。i18n 刪除 `cp.optional`、`ri.opt`、`creators.form-optional`、`cpp.optional`；`manual.f.note`、`manual.f.attachment`、`restock.f.supplier`、`restock.f.notes`、`od.void.reason.label`、`pk.lp.f.loc`、`pks.f.instr` 改文字；新增 `cp.auc.reserve.ph`、`manual.f.note.ph`、`restock.f.supplier.ph`、`restock.f.notes.ph`。設計系統 flow 頁補貨 demo 同步。
+- **Q149 驗證錯誤只用 `.field__error`＋`aria-invalid`**：create-event、create-event-legacy、register-ip 的頁內 `.ce-field-error`／`.ri-field-error` 與 `.field.is-invalid` 退場（CSS 留墓碑）；event-detail 的 `.is-invalid`（原本沒有樣式）改標控件 aria-invalid。會擋儲存的改 `.field__error`：組合折扣 0–100（create-bundle、bundle-detail）、限時折扣結束早於開始（create-bundle）、組合包售出上限超過與逐票種分配超過鎖定套數（bundle-editor.js）、取貨場次結束早於開始（pickup-session-modal，原本是行內紅字 hint）。只截掉不擋儲存的套組優惠超標改 DS 的 `.field__hint--warn`。`bundle-editor.css` 的 `.field__hint.fc-hint--over` 走墓碑。`shared.css` 紅框規則擴到 `.textarea`、`.select`。同步 `ds-specs/field-system.md`、`ds-specs/bundle-editor.md`、design-system-components-forms.html。
+- **Q150 群發訊息與發文彈窗改用 `.field`**：fans-crm 群發、partials/product-post-modal.js 的 `.msg-field*` 換成 `.field`／`.field__label`（有字數時 `--split`＋`.field__counter`）／`.field__req`；`message-modal.css` 的 `.msg-field*` 走墓碑，`.msg-schedule` 保留；同步 `ds-specs/4.22m-message-composer.md`、flow 與 cards 兩頁 demo。
+- **順帶（普查 3.1 第 4 點）**：tier-settings、store-settings、admin-platform-promotions 的手刻「兩格日期＋–」收成 `.date-range`（補載 date-range.css，tier-settings 與 store-settings 補載 date-input.css）；`.ss-code-date` 走墓碑；`ds-specs/4.238-date-range.md` 補三個消費頁。
+- **順帶（普查 3.6）**：系統值只用 `.linkf`——pickup-detail 掃碼器存取彈窗的掃碼網址、pickup-session-modal 編輯場次的掃碼網址（停用改 `.linkf--disabled`，不再疊 opacity）、media-vault 剛產生的鑰匙連結（原 `.vshare__link`）；pickup-detail 補載 link-field.css／js，其他載入取貨場次彈窗的頁補載 link-field.css；同步 link-field 與 vault-share 規格、flow 頁 demo。
+- **順帶（普查 3.7）**：textarea 只用 `.textarea`——series-detail、order-detail、event-detail 撤銷原因、bundle-editor.js 方案說明、forms 頁 demo。
+
+## 2026-11-09（五百一十九）· 選擇控件收斂：有沒有用開關、時機用單選卡、篩選與檢視分家、已加入標籤改中性（B 反饋導入）
+
+**標籤**：release2.4
+
+- Q152「有沒有」一律開關：
+  - product-detail 數位商品「限量」由鎖住的兩張單選卡改成鎖住的開關（`.switch--locked`），與建立商品同一個開關。
+  - js/bundle-editor.js 組合包「販售數量」兩處（分段版 radio-cards、卡片版 segmented）改成同一個「限量」開關＋control-group；共創關著時說明句寫「由名額池自動推導」。
+  - create-event 觀影派對「人數上限」「入場」改成開關＋control-group；「免費／設定價格」判定為收不收費（有沒有），新增文案 `ce.wp.ticket.charge`（收費入場）。
+  - js/ticket-bundle.js 購買條件「任何人／限定」與限購「不限／設上限」由單選清單改成開關＋control-group，新增文案 `tb.rules.restrict.sw`、`tb.rules.restrict.sub`、`tb.rules.cap.sub`。
+  - register-ip 三顆「請洽詢」、manage-ip 三顆「請洽詢」由單顆勾選改成開關列。
+- 順帶（selection-card 規格）：register-ip「允許用途」多選由 selection-card 改成勾選清單 `.radio-list--check`。
+- Q153 開賣／上架時機一律 radio-cards：product-detail 開賣、create-auction 上架與開拍、auction-detail 開拍由收合式 radio-list 改並排單選卡；create-project 發布時間由 selection-card 改 radio-cards。
+- Q154 篩選與檢視分家：
+  - 切換檢視改 segmented：earnings、earnings-sony、earnings-overview 的版稅期間，audience-report 期間，event-detail 門票與組合包的卡片／列表。
+  - 篩選清單改 filter-tabs：fan-detail 點數分類與消費來源、pickup-detail 名冊狀態與依 QR 篩選、projects 發行模式、ip-market IP 類型（原底線 tabs）；earnings 交易族群（原 segmented）與收入分類（原 chip）；create-bundle「加入成員」清單（原 segmented）。
+  - list-toolbar 左側新增 `.filter-tabs` 的排法（照內容寬、不換行、橫向捲），規格與展示卡同步。
+  - 「門票建法」（event-detail、create-event）由 filter-tabs 改 segmented。
+- Q155 已加入的使用者自填標籤改中性 `.chip--value`：create-product、product-detail、create-auction、auction-detail、project-detail、fan-detail、發布作品、關聯電影；tag-input 欄內樣式跟著換選擇器（保留 Q114 的對比）；chip、tag-input 規格與展示卡同步。
+
+## 2026-11-09（五百一十八）· 卡片收斂：卡內層級、卡內數字、詳情編輯段、設定頁、物件卡與兩個元件合併（B 反饋導入）
+
+**標籤**：release2.4
+
+- Q161 卡內第 2 層線框、第 3 層填色（照 Q71）：
+  - create-product（兩處限時折扣）、product-detail（限時折扣）：開關框裡再一個開關框的第 3 層，加 `.card--muted` 改填色，不再畫第三圈線框。
+  - create-event 場次盒（兩場以上時）：盒子由 `.card.card--muted` 填色改 `.control-group--plain` 線框；盒內的跨日、提前入場兩組改 `.card--muted` 填色（只有一場時不變，仍是第 2 層線框）。
+  - publish-work／create-project（`partials/work-fields.js` 四處子盒）：由 `.card.card--muted` 改 `.control-group.control-group--plain`。
+- Q162 卡裡的數字一律 `.stat-row`：
+  - kpi.css 拿掉 `.card .kpi, .form-section--outlined .kpi` 與 `.kpi.card--muted`（留墓碑）。
+  - 卡內 20 處 `.kpi` 改 `.stat-row`：auction-detail 競標概況、admin-ip-bank-entry 分潤配置、earnings／earnings-ztor 可分配利潤兩張卡、fan-analytics 商業價值、ip-detail hero 四格事實。
+  - stat-row 新增 `--even`（各欄等寬，長說明在欄內換行）與「排在卡最後一段時不留底距」。
+  - event-detail（售票中三格、草稿／排程三格、進行中兩格）、series-detail（四格）：頁面層用 `.card` 包單一 `.stat` 的格子改回 `.kpi`；event-detail 的結案兩張卡（數字＋明細＋按鈕）維持卡＋`.stat-row`。
+  - project-detail 項目進度兩格：拿掉 `.card--muted`，回到一般 `.kpi`。
+- Q163 詳情頁編輯段一律 `.form-section--outlined`：event-detail 設定分頁的活動內容、場次、地點；project-detail 的展示內容、公開資訊、募資期間、協作者、IP 租用；ip-detail「以擁有者身分管理」。標題與說明收進 `form-section__head`／`__title`／`__sub`。form-section.css 補一條：段落坐在 `.bento` 裡時段距交給格線 gap。
+- Q164 設定頁一律設定列：store-settings 的付款、銷售預設、尺寸指南、優惠碼四個分區拿掉 `.card` 外殼；tier-settings 四張分級卡改成列＋分隔線、計分分區拿掉卡；fans-crm 粉絲分級的「規則」分頁拿掉卡、說明改 `.settings-section__sub`。
+- Q165 物件卡補齊：`.project-card` 補 Q3 玻璃四件套（加邊框、模糊、圓角改 `--radius-xl`）與 `cursor: pointer`；`.work-card` 補玻璃四件套與內距，hover 由「只抬封面」改成整張上浮＋換底色（Q136）。
+- Q171 Tier overview 併進 Benefit matrix：唯讀表改 `.bmx.bmx--readonly`（含 `--cols3`、`--compact`、兩面切換、`__yes／__no`、`__cell--wrap／--fluid`、`__row--locked`、`__rowmenu`），fans-crm、admin-platform-loyalty 全部改名；tier-overview.css 留墓碑、總表標 ✝、展示卡改成新變體。
+- Q172 Stock tip 併進 Tooltip：改 `.tip--card`（樣式搬進 shared.css，`.tip__card／__row／__name／__qty`、`.tip--anchored／--up／--follow`），e-shop、store-settings、media-vault 全部改名；stock-tip.css 留墓碑、總表標 ✝、展示卡改成新變體。
+- 順手：card.css 新增 `.card--table`（滿版表格卡：內距 0、裁圓角），取代 earnings、earnings-ztor、event-detail 共 8 處行內 `style="padding:0;overflow:hidden"`；收入頁 `.bd-tablecard`、earnings-sony `.fin-tablecard` 拿掉卡裡的第二圈框。
+- 指標格窄格自動縮字：活動詳情一排三格在 1024px 寬時「活動收入」大數字被裁，`kpi.css` 讓 `.kpi` 成為尺寸容器，格寬 ≤ 150px 時數字縮成 `--fs-18`；一般寬度維持 28px（瀏覽器實測 1024／1440）。
+
+## 2026-11-09（五百一十七）· 清單與表格收斂：列預設不可點、同任務一種元件、假篩選與空狀態（B 反饋導入）
+
+**標籤**：release2.4
+
+- **列預設不可點（Q166）**
+  - `ds-components/table.css`：`.ztor-table__row` 不再帶手指游標；整列有點擊行為的列改掛新修飾類 `.ztor-table__row--go`（游標＋鍵盤焦點內描邊）。
+  - `ds-components/product-list.css`：hover 浮起只給 `.product-list__row--link`（既有修飾類）或 `<a href>` 列；其餘列滑過不再浮起。
+  - 掛上修飾類（hover 保留）：earnings、earnings-ztor（交易明細可展開列、我的項目）、pickup-detail（領取項目 QR 表、名單母列）、events（全部列）、e-shop（商品／組合包／拍賣三個分頁）、my-ip（自有 IP 清單）、fan-detail（消費紀錄）、fans-crm（粉絲名冊、名人堂）、creators、series-detail、orders、需求看板（js/demand-board.js 的可選市場列）。
+  - 變成不可點外觀：project-detail 全部表格、event-detail 售票紀錄／參加者／撤銷紀錄／營收事件、audience-report 貼文表、order-detail 門票表、收益明細彈窗、my-ip 租入、fan-detail 點數明細／參與／調整紀錄、pickup-detail 取貨紀錄與單件列。
+  - 順手修：earnings／earnings-sony 的平台・地區・星座排行列原本掛可點樣式、點了開出壞掉的彈窗，改回唯讀；fans-crm 名人堂三列補上各自的粉絲 id；brand-campaigns 列尾有 chevron 的列改成整列可點。
+  - 規格與展示頁：`ds-specs/4.23-table.md`、`ds-specs/4.27-product-list.md`、`design-system-components-lists.html` 的 Table／Product list 卡同步。
+- **同一種任務一種元件（Q167）**
+  - auction-detail「拍賣資訊」、order-detail 右欄「訂單資訊」「付款」與商品快照：屬性摘要改 `.kv`（原 data-list／field-readout）。
+  - event-detail 結案卡與收支「摘要」：總額 − 平台費 − 支付費 ＝ 淨收入改 `calc-list`（原 kv 與 data-list 各一種），減號由列首運算子承擔；其餘事實列改 kv。
+  - earnings、earnings-overview「收入來源」：佔比改 `split-bar`（原 rank-bars）；project-detail 版稅分頁的地區／串流平台／OTT 排行改 `perf-rank`（原 rank-bars--barline）。數字、佔比與色相不變。
+- **元件不借用（Q168）**：event-detail 開賣前「各票種」改 kv（票價 · 張數），不再畫永遠 100% 的量條；fan-analytics 多維影響力與轉換漏斗改成 `.ztor-table`（新欄名中英進 i18n）。
+- **假篩選與死碼（Q169）**：拍賣出價「全部／Open」真的過濾（Open＝未被超越，呈現假設）；earnings-ztor 交易類別 chip 真的過濾、0 筆時顯示「沒有交易符合目前的篩選」；拿掉拍賣「查看全部 N 筆」與 project-detail「查看完整明細」×2 死按鈕；刪掉沒有節點的 `renderSeriesList`（event-detail）與 `renderOptionsSummary`（product-detail）。
+- **空狀態（Q170）**：拍賣出價（尚無出價）、event-detail 票種列表檢視與進行中參加者名單（表頭保留＋一列說明）、招待票示範列改成只在已開賣的活動出現、my-ip 租入、fan-detail 消費紀錄（含篩到 0）與參與紀錄、brand-campaigns、project-detail 方案支持統計與支持者明細。
+
+## 2026-11-09（五百一十六）· 狀態徽章顏色照共用對照表、粉絲分級改中性加圖示、說明改 info-banner（B 反饋導入）
+
+**標籤**：release2.4
+
+- Q156 狀態共用色表（灰＝沒在跑但正常、藍＝排了還沒開始或平台處理中、綠＝正在跑、黃＝要你處理、紅＝售罄或異常）：
+  - 已下架一律灰：`ds-components/vault-list.css` 庫房清單的已下架點與字由黃改灰。
+  - 售罄一律紅：活動門票「完售」（`event-detail.html` 頁首與系列清單、`events.html` 清單、`series-detail.html`）、票種卡售完字（`ds-components/ticket-tier-card.css`）、`e-shop.html` 種子徽章、`product-detail.html` 款式表售罄。
+  - 未開始／已排程一律藍：活動 `STAGE_BADGE`／`stageBadgeCls`（events、event-detail、series-detail、bundle-detail、create-bundle、e-shop 活動組合包）、取貨場次尚未開始（pickup、pickup-detail）、平台優惠未開始（admin-platform-promotions）。
+  - 正在跑一律綠：活動進行中（原黃）、項目進行中與已上線（原藍／橘，projects、project-detail）、取貨 QR 與點數「啟用」（原藍）、IP 可租用（原橘）、bundle-detail 頁首種子（原橘）。
+  - 流失風險一律黃（原紅）：fans-crm、fan-detail；已停止一律灰（原黃）：admin-platform-loyalty。
+  - e-shop 庫存偏低種子由紅改黃（對齊 listing-state 執行時顏色）。
+- Q157 橘色退出狀態徽章：待結算（earnings、earnings-ztor、earnings-sony）、驗證中、已申請撥款改藍（平台處理中、使用者不用動手）；原創 IP、拍賣計價（ip-detail、manage-ip）改中性灰（類型標籤）。E-Shop 收入來源色點是分類色，未動。
+- Q158 粉絲分級：新增 `.badge--tier` ＋ `--tier-inner|super|ranked|fan`（中性底＋皇冠／星星／獎章／愛心圖示，`ds-components/badge.css`），套用 e-shop、fans-crm、fan-detail、tier-settings、admin-platform-loyalty 與 `js/benefit-matrix.js`。
+- Q159 說明規則改 `.info-banner`：新增 `__text`／`__title`／`__desc`／`__action` 與 `--action`（`ds-components/info-banner.css`）；套用 event-detail 五處、bundle-detail、media-vault 檢視身分、`partials/product-post-modal.js` 已送出說明（e-shop 補連 info-banner.css）。
+- Q160 被擋只跳 toast：event-detail「立即開賣」編輯中被擋時在該列下方加 `.field__error`，toast 保留。
+- 設計系統同步：badge（4.3，含狀態共用表與 tier 變體 demo）、info-banner（4.7，標題＋說明＋動作 demo）、alert（4.13 用途界線）、vault-list（4.245）、ticket-tier-card（4.114）、media-vault（4.102）規格與 demo 卡。
+
+
+## 2026-11-09（五百一十五）· 建立組合包刪掉舊版「加入組合物」挑選窗（C 撤除）
+
+**標籤**：release2.4
+
+接續 #514：舊版分頁式挑選窗（`data-cb-member-modal`）的 markup 整段刪除，`create-bundle.html` 只剩新版挑選窗（`data-cb-addm`）一個。新版原本借用舊 markup 裡的商品候選清單，改成自己建容器；「加入」方塊與活動篩選都開新版。瀏覽器實測：新版挑選窗加入商品後成員列由 1 列變 2 列，頁面上已無舊版彈窗。
+
 ## 2026-11-09（五百一十四）· 重複實作的彈窗收成共用的一份（D infra／文件）
 
 **標籤**：release2.4

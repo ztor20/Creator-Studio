@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
@@ -165,17 +165,14 @@
           <div class="form-grid">
             <div class="field">
               <span class="field__label" data-i18n="manage-ip.terms.fee">One-off licence fee</span>
-              <span class="amount-field amount-field--readonly mi-amount" data-amount-for="fee">
-                <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <span class="amount-field amount-field--readonly amount-field--code mi-amount" data-amount-for="fee">
+                <span class="amount-field__unit" data-currency-code>TWD</span>
                 <input class="input amount-field__input" id="mi-fee" type="number" min="0" placeholder="5,000">
               </span>
-              <label class="zcheck mt-8">
-                <span class="zcheck__control">
-                  <input class="zcheck__input" type="checkbox" id="mi-fee-req">
-                  <span class="zcheck__box"></span>
-                </span>
-                <span class="zcheck__label" data-i18n="manage-ip.terms.on-request">Price on request</span>
-              </label>
+              <div class="control-row mt-8">
+                <div class="control-row__main" data-i18n="manage-ip.terms.on-request">Price on request</div>
+                <div class="switch" id="mi-fee-req" role="switch" aria-checked="false" tabindex="0" aria-label="Price on request"></div>
+              </div>
             </div>
             <div class="field">
               <span class="field__label" data-i18n="manage-ip.terms.royalty">Royalty on revenue</span>
@@ -183,30 +180,24 @@
                 <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
                 <input class="input amount-field__input" id="mi-royalty" type="number" min="0" max="100" step="0.5" placeholder="12">
               </span>
-              <label class="zcheck mt-8">
-                <span class="zcheck__control">
-                  <input class="zcheck__input" type="checkbox" id="mi-royalty-req">
-                  <span class="zcheck__box"></span>
-                </span>
-                <span class="zcheck__label" data-i18n="manage-ip.terms.on-request">Price on request</span>
-              </label>
+              <div class="control-row mt-8">
+                <div class="control-row__main" data-i18n="manage-ip.terms.on-request">Price on request</div>
+                <div class="switch" id="mi-royalty-req" role="switch" aria-checked="false" tabindex="0" aria-label="Price on request"></div>
+              </div>
             </div>
           </div>
 
           <div class="form-grid">
             <div class="field">
               <span class="field__label" data-i18n="manage-ip.terms.exclusive">Exclusive licence fee</span>
-              <span class="amount-field amount-field--readonly mi-amount" data-amount-for="exclusive">
-                <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <span class="amount-field amount-field--readonly amount-field--code mi-amount" data-amount-for="exclusive">
+                <span class="amount-field__unit" data-currency-code>TWD</span>
                 <input class="input amount-field__input" id="mi-exclusive" type="number" min="0" placeholder="34,000">
               </span>
-              <label class="zcheck mt-8">
-                <span class="zcheck__control">
-                  <input class="zcheck__input" type="checkbox" id="mi-exclusive-req">
-                  <span class="zcheck__box"></span>
-                </span>
-                <span class="zcheck__label" data-i18n="manage-ip.terms.on-request">Price on request</span>
-              </label>
+              <div class="control-row mt-8">
+                <div class="control-row__main" data-i18n="manage-ip.terms.on-request">Price on request</div>
+                <div class="switch" id="mi-exclusive-req" role="switch" aria-checked="false" tabindex="0" aria-label="Price on request"></div>
+              </div>
               <span class="field__hint" data-i18n="manage-ip.terms.exclusive-hint">Leave empty if you do not offer exclusivity.</span>
             </div>
             <div class="field mi-pricepreview">
@@ -254,7 +245,7 @@
               <div class="settings-row__hint" data-i18n="manage-ip.ops.bidding-hint">Flat rental, or a timed auction for the next available slot.</div>
             </div>
             <div class="mi-inline">
-              <span class="badge badge--orange" id="mi-bidding-badge">—</span>
+              <span class="badge badge--neutral" id="mi-bidding-badge">—</span>
               <button class="btn btn--ghost btn--sm" type="button" id="mi-bidding-switch" data-i18n="manage-ip.ops.switch">Switch</button>
             </div>
           </div>
@@ -335,6 +326,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script><!-- Q147：授權費前綴＝創作者幣別代碼（data-currency-code） -->
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/ip-price.js?v=r2.2"></script>
 <script src="js/ip-store.js?v=r2.2"></script>
@@ -445,17 +437,21 @@
     var slot  = ip.price[key] || (ip.price[key] = { mode: 'amount' });
 
     if (slot.mode !== 'on-request' && slot[valueProp] != null) input.value = slot[valueProp];
-    check.checked = slot.mode === 'on-request';
+    /* 2026-11-09 Q152：「請洽詢」是有沒有的題目，由單顆勾選改成開關（.switch，div role=switch） */
+    function isOn() { return check.classList.contains('switch--on'); }
+    function setOn(on) { check.classList.toggle('switch--on', on); check.setAttribute('aria-checked', String(on)); }
+    setOn(slot.mode === 'on-request');
 
     function paint() {
-      wrap.hidden = check.checked;          /* 洽詢中就不攤數字欄 */
-      slot.mode = check.checked ? 'on-request'
+      wrap.hidden = isOn();          /* 洽詢中就不攤數字欄 */
+      slot.mode = isOn() ? 'on-request'
                 : (key === 'royalty' ? 'percent' : 'amount');
-      if (!check.checked) slot[valueProp] = input.value === '' ? null : Number(input.value);
+      if (!isOn()) slot[valueProp] = input.value === '' ? null : Number(input.value);
       paintPricePreview();
       paintRateKpi();
     }
-    check.addEventListener('change', paint);
+    check.addEventListener('click', function () { setOn(!isOn()); paint(); });
+    check.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setOn(!isOn()); paint(); } });
     input.addEventListener('input', paint);
     paint();
   }
@@ -563,7 +559,7 @@
   var biddingBadge = $('mi-bidding-badge');
   function paintBidding() {
     var auction = ip.bidding === 'auction';
-    biddingBadge.className = 'badge ' + (auction ? 'badge--orange' : 'badge--neutral');
+    biddingBadge.className = 'badge badge--neutral';   /* Q157：計價方式是類型、不是狀態，橘色退出（原拍賣＝orange） */
     bindKey(biddingBadge, auction ? 'manage-ip.ops.auction' : 'manage-ip.ops.flat',
             auction ? 'Auction' : 'Flat rental');
   }

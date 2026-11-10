@@ -49,6 +49,8 @@
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">   <!-- D503：掃碼領點建立彈窗的 QR 列（partials/pickup-session-modal.js .stack） -->
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
 <link rel="stylesheet" href="ds-components/export-dialog.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- 掃碼網址（掃碼器存取彈窗＋編輯場次彈窗，普查 3.6） -->
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：領取項目、QR 清單、領取統計三張彈窗表 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 5.1.5.15 取貨場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
@@ -163,7 +165,7 @@
             <div class="pk-hd-badges">
               <span class="badge badge--success" data-pk-status-badge><span data-i18n="pk.status.active">Active</span></span>
               <!-- D499：掃碼領點場次的啟用／停用（人工旗標，與時間狀態「進行中」並列、不混稱） -->
-              <span class="badge badge--info" data-pk-lp-state data-feat="O43" hidden><span data-i18n="pk.lp.en">Enabled</span></span>
+              <span class="badge badge--success" data-pk-lp-state data-feat="O43" hidden><span data-i18n="pk.lp.en">Enabled</span></span>
             </div>
             <h1 class="page-intro__title" data-i18n="pk.row1.name">Taipei signing — pickup</h1>
           </div>
@@ -227,10 +229,11 @@
       <!-- 工作列＝電子商店那條 `.list-toolbar`：左邊底線式 tabs 切狀態、右邊動作群
            （收合搜尋＋核銷紀錄）。 -->
       <div class="list-toolbar">
-        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Filter roster" data-pk-roster-status>
-          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</div>
+        <!-- 2026-11-09 Q154：篩選清單單選一律 .filter-tabs（原底線 .tabs 只做分頁導覽） -->
+        <nav class="filter-tabs" role="tablist" aria-label="Filter roster" data-pk-roster-status>
+          <button type="button" class="filter-tabs__item filter-tabs__item--active" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</button>
+          <button type="button" class="filter-tabs__item" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</button>
+          <button type="button" class="filter-tabs__item" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</button>
         </nav>
         <div class="list-toolbar__actions">
           <div class="search-collapse" data-pk-search-wrap>
@@ -263,7 +266,7 @@
                單買的 T 恤 1 件，加上組合「Launch night bundle」展開的帽子 3 件與黑膠 1 件
                （組合本身不產生領取碼，成員各自帶「來源組合」標記；ship 成員的別針不展開）。 -->
           <div class="rowdis__group">
-          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="mika" data-pk-roster-group data-pk-roster-text="mika l zt-10482">
+          <div class="product-list__row product-list__row--link rowdis__head" role="row" data-rowdis-row="mika" data-pk-roster-group data-pk-roster-text="mika l zt-10482">
             <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="mika" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
@@ -349,7 +352,7 @@
                不落入待核銷／已核銷 tab）；動作選單不給「反轉核銷」（手動核銷 D455 起整頁不做）——已失效
                的碼本來就不可核銷，也沒有核銷紀錄可反轉，只留「來源」可查。 -->
           <div class="rowdis__group">
-          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="yuki" data-pk-roster-group data-pk-roster-text="yuki h zt-10471">
+          <div class="product-list__row product-list__row--link rowdis__head" role="row" data-rowdis-row="yuki" data-pk-roster-group data-pk-roster-text="yuki h zt-10471">
             <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="yuki" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
@@ -392,7 +395,7 @@
           </div>
           </div>
           <div class="rowdis__group">
-          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="jonas" data-pk-roster-group data-pk-roster-text="jonas p zt-10473">
+          <div class="product-list__row product-list__row--link rowdis__head" role="row" data-rowdis-row="jonas" data-pk-roster-group data-pk-roster-text="jonas p zt-10473">
             <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="jonas" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
@@ -447,7 +450,7 @@
           </div>
           </div>
           <div class="rowdis__group">
-          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="noor" data-pk-roster-group data-pk-roster-text="noor p.">
+          <div class="product-list__row product-list__row--link rowdis__head" role="row" data-rowdis-row="noor" data-pk-roster-group data-pk-roster-text="noor p.">
             <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="noor" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
@@ -502,7 +505,7 @@
           </div>
           </div>
           <div class="rowdis__group">
-          <div class="product-list__row rowdis__head" role="row" data-rowdis-row="kai" data-pk-roster-group data-pk-roster-text="kai t.">
+          <div class="product-list__row product-list__row--link rowdis__head" role="row" data-rowdis-row="kai" data-pk-roster-group data-pk-roster-text="kai t.">
             <div class="rowdis__lead" role="cell"><button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="kai" aria-expanded="false" aria-label="Show pickup units" data-i18n-aria-label="pk.roster.group.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button></div>
             <div class="product-list__product" role="cell">
               <div class="product-list__body">
@@ -647,7 +650,8 @@
              工作列（.list-toolbar：左分頁、右收合搜尋）＋ .product-list-scroll 裡的 .product-list。
              現場核銷名單沒有區塊標題（工作列本身即標示），這裡同樣不放；「領取紀錄」語意留在表格與分頁列的 aria-label。 -->
         <div class="list-toolbar">
-          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Filter claims by QR code" data-i18n-aria-label="pk.lp.log.aria" data-pk-lp-logtabs></nav>
+          <!-- 2026-11-09 Q154：篩選清單單選一律 .filter-tabs -->
+          <nav class="filter-tabs" role="tablist" aria-label="Filter claims by QR code" data-i18n-aria-label="pk.lp.log.aria" data-pk-lp-logtabs></nav>
           <div class="list-toolbar__actions">
             <div class="search-collapse" data-pk-lp-search-wrap>
               <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-pk-lp-search-toggle aria-expanded="false" aria-label="Search claims" title="Search claims" data-i18n-aria-label="pk.lp.log.search" data-i18n-title="pk.lp.log.search"><i data-lucide="search" class="ztor-icon"></i></button>
@@ -710,9 +714,9 @@
          <div data-pk-items-v="list">
           <table class="ztor-table ztor-table--fluid">
             <thead><tr>
-              <th data-i18n="pk.col.item">Pickup item</th>
-              <th data-i18n="pk.ons.items.col.type">Type</th>
-              <th class="pk-ons-num" data-i18n="pk.ons.items.col.prog">Redeemed / units</th>
+              <th data-sort="text" data-i18n="pk.col.item">Pickup item</th>
+              <th data-sort="text" data-i18n="pk.ons.items.col.type">Type</th>
+              <th class="pk-ons-num sort-th--end" data-sort="num" data-i18n="pk.ons.items.col.prog">Redeemed / units</th>
             </tr></thead>
             <tbody data-pk-items-body>
               <tr data-pk-item-id="zine"><td data-i18n="pk.r1.item">Pirate Queen zine vol. 02</td><td data-i18n="pk.ons.type.product">Pickup product</td><td class="pk-ons-num" data-pk-prog="14,20,20">14 / 20</td></tr>
@@ -758,13 +762,16 @@
           <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pk-scan-close><i data-lucide="x" class="ztor-icon"></i></button>
         </div>
         <div class="payout-dialog__body" data-pk-scanner>
-          <label class="field">
+          <!-- 2026-11-09（輸入欄位普查 3.6）：系統值收成 Link field .linkf（原 .input-action＋圖示鈕）；複製與「已複製」回饋由 js/link-field.js 處理 -->
+          <div class="field">
             <span class="field__label" data-i18n="pk.f6.url">Scanner URL</span>
-            <div class="input-action">
-              <input class="input" data-pk-url value="ztor.app/scan/tpe-signing-7f3a2" readonly>
-              <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL" title="Copy scanner URL" data-i18n-aria-label="pk.a.copyurl" data-i18n-title="pk.a.copyurl" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i></button>
+            <div class="linkf" data-linkf>
+              <div class="linkf__row">
+                <input class="input linkf__input" data-pk-url value="ztor.app/scan/tpe-signing-7f3a2" readonly aria-label="Scanner URL" data-i18n-aria-label="pk.f6.url">
+                <button class="btn btn--outline btn--sm linkf__act linkf__act--copy" type="button" data-linkf-copy><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="link.copy">Copy</span></button>
+              </div>
             </div>
-          </label>
+          </div>
           <button class="btn btn--outline btn--sm" type="button" data-pk-qr-toggle aria-expanded="false"><i data-lucide="qr-code" class="ztor-icon"></i> <span data-i18n="pk.ons.scan.showqr">Show QR code</span></button>
           <div class="pk-ons-qr" data-pk-qr hidden></div>
           <label class="field mt-16" style="margin-bottom:0">
@@ -891,11 +898,11 @@
               <div class="pk-lp-items">
                   <table class="ztor-table ztor-table--fluid ztor-table--menu" data-pk-lp-qrtable>
                     <thead><tr>
-                      <th data-i18n="pk.lp.log.col.qr">QR code</th>
-                      <th class="pk-lp-per" data-i18n="pk.lp.items.col.per">Points per claim</th>
-                      <th data-i18n="pk.lp.d.usage">Claimed / total</th>
-                      <th class="pk-lp-given" data-i18n="pk.lp.items.col.given">Points given</th>
-                      <th class="pk-lp-st" data-i18n="pk.lp.items.col.status">Status</th>
+                      <th data-sort="text" data-i18n="pk.lp.log.col.qr">QR code</th>
+                      <th class="pk-lp-per" data-sort="num" data-i18n="pk.lp.items.col.per">Points per claim</th>
+                      <th data-sort="num" data-i18n="pk.lp.d.usage">Claimed / total</th>
+                      <th class="pk-lp-given" data-sort="num" data-i18n="pk.lp.items.col.given">Points given</th>
+                      <th class="pk-lp-st" data-sort="text" data-i18n="pk.lp.items.col.status">Status</th>
                       <th class="pk-lp-acts-th"><span class="u-visually-hidden" data-i18n="pqr.download">Download QR</span></th>
                     </tr></thead>
                     <tbody data-pk-lp-items></tbody>
@@ -975,12 +982,12 @@
         <div class="payout-dialog__body">
           <table class="ztor-table ztor-table--fluid pk-lp-stats-table">
             <thead><tr>
-              <th data-i18n="pk.lp.log.col.qr">QR code</th>
-              <th data-i18n="pk.lp.stats.col.claims">Claims</th>
-              <th data-i18n="pk.lp.stats.col.fans">Fans</th>
-              <th data-i18n="pk.lp.stats.col.share">Share of fans</th>
-              <th data-i18n="pk.lp.stats.col.rate">Quota used</th>
-              <th data-i18n="pk.lp.items.col.given">Points given</th>
+              <th data-sort="text" data-i18n="pk.lp.log.col.qr">QR code</th>
+              <th data-sort="num" data-i18n="pk.lp.stats.col.claims">Claims</th>
+              <th data-sort="num" data-i18n="pk.lp.stats.col.fans">Fans</th>
+              <th data-sort="num" data-i18n="pk.lp.stats.col.share">Share of fans</th>
+              <th data-sort="num" data-i18n="pk.lp.stats.col.rate">Quota used</th>
+              <th data-sort="num" data-i18n="pk.lp.items.col.given">Points given</th>
             </tr></thead>
             <tbody data-pk-lp-st-rows></tbody>
           </table>
@@ -1043,7 +1050,7 @@
     var rosterMode = 'mixed';
     var SESSIONS = {
       scheduled: { name: 'pk.s2.name', loc: 'pk.s2.loc', time: 'pk.s2.time',
-                   st: 'pk.st.scheduled', badge: 'badge badge--neutral', stage: null, roster: 'pending' },
+                   st: 'pk.st.scheduled', badge: 'badge badge--info', stage: null, roster: 'pending' },
       active:    { name: 'pk.row1.name', loc: 'pk.detail.loc', time: 'pk.detail.time',
                    st: 'pk.status.active', badge: 'badge badge--success', stage: 'active', roster: 'mixed' },
       ended:     { name: 'pk.s3.name', loc: 'pk.s3.loc', time: 'pk.s3.time',
@@ -1071,6 +1078,8 @@
       document.querySelectorAll('[data-pk-prog]').forEach(function (td) {
         var v = td.getAttribute('data-pk-prog').split(','), st = cfg.stage || 'scheduled';
         td.textContent = (st === 'active' ? v[0] : st === 'ended' ? v[1] : 0) + ' / ' + v[2];
+        /* 「14 / 20」整串不能當數字比；排序看已核銷件數 */
+        td.setAttribute('data-sort-value', st === 'active' ? v[0] : st === 'ended' ? v[1] : 0);
       });
       if (cfg.roster) rosterMode = cfg.roster;
       if (cfg.readonly) {   /* 已封存：不能編輯、不能反轉，只看 */
@@ -1112,7 +1121,7 @@
       tabs.innerHTML = opts.map(function (o) {
         var n = o[0] === 'all' ? all.length : all.filter(function (c) { return c.qr === o[0]; }).length;
         var on = o[0] === lpLogFilter;
-        return '<div class="tabs__item' + (on ? ' tabs__item--active' : '') + '" role="tab" aria-selected="' + on + '" data-lp-log-val="' + lpEsc(o[0]) + '"><span>' + lpEsc(o[1]) + '</span><span class="tabs__item-count">' + n + '</span></div>';
+        return '<button type="button" class="filter-tabs__item' + (on ? ' filter-tabs__item--active' : '') + '" role="tab" aria-selected="' + on + '" data-lp-log-val="' + lpEsc(o[0]) + '"><span>' + lpEsc(o[1]) + '</span><span class="filter-tabs__count">' + n + '</span></button>';
       }).join('');
       var lq = ((document.querySelector('[data-pk-lp-search]') || {}).value || '').trim().toLowerCase();
       var fanName = function (c) { return lpT('fans.row' + c.fan + '.name', 'Fan ' + c.fan); };
@@ -1149,19 +1158,19 @@
         var off = q.enabled === false;
         var st = off ? ['badge--neutral', lpT('pk.lp.qr.off', 'Disabled')]
           : full ? ['badge--neutral', lpT('pqr.full', 'Fully claimed')]
-          : ['badge--info', lpT('pk.lp.items.on', 'Active')];
+          : ['badge--success', lpT('pk.lp.items.on', 'Active')];
         var pct = q.total > 0 ? Math.min(100, Math.round(q.claimed / q.total * 100)) : 0;
         var claimed = +q.claimed > 0;
         /* 最後一列的選單往上開：卡片底下緊接領取紀錄工作列，往下開會被它蓋住 */
         var dl = lpEsc(lpT('pqr.download', 'Download QR'));
         var menu = '<button class="btn btn--icon btn--xs" type="button" data-pk-lp-qr-dl="' + q.id + '" aria-label="' + dl + '" title="' + dl + '"><i data-lucide="download" class="ztor-icon"></i></button>';
-        return '<tr class="ztor-table__row" tabindex="0" data-pk-lp-qr-row="' + q.id + '" data-pk-lp-qr-open="' + q.id + '" aria-label="' + lpEsc(aria + '：' + nm) + '">' +
+        return '<tr class="ztor-table__row ztor-table__row--go" tabindex="0" data-pk-lp-qr-row="' + q.id + '" data-pk-lp-qr-open="' + q.id + '" aria-label="' + lpEsc(aria + '：' + nm) + '">' +
           '<td class="ztor-table__feature"><span class="ztor-table__media"><span>' + lpEsc(nm) +
             '<span class="ztor-table__sub pk-lp-per-sub">' + lpEsc(lpT('pqr.perScan', '+{n} pts per scan').replace('{n}', q.points)) + '</span>' +
-            (st[0] !== 'badge--info' ? '<span class="badge ' + st[0] + ' pk-lp-st-inline"><span>' + lpEsc(st[1]) + '</span></span>' : '') +
+            (st[0] !== 'badge--success' ? '<span class="badge ' + st[0] + ' pk-lp-st-inline"><span>' + lpEsc(st[1]) + '</span></span>' : '') +
             '</span></span></td>' +
           '<td class="ztor-table__nowrap pk-lp-per">+' + lpEsc(q.points) + '</td>' +
-          '<td class="ztor-table__nowrap">' + lpEsc(q.claimed) + '／' + lpEsc(q.total) +
+          '<td class="ztor-table__nowrap" data-sort-value="' + lpEsc(q.claimed) + '">' + lpEsc(q.claimed) + '／' + lpEsc(q.total) +
             '<div class="stock-bar" aria-hidden="true"><span class="stock-bar__fill" style="width:' + pct + '%"></span></div></td>' +
           '<td class="ztor-table__nowrap pk-lp-given">' + lpEsc(Number(q.claimed * q.points).toLocaleString()) + '</td>' +
           '<td class="ztor-table__nowrap pk-lp-st"><span class="badge ' + st[0] + '"><span>' + lpEsc(st[1]) + '</span></span></td>' +
@@ -1170,6 +1179,7 @@
       var qe = document.querySelector('[data-pk-lp-qrs-empty]'); if (qe) qe.hidden = ses.qrs.length > 0;
       var tb = document.querySelector('[data-pk-lp-qrtable]'); if (tb) tb.hidden = !ses.qrs.length;
       if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+      if (window.ztorTableSort) window.ztorTableSort.refresh(box.closest('table'));
     }
     /* F6.2 QR 圖 popup（同頁核銷紀錄 popup 的 .payout-modal 殼）：共用 points-qr 卡＋建立者與建立時間 */
     var lpQrModal = document.querySelector('[data-pk-lp-qr-modal]');
@@ -1187,7 +1197,7 @@
       document.querySelector('[data-pk-lp-qr-by]').textContent = SE.byOf(q) || '—';
       document.querySelector('[data-pk-lp-qr-at]').textContent = q.createdAt || '—';
       var off = q.enabled === false, full = q.total > 0 && q.claimed >= q.total;
-      var st = off ? ['badge--neutral', lpT('pk.lp.qr.off', 'Disabled')] : full ? ['badge--neutral', lpT('pqr.full', 'Fully claimed')] : ['badge--info', lpT('pk.lp.items.on', 'Active')];
+      var st = off ? ['badge--neutral', lpT('pk.lp.qr.off', 'Disabled')] : full ? ['badge--neutral', lpT('pqr.full', 'Fully claimed')] : ['badge--success', lpT('pk.lp.items.on', 'Active')];
       document.querySelector('[data-pk-lp-qr-st]').innerHTML = '<span class="badge ' + st[0] + '"><span>' + lpEsc(st[1]) + '</span></span>';
       var acts = document.querySelector('[data-pk-lp-qract]');
       if (acts) {
@@ -1237,7 +1247,7 @@
       if (badge) { badge.className = 'badge badge--success'; badge.firstElementChild.setAttribute('data-i18n', 'pk.status.active'); }
       var on = SE.isEnabled(ses.id);
       var st = document.querySelector('[data-pk-lp-state]');
-      if (st) { st.hidden = false; st.className = 'badge ' + (on ? 'badge--info' : 'badge--neutral'); st.firstElementChild.setAttribute('data-i18n', on ? 'pk.lp.en' : 'pk.lp.dis'); }
+      if (st) { st.hidden = false; st.className = 'badge ' + (on ? 'badge--success' : 'badge--neutral'); st.firstElementChild.setAttribute('data-i18n', on ? 'pk.lp.en' : 'pk.lp.dis'); }
       var sw = document.querySelector('[data-pk-lp-switch]');
       if (sw) { sw.classList.toggle('switch--on', on); sw.setAttribute('aria-checked', on ? 'true' : 'false'); }
       var swl = document.querySelector('[data-pk-lp-switch-label]'); if (swl) swl.textContent = lpT(on ? 'pk.lp.en' : 'pk.lp.dis', on ? 'Enabled' : 'Disabled');
@@ -1288,7 +1298,9 @@
         return '<tr><td>' + lpEsc(SE.nameOf(q)) + '</td>' + td(fmt(q.claimed)) + td(fmt(q.claimed)) + td(share + '%') + td(used + '%') + td(fmt(q.claimed * q.points)) + '</tr>';
       }).join('');
       /* 合計列：領取次數＝各 QR 加總；領取粉絲數＝不重複人數（同一粉絲可領多個 QR，所以小於各 QR 加總）；名額使用率＝總已領／總名額 */
-      if (rows) rows.innerHTML += '<tr class="pk-lp-stats-total"><td>' + lpEsc(lpT('pk.lp.stats.total', 'Total')) + '</td>' + td(fmt(claimed)) + td(fmt(fans)) + td('—') + td(pct + '%') + td(fmt(pts)) + '</tr>';
+      /* 合計列掛 data-sort-pin：點欄名排序時固定留在最後一列，不跟著資料列重排（js/table-sort.js） */
+      if (rows) rows.innerHTML += '<tr class="pk-lp-stats-total" data-sort-pin><td>' + lpEsc(lpT('pk.lp.stats.total', 'Total')) + '</td>' + td(fmt(claimed)) + td(fmt(fans)) + td('—') + td(pct + '%') + td(fmt(pts)) + '</tr>';
+      if (rows && window.ztorTableSort) window.ztorTableSort.refresh(rows.closest('table'));
       document.querySelector('[data-pk-lp-qrtotal]').textContent = lpT('pk.lp.d.qron.total', '/ {n} total').replace('{n}', ses.qrs.length);
     }
 
@@ -1536,7 +1548,7 @@
           var it = byId(id); if (!it) return;
           var tr = document.createElement('tr'); tr.setAttribute('data-pk-item-id', id);
           var tk = it.kind === 'ticket' ? 'pk.ons.type.ticket' : 'pk.ons.type.product';
-          tr.innerHTML = '<td>' + esc(it.name) + '</td><td data-i18n="' + tk + '">' + esc(T(tk, '')) + '</td><td class="pk-ons-num">0 / ' + (UNITS[id] || 0) + '</td>';
+          tr.innerHTML = '<td>' + esc(it.name) + '</td><td data-i18n="' + tk + '">' + esc(T(tk, '')) + '</td><td class="pk-ons-num" data-sort-value="0">0 / ' + (UNITS[id] || 0) + '</td>';
           body.appendChild(tr);
         });
         var c = document.querySelector('[data-pk-items-count]'); if (c) c.textContent = body.querySelectorAll('tr').length;
@@ -1603,17 +1615,8 @@
       span.textContent = (window.i18nT && window.i18nT(key)) || fallback;
       setTimeout(function () { if (prev) { span.setAttribute('data-i18n', prev); if (window.applyI18n) window.applyI18n(span); } }, 1400);
     }
-    /* 交付列的兩顆複製鍵（重設／停用／改密碼已移進「編輯場次」）*/
-    function copyFrom(btnSel, valSel) {
-      var btn = document.querySelector(btnSel);
-      if (!btn) return;
-      btn.addEventListener('click', function () {
-        var el = document.querySelector(valSel);
-        var v = el ? (el.value !== undefined ? el.value : el.textContent) : '';
-        if (navigator.clipboard) navigator.clipboard.writeText(v).catch(function () {});
-      });
-    }
-    copyFrom('[data-pk-copy]', '[data-pk-url]');
+    /* 墓碑 2026-11-09（普查 3.6）：掃碼網址的複製鍵（copyFrom + [data-pk-copy]）退場——改 .linkf，
+       複製與「已複製」回饋交給 js/link-field.js。重設／停用／改密碼仍在「編輯場次」。 */
 
     /* redemption log filter */
     var nav = document.querySelector('[data-pk-log-status]');
@@ -1717,11 +1720,11 @@
       if (rNoRes) rNoRes.hidden = shown !== 0;
     }
     if (rNav) {
-      rNav.querySelectorAll('.tabs__item').forEach(function (btn) {
+      rNav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          rNav.querySelectorAll('.tabs__item').forEach(function (b) {
+          rNav.querySelectorAll('.filter-tabs__item').forEach(function (b) {
             var on = b === btn;
-            b.classList.toggle('tabs__item--active', on);
+            b.classList.toggle('filter-tabs__item--active', on);
             b.setAttribute('aria-selected', on ? 'true' : 'false');
           });
           rStatus = btn.getAttribute('data-status-val'); rApply();
@@ -1752,6 +1755,7 @@
 <script src="js/i18n.js?v=r2.2"></script><script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
 <script src="js/faux-qr.js?v=r2.2"></script>
@@ -1759,5 +1763,6 @@
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="partials/list-scroll.js?v=r2.2"></script>
 <script src="js/csv-export.js?v=r2.2"></script><!-- 匯出確認（pattern 5.1.12） -->
+<script src="js/link-field.js?v=r2.2"></script><!-- 掃碼網址的複製（.linkf，普查 3.6） -->
 </body>
 </html>

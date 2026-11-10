@@ -145,7 +145,9 @@
        [data-currency-readout]      創作者幣別的讀數（值可傳幣別代碼，預設＝創作者幣別）
        [data-currency-base-symbol]  平台基準幣別的符號，掛在 Admin 金額欄的前綴上
        [data-currency-fx-for="id"]  該輸入框的金額換算成創作者幣別＋匯率時點，跟著輸入即時更新
-       [data-currency-symbol]       創作者幣別的符號，掛在創作者金額輸入框的前綴上（D466：設定頁最低提款金額）
+       [data-currency-symbol]       創作者幣別的符號（D466）；金額輸入框的前綴自 Q147 起改用下面兩個代碼掛勾
+       [data-currency-code]         創作者幣別的代碼（TWD），掛在創作者金額輸入框的前綴上（Q147：.amount-field--code）
+       [data-currency-base-code]    平台基準幣別的代碼（HKD），掛在 Admin 金額輸入框的前綴上（Q147）
        [data-currency-options]      <select> 的選項＝全站幣別值域，預設選創作者幣別（D517：手動補登收入）
        [data-currency-money="n"]    數字 n 以創作者幣別顯示（符號＋千分位；D466：設定頁合規用量上限、申請提款 CTA 的金額）。
                                     數字本身不換算——寫在頁面上的就是創作者幣別的金額（示範值，ASSUMPTIONS UIA-288） */
@@ -171,6 +173,13 @@
     });
     root.querySelectorAll('[data-currency-symbol]').forEach(function (el) {
       el.textContent = symbol(creatorCurrency());
+    });
+    /* 金額輸入框的前綴（Q147，2026-11-09）：一律寫幣別代碼（.amount-field--code），不寫符號。 */
+    root.querySelectorAll('[data-currency-code]').forEach(function (el) {
+      el.textContent = creatorCurrency();
+    });
+    root.querySelectorAll('[data-currency-base-code]').forEach(function (el) {
+      el.textContent = BASE;
     });
     root.querySelectorAll('[data-currency-money]').forEach(function (el) {
       el.textContent = money(creatorCurrency(), el.getAttribute('data-currency-money'));

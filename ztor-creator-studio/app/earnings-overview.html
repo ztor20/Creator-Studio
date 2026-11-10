@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">   <!-- 2026-09-01：chart.css 那份 segmented 副本撤除後改吃 DS 本尊 -->
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/split-bar.css?v=r2.2">   <!-- Q167：收入來源佔比 -->
 <link rel="stylesheet" href="ds-components/waterfall.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
@@ -246,98 +247,32 @@
             <!-- Revenue by source · extended to the merged 14-type taxonomy (ASSUMPTIONS CCR-001).
                  cocreate types (Co-creation funding / Tastemaker commission / OTT royalties) added
                  as proposed sources; percentages are illustrative demo splits summing to 100%. -->
-            <ul class="rank-bars">
-              <li class="rank-bar">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:100%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--primary)"></span>
-                    <span class="rank-bar__label" data-i18n="src.eshop">E-Shop sales</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">28%</span>
-              </li>
-              <li class="rank-bar">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:71%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--chart-2)"></span>
-                    <span class="rank-bar__label" data-i18n="src.cocreate">Co-creation funding</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">20%</span>
-              </li>
-              <li class="rank-bar" data-feat="E13">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:50%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--chart-4)"></span>
-                    <span class="rank-bar__label" data-i18n="src.events">Event tickets</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">14%</span>
-              </li>
-              <li class="rank-bar">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:39%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--chart-5)"></span>
-                    <span class="rank-bar__label" data-i18n="src.commission">Tastemaker commission</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">11%</span>
-              </li>
-              <li class="rank-bar">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:32%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--chart-3)"></span>
-                    <span class="rank-bar__label" data-i18n="src.ott">OTT royalties</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">9%</span>
-              </li>
-              <li class="rank-bar" data-feat="E14">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:25%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--status-success)"></span>
-                    <span class="rank-bar__label" data-i18n="src.ip">IP royalties</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">7%</span>
-              </li>
-              <li class="rank-bar" data-feat="E16">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:21%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--status-info)"></span>
-                    <span class="rank-bar__label" data-i18n="src.streaming">Platform / streaming</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">6%</span>
-              </li>
-              <li class="rank-bar" data-feat="E15">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:11%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--status-error)"></span>
-                    <span class="rank-bar__label" data-i18n="src.licensing">Licensing</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">3%</span>
-              </li>
-              <li class="rank-bar" data-feat="E17">
-                <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:7%"></div>
-                  <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--muted-foreground)"></span>
-                    <span class="rank-bar__label" data-i18n="src.other">Project support · other</span>
-                  </div>
-                </div>
-                <span class="rank-bar__pct">2%</span>
-              </li>
-            </ul>
+            <!-- Q167（2026-11-09）：「收入從哪裡來」是一個總數的組成（加起來 100%），佔比一律走 split-bar：
+                 分段長條＋圖例（名稱、佔比）。原本是 rank-bars 量條清單；佔比數字與色相不變。 -->
+            <div class="split-bar">
+              <div class="split-bar__track" aria-hidden="true">
+                <span class="split-bar__seg" style="flex:28;background:var(--primary)"></span>
+                <span class="split-bar__seg" style="flex:20;background:var(--chart-2)"></span>
+                <span class="split-bar__seg" data-feat="E13" style="flex:14;background:var(--chart-4)"></span>
+                <span class="split-bar__seg" style="flex:11;background:var(--chart-5)"></span>
+                <span class="split-bar__seg" style="flex:9;background:var(--chart-3)"></span>
+                <span class="split-bar__seg" data-feat="E14" style="flex:7;background:var(--status-success)"></span>
+                <span class="split-bar__seg" data-feat="E16" style="flex:6;background:var(--status-info)"></span>
+                <span class="split-bar__seg" data-feat="E15" style="flex:3;background:var(--status-error)"></span>
+                <span class="split-bar__seg" data-feat="E17" style="flex:2;background:var(--muted-foreground)"></span>
+              </div>
+              <div class="split-bar__legend">
+                <div class="split-bar__row" style="color:var(--primary)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.eshop">E-Shop sales</span><span class="split-bar__pct">28%</span></div>
+                <div class="split-bar__row" style="color:var(--chart-2)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.cocreate">Co-creation funding</span><span class="split-bar__pct">20%</span></div>
+                <div class="split-bar__row" data-feat="E13" style="color:var(--chart-4)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.events">Event tickets</span><span class="split-bar__pct">14%</span></div>
+                <div class="split-bar__row" style="color:var(--chart-5)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.commission">Tastemaker commission</span><span class="split-bar__pct">11%</span></div>
+                <div class="split-bar__row" style="color:var(--chart-3)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.ott">OTT royalties</span><span class="split-bar__pct">9%</span></div>
+                <div class="split-bar__row" data-feat="E14" style="color:var(--status-success)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.ip">IP royalties</span><span class="split-bar__pct">7%</span></div>
+                <div class="split-bar__row" data-feat="E16" style="color:var(--status-info)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.streaming">Platform / streaming</span><span class="split-bar__pct">6%</span></div>
+                <div class="split-bar__row" data-feat="E15" style="color:var(--status-error)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.licensing">Licensing</span><span class="split-bar__pct">3%</span></div>
+                <div class="split-bar__row" data-feat="E17" style="color:var(--muted-foreground)"><span class="split-bar__dot"></span><span class="split-bar__label" data-i18n="src.other">Project support · other</span><span class="split-bar__pct">2%</span></div>
+              </div>
+            </div>
           </section>
         </div>
 
@@ -353,12 +288,13 @@
               <h3 class="card__title" data-i18n="roy.title">Royalties</h3>
             </div>
             <div class="filter-row__actions">
-              <nav class="filter-tabs" role="tablist" aria-label="Royalty period">
-                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-i18n="roy.period.month">Month</button>
-                <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-i18n="roy.period.quarter">Quarter</button>
-                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-i18n="roy.period.year">Year</button>
-                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-i18n="roy.period.custom">Custom</button>
-              </nav>
+              <!-- 2026-11-09 Q154：期間是切換檢視 → .segmented（原 filter-tabs） -->
+              <div class="segmented" role="tablist" aria-label="Royalty period">
+                <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-i18n="roy.period.month">Month</button>
+                <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-i18n="roy.period.quarter">Quarter</button>
+                <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-i18n="roy.period.year">Year</button>
+                <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-i18n="roy.period.custom">Custom</button>
+              </div>
               <button class="btn btn--outline btn--sm" data-i18n="roy.export">Export report</button>
             </div>
           </div>

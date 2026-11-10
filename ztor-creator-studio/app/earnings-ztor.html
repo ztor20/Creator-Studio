@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
@@ -32,10 +33,12 @@
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：交易明細、項目收入兩張表 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* Breakdown 分頁一次性版面：全部收入摘要列＋我的項目表。色彩／字級一律走 token，無裸 hex/rgb/font-size。 */
-  .bd-tablecard { border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+  /* 2026-11-09：拿掉內框（原 1px --border＋--radius-xl）——它都坐在 .card 裡，卡裡不再畫第二圈框 */
+  .bd-tablecard { overflow:hidden; }
   .bd-tablecard .ztor-table { border-radius:0; }
   .bd-amt, th.bd-amt { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 </style>
@@ -117,40 +120,41 @@
 
         <!-- Filter chips · type + status -->
         <div class="filter-row">
-          <div class="chip-group" role="group" aria-label="Transaction type">
-            <button class="chip chip--active" data-filter="all"><span data-i18n="tx.filter.all">All</span></button>
-            <button class="chip" data-filter="eshop"><span data-i18n="tx.filter.eshop">E-Shop</span></button>
-            <button class="chip" data-filter="event" data-feat="E13"><span data-i18n="tx.filter.event">Event tickets</span></button>
-            <button class="chip" data-filter="ip" data-feat="E14"><span data-i18n="tx.filter.ip">IP royalties</span></button>
-            <button class="chip" data-filter="licensing" data-feat="E15"><span data-i18n="tx.filter.licensing">Licensing</span></button>
-            <button class="chip" data-filter="streaming" data-feat="E16"><span data-i18n="tx.filter.streaming">Platform / streaming</span></button>
-            <button class="chip" data-filter="project" data-feat="E17"><span data-i18n="tx.filter.project">Project support</span></button>
+          <!-- Q154（2026-11-09）：篩選清單、單選 → .filter-tabs（原 chip-group，同 earnings.html 收入分類） -->
+          <nav class="filter-tabs" role="tablist" aria-label="Transaction type" data-tx-types>
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-filter="all"><span data-i18n="tx.filter.all">All</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="eshop"><span data-i18n="tx.filter.eshop">E-Shop</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="event" data-feat="E13"><span data-i18n="tx.filter.event">Event tickets</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="ip" data-feat="E14"><span data-i18n="tx.filter.ip">IP royalties</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="licensing" data-feat="E15"><span data-i18n="tx.filter.licensing">Licensing</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="streaming" data-feat="E16"><span data-i18n="tx.filter.streaming">Platform / streaming</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="project" data-feat="E17"><span data-i18n="tx.filter.project">Project support</span></button>
             <!-- cocreate income types (ASSUMPTIONS CCR-001) — reuse canonical src.* labels -->
-            <button class="chip" data-filter="cocreate"><span data-i18n="src.cocreate">Co-creation funding</span></button>
-            <button class="chip" data-filter="commission"><span data-i18n="src.commission">Tastemaker commission</span></button>
-            <button class="chip" data-filter="ott"><span data-i18n="src.ott">OTT royalties</span></button>
-            <button class="chip" data-filter="payout" data-feat="E18"><span data-i18n="tx.filter.payouts">Payouts &amp; voids</span></button>
-          </div>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="cocreate"><span data-i18n="src.cocreate">Co-creation funding</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="commission"><span data-i18n="src.commission">Tastemaker commission</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="ott"><span data-i18n="src.ott">OTT royalties</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-filter="payout" data-feat="E18"><span data-i18n="tx.filter.payouts">Payouts &amp; voids</span></button>
+          </nav>
           <div class="filter-row__actions">
             <a class="btn btn--outline btn--sm" href="earnings-overview.html#royalties" data-feat="E20" data-i18n="btn.manual-entry-ext">External &amp; manual entry</a>
             <button class="btn btn--outline btn--sm" data-i18n="btn.export-csv">Export CSV</button>
           </div>
         </div>
 
-        <section class="card mt-16" style="padding:0;overflow:hidden">
+        <section class="card card--table mt-16">
           <table class="ztor-table">
             <thead>
               <tr>
-                <th data-i18n="tx.col.date">Date</th><th data-i18n="tx.col.item">Item</th><th data-i18n="tx.col.amountfx">Amount &amp; FX</th><th data-i18n="tx.col.status">Status</th><th style="text-align:right" data-i18n="tx.col.fees">Fees</th><th style="text-align:right" data-i18n="tx.col.net">Net of fees</th><th class="ztor-table__chevcell" aria-hidden="true"></th>
+                <th data-sort="text" data-i18n="tx.col.date">Date</th><th data-sort="text" data-i18n="tx.col.item">Item</th><th data-sort="num" data-i18n="tx.col.amountfx">Amount &amp; FX</th><th data-sort="text" data-i18n="tx.col.status">Status</th><th class="sort-th--end" style="text-align:right" data-sort="num" data-i18n="tx.col.fees">Fees</th><th class="sort-th--end" style="text-align:right" data-sort="num" data-i18n="tx.col.net">Net of fees</th><th class="ztor-table__chevcell" aria-hidden="true"></th>
               </tr>
             </thead>
             <tbody>
               <!-- Rows are clickable · expand to per-transaction trace (Event ID · rate version · own waterfall) · spec §5.1.8 F7 -->
-              <tr class="ztor-table__row" data-tx-row data-feat="E17" aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="project" data-feat="E17" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 24</td>
                 <td><span data-i18n="earnings.name.九龍夜行">Kowloon After Dark OST</span> · Pre-order <span class="text-sub">· Project support</span></td>
-                <td>EUR 1,326.00 → $1,410.00 <span class="text-sub"></span></td>
-                <td><span class="badge badge--orange">Pending</span></td>
+                <td data-sort-value="1410">EUR 1,326.00 → $1,410.00 <span class="text-sub"></span></td>
+                <td><span class="badge badge--info">Pending</span></td>
                 <td style="text-align:right;color:var(--muted-foreground)">−$84.60</td>
                 <td style="text-align:right;font-weight: var(--fw-regular)">$1,325.40</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
@@ -170,7 +174,7 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E16" aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="streaming" data-feat="E16" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 23</td>
                 <td>Spotify · Q4 statement <span class="text-sub">· Platform / streaming</span></td>
                 <td>$684.32</td>
@@ -192,7 +196,7 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="eshop" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 22</td>
                 <td><span data-i18n="earnings.name.tidepool">Pirate Queen zine vol. 02</span> × 14 <span class="text-sub">· E-Shop sales</span></td>
                 <td>$392.00</td>
@@ -216,10 +220,10 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E15" aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="licensing" data-feat="E15" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 20</td>
                 <td><span data-i18n="earnings.name.latebloom">Moonlight Over Sham Shui Po</span> → <span data-i18n="earnings.name.studioyiu">Yiu Pictures</span> <span class="text-sub">· Licensing</span></td>
-                <td>JPY 350,000 → $2,401.00 <span class="text-sub"></span></td>
+                <td data-sort-value="2401">JPY 350,000 → $2,401.00 <span class="text-sub"></span></td>
                 <td><span class="badge badge--success">Paid</span></td>
                 <td style="text-align:right;color:var(--muted-foreground)">−$120.05</td>
                 <td style="text-align:right;font-weight: var(--fw-regular)">$2,280.95</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
@@ -240,7 +244,7 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E18" aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="payout" data-feat="E18" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 18</td>
                 <td>Bank transfer ••3417 <span class="text-sub">· Payout</span></td>
                 <td style="color:var(--destructive)">−$5,200.00</td>
@@ -258,11 +262,11 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E20" aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="licensing" data-feat="E20" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 16</td>
                 <td><span data-i18n="earnings.name.neontide">Dragon Tiger Gate key art</span> rental — <span data-i18n="earnings.name.studiomira">Studio Mira</span> <span class="text-sub">· Licensing · manual entry · unverified</span></td>
                 <td>$480.00</td>
-                <td><span class="badge badge--orange">Pending</span></td>
+                <td><span class="badge badge--info">Pending</span></td>
                 <td style="text-align:right;color:var(--muted-foreground)">−$0.00</td>
                 <td style="text-align:right;font-weight: var(--fw-regular)">$480.00</td><td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-table__chev"></i></td>
               </tr>
@@ -277,7 +281,7 @@
                   </div>
                 </td>
               </tr>
-              <tr class="ztor-table__row" data-tx-row data-feat="E18" aria-expanded="false">
+              <tr class="ztor-table__row ztor-table__row--go" data-tx-row data-tx-type="payout" data-feat="E18" aria-expanded="false">
                 <td class="ztor-table__datecell">Nov 12</td>
                 <td><span data-i18n="earnings.name.springlaunch">Kowloon Café 10th Anniv.</span> · 3 tickets voided <span class="text-sub">· Void</span></td>
                 <td style="color:var(--destructive)">−$210.00</td>
@@ -300,9 +304,10 @@
           </table>
         </section>
 
-        <p class="text-sub mt-16" style="font-size: var(--fs-12)">
-          <span data-i18n="tx.showing">Showing 7 of 214 transactions ·</span>
-          <a class="card__link" href="#" data-i18n="btn.load-more">Load more →</a>
+        <!-- Q169／Q170（2026-11-09）：類別篩選（Q154 filter-tabs）真的篩選（同 earnings.html），篩到 0 筆時顯示這一句 -->
+        <p class="text-sub mt-16" data-tx-none hidden style="font-size: var(--fs-12)" data-i18n="tx.none">No transactions match these filters.</p>
+        <p class="text-sub mt-16" style="font-size: var(--fs-12)" data-tx-foot>
+          <span data-tx-showing data-i18n="tx.showing">Showing 7 of 214 transactions</span>
         </p>
 
         </div><!-- /.when-data -->
@@ -339,16 +344,16 @@
             </div>
             <button class="btn btn--outline btn--sm" type="button" data-bd-open="waterfall" data-i18n="breakdown.all.more">See full breakdown →</button>
           </div>
-          <div class="bento mt-16">
-            <div class="kpi bento--span-6">
-              <div class="kpi__label" data-i18n="earnings.waterfall.gross">Gross revenue</div>
-              <div class="kpi__value">$24,830</div>
-              <div class="kpi__meta" data-i18n="earnings.waterfall.gross-meta">212 settled events</div>
+          <div class="stat-row stat-row--even mt-16">
+            <div class="stat">
+              <div class="stat__label" data-i18n="earnings.waterfall.gross">Gross revenue</div>
+              <div class="stat__value">$24,830</div>
+              <div class="stat__meta" data-i18n="earnings.waterfall.gross-meta">212 settled events</div>
             </div>
-            <div class="kpi bento--span-6">
-              <div class="kpi__label" data-i18n="earnings.waterfall.pool">Distributable profit</div>
-              <div class="kpi__value">$16,721</div>
-              <div class="kpi__meta" data-i18n="breakdown.all.meta">After direct costs, platform &amp; payment fees, IP royalties and the Ztor cut.</div>
+            <div class="stat">
+              <div class="stat__label" data-i18n="earnings.waterfall.pool">Distributable profit</div>
+              <div class="stat__value">$16,721</div>
+              <div class="stat__meta" data-i18n="breakdown.all.meta">After direct costs, platform &amp; payment fees, IP royalties and the Ztor cut.</div>
             </div>
           </div>
         </section>
@@ -368,32 +373,32 @@
             <table class="ztor-table">
               <thead>
                 <tr>
-                  <th data-i18n="breakdown.col.project">Project</th>
-                  <th data-i18n="breakdown.col.type">Type</th>
-                  <th class="bd-amt" data-i18n="breakdown.col.net">Net income</th>
+                  <th data-sort="text" data-i18n="breakdown.col.project">Project</th>
+                  <th data-sort="text" data-i18n="breakdown.col.type">Type</th>
+                  <th class="bd-amt sort-th--end" data-sort="num" data-i18n="breakdown.col.net">Net income</th>
                   <th aria-hidden="true"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr class="ztor-table__row" data-bd-open="project" data-proj="kowloonOst">
+                <tr class="ztor-table__row ztor-table__row--go" data-bd-open="project" data-proj="kowloonOst">
                   <td class="ztor-table__feature"><span data-i18n="earnings.name.九龍夜行">Kowloon After Dark OST</span></td>
                   <td data-i18n="breakdown.type.music">Music</td>
                   <td class="bd-amt">$5,542</td>
                   <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
                 </tr>
-                <tr class="ztor-table__row" data-bd-open="project" data-proj="tidepool">
+                <tr class="ztor-table__row ztor-table__row--go" data-bd-open="project" data-proj="tidepool">
                   <td class="ztor-table__feature"><span data-i18n="earnings.name.tidepool">Pirate Queen zine vol. 02</span></td>
                   <td data-i18n="breakdown.type.goods">Merch</td>
                   <td class="bd-amt">$2,086</td>
                   <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
                 </tr>
-                <tr class="ztor-table__row" data-bd-open="project" data-proj="latebloom">
+                <tr class="ztor-table__row ztor-table__row--go" data-bd-open="project" data-proj="latebloom">
                   <td class="ztor-table__feature"><span data-i18n="earnings.name.latebloom">Moonlight Over Sham Shui Po</span> · licensing</td>
                   <td data-i18n="breakdown.type.licensing">Licensing</td>
                   <td class="bd-amt">$3,280</td>
                   <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
                 </tr>
-                <tr class="ztor-table__row" data-bd-open="project" data-proj="taipeilive">
+                <tr class="ztor-table__row ztor-table__row--go" data-bd-open="project" data-proj="taipeilive">
                   <td class="ztor-table__feature"><span data-i18n="earnings.name.taipeilive">Kowloon Café 10th Anniv. · Taipei</span></td>
                   <td data-i18n="breakdown.type.event">Event</td>
                   <td class="bd-amt">$3,180</td>
@@ -461,7 +466,7 @@
             <a class="payout-bank-card" href="#" aria-disabled="true">
               <span class="payout-bank-card__top">
                 <span class="payout-bank-card__icon"><i data-lucide="landmark" class="ztor-icon"></i></span>
-                <span class="badge badge--orange">Verifying</span>
+                <span class="badge badge--info">Verifying</span>
               </span>
               <span>
                 <span class="payout-bank-card__title">Taishin Bank · •••2081</span>
@@ -498,16 +503,16 @@
             </div>
             <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="payouts.pool-sub">Basis</span>
           </div>
-          <div class="bento mt-16">
-            <div class="kpi bento--span-6">
-              <div class="kpi__label" data-i18n="payouts.pool.net">Distributable profit</div>
-              <div class="kpi__value">$16,721</div>
-              <div class="kpi__meta" data-i18n="payouts.pool.net-meta">What you can distribute this period</div>
+          <div class="stat-row stat-row--even mt-16">
+            <div class="stat">
+              <div class="stat__label" data-i18n="payouts.pool.net">Distributable profit</div>
+              <div class="stat__value">$16,721</div>
+              <div class="stat__meta" data-i18n="payouts.pool.net-meta">What you can distribute this period</div>
             </div>
-            <div class="kpi bento--span-6">
-              <div class="kpi__label" data-i18n="payouts.pool.reserve">Void reserve</div>
-              <div class="kpi__value">$0 · 0%</div>
-              <div class="kpi__meta" data-i18n="payouts.pool.reserve-meta">0% withheld in v1 · whether voids need a reserve is proposed, pending approval (D253)</div>
+            <div class="stat">
+              <div class="stat__label" data-i18n="payouts.pool.reserve">Void reserve</div>
+              <div class="stat__value">$0 · 0%</div>
+              <div class="stat__meta" data-i18n="payouts.pool.reserve-meta">0% withheld in v1 · whether voids need a reserve is proposed, pending approval (D253)</div>
             </div>
           </div>
           <div class="info-banner mt-16">
@@ -539,7 +544,7 @@
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:16px">
-                <span class="badge badge--orange">Payout Requested</span>
+                <span class="badge badge--info">Payout Requested</span>
                 <div class="data-list__amount">$2,400.00</div>
               </div>
             </div>
@@ -595,7 +600,19 @@
                 <div class="data-list__amount">$6,320.00</div>
               </div>
             </div>
+            <!-- Q170 紀錄類空狀態：期間內沒有任何提款時只留這一列（下方小腳本依列數切換） -->
+            <div class="data-list__row" data-payout-history-empty hidden>
+              <div class="data-list__row-main"><div class="data-list__body">
+                <div class="data-list__meta" data-i18n="payouts.history.empty">No payouts yet. Each request will be recorded here.</div>
+              </div></div>
+            </div>
           </div>
+          <script>
+            (function () {
+              var e = document.currentScript.previousElementSibling.querySelector('[data-payout-history-empty]');
+              if (e) e.hidden = !!e.parentNode.querySelector('.data-list__row:not([data-payout-history-empty]):not([hidden])');
+            })();
+          </script>
         </section>
 
         </div><!-- /.when-data -->
@@ -813,6 +830,7 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script src="partials/payout-request-modal.js?v=r2.2"></script>
 <script src="partials/manual-entry-modal.js?v=r2.2"></script>
 <script>
@@ -848,7 +866,7 @@
     const initial = (location.hash || '').replace('#', '');
     if (['overview','transactions','breakdown','payouts','tax','howto'].includes(initial)) activate(initial);
 
-    /* Filter chips — local-only single-select within group */
+    /* Filter chips — local-only single-select within group（剩稅務年度；交易類別 2026-11-09 改 filter-tabs，見下） */
     document.querySelectorAll('.chip-group').forEach(group => {
       group.addEventListener('click', e => {
         const chip = e.target.closest('.chip:not(.chip--static)');
@@ -857,6 +875,49 @@
         chip.classList.add('chip--active');
       });
     });
+    /* 交易類別篩選（Q154 filter-tabs）：單選、切換 aria-selected，真的篩選列（Q169） */
+    const txTypes = document.querySelector('[data-tx-types]');
+    if (txTypes) txTypes.addEventListener('click', e => {
+      const btn = e.target.closest('.filter-tabs__item');
+      if (!btn) return;
+      txTypes.querySelectorAll('.filter-tabs__item').forEach(b => {
+        const on = b === btn;
+        b.classList.toggle('filter-tabs__item--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      applyTxType(btn.dataset.filter);
+    });
+
+    /* Q169（2026-11-09）：交易類別 chip 原本只換外觀、清單不變。改成真的篩選示範列（列上的 data-tx-type），
+       篩掉的列一併收起它展開的明細；0 筆時顯示「沒有交易符合目前的篩選」並收起筆數列（同 earnings.html）。 */
+    const txNone = document.querySelector('[data-tx-none]');
+    const txFoot = document.querySelector('[data-tx-foot]');
+    const txShowing = document.querySelector('[data-tx-showing]');
+    let txCount = 0;
+    function paintTxCount() {
+      if (!txShowing) return;
+      const tpl = (window.i18nT && window.i18nT('tx.showing')) || txShowing.textContent;
+      txShowing.textContent = String(tpl).replace('{n}', txCount);
+    }
+    function applyTxType(type) {
+      let n = 0;
+      document.querySelectorAll('[data-panel="transactions"] [data-tx-row]').forEach(row => {
+        const on = type === 'all' || row.dataset.txType === type;
+        row.hidden = !on;
+        const detail = row.nextElementSibling;
+        if (!on && detail && detail.classList.contains('ztor-table__detail')) {
+          detail.hidden = true;
+          row.setAttribute('aria-expanded', 'false');
+        }
+        if (on) n++;
+      });
+      txCount = n;
+      if (txNone) txNone.hidden = n > 0;
+      if (txFoot) txFoot.hidden = n === 0;
+      paintTxCount();
+    }
+    document.addEventListener('i18n:applied', paintTxCount);
+    applyTxType('all');
 
   })();
 

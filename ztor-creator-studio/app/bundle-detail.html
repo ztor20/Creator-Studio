@@ -137,7 +137,7 @@
           <div class="pd-hero__badges flex-row" style="gap:8px;flex-wrap:wrap">
             <!-- D241：主徽章由 ListingState.deriveFlags() 推導（草稿→已下架→販售結束→售罄→即將開賣→急需補貨→販售中），
                  「已隱藏」是另一件事、擺第二顆，不蓋掉售罄。 -->
-            <span class="badge badge--orange" id="bd-status-badge"><span data-i18n="shop.status.live">Live</span></span>
+            <span class="badge badge--success" id="bd-status-badge"><span data-i18n="shop.status.live">Live</span></span>
             <span class="badge badge--neutral" id="bd-hidden-badge" hidden><span data-i18n="shop.status.hidden">Hidden</span></span>
             <span class="badge"><span data-i18n="bd.badge.bundle">Bundle</span></span>
           </div>
@@ -306,13 +306,14 @@
                D438（2026-10-16）：另設的上架、下架、開賣、停售時間屬營運動作，上架中也能按「編輯組合」直接改（只開放上架與開賣兩節，bdStockLockApply）；
                其他欄位（內容、售價、購買條件…）唯讀——「編輯組合」停用並就地說明，附下架入口（與頁首「下架」同一個動作、同一個確認窗）。
                看的是組合包自己的上架狀態，不是活動的。電子商店組合包不受影響。bdStockSync() 切 hidden -->
-          <div class="alert alert--row alert--info mt-16" data-bd-stockonly-note data-feat="S81.1" role="note" hidden>
-            <span class="alert__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
-            <div class="alert__body">
-              <div class="alert__title" data-i18n="bd.stockonly.title">This bundle is listed — only stock settings and listing and sale times can change</div>
-              <div class="alert__meta" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab: they can’t go below the sets reserved, and raising them needs enough member stock. Under Edit bundle you can change stock settings and listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</div>
-            </div>
-            <button class="btn btn--outline btn--sm" type="button" data-view-safe data-bd-stockonly-unlist data-i18n="bd.stockonly.go">Unlist bundle</button>
+          <!-- Q159：說明規則一律 info-banner（原 .alert--row.alert--info） -->
+          <div class="info-banner info-banner--action mt-16" data-bd-stockonly-note data-feat="S81.1" role="note" hidden>
+            <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
+            <span class="info-banner__text">
+              <span class="info-banner__title" data-i18n="bd.stockonly.title">This bundle is listed — only stock settings and listing and sale times can change</span>
+              <span class="info-banner__desc" data-i18n="bd.stockonly.body">Change locked sets in the Stock tab: they can’t go below the sets reserved, and raising them needs enough member stock. Under Edit bundle you can change stock settings and listing, unlisting, sale start and sale end times. To edit anything else — contents, price, purchase rules, translations — unlist this bundle first, then relist it yourself after saving.</span>
+            </span>
+            <button class="btn btn--outline btn--sm info-banner__action" type="button" data-view-safe data-bd-stockonly-unlist data-i18n="bd.stockonly.go">Unlist bundle</button>
           </div>
           <div class="nav-sections">
             <div data-nav-panel="intro">
@@ -470,7 +471,7 @@
               <div class="price-ladder__k"><span class="price-ladder__t" data-i18n="cb.pl.disc.pct">Bundle discount %</span></div>
               <div class="price-ladder__ctl"><span class="amount-field amount-field--suffix amount-field--readonly zstep"><span class="amount-field__unit">%</span><input class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="" id="bd-discount" placeholder="0" aria-label="Bundle discount %" data-i18n-aria-label="cb.pl.disc.pct"><span class="zstep__btns"><button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase"><i data-lucide="chevron-up" class="ztor-icon"></i></button><button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease"><i data-lucide="chevron-down" class="ztor-icon"></i></button></span></span></div>
               <div class="price-ladder__v"><span id="bd-sellprice">—</span><span class="price-ladder__range" data-bd-sell-range hidden></span><small data-bd-save></small></div>
-              <p class="field__hint field__hint--warn price-ladder__err" id="bd-disc-hint" hidden></p>
+              <p class="field__error price-ladder__err" id="bd-disc-hint" hidden></p>
             </div>
 
             <!-- 限時折扣（排程特價 F7）：最終版（S105）＝購買條件的「限時折扣」條件（2026-10-22 使用者裁決），這兩列收起不重複；release2.3 照舊 -->
@@ -816,8 +817,8 @@
       all.forEach(ev => { (ev.bundles || []).forEach(b => { if (b.id === id && (!hit || (evParam && ev.id === evParam))) hit = { ev: ev, b: b }; }); });
       return hit;
     }
-    const EV_BADGE = { 'live': ['events.badge.live', 'warning'], 'on-sale': ['events.badge.on-sale', 'success'], 'draft': ['events.status.draft', 'neutral'],
-                       'ended': ['events.badge.ended', 'neutral'], 'scheduled': ['events.badge.scheduled', 'neutral'] };
+    const EV_BADGE = { 'live': ['events.badge.live', 'success'], 'on-sale': ['events.badge.on-sale', 'success'], 'draft': ['events.status.draft', 'neutral'],
+                       'ended': ['events.badge.ended', 'neutral'], 'scheduled': ['events.badge.scheduled', 'info'] };   /* Q156 狀態共用色表 */
     const tixKey = (evId, tierIds) => 'tix:' + evId + ':' + [].concat(tierIds).join('+');
     /* D465（2026-10-21）：門票還能給組合包的張數＝張數 − 已售 − 單售鎖定 − 未鎖定格的保留（其他組合包的鎖定由 otherTixLocks 經池的 locks 扣）；
        舊算法只扣已售。單售鎖定與保留的定義在 events-store（tierSingleLock／tierHoldFree）。 */
@@ -2262,6 +2263,7 @@
       if (saveEl) saveEl.textContent = !pct ? T('cpp.bd.sp.save.zero', '0% off — selling price = list price')
         : T(bdPriceFrom() ? 'cpp.bd.sp.save.from' : 'cpp.bd.sp.save', 'Fans save {amt} ({pct}%)').replace('{amt}', bdMoney(base - final)).replace('{pct}', String(Math.round(pct * 10) / 10));
       if (bdHint) { bdHint.hidden = d.ok; bdHint.textContent = d.ok ? '' : T('cb.price.discount-bad', 'Discount must be 0–100.'); }
+      if (bdDisc) bdDisc.setAttribute('aria-invalid', d.ok ? 'false' : 'true');   // Q149：擋儲存的錯誤＝.field__error＋aria-invalid
       /* 限時折扣：疊在售價之上；右欄＝檔期內的價（錯誤才出提示句） */
       const sp = bdSalePctInfo(), k2 = sp.ok ? 1 - sp.pct / 100 : 1;
       const saleLive = bdSaleOn() && sp.ok && memberRows().length > 0;

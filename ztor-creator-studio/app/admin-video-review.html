@@ -28,6 +28,7 @@
 <!-- 審核狀態、送出時間、退件理由與動作：與項目詳情的創作者端共用同一支元件 -->
 <link rel="stylesheet" href="ds-components/review-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -203,6 +204,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script>
 /* 影片上架審核（admin-video-review.html）· 規格 documents/5.1.0.4-影片上架審核.md
    ------------------------------------------------------------------------------
@@ -276,6 +278,11 @@
     return zh() ? Math.round(hrs / 24) + ' 天' : Math.round(hrs / 24) + ' days';
   }
 
+  function waitedMins(at) {
+    var t = at ? Date.parse(String(at).replace(' ', 'T')) : NaN;
+    return isNaN(t) ? '' : String(Math.max(0, Math.round((Date.now() - t) / 60000)));
+  }
+
   function badgeHtml(status) {
     return '<span class="badge ' + S.tone(status) + '">' + esc(S.label(status)) + '</span>';
   }
@@ -334,14 +341,14 @@
     }
     root.innerHTML =
       '<div class="admin-table-wrap"><table class="ztor-table"><thead><tr>' +
-        '<th>' + esc(T('vr.col.work', 'Work')) + '</th>' +
-        '<th>' + esc(T('vr.col.creator', 'Creator')) + '</th>' +
-        '<th>' + esc(T('vr.col.project', 'Project')) + '</th>' +
-        '<th>' + esc(T('vr.col.status', 'Status')) + '</th>' +
-        '<th>' + esc(T('vr.col.submitted', 'Sent')) + '</th>' +
-        '<th>' + esc(T('vr.col.waiting', 'Waiting')) + '</th>' +
-        '<th>' + esc(T('vr.col.count', 'Times')) + '</th>' +
-        '<th>' + esc(T('vr.col.reviewer', 'Reviewer')) + '</th>' +
+        '<th data-sort="text">' + esc(T('vr.col.work', 'Work')) + '</th>' +
+        '<th data-sort="text">' + esc(T('vr.col.creator', 'Creator')) + '</th>' +
+        '<th data-sort="text">' + esc(T('vr.col.project', 'Project')) + '</th>' +
+        '<th data-sort="text">' + esc(T('vr.col.status', 'Status')) + '</th>' +
+        '<th data-sort="text">' + esc(T('vr.col.submitted', 'Sent')) + '</th>' +
+        '<th data-sort="num">' + esc(T('vr.col.waiting', 'Waiting')) + '</th>' +
+        '<th data-sort="num">' + esc(T('vr.col.count', 'Times')) + '</th>' +
+        '<th data-sort="text">' + esc(T('vr.col.reviewer', 'Reviewer')) + '</th>' +
         '<th></th>' +
       '</tr></thead><tbody>' +
       list.map(function (r) {
@@ -355,7 +362,8 @@
             '" data-vr-creator="' + esc(r.creator || '') + '">' + esc(pick(r.projectName)) + '</a></td>' +
           '<td>' + badgeHtml(r.status) + '</td>' +
           '<td>' + esc(r.submittedAt || '—') + '</td>' +
-          '<td>' + esc(S.isOpen(r.status) ? waited(r.submittedAt) : '—') + '</td>' +
+          /* 等待時間顯示成「3 小時／2 天」，單位不同不能直接比；排序值給分鐘數。 */
+          '<td data-sort-value="' + (S.isOpen(r.status) ? waitedMins(r.submittedAt) : '') + '">' + esc(S.isOpen(r.status) ? waited(r.submittedAt) : '—') + '</td>' +
           '<td>' + esc(String(r.count || 1)) + '</td>' +
           '<td>' + esc(r.reviewer || '—') + '</td>' +
           '<td><a class="btn btn--outline btn--sm" href="admin-video-review.html?id=' + encodeURIComponent(r.id) + '">' +
@@ -363,6 +371,7 @@
         '</tr>';
       }).join('') +
       '</tbody></table></div>';
+    if (window.ztorTableSort) window.ztorTableSort.scan(root);   // 每次重畫都是新表格，重新掛排序
     window.ztorIcons.render();
   }
 

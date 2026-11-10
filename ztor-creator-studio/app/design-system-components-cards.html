@@ -147,6 +147,10 @@
         </div>
         <p style="margin:0;font-size:var(--fs-13);color:var(--muted-foreground)">Section body.</p>
       </section>
+      <section class="card card--table mt-16">
+        <table class="ztor-table"><thead><tr><th><span data-en>Ticket</span><span data-zh>票券</span></th><th><span data-en>Tier</span><span data-zh>票種</span></th><th><span data-en>Status</span><span data-zh>狀態</span></th></tr></thead>
+        <tbody><tr><td>#A1029</td><td>VIP</td><td><span data-en>Used</span><span data-zh>已使用</span></td></tr><tr><td>#A1030</td><td>GA</td><td><span data-en>Not used</span><span data-zh>未使用</span></td></tr></tbody></table>
+      </section>
     </div>
   </div>
   <p class="field-label" data-en>Do &amp; Don't</p>
@@ -165,6 +169,7 @@
     <table class="spec"><thead><tr><th><span data-en>Class / modifier</span><span data-zh>Class／修飾子</span></th><th><span data-en>Effect</span><span data-zh>效果</span></th></tr></thead><tbody>
       <tr><td><code>.card</code> (+ <code>--muted</code>)</td><td><span data-en>Product section wrapper, 20px pad</span><span data-zh>產品區段外框，20px 內距</span></td></tr>
       <tr><td><code>.card__head</code> / <code>__title</code> / <code>__hint</code> / <code>__link</code></td><td><span data-en>Head row: title + non-actionable hint + action link (trailing chevron in head)</span><span data-zh>Head 列：標題 + 不可操作的提示 + 動作連結（head 內帶尾端 chevron）</span></td></tr>
+      <tr><td><code>.card--table</code></td><td><span data-en>A card that holds one full-bleed table: padding 0, <code>overflow: hidden</code> so the table's corners clip to the card radius. Don't frame the table again inside the card. For a table that scrolls sideways, wrap it in an <code>overflow-x: auto</code> div inside the card (2026-11-09; replaces eight inline <code>style="padding:0;overflow:hidden"</code>)</span><span data-zh>卡裡裝一張滿版表格：內距 0、<code>overflow: hidden</code> 讓表格四角跟著卡的圓角裁掉。表格在卡裡不要再包一圈框。要橫向捲的表格在卡內再包一層 <code>overflow-x: auto</code>（2026-11-09；取代 8 處行內 <code>style="padding:0;overflow:hidden"</code>）</span></td></tr>
       <tr><td><code>.card__head--wrap</code></td><td><span data-en>Head with one sentence <code>&lt;p&gt;</code> plus a button group or filter row: wraps and centers vertically; the sentence takes <code>flex: 1 1 var(--w-300)</code>, so on a narrow screen the buttons drop to the next line instead of squeezing the card (2026-11-02, promoted from Platform loyalty settings)</span><span data-zh>卡頭放「一句說明 <code>&lt;p&gt;</code>＋按鈕群或篩選列」時用：可換行、垂直置中；說明句 <code>flex: 1 1 var(--w-300)</code>，窄螢幕時按鈕群換到下一行，不撐破卡寬（2026-11-02，自平台忠誠點數設定 promote）</span></td></tr>
       <tr><td><code>.card__foot</code></td><td><span data-en>Action area pinned to the card's bottom edge — <code>margin-top:auto</code> + 16px top padding (<code>.card</code> is a flex column, so the leftover height all goes to the body). Why: cards in the same row differ in content length, so actions that follow the content sit at different heights; pinning aligns them on one line. Nest a <code>.stack</code> or <code>.flex-row</code> inside for two or more buttons — this part only owns the placement (2026-08-18)</span><span data-zh>卡底動作區——<code>margin-top:auto</code> ＋ 16px 上內距，把動作釘在卡的下緣（<code>.card</code> 本身是 flex column，多出來的高度全留給內容）。用它的理由：同一排的卡內容長短不一，動作若貼著內容走，兩張卡的按鈕會一高一低；釘底之後對齊成同一條線。要排兩顆以上時在裡面再包 <code>.stack</code> 或 <code>.flex-row</code>，本區只管落點（2026-08-18）</span></td></tr>
       <tr><td><code>.card__note</code></td><td><span data-en>12px footnote after the body — states the figures' basis, denominator or limitation. Boundary vs <code>.card__hint</code>: hint is one short inline phrase in the head; note is a paragraph, so it carries <code>--sp-12</code> top margin and <code>--lh-normal</code> (2026-08-06 promoted from fan-analytics' page-local <code>.aud-note</code>)</span><span data-zh>卡片內容之後的 12px 註腳——講這些數字的口徑、分母或限制。與 <code>.card__hint</code> 的界線：hint 是 head 列裡一句短的行內提示，note 是一整段，所以帶 <code>--sp-12</code> 上間距與 <code>--lh-normal</code> 行高（2026-08-06 自 fan-analytics 頁內的 <code>.aud-note</code> promote）</span></td></tr>
@@ -274,6 +279,8 @@
   </div>
   <p class="field-note" data-en>Dashboard F2 total-revenue tile pairs a week-over-week <code>.kpi__delta</code> (freshness in the meta line) with a deep-link into Earnings — <code>delta</code> and a linked <code>.kpi__meta</code> coexist on one tile.</p>
   <p class="field-note" data-zh>儀表板 F2 總收入卡同時用週環比 <code>.kpi__delta</code>（更新時間放 meta 行）與深連結 Earnings — 同一張卡 <code>delta</code> 與帶連結的 <code>.kpi__meta</code> 並存。</p>
+  <p class="field-note" data-en>Narrow tiles shrink the number (2026-11-09): the tile is a size container; at ≤ 150px wide the value drops to <code>--fs-18</code> (wider tiles keep 28px), so a row of three tiles never clips a large amount.</p>
+  <p class="field-note" data-zh>窄格自動縮字（2026-11-09）：指標格本身是尺寸容器，格寬 ≤ 150px 時數字縮成 <code>--fs-18</code>（寬於此照原本 28px），一排三格時大金額不會被裁掉。</p>
   <p class="field-label" data-en>Unit suffix <span class="field-note">(<code>.kpi__unit</code> — 2026-09-11: a small count unit after the number, baseline-aligned, subtle ink; for pieces / people, not money)</span></p>
   <p class="field-label" data-zh>單位小字 <span class="field-note">(<code>.kpi__unit</code>——2026-09-11：跟在數字後面的計數單位「件／人」，對齊基線、輔助色；金額不用，貨幣符號在前面。首個消費者：商品詳情商品庫存分頁的四塊磚)</span></p>
   <div class="demo" style="display:flex;gap:10px;flex-wrap:wrap">
@@ -310,7 +317,7 @@
     <p class="field-label" data-zh>行為細節</p>
     <table class="spec"><thead><tr><th><span data-en>State</span><span data-zh>狀態</span></th><th><span data-en>Selector</span><span data-zh>選擇器</span></th><th><span data-en>Change</span><span data-zh>變化</span></th></tr></thead><tbody>
       <tr><td><span data-en>default</span><span data-zh>預設</span></td><td>—</td><td><span data-en><code>--card</code> bg (2026-07-26, reverted 2026-07-20 Q21's <code>--input-surface</code> — most KPI tiles sit directly on the page, not inside a card), no border, <code>--shadow-card</code> + <code>--shadow-edge-top</code> (Q23 decision C), value in display font</span><span data-zh><code>--card</code> 底（2026-07-26，還原 2026-07-20 Q21 的 <code>--input-surface</code>——多數 KPI 直接放在頁面上、沒有卡包著）、無邊框、<code>--shadow-card</code>＋<code>--shadow-edge-top</code>（Q23 決 C）、數值用 display 字體</span></td></tr>
-      <tr><td><span data-en>nested in card</span><span data-zh>疊在卡內</span></td><td><code>.card .kpi</code>, <code>.form-section--outlined .kpi</code>, <code>.ip-hero .kpi</code></td><td><span data-en>bg reverts to <code>--input-surface</code> (scoped, avoids blending with the card it sits inside)</span><span data-zh>底色改回 <code>--input-surface</code>（scoped，避免跟外層卡糊色）</span></td></tr>
+      <tr><td><span data-en>inside a card</span><span data-zh>放進卡裡</span></td><td>—</td><td><span data-en>Not allowed (Q162, 2026-11-09). Figures inside a card, hero or form section use <a href="design-system-components-lists.html#stat-row"><code>.stat-row</code></a>; <code>.kpi</code> only sits at page level (bento). The old <code>.card .kpi</code> nested-film rule and <code>.kpi.card--muted</code> are retired.</span><span data-zh>不允許（Q162，2026-11-09）。卡、hero、表單段裡的數字一律用 <a href="design-system-components-lists.html#stat-row"><code>.stat-row</code></a>；<code>.kpi</code> 只放頁面層（bento）。舊的 <code>.card .kpi</code> 巢狀薄膜規則與 <code>.kpi.card--muted</code> 已退場。</span></td></tr>
       <tr><td><span data-en>(delta sign)</span><span data-zh>（delta 正負）</span></td><td><code>.kpi__delta--neg</code></td><td><span data-en>Delta color <code>--status-success</code> → <code>--destructive</code></span><span data-zh>Delta 顏色 <code>--status-success</code> → <code>--destructive</code></span></td></tr>
       <tr><td><span data-en>link hover</span><span data-zh>連結 hover</span></td><td><code>.kpi__link:hover</code></td><td><span data-en><code>--muted-foreground</code> → <code>--foreground</code></span><span data-zh><code>--muted-foreground</code> → <code>--foreground</code></span></td></tr>
     </tbody></table>
@@ -495,7 +502,7 @@
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.npp-product</code> (<code>__thumb / __info / __name / __meta / __price / __link</code>) + <code>.npp-intro</code> · composes <code>.payout-dialog</code> shell + <code>.msg-compose / .msg-field / .msg-tokens / .msg-schedule</code> (message-modal.css) + <code>.field__counter</code>. Markup in <code>partials/product-post-modal.js</code>; opened by e-shop.html on <code>?posted=1</code> (after create-product). 非約束呈現參考。</p>
+    <p class="field-text"><code>.npp-product</code> (<code>__thumb / __info / __name / __meta / __price / __link</code>) + <code>.npp-intro</code> · composes <code>.payout-dialog</code> shell + <code>.msg-compose / .msg-tokens / .msg-schedule</code> (message-modal.css) + <code>.field</code> / <code>.field__counter</code> (Q150: <code>.msg-field</code> retired). Markup in <code>partials/product-post-modal.js</code>; opened by e-shop.html on <code>?posted=1</code> (after create-product). 非約束呈現參考。</p>
     <p class="field-text"><code>ds-components/product-post-modal.css</code> · <code>partials/product-post-modal.js</code> · reuses <code>payout-modal.css</code> + <code>message-modal.css</code></p>
   </div>
   </details>
@@ -511,8 +518,8 @@
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
 
-  <p class="sub__desc" data-en>SVG-based visualization family with five sub-patterns (line chart, bar chart, stacked bar, source-list legend, rank bars) plus a <code>.chart-card</code> composition shell and a JS-driven tooltip/cursor layer. Use <code>.linechart</code> for trends, <code>.barchart</code> for discrete values, <code>.stacked-bar</code> + <code>.source-list</code> for a proportion breakdown, <code>.rank-bars</code> for ranked rows, and <code>.chart-card</code> to wrap with head + footer; avoid for exact tabular figures — use <code>.ztor-table</code>.</p>
-  <p class="sub__desc" data-zh>以 SVG 為基礎的視覺化家族，含五種 sub-pattern（line chart、bar chart、stacked bar、source-list legend、rank bars），外加一個 <code>.chart-card</code> 組合外殼與 JS 驅動的 tooltip／cursor 層。趨勢用 <code>.linechart</code>，離散值用 <code>.barchart</code>，比例拆解用 <code>.stacked-bar</code> + <code>.source-list</code>，排名列用 <code>.rank-bars</code>，要包 head + footer 用 <code>.chart-card</code>；要精確的表格數字別用 — 改用 <code>.ztor-table</code>。</p>
+  <p class="sub__desc" data-en>SVG-based visualization family with four sub-patterns (line chart, bar chart, stacked bar, source-list legend) plus a <code>.chart-card</code> composition shell and a JS-driven tooltip/cursor layer. Use <code>.linechart</code> for trends, <code>.barchart</code> for discrete values, <code>.stacked-bar</code> + <code>.source-list</code> for a proportion breakdown, <code>.perf-rank</code> for ranked rows (rank bars retired, Q167), and <code>.chart-card</code> to wrap with head + footer; avoid for exact tabular figures — use <code>.ztor-table</code>.</p>
+  <p class="sub__desc" data-zh>以 SVG 為基礎的視覺化家族，含四種 sub-pattern（line chart、bar chart、stacked bar、source-list legend），外加一個 <code>.chart-card</code> 組合外殼與 JS 驅動的 tooltip／cursor 層。趨勢用 <code>.linechart</code>，離散值用 <code>.barchart</code>，比例拆解用 <code>.stacked-bar</code> + <code>.source-list</code>，排名列用 <code>.perf-rank</code>（rank bars 已退場，Q167），要包 head + footer 用 <code>.chart-card</code>；要精確的表格數字別用 — 改用 <code>.ztor-table</code>。</p>
     <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
 
     <div class="compose">
@@ -559,38 +566,6 @@
         <div class="source-row"><span class="source-row__swatch" style="background:#000000"></span><span>IP rentals</span><span class="source-row__amt">$2,340</span><span class="source-row__pct">28%</span></div>
       </div>
     </div>
-    <ul class="rank-bars" style="margin-top:16px;min-width:320px;">
-      <li class="rank-bar">
-        <div class="rank-bar__track">
-          <div class="rank-bar__fill" style="width:100%"></div>
-          <div class="rank-bar__content">
-            <span class="rank-bar__dot" style="background:var(--primary)"></span>
-            <span class="rank-bar__label">E-Shop sales</span>
-          </div>
-        </div>
-        <span class="rank-bar__pct">42%</span>
-      </li>
-      <li class="rank-bar">
-        <div class="rank-bar__track">
-          <div class="rank-bar__fill" style="width:57%"></div>
-          <div class="rank-bar__content">
-            <span class="rank-bar__dot" style="background:#000000"></span>
-            <span class="rank-bar__label">Event tickets</span>
-          </div>
-        </div>
-        <span class="rank-bar__pct">24%</span>
-      </li>
-      <li class="rank-bar">
-        <div class="rank-bar__track">
-          <div class="rank-bar__fill" style="width:33%"></div>
-          <div class="rank-bar__content">
-            <span class="rank-bar__dot" style="background:var(--status-success)"></span>
-            <span class="rank-bar__label">IP royalties</span>
-          </div>
-        </div>
-        <span class="rank-bar__pct">14%</span>
-      </li>
-    </ul>
     <p class="field-label" style="margin-top:16px" data-en><code>.linechart--mini</code> — compact <code>--axes</code> variant for a KPI tile: 72px plot, head/tail y-ticks only, first/last x-labels.</p>
     <p class="field-label" style="margin-top:16px" data-zh><code>.linechart--mini</code> — KPI 磚裡的小折線：繪圖區 72px，縱軸只留最大值與 0，橫軸只留起訖。畫法與大圖共用 <code>js/linechart.js</code>。</p>
     <div class="kpi" style="max-width:220px;margin-top:8px">
@@ -614,67 +589,6 @@
         </div>
       </div>
     </div>
-    <p class="field-label" style="margin-top:16px" data-en><code>.rank-bars--barline</code> — the proportion moves out from under the label into its own <code>.project-bar</code> row. <strong>Project detail only</strong> — two answers coexist on purpose, see STYLE-DECISIONS Q100.</p>
-    <p class="field-label" style="margin-top:16px" data-zh><code>.rank-bars--barline</code> — 比例條從標籤底下搬出來，自成一列的 <code>.project-bar</code>。<strong>只用於項目詳情</strong>——站上刻意留著兩種畫法，見 STYLE-DECISIONS Q100。</p>
-    <ul class="rank-bars rank-bars--barline" style="margin-top:8px;min-width:320px;">
-      <li class="rank-bar">
-        <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-1)"></span><span class="rank-bar__label">E-Shop sales</span></div></div>
-        <span class="rank-bar__pct">42%</span>
-        <div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div>
-      </li>
-      <li class="rank-bar">
-        <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Co-creation funding</span></div></div>
-        <span class="rank-bar__pct">28%</span>
-        <div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:67%"></div></div>
-      </li>
-      <li class="rank-bar">
-        <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">OTT royalties</span></div></div>
-        <span class="rank-bar__pct">9%</span>
-        <div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:21%"></div></div>
-      </li>
-    </ul>
-    <p class="field-label" style="margin-top:16px" data-en><code>.rank-bar--amount</code> — name · % · amount (adds a value column)</p>
-    <p class="field-label" style="margin-top:16px" data-zh><code>.rank-bar--amount</code> — 名稱 · % · 金額（多一個數值欄）</p>
-    <ul class="rank-bars" style="margin-top:8px;min-width:320px;">
-      <li class="rank-bar rank-bar--amount">
-        <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label">Taiwan</span></div></div>
-        <span class="rank-bar__amt">US$612</span><span class="rank-bar__pct">38.5%</span>
-      </li>
-      <li class="rank-bar rank-bar--amount">
-        <div class="rank-bar__track"><div class="rank-bar__fill" style="width:47%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Japan</span></div></div>
-        <span class="rank-bar__amt">US$288</span><span class="rank-bar__pct">18.1%</span>
-      </li>
-    </ul>
-    <p class="field-label" style="margin-top:16px" data-en><code>.rank-bar--stats</code> / <code>--stats3</code> / <code>--head</code> — table-shaped: plan · sold · raised · share. Pre-orders have no raised amount, so <code>--stats3</code> drops that column instead of filling it with an em dash.</p>
-    <p class="field-label" style="margin-top:16px" data-zh><code>.rank-bar--stats</code>／<code>--stats3</code>／<code>--head</code> — 表格形態：方案 · 售出 · 累積金額 · 佔比。預購沒有募得金額，<code>--stats3</code> 是整欄拿掉、不是填一個「—」。</p>
-    <ul class="rank-bars" style="margin-top:8px;min-width:320px;">
-      <li class="rank-bar rank-bar--stats rank-bar--head">
-        <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__label">Plan</span></div></div>
-        <span class="rank-bar__amt">Sold</span><span class="rank-bar__amt">Raised</span><span class="rank-bar__pct">Share</span>
-      </li>
-      <li class="rank-bar rank-bar--stats">
-        <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-1)"></span><span class="rank-bar__label">Supporter</span></div></div>
-        <span class="rank-bar__amt">1,417</span><span class="rank-bar__amt">$58,700</span><span class="rank-bar__pct">66%</span>
-      </li>
-      <li class="rank-bar rank-bar--stats">
-        <div class="rank-bar__track"><div class="rank-bar__fill" style="width:50%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Standard bundle</span></div></div>
-        <span class="rank-bar__amt">713</span><span class="rank-bar__amt">$29,500</span><span class="rank-bar__pct">33%</span>
-      </li>
-    </ul>
-    <ul class="rank-bars" style="margin-top:8px;min-width:320px;">
-      <li class="rank-bar rank-bar--stats3 rank-bar--head">
-        <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__label">Plan</span></div></div>
-        <span class="rank-bar__amt">Sold</span><span class="rank-bar__pct">Share</span>
-      </li>
-      <li class="rank-bar rank-bar--stats3">
-        <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-1)"></span><span class="rank-bar__label">Standard</span></div></div>
-        <span class="rank-bar__amt">31</span><span class="rank-bar__pct">50%</span>
-      </li>
-      <li class="rank-bar rank-bar--stats3">
-        <div class="rank-bar__track"><div class="rank-bar__fill" style="width:68%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Collector's edition</span></div></div>
-        <span class="rank-bar__amt">21</span><span class="rank-bar__pct">34%</span>
-      </li>
-    </ul>
   </div>
   <p class="field-text" data-en>The segmented D/W/M toggle below is part of the same chart visual preview.</p>
   <p class="field-text" data-zh>下方 D/W/M segmented 切換併在同一組 chart 視覺展示中。</p>
@@ -741,7 +655,7 @@
   </div>
   <p class="field-label" data-en>Do &amp; Don't</p>
   <p class="field-label" data-zh>該做與別做</p>
-  <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Give <code>.pie</code> <code>aria-hidden="true"</code> — the legend beside it carries every number.</li><li data-zh>給 <code>.pie</code> 加 <code>aria-hidden="true"</code>——數字全在旁邊的圖例上。</li><li data-en>Write <code>--pie-stops</code> segment bounds as cumulative percentages, each starting at <code>0</code>.</li><li data-zh><code>--pie-stops</code> 的段界寫累計百分比，每段起點一律寫 <code>0</code>。</li><li data-en>Set stacked-bar segment widths + palette inline.</li><li data-zh>stacked-bar 的 segment 寬度 + 配色用 inline 設定。</li><li data-en>Scale <code>.rank-bar__fill</code> so the largest value reads 100%.</li><li data-zh>縮放 <code>.rank-bar__fill</code>，讓最大值讀作 100%。</li><li data-en>Override <code>--donut-hole</code> when the donut sits on a surface other than <code>--card</code>.</li><li data-zh>圓環放在非 <code>--card</code> 底色上時，一併覆寫 <code>--donut-hole</code>。</li></ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Apply <code>.linechart__area</code> to multi-series charts.</li><li data-zh>把 <code>.linechart__area</code> 套到多 series 的圖上。</li><li data-en>Rely on hover tooltip/cursor for essential values (JS-driven, pointer-only).</li><li data-zh>關鍵數值靠 hover 的 tooltip／cursor（JS 驅動、僅限 pointer）。</li><li data-en>Force 3+ segments into <code>.donut</code> — use <code>.pie</code>, <code>.stacked-bar</code> or <code>.rank-bar</code> instead.</li><li data-zh>把三段以上的比例硬塞進 <code>.donut</code>——改用 <code>.pie</code>、<code>.stacked-bar</code> 或 <code>.rank-bar</code>。</li><li data-en>Reach for <code>.pie</code> to rank things — a pie answers "how was this whole split", a bar answers "which is bigger".</li><li data-zh>用 <code>.pie</code> 比大小——圓餅回答「這一整塊是怎麼被分掉的」，長條才回答「誰比誰長」。</li></ul></div></div>
+  <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Give <code>.pie</code> <code>aria-hidden="true"</code> — the legend beside it carries every number.</li><li data-zh>給 <code>.pie</code> 加 <code>aria-hidden="true"</code>——數字全在旁邊的圖例上。</li><li data-en>Write <code>--pie-stops</code> segment bounds as cumulative percentages, each starting at <code>0</code>.</li><li data-zh><code>--pie-stops</code> 的段界寫累計百分比，每段起點一律寫 <code>0</code>。</li><li data-en>Set stacked-bar segment widths + palette inline.</li><li data-zh>stacked-bar 的 segment 寬度 + 配色用 inline 設定。</li><li data-en>Override <code>--donut-hole</code> when the donut sits on a surface other than <code>--card</code>.</li><li data-zh>圓環放在非 <code>--card</code> 底色上時，一併覆寫 <code>--donut-hole</code>。</li></ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Apply <code>.linechart__area</code> to multi-series charts.</li><li data-zh>把 <code>.linechart__area</code> 套到多 series 的圖上。</li><li data-en>Rely on hover tooltip/cursor for essential values (JS-driven, pointer-only).</li><li data-zh>關鍵數值靠 hover 的 tooltip／cursor（JS 驅動、僅限 pointer）。</li><li data-en>Force 3+ segments into <code>.donut</code> — use <code>.pie</code>, <code>.stacked-bar</code> or <code>.split-bar</code> instead.</li><li data-zh>把三段以上的比例硬塞進 <code>.donut</code>——改用 <code>.pie</code>、<code>.stacked-bar</code> 或 <code>.split-bar</code>。</li><li data-en>Reach for <code>.pie</code> to rank things — a pie answers "how was this whole split", a bar answers "which is bigger".</li><li data-zh>用 <code>.pie</code> 比大小——圓餅回答「這一整塊是怎麼被分掉的」，長條才回答「誰比誰長」。</li></ul></div></div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · tokens · code</span><span data-zh>給工程師 — class · token · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-label" data-en>Behavior details</p>
@@ -761,8 +675,7 @@
       <tr><td><code>.stacked-bar</code> / <code>__seg</code></td><td><span data-en>Proportion pill; width + color inline</span><span data-zh>比例 pill；width + 顏色用 inline</span></td></tr>
       <tr><td><code>.chart-tip</code> / <code>.chart-cursor</code> / <code>.chart-bar-cursor</code> (+ <code>--show</code>)</td><td><span data-en>JS-driven hover tooltip + crosshair cursor layer</span><span data-zh>JS 驅動的 hover tooltip + 十字游標層</span></td></tr>
       <tr><td><code>.source-list</code> / <code>.source-row</code></td><td><span data-en>Color-keyed legend rows</span><span data-zh>以顏色對應的圖例列</span></td></tr>
-      <tr><td><code>.donut</code> / <code>__center</code> / <code>__label</code> / <code>__value</code></td><td><span data-en>Two-segment proportion ring + centered result. Vars: <code>--donut-p</code> (first segment %, 0–100), <code>--donut-a</code> / <code>--donut-b</code> (colors, default <code>--chart-3</code> / <code>--chart-5</code>), <code>--donut-size</code> (220px), <code>--donut-thickness</code> (28px), <code>--donut-hole</code> (<code>--card</code>). 3+ segments → use stacked-bar / rank-bar</span><span data-zh>兩段式比例圓環＋中央結果數字。變數：<code>--donut-p</code>（第一段 %，0–100）、<code>--donut-a</code>／<code>--donut-b</code>（色，預設 <code>--chart-3</code>／<code>--chart-5</code>）、<code>--donut-size</code>（220px）、<code>--donut-thickness</code>（28px）、<code>--donut-hole</code>（<code>--card</code>）。三段以上改用 stacked-bar／rank-bar</span></td></tr>
-      <tr><td><code>.rank-bars</code> / <code>.rank-bar</code> / <code>--amount</code> (<code>__amt</code>)</td><td><span data-en>Ranked proportional list; fill scaled to max=100%. <code>--amount</code> adds a value column (name · % · amount)</span><span data-zh>排名比例列表；fill 以最大值=100% 為基準縮放。<code>--amount</code> 多一個金額欄（名稱 · % · 金額）</span></td></tr>
+      <tr><td><code>.donut</code> / <code>__center</code> / <code>__label</code> / <code>__value</code></td><td><span data-en>Two-segment proportion ring + centered result. Vars: <code>--donut-p</code> (first segment %, 0–100), <code>--donut-a</code> / <code>--donut-b</code> (colors, default <code>--chart-3</code> / <code>--chart-5</code>), <code>--donut-size</code> (220px), <code>--donut-thickness</code> (28px), <code>--donut-hole</code> (<code>--card</code>). 3+ segments → use stacked-bar / split-bar</span><span data-zh>兩段式比例圓環＋中央結果數字。變數：<code>--donut-p</code>（第一段 %，0–100）、<code>--donut-a</code>／<code>--donut-b</code>（色，預設 <code>--chart-3</code>／<code>--chart-5</code>）、<code>--donut-size</code>（220px）、<code>--donut-thickness</code>（28px）、<code>--donut-hole</code>（<code>--card</code>）。三段以上改用 stacked-bar／rank-bar</span></td></tr>
       <tr><td><code>.chart-card</code> / <code>.segmented</code> / <code>__icon-btn</code></td><td><span data-en>Composition shell + D/W/M toggle + action btn</span><span data-zh>組合外殼 + D/W/M toggle + action btn</span></td></tr>
     </tbody></table>
     <p class="field-label" data-en>Token usage <span class="field-note">(→ Pillar 2 Role)</span></p>
@@ -786,6 +699,8 @@
     <p class="field-text"><code>ds-components/chart.css</code></p>
   </div>
   </details>
+  <p class="field-note" data-zh>✝ <strong>Rank bars（排名水平長條，原 4.74）2026-11-09 退場</strong>：Q167「同一種清單任務只留一種元件」後，收入來源佔比改用 <a href="#split-bar">Split bar</a>（earnings、earnings-overview），項目詳情的地區／串流平台／OTT 排行改用 <a href="#perf-rank">Performance rank</a>（project-detail），站上已沒有頁面用 <code>.rank-bars</code>（含 <code>--barline</code>、<code>--amount</code>、<code>--stats</code>）。<code>chart.css</code> 的那一段留墓碑、展示卡與目錄移除。來源圖例 <code>.source-list</code> 不受影響，仍在本卡。</p>
+  <p class="field-note" data-en>✝ <strong>Rank bars (formerly 4.74) retired 2026-11-09</strong>: after Q167 (one component per list task), revenue-source shares moved to <a href="#split-bar">Split bar</a> (earnings, earnings-overview) and project-detail region / streaming / OTT rankings moved to <a href="#perf-rank">Performance rank</a>, leaving <code>.rank-bars</code> (incl. <code>--barline</code>, <code>--amount</code>, <code>--stats</code>) with no consumers. The block in <code>chart.css</code> is a tombstone; the card and its TOC entry are gone. The <code>.source-list</code> legend is unaffected and stays on this card.</p>
 </section>
 <section class="sub" id="waterfall">
   <div class="sub__head">
@@ -897,30 +812,6 @@
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
   <table class="spec" data-product-spec="chart-card"><tbody><tr><td>Source</td><td><code>chart.css</code></td></tr><tr><td>Anatomy</td><td>Header + controls + chart body + export/action icons.</td></tr><tr><td>Behavior / usage</td><td>Line / bar view; loading and empty states are owned by the host data flow.</td></tr><tr><td>Token usage</td><td><code>--card</code>, <code>--shadow-card</code>, chart palette roles.</td></tr><tr><td>Classes</td><td><code>.chart-card</code> · <code>__head</code> · <code>__controls</code> · <code>__body</code></td></tr><tr><td>Evidence / usage</td><td>Dashboard · Earnings overview.</td></tr></tbody></table>
-</section>
-<section class="sub" id="rank-bars">
-  <div class="sub__head"><h3 class="sub__title">4.74 Rank bars / source breakdown</h3><span class="layer layer--molecule">🟡 molecule</span></div>
-  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Ranked horizontal bars and revenue-source breakdown rows. Use for relative comparison inside chart surfaces; avoid for exact ledger data, which belongs in Table.</p>
-  <p class="sub__desc" data-zh>排名水平長條與收入來源分布列。用於 chart surface 中的相對比較；精確 ledger 資料應放 Table。</p>
-  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
-  <div class="compose"><div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div><div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#dot">Status dot</a></div><div class="compose__dir"><span data-en>Used by</span><span data-zh>被哪些元件使用</span> ↑</div><div class="compose__tier compose__tier--organism"><span class="compose__tier-label">organism</span><a class="compose-chip compose-chip--organism" href="#chart-card">Chart card</a></div></div>
-  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
-  <div class="demo demo--preview" data-product-preview="rank-bars">
-    <div class="ds-preview ds-preview--medium">
-      <ul class="rank-bars">
-        <li class="rank-bar"><div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label">E-Shop sales</span></div></div><span class="rank-bar__pct">42%</span></li>
-        <li class="rank-bar"><div class="rank-bar__track"><div class="rank-bar__fill" style="width:67%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">IP rentals</span></div></div><span class="rank-bar__pct">28%</span></li>
-        <li class="rank-bar"><div class="rank-bar__track"><div class="rank-bar__fill" style="width:43%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">Event tickets</span></div></div><span class="rank-bar__pct">18%</span></li>
-      </ul>
-      <div class="source-list" style="margin-top:18px;">
-        <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span>E-Shop sales</span><span class="source-row__amt">$3,520</span><span class="source-row__pct">42%</span></div>
-        <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span>IP rentals</span><span class="source-row__amt">$2,340</span><span class="source-row__pct">28%</span></div>
-      </div>
-    </div>
-  </div>
-  <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="rank-bars"><tbody><tr><td>Source</td><td><code>chart.css</code></td></tr><tr><td>Anatomy</td><td>Label/value row + horizontal bar; source-breakdown uses dot + label + amount.</td></tr><tr><td>Behavior / usage</td><td>Ranked / source breakdown; empty state is delegated to Chart card.</td></tr><tr><td>Token usage</td><td>Chart color roles, <code>--foreground-muted</code>, <code>--muted</code>.</td></tr><tr><td>Classes</td><td><code>.rank-bar</code> · <code>.barchart</code> · <code>.source-row</code></td></tr><tr><td>Evidence / usage</td><td>Dashboard source breakdown · Fans CRM · Earnings overview.</td></tr></tbody></table>
 </section>
 
 <section class="sub" id="sparkline">
@@ -1322,6 +1213,7 @@
     <li><code>.work-rail__tabs</code> — <span data-en><strong>the heading is the filter.</strong> An earlier version had a neutral title plus a pill tab group on the right, but both were answering the same question: which set is showing. Merging them removes a component and a glance. The unselected word stays legible rather than fading out — it is an entry point, not a footnote, and nobody clicks what they cannot see. This group shares no class with the F6 table's tabs below, so clicking one never moves the other.</span><span data-zh><strong>標題本身就是篩選。</strong>前一版是中性標題＋右側一組膠囊分頁，但兩者在回答同一個問題——現在顯示的是哪一批。合而為一就少一個元件、也少一次視線往返。未選中的那個詞維持可讀而不是淡到看不見：它是入口不是註腳，看不見就沒人會點。這組與下方 F6 表格的分頁不共用任何 class，點其中一邊不會帶動另一邊。</span></li>
     <li><code>.work-rail__more</code> — <span data-en>the exit the pill group used to occupy. It is not a duplicate of the table below: the rail draws from the projects store (27 entries, 12 shown) while the F6 table shows its own set of six, so this is the only route from here to the full project list.</span><span data-zh>膠囊分頁讓出來的位置改放出口。它不是下方表格的重複：磚列取自 projects store（27 筆、顯示 12），F6 表格看的是另一份 6 筆的資料，所以這是這一區唯一通往完整項目清單的路。</span></li>
     <li><code>.work-cards__wrap</code> + <code>.work-cards__nav</code> — <span data-en>page buttons are positioned against the wrapper, not the rail: inside the scroller they would scroll away. One click moves by <em>one viewport width</em>, never a fixed pixel amount — how many tiles a page holds depends on the window. Left button hides at the start, right at the end; both recompute on resize, on <code>load</code> (lazy images settle the width late), and after a tab switch.</span><span data-zh>翻頁鈕定位在外層而不是捲動區——放進捲動區會跟著捲走。一次捲<em>一個可視寬度</em>而非固定像素：每頁放得下幾張取決於視窗。到頭收左鈕、到底收右鈕；resize、<code>load</code>（圖 lazy 載入，寬度定案得晚）與切換分頁後都重算。</span></li>
+    <li><code>.work-card</code> — <span data-en><strong>An object card (Q165, 2026-11-09).</strong> The tile carries the Q3 glass edge (glass surface, blur, 1px <code>--border</code>, card shadow) with <code>--sp-8</code> padding, and hover follows the site-wide clickable-card rule (Q136): the whole tile lifts <code>--clickable-card-lift</code> and takes <code>--clickable-card-hover-bg</code>. It used to lift only the cover by 2px. <code>.work-card--static</code> keeps the surface but drops the hover.</span><span data-zh><strong>物件卡（Q165，2026-11-09）。</strong>磚本身帶 Q3 玻璃邊界（玻璃底、模糊、1px <code>--border</code>、卡片陰影），內距 <code>--sp-8</code>；hover 照全站可點卡片標準（Q136）：整張上浮 <code>--clickable-card-lift</code>、底色換 <code>--clickable-card-hover-bg</code>。舊做法只把封面抬 2px。<code>.work-card--static</code> 保留外觀、拿掉 hover。</span></li>
     <li><code>.work-cards</code> — <span data-en>a horizontal <code>scroll-snap</code> rail, not a wrapping grid; the half-tile at the right edge is the only affordance that more exist. No scrollbar is drawn — the native horizontal bar is invisible by default on macOS anyway.</span><span data-zh>橫向 <code>scroll-snap</code> 捲動列，不是會換行的 grid；右緣露半張是「還有更多」的唯一提示。不畫捲軸，macOS 的原生橫捲軸預設本來就是隱形的。</span></li>
     <li><code>.work-card__cover</code> + <code>__bg</code> + <code>__img</code> — <span data-en><strong>2:3 portrait holding square artwork without cropping it.</strong> Square inside a 2:3 frame under <code>object-fit: cover</code> crops the <em>sides</em>, and it measurably ate the titles printed on the covers. Since that title is what the tile is for, cropping defeated the component. The real image is <code>contain</code>-fitted over a backdrop that is the same image scaled 1.25&times; and blurred; both <code>&lt;img&gt;</code> share one src, so it downloads once.</span><span data-zh><strong>2:3 直式，完整裝下正方素材、不裁切。</strong>正方放進 2:3 用 <code>object-fit: cover</code> 會切掉<em>左右</em>，實測把封面上印的作品名切斷了；而那個名字正是這張磚的用途，切掉等於元件失效。真正的圖 <code>contain</code> 置中，底下墊同一張圖放大 1.25 倍並模糊；兩個 <code>&lt;img&gt;</code> 共用一個 src，只下載一次。</span></li>
     <li><strong data-en>The text block, top to bottom</strong><strong data-zh>文字塊由上而下</strong> — <code>__kind</code> / <code>__name</code> / <code>__state</code> / <code>__bar</code>. <span data-en>The order is the order the eye needs it. <code>__kind</code> (Song, Album, Movie…) is the faintest: the cover already half-says it — an album sleeve reads differently from a film poster — so this line only makes that hunch explicit. <code>__name</code> owns a line by itself and is the strongest landing point. <code>__state</code> puts the project mechanism (Pre-order / Co-create / Release) on the left and the single most actionable number on the right, justified apart rather than joined by a &ldquo;&middot;&rdquo; — Chinese and English differ so much in length (預購 vs Pre-order) that joining them overflows in English, whereas justification lets the gap absorb the difference. <code>__bar</code> is drawn only when a percentage genuinely exists, so a tile without one leaves no empty track to be misread as zero progress.</span><span data-zh>順序就是眼睛需要它的順序。<code>__kind</code>（音樂／專輯／電影…）最淡：封面其實已經講了一半——專輯封面與電影海報一眼可辨——這行只是把那個直覺變成明確的字。<code>__name</code> 獨佔一行，是整張磚最強的落點。<code>__state</code> 左邊放項目機制（預購／共創／上線）、右邊放最可行動的那一個值，兩端對齊而不用「·」串接——中英文長度差太大（預購 vs Pre-order），串接在英文會爆行，兩端對齊時中間的空白會自己吸收差額。<code>__bar</code> 只有真的有百分比時才畫，沒有的磚不會留下一條空軌道被讀成「進度是 0」。</span></li>
@@ -1388,7 +1280,7 @@
   <div class="sub__head"><h3 class="sub__title">4.94 Brand card</h3><span class="layer layer--molecule">🟡 molecule</span></div>
   <p class="field-label">用途</p>
   <p class="sub__desc">品牌合作目錄卡，創作者挑選聯名對象用；強制區分「Ztor↔品牌的商業條款（唯讀、鎖住）」與「創作者自己搭建的活動（可編輯）」——條款一律放進凹陷底＋鎖頭圖示的面板，讀起來像引用合約，不是表單。</p>
-  <p class="sub__desc">ztorUI 換裝（2026-08-28 Wave 3 B 級巡檢補修，配方抄 <code>.card</code> 黃金基準／Q77 裁決）：卡面改玻璃四件套——<code>--ztu-glass-bg</code> ＋ <code>backdrop-filter: blur(var(--ztu-blur-glass))</code> ＋ 1px <code>--border</code> ＋ <code>--shadow-card</code>/<code>--shadow-edge-top</code>，hover 陰影升級為 <code>--shadow-card-hover</code>；取代原本用 inset 邊框模擬、靜態無陰影的舊配方。巢狀的唯讀條款面板 <code>.brand-deal</code> 改吃 <code>--ztu-film</code> 薄膜（不上模糊），取代原本的 <code>--muted</code> 實色底。已在 brand-campaigns.html 實測可讀、無破版。</p>
+  <p class="sub__desc">ztorUI 換裝（2026-08-28 Wave 3 B 級巡檢補修，配方抄 <code>.card</code> 黃金基準／Q77 裁決）：卡面改玻璃四件套——<code>--ztu-glass-bg</code> ＋ <code>backdrop-filter: blur(var(--ztu-blur-glass))</code> ＋ 1px <code>--border</code> ＋ <code>--shadow-card</code>/<code>--shadow-edge-top</code>，<s>hover 陰影升級為 <code>--shadow-card-hover</code></s>（2026-11-09 拿掉：整張卡不是點擊區，hover 變化會讓人以為可點，Q136）；取代原本用 inset 邊框模擬、靜態無陰影的舊配方。巢狀的唯讀條款面板 <code>.brand-deal</code> 改吃 <code>--ztu-film</code> 薄膜（不上模糊），取代原本的 <code>--muted</code> 實色底。已在 brand-campaigns.html 實測可讀、無破版。</p>
   <p class="field-label">視覺展示 <span class="field-note">(第二張示範無真實 logo 素材時的字母 monogram 後備)</span></p>
   <div class="demo">
     <div class="brand-grid" style="width:100%;">
@@ -1592,7 +1484,7 @@
   <p class="field-label" data-en>Draft or unlisted vault (D477) — keys can’t be claimed yet, the link can’t be shared</p><p class="field-label" data-zh>草稿或已下架（D477）— 鑰匙還不能領、連結不能分享</p>
   <div class="demo">
     <div class="vault-access" style="width:100%;">
-      <div class="alert alert--row alert--info"><span class="alert__icon"><i data-lucide="clock" class="ztor-icon"></i></span><div class="alert__body"><div class="alert__desc">Fans can’t claim keys until the vault is listed — they just see “not open yet”, and no use is spent. You can still issue keys now.</div></div></div>
+      <div class="info-banner"><i data-lucide="clock" class="ztor-icon info-banner__icon"></i><span>Fans can’t claim keys until the vault is listed — they just see “not open yet”, and no use is spent. You can still issue keys now.</span></div>
       <section class="card">
         <div class="card__head"><div class="card__title-group"><span class="card__title-icon"><i data-lucide="share" class="ztor-icon"></i></span><h3 class="card__title">Share link</h3></div></div>
         <div class="linkf linkf--disabled">
@@ -1802,7 +1694,7 @@
     </a>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="project-card"><tbody><tr><td>Source</td><td><code>shared.css</code></td></tr><tr><td>Anatomy</td><td><code>.project-card</code> (link) &gt; <code>__cover</code> (real poster via <code>__cover-img</code>, or a lucide icon when the project has no artwork yet, + <code>__badge</code>) + <code>__body</code> (<code>__head</code>/<code>__title</code>/<code>__kind</code>/<code>__desc</code>/<code>__meta</code>) + <code>.project-bar</code> &gt; <code>__fill</code> (<code>--info</code>/<code>--success</code>).</td></tr><tr><td>States</td><td>hover = lift <code>--clickable-card-lift</code> + fill <code>--clickable-card-hover-bg</code> (2026-10-20, no shadow change); focus-visible = 2px <code>--ring</code> outline.</td></tr><tr><td>Token usage</td><td>surfaces/borders/shadows tokens · bar fill <code>--primary</code>/<code>--status-info</code>/<code>--status-success</code> · <code>--radius-pill</code> (bar).</td></tr><tr><td>Classes</td><td><code>.project-card</code> family（含 <code>__cover-img</code>） · <code>.project-bar</code>(<code>__fill</code>)</td></tr><tr><td>Evidence / usage</td><td>Projects card view（spec 5.1.2 F1）； grid renders from the same dataset as the list rows.</td></tr></tbody></table>
+  <table class="spec" data-product-spec="project-card"><tbody><tr><td>Source</td><td><code>shared.css</code></td></tr><tr><td>Anatomy</td><td><code>.project-card</code> (link) &gt; <code>__cover</code> (real poster via <code>__cover-img</code>, or a lucide icon when the project has no artwork yet, + <code>__badge</code>) + <code>__body</code> (<code>__head</code>/<code>__title</code>/<code>__kind</code>/<code>__desc</code>/<code>__meta</code>) + <code>.project-bar</code> &gt; <code>__fill</code> (<code>--info</code>/<code>--success</code>).</td></tr><tr><td>Surface</td><td><span data-en>Q165 (2026-11-09): Q3 glass edge — <code>--layer-1-surface</code> + blur + 1px <code>--border</code> + <code>--shadow-card, --shadow-edge-top</code>; radius <code>--radius-xl</code> like <code>.card</code> (was <code>--radius-md</code>, no border); <code>cursor: pointer</code>.</span><span data-zh>Q165（2026-11-09）：Q3 玻璃邊界——<code>--layer-1-surface</code>＋模糊＋1px <code>--border</code>＋<code>--shadow-card, --shadow-edge-top</code>；圓角 <code>--radius-xl</code> 與 <code>.card</code> 同階（原 <code>--radius-md</code>、無邊框）；<code>cursor: pointer</code>。</span></td></tr><tr><td>States</td><td>hover = lift <code>--clickable-card-lift</code> + fill <code>--clickable-card-hover-bg</code> (2026-10-20, no shadow change); focus-visible = 2px <code>--ring</code> outline.</td></tr><tr><td>Token usage</td><td>surfaces/borders/shadows tokens · bar fill <code>--primary</code>/<code>--status-info</code>/<code>--status-success</code> · <code>--radius-pill</code> (bar).</td></tr><tr><td>Classes</td><td><code>.project-card</code> family（含 <code>__cover-img</code>） · <code>.project-bar</code>(<code>__fill</code>)</td></tr><tr><td>Evidence / usage</td><td>Projects card view（spec 5.1.2 F1）； grid renders from the same dataset as the list rows.</td></tr></tbody></table>
 </section>
 <section class="sub" id="rental-card">
   <div class="sub__head"><h3 class="sub__title">4.36 Rental card 📄</h3><span class="layer layer--molecule">🟡 molecule</span></div>
@@ -1816,7 +1708,7 @@
   <div class="demo demo--preview" data-product-preview="rental-card">
     <div class="ds-preview ds-preview--narrow">
       <section class="card rental-card">
-        <span class="badge badge--orange">Rental</span>
+        <span class="badge badge--neutral">Rental</span>
         <div class="rental-card__total">$420</div>
         <div class="rental-card__breakdown"><div class="rental-card__breakdown-row"><span>Base license</span><strong>$360</strong></div><div class="rental-card__breakdown-row"><span>Platform fee</span><strong>$60</strong></div></div>
         <div class="duration-grid"><button class="duration-chip">3 mo<span class="duration-chip__price">$140</span></button><button class="duration-chip duration-chip--active">6 mo<span class="duration-chip__price">$240</span></button><button class="duration-chip">12 mo<span class="duration-chip__price">$420</span></button></div>
@@ -2003,7 +1895,7 @@
 <section class="sub" id="perf-rank">
   <div class="sub__head"><h3 class="sub__title">4.103 Performance rank</h3><span class="layer layer--molecule">🟡 molecule</span></div>
   <p class="field-label">用途</p>
-  <p class="sub__desc">「表現排行」統一列語法（序號·名稱·長條·[百分比]·數值），給 Dashboard 與 Performance 分頁的 8–11 列排行榜共用——取代原本壓在色塊上的 <a href="design-system-components-cards.html#rank-bars">Rank bars</a>（那支適合 4–6 列的來源佔比，長排行需要「沿同一條基準線比長度」）。</p>
+  <p class="sub__desc">「表現排行」統一列語法（序號·名稱·長條·[百分比]·數值），給 Dashboard 與 Performance 分頁的 8–11 列排行榜共用——取代原本壓在色塊上的 Rank bars（✝ 2026-11-09 退場，見 <a href="design-system-components-cards.html#chart">Chart</a> 卡尾註記；佔比改用 Split bar）。</p>
   <p class="field-label">視覺展示</p>
   <div class="demo">
     <ol class="perf-rank" style="width:100%;">
@@ -2330,9 +2222,9 @@
           <p class="vault-gate__foot">Holding a key also gets a fan in.</p>
         </div>
       </div>
-      <div class="alert alert--row alert--info vault-viewas">
-        <span class="alert__icon"><i data-lucide="eye" class="ztor-icon"></i></span>
-        <div class="alert__body"><div class="alert__title">Sofia Rossi can get into this vault</div><div class="alert__desc"><span class="vault-viewas__line"><span class="vault-viewas__by">Gets in by</span><span class="vault-viewas__way"><i data-lucide="key" class="ztor-icon"></i>Key KC26-A4VP</span></span></div></div>
+      <div class="info-banner vault-viewas">
+        <i data-lucide="eye" class="ztor-icon info-banner__icon"></i>
+        <span class="info-banner__text"><span class="info-banner__title">Sofia Rossi can get into this vault</span><span class="info-banner__desc"><span class="vault-viewas__line"><span class="vault-viewas__by">Gets in by</span><span class="vault-viewas__way"><i data-lucide="key" class="ztor-icon"></i>Key KC26-A4VP</span></span></span></span>
       </div>
       <div class="owner-lookup vault-person"><input class="input" type="search" value="Sofia" aria-label="Fan to view as"><div class="owner-lookup__results" style="position:static;margin-top:var(--sp-6);"><button type="button" class="owner-lookup__result" aria-selected="true"><span class="owner-lookup__avatar">S</span><span class="owner-lookup__copy"><span class="owner-lookup__name">Sofia Rossi</span><span class="owner-lookup__meta">Fan · sofia@mail</span></span></button></div></div>
       <p class="vault-item__online"><i data-lucide="eye" class="ztor-icon"></i><span>Fans can only view and play it online — no downloads.</span></p>
@@ -2428,7 +2320,7 @@
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
     <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
-    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#icon">Icon</a><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#button">Button</a><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#badge">Badge</a><a class="compose-chip compose-chip--atom" href="design-system-components-flow.html#stock-bar">Stock bar</a><a class="compose-chip compose-chip--atom" href="design-system-components-flow.html#stock-tip">Stock tip</a></div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#icon">Icon</a><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#button">Button</a><a class="compose-chip compose-chip--atom" href="design-system-components-basic.html#badge">Badge</a><a class="compose-chip compose-chip--atom" href="design-system-components-flow.html#stock-bar">Stock bar</a><a class="compose-chip compose-chip--atom" href="design-system-components-flow.html#stock-tip">Tooltip · card</a></div>
     <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="design-system-components-flow.html#dropdown-menu">Dropdown menu</a><a class="compose-chip compose-chip--molecule" href="design-system-components-lists.html#meter-list">Meter list</a><a class="compose-chip compose-chip--molecule" href="design-system-components-lists.html#empty-card">Empty card</a><a class="compose-chip compose-chip--molecule" href="design-system-components-flow.html#payout">Payout dialog</a></div>
     <div class="compose__dir"><span data-en>Used in</span><span data-zh>用在哪裡</span> ↑</div>
     <div class="compose__tier compose__tier--organism"><span class="compose__tier-label">organism</span><a class="compose-chip compose-chip--organism" href="#media-vault">Media vault</a></div>
@@ -2436,7 +2328,7 @@
   <p class="field-label" data-en>First tile, hovered or focused <span class="field-note">(D505: the four-tier claimed / total split is a Stock tip, not printed in the tile; D506: the tile is also a button — <code>__tile--open</code>, chevron after the label — that opens “Views &amp; plays”)</span></p><p class="field-label" data-zh>第一格滑過或 focus <span class="field-note">(D505：四分級「已／總」改成 Stock tip 浮卡，不常駐在格內；D506：這格同時可點——<code>__tile--open</code>，標籤後接 chevron——點開「查看／播放」彈窗)</span></p>
   <div class="demo" style="padding-bottom:150px;">
     <div class="vault-bento" style="width:100%;">
-      <div class="vault-bento__tile stock-tip stock-tip--anchored vault-bento__tile--open is-open" tabindex="0" role="button" aria-haspopup="dialog"><div class="vault-bento__v">3<span class="vault-bento__of"> 位粉絲</span></div><div class="vault-bento__l">現在已解鎖的人數<i data-lucide="chevron-right" class="ztor-icon ztor-icon--xs vault-bento__go"></i></div><div class="vault-bento__s">佔全部 1,283 位的 0%</div><div class="stock-tip__pop" role="tooltip"><div class="stock-tip__row"><span class="stock-tip__name">核心圈</span><span class="stock-tip__qty">3/13</span></div><div class="stock-tip__row"><span class="stock-tip__name">超級粉絲</span><span class="stock-tip__qty">0/115</span></div><div class="stock-tip__row"><span class="stock-tip__name">上榜粉絲</span><span class="stock-tip__qty">0/257</span></div><div class="stock-tip__row"><span class="stock-tip__name">一般粉絲</span><span class="stock-tip__qty">0/898</span></div></div></div>
+      <div class="vault-bento__tile tip--card tip--anchored vault-bento__tile--open is-open" tabindex="0" role="button" aria-haspopup="dialog"><div class="vault-bento__v">3<span class="vault-bento__of"> 位粉絲</span></div><div class="vault-bento__l">現在已解鎖的人數<i data-lucide="chevron-right" class="ztor-icon ztor-icon--xs vault-bento__go"></i></div><div class="vault-bento__s">佔全部 1,283 位的 0%</div><div class="tip__card" role="tooltip"><div class="tip__row"><span class="tip__name">核心圈</span><span class="tip__qty">3/13</span></div><div class="tip__row"><span class="tip__name">超級粉絲</span><span class="tip__qty">0/115</span></div><div class="tip__row"><span class="tip__name">上榜粉絲</span><span class="tip__qty">0/257</span></div><div class="tip__row"><span class="tip__name">一般粉絲</span><span class="tip__qty">0/898</span></div></div></div>
     </div>
   </div>
   <p class="field-label" data-en>First tile clicked (or Enter / Space): “Views &amp; plays” dialog <span class="field-note">(D506: was a card always shown under the tiles; reuses the page’s confirm shell with a single Close; empty vault shows an Empty card)</span></p><p class="field-label" data-zh>點第一格（或 Enter／Space）：「查看／播放」彈窗 <span class="field-note">(D506：原本常駐在成效格下面的卡；沿用本頁確認視窗殼、只留「關閉」；庫房沒有內容時放 Empty card)</span></p>
@@ -2468,7 +2360,7 @@
         <div class="vault-bar__actions"><button type="button" class="btn btn--outline"><i data-lucide="share" class="ztor-icon"></i><span>分享</span></button><button type="button" class="btn btn--outline"><i data-lucide="eye-off" class="ztor-icon"></i><span>下架</span></button><button type="button" class="btn btn--icon btn--outline" aria-label="更多動作"><i data-lucide="more-horizontal" class="ztor-icon"></i></button></div>
       </div>
       <div class="vault-bento">
-        <div class="vault-bento__tile stock-tip stock-tip--anchored vault-bento__tile--open" tabindex="0" role="button" aria-haspopup="dialog"><div class="vault-bento__v">3<span class="vault-bento__of"> 位粉絲</span></div><div class="vault-bento__l">現在已解鎖的人數<i data-lucide="chevron-right" class="ztor-icon ztor-icon--xs vault-bento__go"></i></div><div class="vault-bento__s">佔全部 1,283 位的 0%</div><div class="stock-tip__pop" role="tooltip"><div class="stock-tip__row"><span class="stock-tip__name">核心圈</span><span class="stock-tip__qty">3/13</span></div><div class="stock-tip__row"><span class="stock-tip__name">超級粉絲</span><span class="stock-tip__qty">0/115</span></div><div class="stock-tip__row"><span class="stock-tip__name">上榜粉絲</span><span class="stock-tip__qty">0/257</span></div><div class="stock-tip__row"><span class="stock-tip__name">一般粉絲</span><span class="stock-tip__qty">0/898</span></div></div></div>
+        <div class="vault-bento__tile tip--card tip--anchored vault-bento__tile--open" tabindex="0" role="button" aria-haspopup="dialog"><div class="vault-bento__v">3<span class="vault-bento__of"> 位粉絲</span></div><div class="vault-bento__l">現在已解鎖的人數<i data-lucide="chevron-right" class="ztor-icon ztor-icon--xs vault-bento__go"></i></div><div class="vault-bento__s">佔全部 1,283 位的 0%</div><div class="tip__card" role="tooltip"><div class="tip__row"><span class="tip__name">核心圈</span><span class="tip__qty">3/13</span></div><div class="tip__row"><span class="tip__name">超級粉絲</span><span class="tip__qty">0/115</span></div><div class="tip__row"><span class="tip__name">上榜粉絲</span><span class="tip__qty">0/257</span></div><div class="tip__row"><span class="tip__name">一般粉絲</span><span class="tip__qty">0/898</span></div></div></div>
         <div class="vault-bento__tile"><div class="vault-bento__v">214</div><div class="vault-bento__l">累計解開過</div><div class="vault-bento__s">只增不減</div></div>
         <div class="vault-bento__tile"><div class="vault-bento__v">128</div><div class="vault-bento__l">目前看得到</div><div class="vault-bento__s">至少一件</div></div>
       </div>
@@ -2594,7 +2486,7 @@
       <section class="ip-hero">
         <div class="ip-hero__cover">NEON<br>FABLES</div>
         <div>
-          <span class="badge badge--orange">Available to rent</span>
+          <span class="badge badge--success">Available to rent</span>
           <h2 class="ip-hero__title">Neon Fables character pack</h2>
           <div class="ip-hero__owner">Owned by Mika Studio · verified creator</div>
           <p class="field-text">Use this hero to combine legal context, ownership, metadata, and the rental action panel.</p>

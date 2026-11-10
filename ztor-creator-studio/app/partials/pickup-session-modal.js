@@ -103,9 +103,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           </label>
         </div>
         <span class="field__hint" data-i18n="pks.f.time.hint">Only used to show the session status. It doesn’t affect scanning.</span>
-        <span class="field__hint" data-pks-time-err hidden style="color:var(--destructive)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
+        <span class="field__error" data-pks-time-err hidden data-i18n="pks.f.time.err">End time must be later than start time.</span>
         <label class="field mt-16" data-pks-onsite>
-          <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
+          <span class="field__label" data-i18n="pks.f.instr">Pickup instructions</span>
           <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
         </label>
         <!-- 掃碼密碼＝工作人員那支掃碼器網址的鎖，屬於這場的基本設定。已預先產生一組。
@@ -118,15 +118,19 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           </div>
         </label>
         <!-- 掃碼網址的重設／停用：只在編輯場次時出現（建立當下網址還沒產生） -->
-        <label class="field mt-16" data-pks-editonly hidden>
+        <!-- 2026-11-09（輸入欄位普查 3.6）：系統值收成 Link field .linkf（原 .input-action）；停用＝.linkf--disabled（不疊 opacity，Q58）。
+             停用／啟用鈕不掛 .linkf__act，停用時才按得回來。需要頁面載 ds-components/link-field.css。 -->
+        <div class="field mt-16" data-pks-editonly hidden>
           <span class="field__label" data-i18n="pks.f.url">Scanner URL</span>
-          <div class="input-action">
-            <input class="input" data-pks-url readonly>
-            <button class="btn btn--outline btn--sm" type="button" data-pks-urlreset><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.url.reset">Reset</span></button>
-            <button class="btn btn--outline btn--sm" type="button" data-pks-urltoggle data-i18n="pks.f.url.off">Disable</button>
+          <div class="linkf" data-pks-urlbox>
+            <div class="linkf__row">
+              <input class="input linkf__input" data-pks-url readonly aria-label="Scanner URL" data-i18n-aria-label="pks.f.url">
+              <button class="btn btn--outline btn--sm linkf__act" type="button" data-pks-urlreset><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.url.reset">Reset</span></button>
+              <button class="btn btn--outline btn--sm" type="button" data-pks-urltoggle data-i18n="pks.f.url.off">Disable</button>
+            </div>
           </div>
           <span class="field__hint" data-i18n="pks.f.url.hint">Resetting invalidates the old URL immediately; on-site devices must reopen the new one. Changing the password signs out active scanners.</span>
-        </label>
+        </div>
         <!-- D499（5.1.5.12 F5）：掃碼領點沒有 scanner 網址／密碼與取貨說明，改成啟用／停用開關（建立時預設啟用〔推導〕） -->
         <div class="control-row mt-16" data-pks-lp data-feat="O43" hidden>
           <div><div class="control-row__main" data-i18n="pk.lp.f.enabled">Enabled</div><div class="control-row__sub" data-i18n="pk.lp.f.enabled.sub">When disabled, no QR code in this session gives points.</div></div>
@@ -209,7 +213,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
             '<input class="input" ' + (type === 'num' ? 'type="number" inputmode="numeric" min="1" step="1" ' : '') + 'data-pks-qr-f="' + key + '" data-pks-qr-i="' + i + '" value="' + esc(r[key]) + '"' + (extra || '') + '>' +
             '<span class="field__error" data-pks-qr-err="' + key + '" hidden></span></label>';
         };
-        return '<section class="form-section form-section--outlined" data-pks-qr-row="' + i + '">' +
+        return '<section class="form-section form-section--dense form-section--card" data-pks-qr-row="' + i + '">' +
           '<div class="form-section__head form-section__head--actions"><div class="form-section__head-titles"><h3 class="form-section__title">' + esc(T('pk.lp.qr.no', 'QR {n}').replace('{n}', i + 1)) + '</h3>' +
           (claimed ? '<p class="field__hint">' + esc(T('pk.lp.qr.keep', 'Claimed {n} times, so it can’t be removed. You can disable it on the session page.').replace('{n}', r.claimed)) + '</p>' : '') +
           '</div><div class="form-section__head-actions">' + rm + '</div></div>' +
@@ -376,6 +380,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function updateTimeErr() {
       var ok = validTime();
       modal.querySelector('[data-pks-time-err]').hidden = ok;
+      /* Q149：結束早於開始＝錯誤（.field__error＋控件 aria-invalid）；date-input.js 會把 aria-invalid 同步到拆開的兩格 */
+      modal.querySelector('[data-pks-end]').setAttribute('aria-invalid', ok ? 'false' : 'true');
       return ok;
     }
     /* 建立成功＝關閉彈窗、交給 consumer 落地到場次詳情頁（result step 已撤除）。 */
@@ -466,7 +472,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (tgl) {
         var off = tgl.getAttribute('data-i18n') === 'pks.f.url.off';
         tgl.setAttribute('data-i18n', off ? 'pks.f.url.on' : 'pks.f.url.off');
-        modal.querySelector('[data-pks-url]').style.opacity = off ? '.45' : '';
+        modal.querySelector('[data-pks-urlbox]').classList.toggle('linkf--disabled', off);
         if (window.applyI18n) window.applyI18n(tgl);
         return;
       }

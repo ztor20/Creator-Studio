@@ -2168,7 +2168,7 @@
       }
 
       var stockCell = row.querySelector('.product-list__stock span[data-i18n], .product-list__stock');
-      if (stockCell && stockCell.querySelector('.stock-tip__pop') == null) stockCell.textContent = stockText(p);
+      if (stockCell && stockCell.querySelector('.tip__card') == null) stockCell.textContent = stockText(p);
       else if (stockCell) {
         var sp = stockCell.querySelector('span[data-i18n]');
         if (sp) sp.textContent = stockText(p);
