@@ -61,12 +61,12 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         <input class="input" type="date" value="2026-07-08">
       </label>
       <label class="field" data-restock-supplier-field>
-        <span class="field__label" data-i18n="restock.f.supplier">Supplier (optional)</span>
-        <input class="input" placeholder="—" data-restock-supplier>
+        <span class="field__label" data-i18n="restock.f.supplier">Supplier</span>
+        <input class="input" placeholder="e.g., the print shop or factory" data-i18n-placeholder="restock.f.supplier.ph" data-restock-supplier>
       </label>
       <label class="field">
-        <span class="field__label" data-i18n="restock.f.notes">Notes (optional)</span>
-        <input class="input" placeholder="—" data-restock-notes>
+        <span class="field__label" data-i18n="restock.f.notes">Notes</span>
+        <input class="input" placeholder="e.g., batch number, carrier" data-i18n-placeholder="restock.f.notes.ph" data-restock-notes>
       </label>
     </div>
     <div class="payout-dialog__foot">

@@ -1,13 +1,13 @@
 /* ============================================================
    Tag input · creator-built / selectable tags
-   (spec 5.1.5.2 §4.5 「Product Tags」). Composes .chip — picked /
-   custom tags render as .chip--active .chip--removable inside a
+   (spec 5.1.5.2 §4.5 「Product Tags」). Composes .chip — added
+   tags render as neutral .chip--value .chip--removable (Q155) inside a
    bordered field; a borderless entry adds new ones; an optional
    suggestion row offers existing tags to pick. Reusable for project
    (5.1.2.2) / fan (5.1.7) tags later.
      .tag-input
        .tag-input__field        — bordered box: selected chips + entry
-         .chip.chip--active.chip--removable > text + .chip__remove
+         .chip.chip--value.chip--removable > text + .chip__remove
          .tag-input__entry      — borderless, grows to fill
        .tag-input__suggest-label
        .chip-group              — existing tags to pick (reuses chip.css)
@@ -46,8 +46,11 @@
 /* 欄內已選 chip 的對比（Q114 2026-09-11 使用者：「這個都看不清楚」）：.chip--active 的玻璃底（白 12%）坐在
    薄膜欄位（白 8.5%）上只差 3.5%，橘色小字又是 12px，整顆糊成一片。欄內的 chip 是「已輸入的值」，
    改成：字用 --foreground、底維持玻璃、加一圈 1px 髮線把邊界畫出來；× 維持淡字。欄位外的建議列不動。 */
-.tag-input__field .chip.chip--active,
-.tag-input__field .chip.chip--active:hover {
+/* 2026-11-09 Q155：欄內已加入的標籤一律中性 chip（.chip--value），橘色已選只留給「從固定選項選中」（下方建議列）。
+   選擇器由 .chip--active 改成 .chip--value；底沿用玻璃（不然薄膜欄位上又看不清楚，Q114），字與髮線不變。 */
+.tag-input__field .chip.chip--value,
+.tag-input__field .chip.chip--value:hover {
+  background: var(--ztu-glass-strong);
   color: var(--foreground);
   box-shadow: inset 0 0 0 1px var(--border), inset 0 1px 0 var(--ztu-rim-soft);
 }

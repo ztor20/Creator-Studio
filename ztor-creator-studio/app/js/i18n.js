@@ -174,6 +174,8 @@
     'bc.col.fans': { en: 'New fans', zh: '新增粉絲' },
     'bc.col.rev': { en: 'Earned', zh: '已賺取' },
     'bc.col.status': { en: 'Status', zh: '狀態' },
+    'bc.empty.title': { en: 'No brand campaigns yet', zh: '還沒有品牌合作' },   // Q170
+    'bc.empty.text':  { en: 'Campaigns you run with a brand show up here.', zh: '和品牌合作的活動會列在這裡。' },   // Q170
     'bc.pick.title': { en: 'Start a new campaign', zh: '發起新合作' },
     'bc.pick.sub': { en: 'Brands that already have a deal with Ztor. No contract to sign, no approval to wait for — pick one and promote it.', zh: '這些品牌已經與 Ztor 簽約。不必另外簽約、不必等審核——選一個開始推廣即可。' },
     'bc.sov-note': { en: '<strong>Share of voice</strong> is how many of the brand’s scans named you, out of every scan of that brand while your campaign ran. Fans choose who gets credited, so this is the number you are actually competing on.', zh: '<strong>聲量占比</strong>＝你的合作期間內，該品牌所有掃碼中有多少歸屬給你。歸屬由粉絲決定，所以這才是你真正在競爭的數字。' },
@@ -938,7 +940,6 @@
     'creators.form-email-ph':{ en: 'creator@example.com', zh: 'creator@example.com' },
     'creators.form-phone': { en: 'Phone',              zh: '電話' },
     'creators.form-phone-ph':{ en: '+886 900 000 000', zh: '+886 900 000 000' },
-    'creators.form-optional':{ en: '(optional)',       zh: '（選填）' },
     /* 幣別（2026-09-24 D326，spec 5.1.0 F2）：建立 creator 必填、建立後不可改。
        詳情頁的唯讀讀數沿用同一把 'creators.form-currency' 當欄名。 */
     'creators.form-currency':     { en: 'Currency',                                   zh: '幣別' },
@@ -1102,7 +1103,6 @@
     'btn.manual-entry':       { en: 'Manual entry',          zh: '手動補登' },
     'btn.download':           { en: 'Download',              zh: '下載' },
     'btn.not-yet':            { en: 'Not yet',               zh: '尚未開放' },
-    'btn.load-more':          { en: 'Load more →',           zh: '載入更多 →' },
     'btn.view-all':           { en: 'View all',                zh: '查看全部' },
     'btn.view-all-alerts':    { en: 'View all',                zh: '查看全部' },
     /* Hero CTA wording follows spec 03.6 §2 — one CTA per banner, label is the
@@ -1794,8 +1794,9 @@
     'manual.f.date':              { en: 'Date',                zh: '日期' },
     'manual.f.amount':            { en: 'Amount',              zh: '金額' },
     'manual.f.currency':          { en: 'Currency',            zh: '幣別' },
-    'manual.f.note':              { en: 'Note (optional)',     zh: '備註（選填）' },
-    'manual.f.attachment':        { en: 'Supporting attachment (optional)', zh: '佐證附件（選填）' },
+    'manual.f.note':              { en: 'Note',     zh: '備註' },   /* 2026-11-09 Q148：「（選填）」拿掉，改寫 placeholder */
+    'manual.f.note.ph':           { en: 'e.g., Cash sales at the venue', zh: '例：現場現金銷售' },
+    'manual.f.attachment':        { en: 'Supporting attachment', zh: '佐證附件' },
     'manual.f.attachment-hint':   { en: 'Receipt, statement, or contract as evidence.', zh: '收據、對帳單或合約等佐證。' },
     'manual.attach-btn':          { en: 'Add file',            zh: '加入檔案' },
     'manual.note':                { en: '<strong>Marked unverified.</strong> Manual income never counts toward Available, payouts, or tax documents — at most it shows in display stats.', zh: '<strong>標示未驗證。</strong>手動收入不計入可提領、提款或稅務文件，最多顯示在展示性統計中。' },
@@ -1820,7 +1821,7 @@
     'tx.col.status':          { en: 'Status',                zh: '狀態' },
     'tx.col.fees':            { en: 'Fees',                  zh: '扣項' },
     'tx.col.net':             { en: 'Net of fees',           zh: '淨額' },
-    'tx.showing':             { en: 'Showing {n} of 214 transactions ·', zh: '顯示 214 筆中的 {n} 筆 ·' },
+    'tx.showing':             { en: 'Showing {n} of 214 transactions', zh: '顯示 214 筆中的 {n} 筆' },
     'tx.none':                { en: 'No transactions match these filters.', zh: '沒有交易符合目前的篩選。' },
 
     /* Transactions · per-row expand detail (F7 · trace) */
@@ -2145,6 +2146,7 @@
     'payouts.request-title':       { en: 'Choose payout bank',   zh: '選擇提款銀行' },
     'payouts.request-desc':        { en: 'Withdraws from <strong>Available</strong> to <strong>Bank ••3417</strong>. Fees, FX rate and estimated arrival shown before you confirm. Minimum $50 · auto-payout monthly on the 1st.', zh: '從 <strong>可提領</strong> 提款至 <strong>銀行 ••3417</strong>。費用、匯率與預計到帳時間會在確認前顯示。最低 $50 · 每月 1 日自動提款。' },
     'payouts.history':             { en: 'Payout history',       zh: '提款紀錄' },
+    'payouts.history.empty':       { en: 'No payouts yet. Each request will be recorded here.', zh: '還沒有提款，每次申請都會記在這裡。' },
     'payouts.history-meta':        { en: 'Last 12 months',       zh: '近 12 個月' },
     /* 2026-09-09（D253）：Refund Reserve 改名沖銷準備金（Void Reserve，§7.3）——平台不提供
        退款動作，這裡吸收的是撤銷沖銷、不是退款本身；引用出處由 D041 改為 D253。 */
@@ -2394,6 +2396,8 @@
     'my-ip.noresult.title':  { en: 'No IP matches',         zh: '沒有符合的 IP' },
     'my-ip.noresult.text':   { en: 'Try a different source or search term.', zh: '換個來源或關鍵字試試。' },
     'my-ip.noresult.clear':  { en: 'Clear filters',         zh: '清除篩選' },
+    'my-ip.rented.empty.title': { en: 'No rented IP yet',   zh: '還沒有租入的 IP' },   // Q170
+    'my-ip.rented.empty.text':  { en: 'IP you license from other creators shows up here.', zh: '向其他創作者租用的 IP 會列在這裡。' },   // Q170
     'my-ip.row5.name':       { en: 'Kowloon After Dark live visuals', zh: '九龍夜行 演出視覺' },
     'my-ip.row5.rights':     { en: 'Gary Lin · 100%',      zh: '林家維 · 100%' },
     'my-ip.row5.rented':     { en: '4',                     zh: '4' },
@@ -2868,6 +2872,7 @@
     'store-settings.codes.f.share.hint': { en: 'Taken from what you earn, on the amount actually paid.', zh: '從你的收入裡出，算在實際成交金額上。' },
     'store-settings.codes.record.title': { en: 'Sales through this code', zh: '這組碼賣掉的' },
     'store-settings.codes.record.share': { en: 'Their cut',      zh: '對方拿' },
+    'store-settings.codes.record.empty': { en: "No sales through this code yet. They'll show up here once someone buys with it.", zh: '這組碼還沒有賣出，有人用它下單後會記在這裡。' },
     'store-settings.codes.record.hint': { en: 'Figures follow Earnings. Payouts to partners are not part of this release.', zh: '金額以收入管理為準。撥款給對方還沒做。' },
     /* D211：這一層不再是「範本庫、建商品時挑一組」，而是「這間店的尺寸指南」——
        建了就出現在所有商品上；例外是某件商品自己設了專屬指南。 */
@@ -2963,7 +2968,6 @@
     'store-settings.specs.h.bodyhip.desc': { en: 'Wrap the tape around the fullest part of your hips.', zh: '臀部最豐處繞一圈。' },
     'store-settings.specs.h.head.part': { en: 'Head circumference', zh: '頭圍' },
     'store-settings.specs.h.head.desc': { en: 'Wrap the tape about one finger-width above the eyebrows, over the top of the ears and the most prominent point at the back of the head. Do not pull it tight.', zh: '捲尺繞過眉毛上方約一指寬、耳朵上緣與後腦最突出處一圈，不要拉太緊。' },
-    'store-settings.specs.h.hatinner.part': { en: 'Inner band (optional)', zh: '帽內圍（選填）' },
     'store-settings.specs.h.hatinner.desc': { en: 'Lay the hat flat and measure around the bottom edge of the inner sweatband.', zh: '帽內汗帶下緣一圈（平放）。' },
     'store-settings.specs.h.foot.part': { en: 'Foot length', zh: '足長' },
     'store-settings.specs.h.foot.desc': { en: 'Stand barefoot on a sheet of paper, mark the back of your heel and the tip of your longest toe, then measure the distance between the two marks.', zh: '赤腳站在白紙上，標記腳跟最後端與最長腳趾尖，量兩點距離。' },
@@ -3611,9 +3615,11 @@
     'restock.f.qty-hint':     { en: 'Suggested: restock to about 2× the threshold (non-binding).', zh: '建議：補到約門檻的 2 倍（非約束）。' },
     'restock.after':          { en: 'After restock',                      zh: '補貨後在庫' },
     'restock.units':          { en: 'units',                              zh: '件' },
-    'restock.f.supplier':     { en: 'Supplier (optional)',                zh: '供應商（選填）' },
+    'restock.f.supplier':     { en: 'Supplier',                           zh: '供應商' },   /* 2026-11-09 Q148 */
+    'restock.f.supplier.ph':  { en: 'e.g., the print shop or factory',    zh: '例：印刷廠或工廠名稱' },
     'restock.f.eta':          { en: 'Expected arrival',                   zh: '預計到貨' },
-    'restock.f.notes':        { en: 'Notes (optional)',                   zh: '備註（選填）' },
+    'restock.f.notes':        { en: 'Notes',                              zh: '備註' },
+    'restock.f.notes.ph':     { en: 'e.g., batch number, carrier',        zh: '例：批號、物流商' },
     'restock.note':           { en: '<strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received. Each restocked item is logged on the product page. Digital items can\'t be restocked.', zh: '<strong>立即補貨</strong>送出即入庫；<strong>計時補貨</strong>會標記為補貨中，直到你按「到貨確認」。每個有補的品項都會記錄於商品頁。數位商品不適用補貨。' },
     'restock.receive':        { en: 'Mark received',                      zh: '到貨確認' },
     'restock.submit':         { en: 'Submit restock',                     zh: '送出補貨' },
@@ -4076,6 +4082,8 @@
     'ad.bids.time3':        { en: '8h ago',                  zh: '8 小時前' },
     'ad.bids.viewall':      { en: 'View all {n} bids',       zh: '查看全部 {n} 筆出價' },   // D455 驗收修正：{n} 由 auction-detail 依資料的 bids 填入
     'ad.bids.reserve':      { en: 'Reserve met',             zh: '已達保留價' },
+    'ad.bids.empty':        { en: 'No bids yet',             zh: '尚無出價' },   // Q170：規格 5.1.5.8 §2.6 空狀態
+    'ad.bids.empty.sub':    { en: 'Bids will show up here as they come in.', zh: '有人出價後會記在這裡。' },
     'ad.info.title':        { en: 'Auction info',            zh: '拍賣資訊' },
     'ad.info.status':       { en: 'Status',                  zh: '狀態' },
     'ad.info.duration':     { en: 'Duration',                zh: '時長' },
@@ -4682,6 +4690,8 @@
     'event-detail.live.kpimeta':          { en: '{n}% arrived · updating live', zh: '到場率 {n}% · 即時更新' },
     'event-detail.live.more':             { en: 'Showing {n} of {m} — use the scanner or export for the full list', zh: '顯示 {n} / {m} 筆——完整名單請用掃碼器或匯出' },
     'event-detail.live.showingall':       { en: 'Showing all {m}',          zh: '已顯示全部 {m} 筆' },
+    'event-detail.live.empty':            { en: 'No attendees match this filter.', zh: '沒有符合這個篩選的參加者。' },   // Q170
+    'event-detail.live.empty-all':        { en: 'No attendees yet — they show up here once tickets are sold.', zh: '還沒有參加者，售出門票後會列在這裡。' },   // Q170
     'event-detail.att.f.all':             { en: 'All',                      zh: '全部' },
     'event-detail.live.scanner.title':    { en: 'Scanner access',           zh: '掃碼器存取' },
     'event-detail.live.scanner.url': { en: 'Link',                          zh: '連結' },
@@ -5018,6 +5028,13 @@
     'aud.fun.purchase':      { en: 'Purchase',                              zh: '購買' },
     'aud.fun.attend':        { en: 'Attend',                                zh: '出席' },
     'aud.fun.back':          { en: 'Back a project',                        zh: '支持項目' },
+    /* Q168（2026-11-09）：多維影響力與轉換漏斗改成表格（不再借排行長條），欄名 */
+    'aud.infl.col.metric':   { en: 'Dimension',                             zh: '面向' },
+    'aud.infl.col.value':    { en: 'Value',                                 zh: '數值' },
+    'aud.infl.col.change':   { en: 'Change',                                zh: '變化' },
+    'aud.fun.col.stage':     { en: 'Stage',                                 zh: '階段' },
+    'aud.fun.col.people':    { en: 'People',                                zh: '人數' },
+    'aud.fun.col.conv':      { en: 'From previous stage',                   zh: '對前一階段' },
     'aud.fun.note':          { en: 'Percentages are conversion from the stage above. Follow and Engage come from external platforms; the last three come from Ztor and open the matching list.', zh: '百分比是相對前一階段的轉換率。追蹤與互動來自外部平台，購買以下三段來自站內模組，可點進對應名單。' },
 
     /* F6 · 商業價值 */
@@ -5838,6 +5855,9 @@
     'ce.wp.ticket':         { en: 'Admission',                        zh: '入場券' },
     'ce.wp.ticket.free':    { en: 'Free',                             zh: '免費' },
     'ce.wp.ticket.paid':    { en: 'Set a price',                      zh: '自訂價格' },
+    /* 2026-11-09 Q152：免費／設定價格改成「收費入場」開關 */
+    'ce.wp.ticket.charge':  { en: 'Charge for admission',             zh: '收費入場' },
+    'ce.wp.ticket.charge.sub': { en: 'Off: guests join for free.',    zh: '關閉時免費入場。' },
     'ce.wp.ticket.price':   { en: 'Ticket price',                     zh: '入場券價格' },
     'ce.wp.ticket.price.ph':{ en: '0',                                zh: '0' },
     'ce.wp.hosthint':       { en: 'Hosting needs desktop Chrome or Edge. You can set up on mobile and open the room on a computer at showtime.', zh: '開播需使用電腦版 Chrome 或 Edge；可先用手機建立，開演時再用電腦開啟房間。' },
@@ -6068,6 +6088,7 @@
     'cp.auc.sub':           { en: 'No fixed price — fans bid. One-of-a-kind, so no stock or variations.', zh: '無固定價，由粉絲競標。唯一件，無庫存與多選項。' },
     'cp.auc.start':         { en: 'Starting price',                   zh: '起標價' },
     'cp.auc.reserve':       { en: 'Reserve price',                    zh: '保留價' },
+    'cp.auc.reserve.ph':    { en: 'Leave blank for no reserve',       zh: '留空則不設保留價' },   /* 2026-11-09 Q148：「（選填）」改寫進 placeholder */
     'cp.auc.reserve-hint':  { en: "If the highest bid doesn't reach this, the auction ends unsold and we'll let you know.", zh: '最高出價沒達到保留價就流標、不成交，並通知你。' },   /* 2026-10-20 D455 B3 */
     'cp.auc.duration':      { en: 'Duration',                        zh: '競標時長' },
     'cp.auc.dur3':          { en: '3 days',                          zh: '3 天' },
@@ -6170,7 +6191,6 @@
     'cp.prove.provenance.ph':{ en: 'e.g., Bought in 2019, played every show', zh: '例：2019 年購入，每場演出都用' },
     'cp.prove.cert':        { en: 'Certificate',                      zh: '證書' },
     'cp.prove.cert-hint':   { en: 'PDF or image',                     zh: 'PDF 或圖片' },
-    'cp.optional':          { en: '(optional)',                       zh: '（選填）' },
     'cp.optional-cap':      { en: 'Optional',                         zh: '選填' },
     'cp.price':             { en: 'Price',                            zh: '價格' },
     'cp.price.avg':         { en: 'Posters &amp; prints average on Ztor: $45', zh: '海報與印刷在 Ztor 的均價：$45' },
@@ -6642,7 +6662,6 @@
     /* 墓碑 2026-09-22（方案 A #27）：`cb.price.members-total`（成員原價合計）——與算式末列的
        「原價合計」重複，標籤退場、合計列自己說。 */
     'cb.price.bundle':      { en: 'Selling price',                    zh: '售價' },
-    'cb.price.discount':    { en: 'Bundle discount % (optional)',      zh: '折扣 %（選填）' },
     'cb.price.discount-hint': { en: "Sells below the members' total by this much; the selling price is worked out for you.", zh: '比成員原價合計便宜幾 %；售價由系統算出，成員含多選項時是一個區間。' },
     'cb.sale.percent':      { en: 'Limited-time discount %',          zh: '限時折扣 %' },
     'cb.sale.percent-hint': { en: 'Taken off the bundle price during the window.', zh: '檔期內再從組合售價折抵。' },
@@ -6740,7 +6759,6 @@
     'cpp.rv.gf3':           { en: 'If it does not pass, it comes back with a reason and you can fix it and send again.', zh: '沒通過會退回並附上理由，修改後可以再送一次。' },
     'cpp.rv.gf4':           { en: 'Nothing is charged until fans rent it: 5% platform fee + 3% Stripe on revenue.', zh: '有人租看才開始計費：平台費 5% ＋ Stripe 3%，從收入扣。' },
     'cpp.required':         { en: '· required',                       zh: '· 必填' },
-    'cpp.optional':         { en: '· optional',                       zh: '· 選填' },
     'cpp.upload':           { en: 'Upload',                           zh: '上傳' },
     'cpp.edit':             { en: 'Edit',                             zh: '編輯' },
     'cpp.next.1':           { en: 'Next',             zh: '下一步' },
@@ -7422,6 +7440,10 @@
     'rg.sum.lim':              { en: 'In effect: limit — {lim}.',      zh: '目前生效：限購「{lim}」。' },
     'tb.rules.cap':            { en: 'Purchase limits',                zh: '限購' },
     'tb.rules.restrict':       { en: 'Restricted',                     zh: '限制' },
+    /* 2026-11-09 Q152：「不限／限定」「不限／設上限」改開關，列名與關閉時的說明 */
+    'tb.rules.restrict.sw':    { en: 'Restrict who can buy',           zh: '限制購買資格' },
+    'tb.rules.restrict.sub':   { en: 'Off: anyone can buy.',           zh: '關閉時任何人都能買。' },
+    'tb.rules.cap.sub':        { en: 'Off: no per-person limit.',      zh: '關閉時每人不限購買數量。' },
     /* ── D398（2026-10-12）限購：活動門票（張）／商品（件）／組合包（組）同一套句型，只換單位。
        共用渲染在 js/purchase-limits.js（pl.*）；欄位名稱＋一句輔助說明（原句見主規格 §7.2、§7.14「組合包的限購」、5.1.6.1 F22）。
        墓碑 2026-10-16（D427 只留每人總限購）：pl.<unit>.order／.order.hint／.order.v（每次交易限購數量）、
@@ -8180,7 +8202,7 @@
     'od.void.confirm':      { en: 'Void this item',          zh: '確認撤銷' },
     'od.void.toast':        { en: 'Voided {item}.', zh: '已撤銷 {item}' },
     /* 撤銷原因與紀錄（D271，2026-09-15）：原因選填、預設理由 p1–p7 為呈現參考；record 顯示在已取消品項列 */
-    'od.void.reason.label':  { en: 'Reason (optional)',        zh: '撤銷原因（選填）' },
+    'od.void.reason.label':  { en: 'Reason',                   zh: '撤銷原因' },   /* 2026-11-09 Q148 */
     'od.void.reason.ph':     { en: "Leave a note on why this line is being voided — it's kept in the order record for Admin only.", zh: '寫一句為什麼撤銷這個品項——只記在訂單紀錄，給 Admin 查' },
     'od.void.reason.hint':   { en: 'Or pick a preset — you can still edit it.', zh: '也可以點下方預設理由帶入，帶入後仍可修改' },
     'od.void.reason.p1':     { en: 'Buyer requested cancellation by email', zh: '買家來信申請取消' },
@@ -8408,7 +8430,7 @@
     'pk.lp.step0.sub':       { en: 'Choose a session type. It can’t be changed after you create the session.', zh: '先選場次類型，建立後不能更改。' },
     'pk.lp.step1.sub':       { en: 'Name this session and set its dates.', zh: '設定場次名稱、地點與時間。' },
     'pk.lp.step2.sub': { en: 'Add the QR codes fans can scan here.', zh: '新增粉絲在這裡可以掃的 QR。' },
-    'pk.lp.f.loc':           { en: 'Location (optional)', zh: '地點（選填）' },
+    'pk.lp.f.loc':           { en: 'Location', zh: '地點' },   /* 2026-11-09 Q148 */
     'pk.lp.f.loc.ph':        { en: 'Store or venue where the QR codes are handed out', zh: '發放 QR 的店家或現場' },
     'pk.lp.f.name.ph':       { en: 'e.g., Bagel Fest · Xinyi', zh: '例：貝果節 · 信義店' },
     'pk.lp.f.enabled':       { en: 'Enabled', zh: '啟用' },
@@ -8714,7 +8736,7 @@
     'pks.f.end':        { en: 'End time',      zh: '結束時間' },
     'pks.f.time.err':   { en: 'End time must be later than start time.', zh: '結束時間必須晚於開始時間。' },
     'pks.f.time.hint':  { en: 'Only used to show the session status. It doesn’t affect scanning.', zh: '僅用於顯示場次狀態，不影響掃描。' },
-    'pks.f.instr':      { en: 'Pickup instructions (optional)', zh: '取貨說明（選填）' },
+    'pks.f.instr':      { en: 'Pickup instructions', zh: '取貨說明' },   /* 2026-11-09 Q148 */
     'pks.f.instr.ph':   { en: 'Queue location, ID needed, limits…', zh: '排隊位置、需出示證件、取貨限制…' },
     'pks.search':       { en: 'Search to add', zh: '統一搜尋加入' },
     'pks.search.ph':    { en: 'Search products or tickets by name…', zh: '依名稱搜尋商品或票券…' },
@@ -8826,6 +8848,8 @@
     'sc.prog.clear':    { en: 'Nothing left for this buyer', zh: '這位買家已全數領完' },
     'sc.roster.search.ph': { en: 'Name, order #, ticket ID, pickup code', zh: '姓名、訂單編號、票號、領取碼' },
     'sc.roster.empty':  { en: 'No match in this session', zh: '本場次查無符合的資料' },
+    'sc.items.empty.goods':   { en: 'No pickup items in this session', zh: '本場次沒有取貨商品' },
+    'sc.items.empty.tickets': { en: 'No event tickets in this session', zh: '本場次沒有活動票券' },
     /* 2026-09-08 名單群組列：主行改成「還剩幾件」——現場唯一要回答的問題；
        已領 M／N（sc.prog.count）退成註腳。 */
     'sc.roster.left':   { en: '{n} left',       zh: '還剩 {n} 件' },
@@ -9636,6 +9660,7 @@
     'pd-earn.detail.licensee':{en: 'Licensee · territory',zh: '被授權方 · 地區'},
     'pd-earn.detail.amount':{en: 'Amount',zh: '金額'},
     'pd-earn.detail.share':{en: 'Share',zh: '佔比'},
+    'pd-earn.detail.empty':{en: 'No earnings of this type in the selected range.',zh: '這段期間沒有這類收益。'},
 
     /* Dashboard · 平台表現兩張卡 */
     'dash.perf.pf.title':{en: 'Platform reach',zh: '平台觸及'},
@@ -9762,6 +9787,7 @@
     'pd-earn.dist.backers':{en: 'Backers · 30%',zh: '支持者 · 30%'},
     'pd-earn.ledger.title':{en: 'Earnings ledger',zh: '收益明細'},
     'pd-earn.ledger.sub':{en: 'Last 30 days · 23 entries · USD 5,860 in',zh: '近一個月 · 共 23 筆 · 存入 USD 5,860'},
+    'pd-earn.ledger.empty':{en: 'No earnings yet. Each payment will be recorded here as it comes in.',zh: '還沒有收益，每筆進帳都會記在這裡。'},
     'pd-earn.col.date':{en: 'Date',zh: '日期時間'},
     'pd-earn.col.amount':{en: 'Amount',zh: '收益金額'},
     'pd-earn.col.type':{en: 'Activity type',zh: '活動類型'},
@@ -10034,6 +10060,7 @@
     'pd-roy.ott.other':{en: 'Other platforms',zh: '其他平台'},
     'pd-roy.deal.title':{en: 'Licensing deals',zh: '授權明細'},
     'pd-roy.deal.sub':{en: 'Reported by the distributor',zh: '由發行商彙報'},
+    'pd-roy.deal.empty':{en: 'No licensing deals yet. They show up here once the distributor reports one.',zh: '還沒有授權，發行商回報後會列在這裡。'},
     'pd-roy.deal.col-platform':{en: 'Platform',zh: '平台'},
     'pd-roy.deal.col-region':{en: 'Territory',zh: '授權地區'},
     'pd-roy.deal.col-term':{en: 'Licence term',zh: '授權期間'},
@@ -10524,6 +10551,8 @@
     'cocreate.tranche.deliver':{en: 'Submit materials to release next tranche',zh: '遞交物料以觸發下一期'},
     'cocreate.backers.title':{en: 'Backer detail',zh: '支持者明細'},
     'cocreate.backers.all':{en: 'View full list',zh: '查看完整明細'},
+    'cocreate.backers.empty': { en: 'No backers yet — they show up here once someone backs a plan.', zh: '還沒有支持者，有人支持方案後會列在這裡。' },   // Q170
+    'pd-cf.tiers.empty':      { en: 'No plans yet.', zh: '還沒有方案。' },   // Q170
     'cocreate.backers.b1-meta':{en: 'Champion · 2026/06/12',zh: 'Champion 力挺者 · 2026/06/12'},
     'cocreate.backers.charged':{en: 'Charged',zh: '已扣款'},
     'cocreate.backers.b2-meta':{en: 'Inner Circle · 2026/06/11',zh: '核心圈限定 · 2026/06/11'},
@@ -10684,7 +10713,6 @@
     'ri.desc.ph': { en: 'Describe your IP — what it is, what makes it valuable', zh: '描述你的 IP：它是什麼、價值在哪裡' },
     'ri.err.desc': { en: 'Description is required (10–2000 characters).', zh: '描述為必填（10–2000 字元）。' },
     'ri.proof': { en: 'Proof of ownership', zh: '所有權證明' },
-    'ri.opt': { en: '(optional)', zh: '（選填）' },
     'ri.proof.sub': { en: 'Contracts, certificates, or creation evidence. Helps verification — verification rules pending product alignment.', zh: '合約、證書或創作證據。有助於驗證，驗證規則待產品確認。' },
     'ri.proof.cta': { en: 'Upload proof', zh: '上傳證明' },
     'ri.proof.hint': { en: 'PDF, JPG or PNG · up to 10MB per file', zh: 'PDF、JPG 或 PNG · 每個檔案最大 10MB' },
@@ -11702,6 +11730,9 @@
     'fan-detail.spend.kpi.last90-delta': { en: '+$110 vs prior 90d', zh: '+$110（對比前 90 天）' },
     'fan-detail.spend.title': { en: 'Spending records', zh: '消費紀錄' },
     'fan-detail.spend.sub': { en: 'Products, tickets, project support', zh: '商品、票券、企劃支持' },
+    'fan-detail.spend.empty': { en: 'No spending yet — orders show up here once this fan buys something.', zh: '還沒有消費紀錄，這位粉絲下單後會記在這裡。' },   // Q170
+    'fan-detail.spend.none':  { en: 'No records from this source.', zh: '這個來源沒有紀錄。' },   // Q170
+    'fan-detail.part.empty':  { en: 'No participation yet — events and projects show up here once this fan joins one.', zh: '還沒有參與紀錄，這位粉絲參加活動或支持企劃後會記在這裡。' },   // Q170
     'fan-detail.spend.r1': { en: '“Kowloon After Dark OST” vinyl (pre-order)', zh: '「九龍夜行 原聲帶」黑膠（預購）' },
     'fan-detail.spend.r1-meta': { en: 'E-Shop · Jun 13, 2026', zh: '電商 · 2026/6/13' },
     'fan-detail.spend.r2': { en: '“Tainan Kowloon After Dark Live” · 1 ticket', zh: '「台南 九龍夜行 Live」· 1 張票' },
@@ -12846,7 +12877,7 @@
       'earnings.waterfall.gross-meta': { zh: '248 筆已結算收入', en: '248 settled events' },
       'earnings.waterfall.ip-meta':    { zh: '取樣曲目授權使用', en: 'Sampled track licensing' },
       'earnings.waterfall.nft-meta':   { zh: '40% · 1,240 位支持者', en: '40% · 1,240 backers' },
-      'tx.showing':                    { zh: '顯示 271 筆中的 {n} 筆 ·', en: 'Showing {n} of 271 transactions ·' },
+      'tx.showing':                    { zh: '顯示 271 筆中的 {n} 筆', en: 'Showing {n} of 271 transactions' },
 
       /* ── 活動（列表 + 詳情）：周湯豪真實演出史，見 persona/NICKTHEREAL/資料彙整.md 二、演唱會/活動史 ── */
       /* 依日期分桶（今天＝2026-07-26）：即將舉辦＝共看派對 8/1、跨年 12/31；

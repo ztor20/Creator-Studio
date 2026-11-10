@@ -39,6 +39,7 @@
 <link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/listing-controls.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- 取貨場次彈窗的掃碼網址（.linkf，普查 3.6） -->
 <link rel="stylesheet" href="ds-components/limit-set.css?v=r2.2"><!-- D398：限購（js/purchase-limits.js）；D427 起只剩每人總限購 -->
 <link rel="stylesheet" href="ds-components/cond-list.css?v=r2.2"><!-- D463（最終版 S105）：購買條件清單（js/purchase-conds.js） -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2"><!-- D463：條件卡內的 .rule-row（同建立組合、組合包細節） -->
@@ -500,8 +501,8 @@
       <div class="form-grid">
         <div class="field">
           <div class="field__label"><span data-i18n="cp.price">Price</span> <span class="field__req">*</span></div>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+          <span class="amount-field amount-field--readonly amount-field--code">
+            <span class="amount-field__unit" data-currency-code>TWD</span>
             <input class="input amount-field__input" placeholder="0.00" id="cp-price">
           </span>
           <div class="field__hint" data-i18n="cp.price.avg" hidden id="cp-price-avg">Posters &amp; prints average on Ztor: $45</div>
@@ -509,8 +510,8 @@
         <!-- 成本價（Cost）· spec 5.1.5.2 §4.1 F3.2 / D085：選填、創作者內部現金成本、不對買家顯示。多規格時走逐規格表的 Cost 欄 -->
         <div class="field">
           <div class="field__label"><span data-i18n="cp.cost">Cost</span> <span class="text-sub" data-i18n="cp.cost.note">creator only</span></div>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+          <span class="amount-field amount-field--readonly amount-field--code">
+            <span class="amount-field__unit" data-currency-code>TWD</span>
             <input class="input amount-field__input" placeholder="0.00" id="cp-cost">
           </span>
         </div>
@@ -778,8 +779,8 @@
         <div class="form-grid">
           <div class="field" style="margin-bottom:0">
             <div class="field__label"><span data-i18n="cp.sale.price">Discount price</span> <span class="field__req">*</span></div>
-            <span class="amount-field amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <span class="amount-field amount-field--readonly amount-field--code">
+              <span class="amount-field__unit" data-currency-code>TWD</span>
               <input class="input amount-field__input" placeholder="0.00" id="cp-sale-price" inputmode="decimal">
             </span>
           </div>
@@ -792,7 +793,7 @@
           </div>
         </div>
         <div class="field__hint" data-i18n="cp.sale.linkhint" style="margin-top:6px">Enter either — the other updates from your list price.</div>
-        <div class="control-group" style="margin-top:12px">
+        <div class="control-group card--muted" style="margin-top:12px"><!-- Q161（2026-11-09）：第 3 層（開關框裡再一個開關框）改填色，不再是第三圈線框 -->
           <div class="control-row">
           <div>
             <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
@@ -838,7 +839,7 @@
           </span>
         </div>
         <div class="field__hint" data-i18n="cp.sale.pct-allhint" style="margin-top:6px">Applied to every variation — fans pay the discounted price.</div>
-        <div class="control-group" style="margin-top:12px">
+        <div class="control-group card--muted" style="margin-top:12px"><!-- Q161（2026-11-09）：第 3 層（開關框裡再一個開關框）改填色，不再是第三圈線框 -->
           <div class="control-row">
           <div>
             <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
@@ -1426,12 +1427,12 @@
       row.className = 'variant-table__row' + (d.excluded ? ' is-excluded' : '');
       row.innerHTML =
         `<span class="variant-cell--variant">${variantThumbHTML(key, d)}<span class="variant-cell__text">${esc(key)}</span></span>`
-        + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="price" value="${esc(d.price || '')}" placeholder="0.00"></span>`
+        + `<span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit">${esc(window.ztorCurrency ? window.ztorCurrency.CREATOR : 'TWD')}</span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="price" value="${esc(d.price || '')}" placeholder="0.00"></span>`
         + `<input class="input" data-vk="${esc(key)}" data-vf="stock" value="${esc(d.stock || '')}" placeholder="0">`
         + `<span class="variant-cell--held" data-vheld="${esc(key)}"></span>`
         + `<input class="input variant-cell--lockqty" data-vk="${esc(key)}" data-vf="lock" value="${esc(d.lock || '')}" placeholder="0">`
         + `<input class="input" data-vk="${esc(key)}" data-vf="sku" value="${esc(d.sku || '')}" placeholder="SKU">`
-        + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="cost" value="${esc(d.cost || '')}" placeholder="0.00"></span>`
+        + `<span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit">${esc(window.ztorCurrency ? window.ztorCurrency.CREATOR : 'TWD')}</span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="cost" value="${esc(d.cost || '')}" placeholder="0.00"></span>`
         + `<button class="variant-row__remove" type="button" data-vexclude="${esc(key)}" aria-label="Exclude variant"><i data-lucide="x" class="ztor-icon"></i></button>`;
       rowsHost.appendChild(row);
     });
@@ -2773,7 +2774,7 @@
     tagsField.querySelectorAll('.chip').forEach(c => c.remove());
     tags.forEach((t, i) => {
       const chip = document.createElement('span');
-      chip.className = 'chip chip--active chip--removable';
+      chip.className = 'chip chip--value chip--removable';   /* Q155：已加入的標籤用中性 chip */
       chip.innerHTML = `<span>${esc(t)}</span><button class="chip__remove" type="button" data-tag-remove="${i}" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>`;
       tagsField.insertBefore(chip, tagsEntry);
     });

@@ -140,6 +140,8 @@ E0–E4 管「抬多高」（陰影），`--layer-*` 管「疊上去該多亮」
 | L3 線框 | `--layer-3-surface` | `transparent` | 第三層起不再疊填色（待採用：L3 用例都只寫線、不寫底，這支目前無消費者） |
 | L3 線 | `--layer-line` | `--border` | L3 的 1px 框：`.bd-pick`／`.bd-tbl`／`.variant-option`／`.control-group`／`.control-row`／`.album-tracks__list`／`.rowdis__frame` 等 9 支（Q64 第一批已遷）；Q63 選 B＝現行線色收進系統、不覆議亮度 |
 
+**token 名的 L2／L3 是亮度階，不是卡內第幾層**：卡內分組的順序照 Q161（2026-11-09）——第 2 層線框（`.control-group`，吃 `--layer-line`）、第 3 層填色（`.nest`，吃 `--layer-2-surface`）；Q66 的「L2 填色、L3 線框」順序作廢。
+
 規則不變：疊上去要比父層亮（Q66）、填色只疊兩層（Q24）、浮層玻璃＋模糊（Q78，2026-10-27 修訂）、玻璃裡不套玻璃（Q108）。Q64 遷移（2026-09-15）後 `--nest-surface`（4%）在產品 CSS 已無消費者（只剩 `design-layers.html` 對照組與本文件色票），L2 只剩 8.5% 一種濃度；`--nest-surface` 保留為退役中的 token，新寫法一律 `--layer-2-surface`。清單「不確定」的 9 支（`canvas-stage`／`fan-store`／`detail-sheet`／`preview-column` 的 `--ztu-canvas` 效果用法、`list-toolbar`／`.detail-bar` 的黏頂玻璃、`.lockset`／`.scanner-count` 的線框）判定為材質或效果、不屬層級系統，維持原 token。逐支清單：`docs/Q64-表面階層遷移清單-2026-09-15.md`。
 
 ### 2.6 Cross-component rules

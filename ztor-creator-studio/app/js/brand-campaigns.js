@@ -157,11 +157,40 @@
     if (!body || !window.ztorBrands) return;
     var S = window.ztorBrands;
 
+    /* Q170（2026-11-09）：還沒有任何品牌合作時的空狀態（原本只剩表頭） */
+    if (!S.campaigns.length) {
+      var et = window.i18nT ? window.i18nT("bc.empty.title") : "";
+      var ex = window.i18nT ? window.i18nT("bc.empty.text") : "";
+      body.innerHTML = '<div class="empty-card">' +
+        '<span class="empty-card__icon"><i data-lucide="megaphone" class="ztor-icon"></i></span>' +
+        '<h3 class="empty-card__title" data-i18n="bc.empty.title">' + (et && et !== "bc.empty.title" ? et : "No brand campaigns yet") + '</h3>' +
+        '<p class="empty-card__text" data-i18n="bc.empty.text">' + (ex && ex !== "bc.empty.text" ? ex : "Campaigns you run with a brand show up here.") + '</p>' +
+      '</div>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(body);
+      return;
+    }
+
+    /* Q166（2026-11-09）：列尾有 chevron＝看起來整列能點，原本卻只有名稱與 chevron 能點。
+       改成整列可點（data-list__row--go＋data-href），列內連結照舊走自己的。 */
+    if (!body.dataset.goBound) {
+      body.dataset.goBound = "1";
+      body.addEventListener("click", function (e) {
+        if (e.target.closest("a, button")) return;
+        var row = e.target.closest("[data-href]");
+        if (row) location.href = row.getAttribute("data-href");
+      });
+      body.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        var row = e.target.closest && e.target.closest("[data-href]");
+        if (row && e.target === row) location.href = row.getAttribute("data-href");
+      });
+    }
+
     body.innerHTML = S.campaigns.map(function (c) {
       var b = S.brand(c.brandId);
       var st = STATUS[c.status] || STATUS.ended;
       var rev = S.revenueOf(c);
-      return '<div class="data-list__row cmp-row">' +
+      return '<div class="data-list__row data-list__row--go cmp-row" tabindex="0" data-href="brand-campaign-detail.html?id=' + c.id + '">' +
         '<span class="cmp-row__brand">' + logo(b, 32) +
           '<span class="cmp-row__names">' +
             '<a class="data-list__title cmp-row__name" href="brand-campaign-detail.html?id=' + c.id + '" data-sort-key="name">' + c.name + '</a>' +

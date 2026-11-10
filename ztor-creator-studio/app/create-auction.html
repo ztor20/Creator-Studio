@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
@@ -213,11 +213,11 @@
         </div>
       </div>
       <div class="field">
-        <div class="field__label"><span data-i18n="cp.prove.provenance">Provenance note</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+        <div class="field__label"><span data-i18n="cp.prove.provenance">Provenance note</span></div>
         <input class="input" placeholder="e.g., Bought in 2019, played every show" data-i18n-placeholder="cp.prove.provenance.ph">
       </div>
       <div class="field" style="margin-bottom:0">
-        <div class="field__label"><span data-i18n="cp.prove.cert">Certificate</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+        <div class="field__label"><span data-i18n="cp.prove.cert">Certificate</span></div>
         <div class="upload-tile">
           <span class="upload-tile__icon"><i data-lucide="file" class="ztor-icon"></i></span>
           <span class="upload-tile__hint" data-i18n="cp.prove.cert-hint">PDF or image</span>
@@ -234,16 +234,16 @@
       <div class="form-grid">
         <div class="field">
           <div class="field__label"><span data-i18n="cp.auc.start">Starting price</span> <span class="field__req">*</span></div>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+          <span class="amount-field amount-field--readonly amount-field--code">
+            <span class="amount-field__unit" data-currency-code>TWD</span>
             <input class="input amount-field__input" placeholder="50" id="ca-startprice">
           </span>
         </div>
         <div class="field">
-          <div class="field__label"><span data-i18n="cp.auc.reserve">Reserve price</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-            <input class="input amount-field__input" placeholder="0.00">
+          <div class="field__label"><span data-i18n="cp.auc.reserve">Reserve price</span></div>
+          <span class="amount-field amount-field--readonly amount-field--code">
+            <span class="amount-field__unit" data-currency-code>TWD</span>
+            <input class="input amount-field__input" placeholder="Leave blank for no reserve" data-i18n-placeholder="cp.auc.reserve.ph">
           </span>
           <div class="field__hint" data-i18n="cp.auc.reserve-hint">If the highest bid doesn't reach this, the auction ends unsold and we'll let you know.</div>
         </div>
@@ -272,10 +272,11 @@
         <h3 class="form-section__title" data-i18n="cp.elig.title">Who can bid?</h3>
         <p class="form-section__sub" data-i18n="cp.elig.sub">Limit which fan tiers can join this auction.</p>
       </div>
-      <div class="segmented" id="ca-elig">
-        <button class="segmented__btn segmented__btn--active" type="button" data-ca-elig="inner" data-i18n="cp.elig.inner">Inner Circle only</button>
-        <button class="segmented__btn" type="button" data-ca-elig="super" data-i18n="cp.elig.super">Super Fans and above</button>
-        <button class="segmented__btn" type="button" data-ca-elig="all" data-i18n="cp.elig.all">All fans</button>
+      <!-- 2026-11-10：三個選項字長，分段鈕在手機寬度橫向溢出（iPhone 390px 量到 442px）；照選擇控件 T2「每個選項要讀完整名稱」改 .radio-cards，讀值仍看 segmented__btn--active -->
+      <div class="segmented radio-cards radio-cards--3" id="ca-elig" role="radiogroup">
+        <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-ca-elig="inner"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.elig.inner">Inner Circle only</span></span></button>
+        <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ca-elig="super"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.elig.super">Super Fans and above</span></span></button>
+        <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ca-elig="all"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.elig.all">All fans</span></span></button>
       </div>
       <div class="field__hint" data-i18n="cp.elig.hint">Restricting to top tiers passes this item to the next Drop for lower tiers. Tier thresholds follow §7.1 / 5.1.7.1.</div>
     </section>
@@ -328,7 +329,7 @@
         <h3 class="form-section__title" data-i18n="ca.tags.title">Tags</h3>
       </div>
       <div class="field" style="margin-bottom:0">
-        <div class="field__label"><span data-i18n="cp.tags">Product tags</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+        <div class="field__label"><span data-i18n="cp.tags">Product tags</span></div>
         <div class="field__hint" style="margin-bottom:8px" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</div>
         <div class="tag-input" id="ca-tags">
           <div class="tag-input__field" id="ca-tags-field">
@@ -395,26 +396,17 @@
         <div class="lctl lctl--stack">
           <div class="lctl__row lctl__row--choice">
             <div class="lctl__body">
-              <div class="radio-list radio-list--collapsible" id="ca-listing-mode">
-                <button class="radio-list__trigger" type="button" aria-expanded="false">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-                  <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+              <!-- 2026-11-09 Q153：上架／開拍時機一律 .radio-cards（原收合式 radio-list） -->
+              <div class="segmented radio-cards radio-cards--3" id="ca-listing-mode" role="radiogroup">
+                <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ca-listing="none">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-card__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
                 </button>
-                <div class="radio-list__options" hidden>
-                  <button class="radio-list__item" type="button" data-ca-listing="none">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
-                  </button>
-                  <button class="radio-list__item radio-list__item--active" type="button" data-ca-listing="now">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
-                  </button>
-                  <button class="radio-list__item" type="button" data-ca-listing="schedule">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
-                  </button>
-                </div>
+                <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-ca-listing="now">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.now">List now</span><span class="radio-card__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+                </button>
+                <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ca-listing="schedule">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-card__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+                </button>
               </div>
             </div>
           </div>
@@ -459,22 +451,14 @@
         <div class="lctl lctl--stack">
           <div class="lctl__row lctl__row--choice">
             <div class="lctl__body">
-              <div class="radio-list radio-list--collapsible" id="ca-start-mode">
-                <button class="radio-list__trigger" type="button" aria-expanded="false">
-                  <span class="radio-list__dot"></span>
-                  <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
-                  <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+              <!-- 2026-11-09 Q153：上架／開拍時機一律 .radio-cards（原收合式 radio-list） -->
+              <div class="segmented radio-cards" id="ca-start-mode" role="radiogroup">
+                <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-ca-start="follow">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-card__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
                 </button>
-                <div class="radio-list__options" hidden>
-                  <button class="radio-list__item radio-list__item--active" type="button" data-ca-start="follow">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.follow">Start as soon as it is listed</span><span class="radio-list__sub" data-i18n="ca.start.follow-sub">Bidding opens the moment it goes live</span></span>
-                  </button>
-                  <button class="radio-list__item" type="button" data-ca-start="schedule">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Start at a set time</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Fans can see it earlier; bidding opens then</span></span>
-                  </button>
-                </div>
+                <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-ca-start="schedule">
+                  <span class="radio-card__text"><span class="radio-card__title" data-i18n="ca.start.schedule">Start at a set time</span><span class="radio-card__sub" data-i18n="ca.start.schedule-sub">Fans can see it earlier; bidding opens then</span></span>
+                </button>
               </div>
             </div>
           </div>
@@ -713,8 +697,8 @@
   /* ---- 競標資格：segmented 三擇一 ---- */
   const eligSeg = document.getElementById('ca-elig');
   if (eligSeg) eligSeg.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => {
-    eligSeg.querySelectorAll('.segmented__btn').forEach(b => b.classList.remove('segmented__btn--active'));
-    btn.classList.add('segmented__btn--active');
+    eligSeg.querySelectorAll('.segmented__btn').forEach(b => { b.classList.remove('segmented__btn--active'); b.setAttribute('aria-checked', 'false'); });
+    btn.classList.add('segmented__btn--active'); btn.setAttribute('aria-checked', 'true');
     refresh();
   }));
 
@@ -737,7 +721,7 @@
     tagsField.querySelectorAll('.chip').forEach(c => c.remove());
     tags.forEach((t, i) => {
       const chip = document.createElement('span');
-      chip.className = 'chip chip--active chip--removable';
+      chip.className = 'chip chip--value chip--removable';
       chip.innerHTML = `<span>${esc(t)}</span><button class="chip__remove" type="button" data-tag-remove="${i}" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>`;
       tagsField.insertBefore(chip, tagsEntry);
     });
@@ -821,8 +805,15 @@
     if (saleSec) saleSec.hidden = !listed;
     renderSaleEnd();
   }
+  /* 2026-11-09 Q153：上架／開拍時機由收合式 radio-list 改 .radio-cards；點卡＝亮起這張並回傳它 */
+  function pickCard(group, e) {
+    const btn = e.target.closest('.segmented__btn');
+    if (!btn || btn.disabled || !group.contains(btn)) return null;
+    group.querySelectorAll('.segmented__btn').forEach(b => { const on = b === btn; b.classList.toggle('segmented__btn--active', on); b.setAttribute('aria-checked', String(on)); });
+    return btn;
+  }
   const caLm = document.getElementById('ca-listing-mode');
-  if (caLm) caLm.addEventListener('radio-list:change', e => { listingMode = e.detail.item.dataset.caListing; syncListingRows(); refresh(); });
+  if (caLm) caLm.addEventListener('click', e => { const b = pickCard(caLm, e); if (!b) return; listingMode = b.dataset.caListing; syncListingRows(); refresh(); });
   syncListingRows();
 
   const caSm = document.getElementById('ca-start-mode');
@@ -831,7 +822,7 @@
     if (f) f.hidden = startMode !== 'schedule';
     renderSaleEnd();
   }
-  if (caSm) caSm.addEventListener('radio-list:change', e => { startMode = e.detail.item.dataset.caStart; syncStartMode(); refresh(); });
+  if (caSm) caSm.addEventListener('click', e => { const b = pickCard(caSm, e); if (!b) return; startMode = b.dataset.caStart; syncStartMode(); refresh(); });
   syncStartMode();
   ['ca-start-time', 'ca-listing-time'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { renderSaleEnd(); refresh(); }); });
   const shipBy = document.getElementById('ca-shipby');
@@ -885,6 +876,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script><!-- Q147：金額前綴＝創作者幣別代碼（data-currency-code） -->
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
 <script src="js/listing-state.js?v=r2.2"></script>

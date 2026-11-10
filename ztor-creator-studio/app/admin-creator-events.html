@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/header.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/footer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233 建；D238 自動匯入；D372 改成以匯入活動為主的清單）。
@@ -149,13 +150,13 @@
           <table class="ztor-table">
             <thead>
               <tr>
-                <th scope="col" data-i18n="ace.col.name">Name</th>
-                <th scope="col" data-i18n="ace.col.date">Date</th>
-                <th scope="col" data-i18n="ace.col.venue">Venue</th>
+                <th scope="col" data-sort="text" data-i18n="ace.col.name">Name</th>
+                <th scope="col" data-sort="text" data-i18n="ace.col.date">Date</th>
+                <th scope="col" data-sort="text" data-i18n="ace.col.venue">Venue</th>
                 <!-- 主辦方：bookyay feed 帶來的文字線索，唯讀參考，不帶入活動資料（D372 決定二） -->
-                <th scope="col" data-i18n="ace.col.organizer">Organizer (bookyay)</th>
-                <th scope="col" data-i18n="ace.col.creator">Creator</th>
-                <th class="ace-status" scope="col" data-i18n="ace.col.status">Status</th>
+                <th scope="col" data-sort="text" data-i18n="ace.col.organizer">Organizer (bookyay)</th>
+                <th scope="col" data-sort="text" data-i18n="ace.col.creator">Creator</th>
+                <th class="ace-status" scope="col" data-sort="text" data-i18n="ace.col.status">Status</th>
                 <th class="ace-act" scope="col"><span class="u-visually-hidden" data-i18n="ace.col.action">Action</span></th>
               </tr>
             </thead>
@@ -230,6 +231,7 @@
 <script src="js/toast.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- D374：解除對應時刪掉對應的草稿活動（與活動清單刪草稿同一支 removeDraft） -->
 <script src="js/devtools.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script>
 /* 創作者活動管理（Tier 0 Admin · spec 5.1.0.6 · D233 建、D238 自動匯入、D372 逐場對應創作者）。
 
@@ -440,6 +442,8 @@
         + '</tr>';
     }).join('');
     icons(rowsEl);
+    /* 列重畫（分頁籤、搜尋、對應後）＝新的預設順序；排序狀態歸零。 */
+    if (window.ztorTableSort) window.ztorTableSort.refresh(rowsEl.closest('table'));
   }
 
   /* ── F6 · 最後檢查 ＋ 重新檢查（D238；D372 起整頁一組）──────────────

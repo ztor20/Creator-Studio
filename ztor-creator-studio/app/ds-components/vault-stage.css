@@ -63,7 +63,7 @@
 .vault-bento__of { font-size: var(--fs-13); color: var(--muted-foreground); font-weight: var(--fw-regular); }
 .vault-bento__l { font-size: var(--fs-13); margin-top: var(--sp-4); }
 .vault-bento__s { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
-/* 第一格的四分級分佈「核心圈 3/13…」：D505（2026-11-02）起不常駐，改由 stock-tip.css 的 .stock-tip--anchored 在滑過／focus 第一格時浮出；
+/* 第一格的四分級分佈「核心圈 3/13…」：D505（2026-11-02）起不常駐，改由 shared.css 的 .tip--card.tip--anchored（Q172，原 stock-tip.css） 在滑過／focus 第一格時浮出；
    原 .vault-bento__tiers／__tier 規則已移除（零消費）。 */
 @media (max-width: 640px) { .vault-bento { grid-template-columns: minmax(0, 1fr); } }
 
@@ -113,9 +113,11 @@
   color: inherit;
   font: inherit;
   padding: 0;
-  transition: box-shadow var(--duration) var(--easing), border-color var(--duration) var(--easing);
+  transition: transform var(--duration) var(--easing), background-color var(--duration) var(--easing), border-color var(--duration) var(--easing);
 }
-.vault-card:hover { box-shadow: var(--shadow-float); }
+/* 2026-11-09：hover 由換 --shadow-float 改成 Q136 標準（上浮＋底色換 --clickable-card-hover-bg，不換陰影）。 */
+.vault-card:hover { transform: translateY(var(--clickable-card-lift)); background: var(--clickable-card-hover-bg); }
+@media (prefers-reduced-motion: reduce) { .vault-card:hover { transform: none; } }
 .vault-card:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }
 .vault-card.is-locked { opacity: .55; }
 .vault-card__thumb {

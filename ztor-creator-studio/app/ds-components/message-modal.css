@@ -6,7 +6,7 @@
    .payout-dialog__head/__body/__foot) and the shared .tabs / .tab-panel,
    .input / .textarea / .select, .switch and .badge components. The only
    message-specific markup is:
-     - the Compose form column (.msg-compose / .msg-field)
+     - the Compose form column (.msg-compose; fields are DS .field since Q150, 2026-11-09)
      - the personalization token chips (.msg-token)
      - （字數計數 2026-11-09 移到 field-system.css 的 .field__counter）
      - the schedule date+time row (.msg-schedule)
@@ -35,26 +35,16 @@
   display: grid;
   gap: var(--sp-18);
 }
-.msg-field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.msg-field__label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-12);
-}
-.msg-field__label-text {
-  font-family: var(--font-ui);
-  font-size: var(--fs-13);
-  font-weight: var(--fw-regular);
-}
-.msg-field__req {
-  color: var(--destructive);
-  margin-left: var(--sp-2);
-}
+/* 欄位一律用 DS 的 .field（Q150，2026-11-09）：標籤 .field__label（有字數時 .field__label--split ＋ .field__counter）、
+   必填 .field__req。欄與欄的距離交給 .msg-compose 的 grid gap，所以收掉 .field 自帶的下緣距離，避免兩段距離疊加。 */
+.msg-compose > .field,
+.msg-schedule-when > .field { margin-bottom: 0; }
+
+/* 墓碑 2026-11-09（Q150）：平行欄位系統 .msg-field 退場，改用 .field。原規則：
+   .msg-field { display:flex; flex-direction:column; gap:7px; }
+   .msg-field__label { display:flex; align-items:baseline; justify-content:space-between; gap:--sp-12; }
+   .msg-field__label-text { font-family:--font-ui; font-size:--fs-13; font-weight:--fw-regular; }
+   .msg-field__req { color:--destructive; margin-left:--sp-2; } */
 
 
 /* ---- Personalization token chips ---- */
