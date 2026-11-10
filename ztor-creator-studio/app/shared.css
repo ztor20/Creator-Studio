@@ -2342,13 +2342,72 @@ html:not([data-embed]) .detail-topbar.is-stuck.has-tabs { min-height: calc(64px 
 .tip--btn .tip__bubble { right: auto; left: 50%; transform: translate(-50%, 4px); white-space: nowrap; }
 .tip--btn:hover .tip__bubble, .tip--btn:focus-within .tip__bubble { opacity: 1; transform: translate(-50%, 0); }
 
+/* .tip--card（2026-11-09，Q172 使用者裁決：原 ds-components/stock-tip.css 併進 tooltip，stock-tip 留墓碑）：
+   資訊卡型提示——滑過或聚焦清單儲存格，浮出一張小卡列出多行明細（逐選項庫存、優惠碼綁定的商品、各分級觸及數）。
+   與一般 .tip 的差別：觸發點是整個儲存格（不是 i 圖示），內容是多行「名稱｜值」，開合由消費頁 JS 加 .is-open。
+   .tip--card 單獨掛在觸發格上，不與 .tip 併用——.tip 的 inline-grid／cursor:help 會改掉儲存格本身的排版。
+   結構：<div class="… tip--card" tabindex="0">值<div class="tip__card" role="tooltip">
+           <div class="tip__row"><span class="tip__name">S</span><span class="tip__qty tip__qty--low">2</span></div>…</div></div>
+   定位預設由 JS 量視窗座標寫 position:fixed（清單在 sticky 篩選列下捲動，要自己判斷往上或往下開）。 */
+.tip--card { position: relative; cursor: default; }
+.tip__card {
+  position: fixed;
+  min-width: 180px;
+  max-width: 280px;
+  max-height: 260px;
+  overflow: auto;
+  padding: var(--sp-10);
+  background: var(--float-glass);
+  backdrop-filter: blur(var(--float-blur));
+  -webkit-backdrop-filter: blur(var(--float-blur));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float);
+  z-index: 60;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity var(--duration) var(--easing),
+              transform var(--duration) var(--easing),
+              visibility var(--duration) var(--easing);
+  pointer-events: none;
+}
+.tip--card.is-open .tip__card { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+.tip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  padding: 3px 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  white-space: nowrap;
+}
+.tip__name { color: var(--foreground-muted); }
+.tip__qty { font-weight: var(--fw-regular); color: var(--foreground); }
+.tip__qty--low { color: var(--status-warning-ink); }
+.tip__qty--out { color: var(--status-error); }
+/* --anchored：卡貼著觸發格絕對定位（不用 fixed）。清單坐在帶 backdrop-filter 的玻璃外框裡時，
+   fixed 子孫的參考框會變成外框本身，量視窗座標的算法會把卡丟到外框左上角。寬度上限放寬到 400px。 */
+.tip--card.tip--anchored .tip__card { position: absolute; top: calc(100% + var(--sp-6)); left: 0; max-width: 400px; }
+/* --up：只配 --anchored，往上開；由消費頁 JS 依觸發格是否在視窗下半切換。 */
+.tip--card.tip--anchored.tip--up .tip__card { top: auto; bottom: calc(100% + var(--sp-6)); }
+/* --follow：卡跟著游標（座標由消費頁 JS 在 mousemove 寫 left／top）；卡本身不接滑鼠，才不會一碰就閃開。 */
+.tip--card.tip--follow .tip__card { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .tip__card { transition: none; } }
+
 /* Card view — responsive grid of project cards (alternative to the data-list view) */
 .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-20); }
 .project-card {
   display: flex; flex-direction: column;
-  background: var(--layer-1-surface)   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--card) */; border-radius: var(--radius-md); /* Q64 2026-09-15：層級 token，別名零變動 */
-  box-shadow: var(--shadow-card); overflow: hidden;
-  text-decoration: none; color: inherit;
+  /* Q165（2026-11-09）：邊界補齊 Q3 玻璃四件套（玻璃底＋模糊＋1px --border＋陰影），圓角跟 .card 同一階。
+     舊值：border-radius: var(--radius-md)；無邊框、無模糊；box-shadow 只有 --shadow-card。 */
+  background: var(--layer-1-surface)   /* ztorUI 換裝補漏 2026-09-11（稽核 A 表）：舊值 var(--card) */;
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top); overflow: hidden;
+  text-decoration: none; color: inherit; cursor: pointer;
   transition: background-color var(--duration) var(--easing), transform var(--duration) var(--easing);
 }
 /* 可點卡片 hover 全站標準（2026-10-20）：上浮＋底色換按鈕 hover 階，不換陰影與邊框。見 card.css。 */
@@ -2484,8 +2543,12 @@ html[data-data-state="empty"] .dash-empty-only { display: block; }
 html[data-data-state="empty"] .dash-data-only { display: none; }
 
 /* .input invalid state (＊ inline validation) — promoted 2026-06-16 from
-   create-event / register-ip page <style>; .input itself lives here in shared.css. */
-.input[aria-invalid="true"] {
+   create-event / register-ip page <style>; .input itself lives here in shared.css.
+   2026-11-09（Q149：錯誤一律 .field__error＋控件 aria-invalid）：多行 .textarea 與原生 .select 一併套用，
+   否則只掛 .textarea 的欄位（如撤銷原因）標了 aria-invalid 也不會出紅框。 */
+.input[aria-invalid="true"],
+.textarea[aria-invalid="true"],
+.select[aria-invalid="true"] {
   box-shadow: 0 0 0 1px var(--destructive), 0 0 0 4px color-mix(in srgb, var(--destructive) 14%, transparent);
 }
 
@@ -2495,6 +2558,8 @@ html[data-data-state="empty"] .dash-data-only { display: none; }
 .when-empty { display: none; }
 html[data-data-state="empty"] .when-empty { display: block; }
 html[data-data-state="empty"] .when-data { display: none; }
+/* 表格裡的空狀態列（Q170 報表類：保留表頭、表身一列說明）——列要維持 table-row，不能變 block */
+html[data-data-state="empty"] tr.when-empty { display: table-row; }
 
 /* ============================================================
    Deep-link flash（2026-07-27）— Dashboard CTA 深連結落地時，

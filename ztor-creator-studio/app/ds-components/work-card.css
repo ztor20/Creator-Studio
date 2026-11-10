@@ -104,9 +104,23 @@
   display: block;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
+  /* Q165（2026-11-09）：物件卡補齊 Q3 玻璃四件套（玻璃底＋模糊＋1px --border＋陰影），
+     內距 --sp-8 讓封面與字不貼邊。圓角維持 --radius-lg（150px 寬的磚用卡片級 --radius-xl 會太圓）。
+     舊值：無底、無框、無內距，只有圓角。 */
+  padding: var(--sp-8);
+  background: var(--layer-1-surface);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
   border-radius: var(--radius-lg);
+  transition: background-color var(--duration) var(--easing), transform var(--duration) var(--easing);
 }
-.work-card:hover .work-card__cover { transform: translateY(-2px); }
+/* 可點卡片 hover 全站標準（Q136；Q165 2026-11-09 補齊）：整張上浮＋底色換按鈕 hover 階，
+   不換邊框與陰影。舊做法只把封面抬 2px（.work-card:hover .work-card__cover），已撤除。 */
+.work-card:hover { transform: translateY(var(--clickable-card-lift)); background: var(--clickable-card-hover-bg); }
+@media (prefers-reduced-motion: reduce) { .work-card:hover { transform: none; } }
 .work-card:hover .work-card__name { color: var(--foreground); }
 .work-card:focus-visible {
   outline: 2px solid var(--ring);
@@ -117,7 +131,7 @@
    外觀與可點的磚一致，但把 hover 的抬升與提亮收掉——會動的東西看起來就該能點，
    留著等於用動作騙一次點擊。它本來就不在 Tab 鍵序上（div 沒有 href）。 */
 .work-card--static { cursor: default; }
-.work-card--static:hover .work-card__cover { transform: none; }
+.work-card--static:hover { transform: none; background: var(--layer-1-surface); }
 .work-card--static:hover .work-card__name { color: var(--foreground-muted); }
 
 /* 2:3 直式（2026-08-28 使用者裁示改直的）。

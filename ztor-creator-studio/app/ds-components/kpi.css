@@ -42,21 +42,12 @@
   border-radius: var(--radius-xl);   /* 卡片級圓角放大 6→16（示範，2026-07-17）：與 .card / form-section 統一 */
   min-height: 96px;
 }
-/* 疊在卡系容器內的 KPI：退成巢狀薄膜。
-   ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §3.1c）：KPI 進玻璃清單後帶出來的必修副作用——
-   product-detail「Sales summary」的四張 .kpi 母層就是 .form-section--outlined，而它同輪也變成
-   玻璃，不處理就是玻璃疊玻璃。照 .card--muted 的兩件式配方（薄膜＋邊界），關模糊、收投影、
-   圓角降一階。這是真規則、不是特異度補丁。
-   .ip-hero 從選擇器移除：那不是玻璃卡容器（是 IP 詳情的頁首橫幅），裡面的 KPI 照沙盒維持玻璃。
-   舊值：三個祖先共用 background: var(--input-surface)（實色，2026-07-20 Q21）。 */
-.card .kpi, .form-section--outlined .kpi {
-  background: var(--ztu-film);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid var(--nest-line);
-  border-radius: var(--radius-lg);
-  box-shadow: none;
-}
+/* 墓碑 2026-11-09（Q162 使用者裁決「卡裡的數字一律 .stat-row」）：這裡原本有
+   `.card .kpi, .form-section--outlined .kpi { 薄膜底、無模糊、--nest-line 邊、--radius-lg、無投影 }`，
+   讓 KPI 疊進卡片時退成巢狀薄膜——等於把「卡中卡」合法化，與 stat-row 規格（4.22h1，
+   2026-08-17 裁決「取代把 .kpi 塞進卡片」）互相矛盾。站上 20 處卡內 .kpi
+   （auction-detail、admin-ip-bank-entry、earnings／earnings-ztor、fan-analytics、ip-detail hero）
+   同輪改成 .stat-row。.kpi 只用在頁面層的指標格；卡裡要數字，用 .stat-row。 */
 /* 浮層裡的 KPI 同理退回薄膜（ztorUI 規格 §2.5 浮層實色律，同 card.css 的對應規則）。 */
 /* 2026-08-31：detail-sheet 用 iframe 開詳情頁，祖先選擇器過不了 iframe 邊界——
    浮層裡那一頁的元素永遠選不到上面那條規則，卡片就帶著給實色檯面用的投影坐在玻璃上
@@ -100,6 +91,11 @@ html[data-embed] .kpi {
    那需要 markup 把數字拆成分開的節點（<span>92</span><span class="dim">.5</span>），
    純 CSS 沒有任何選擇器能選到一個文字節點的後半段；本輪 HTML 不動，所以這一半未做。
    舊宣告：font-weight: var(--fw-regular)；letter-spacing: -0.6px；（原本沒有 line-height）。 */
+/* 窄格自動縮字（2026-11-09，Q162 收斂後）：卡內數字改回 .kpi 後，活動詳情一排三格在 1024px 寬時
+   每格只剩約 140px，28px 的「$1,807,200」會被裁掉。用容器查詢格寬 ≤ 150px 才縮成 --fs-18，
+   不靠視窗寬度（同一個視窗寬，格子寬度隨版面不同）。 */
+.kpi { container-type: inline-size; }
+
 .kpi__value {
   font-family: var(--font-numeric);
   font-size: var(--fs-28);
@@ -111,6 +107,8 @@ html[data-embed] .kpi {
   color: var(--foreground);
   font-variant-numeric: tabular-nums;
 }
+/* 窄格縮字：寫在 .kpi__value 基底之後，同權重時後寫的才贏（見上方 .kpi 容器宣告的註解） */
+@container (max-width: 150px) { .kpi__value { font-size: var(--fs-18); } }
 /* 2026-07-17 midnight（使用者裁示，Mobbin Whop/Posh 參照）：delta 由純色文字升級為染色膠囊 chip。
    膠囊形狀＝趨勢指示（data-trend）這個新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的
    狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix，亮暗自動跟隨。
@@ -272,8 +270,8 @@ html[data-embed] .kpi {
    白字對 #ffa33f 只有 1.99:1（_tokens.css 自己就標註了這個問題），拿來鋪滿一整張卡會不能讀。
    深墨 #171717 對 #ffa33f 是 9.02:1（過 AAA），亮暗同一個值。
 
-   用 .kpi.kpi--hero（0,2,0）而非 .kpi--hero（0,1,0）：要贏過 `.card .kpi` 那條巢狀底色覆寫，
-   否則 hero 卡若被放進 .card 系容器內會被改回 --input-surface。 */
+   用 .kpi.kpi--hero（0,2,0）而非 .kpi--hero（0,1,0）：原本是要贏過 `.card .kpi` 那條巢狀底色覆寫
+   （2026-11-09 Q162 已退場）；保留雙 class 是為了贏過浮層裡的薄膜覆寫。 */
 .kpi.kpi--hero {
   background: var(--primary);
   box-shadow: var(--shadow-card), var(--shadow-edge-top);
@@ -318,14 +316,6 @@ html[data-embed] .kpi {
    先前的白膜＋深墨版是因為「綠混 --card 的 tint 在橘底上震盪」；base 改成純黑底之後，
    墨色不再與卡面相混，黑膜把狀態色從橘場中隔出來，原衝突不存在，hero 卡直接吃 base 規則。 */
 
-/* KPI 也要能走 Q66 的疊層面（2026-08-17 使用者反饋）：.kpi 預設吃 --card，
-   與 .card--muted 併用時後者被蓋掉。這一條讓兩個 class 併用時以疊層面為準——
-   首個情境是項目詳情「項目進度」上方的交付摘要兩格。 */
-.kpi.card--muted {
-  background: var(--layer-2-surface);   /* ztorUI 換裝（2026-08-28 Wave 2a）：對齊 .card--muted 的薄膜值，舊值 var(--nest-surface) */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid var(--nest-line);
-  border-radius: var(--radius-lg);
-  box-shadow: none;
-}
+/* 墓碑 2026-11-09（Q162）：這裡原本有 `.kpi.card--muted`（KPI 與 .card--muted 併用時以疊層面為準，
+   2026-08-17 為項目詳情「項目進度」上方兩格加的）。一個元素掛兩支元件的面不再允許，
+   那兩格坐在頁面層 bento，同輪拿掉 .card--muted、回到一般 .kpi，本規則零消費退場。 */

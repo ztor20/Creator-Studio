@@ -324,17 +324,33 @@
       + '<span class="fin-detail__total">' + usd(total) + '</span></div>'
       + '<div class="fin-detail__scope">' + esc(T('pd-earn.detail.scope', 'This project only · current chart range')) + '</div>'
       + '<div class="table-wrap"><table class="ztor-table"><thead><tr>'
-      + '<th class="fin-detail__rank">#</th><th>' + esc(T(dimKey)) + '</th>'
-      + '<th class="fin-amt">' + esc(T('pd-earn.detail.amount', 'Amount')) + '</th>'
-      + '<th class="fin-detail__share">' + esc(T('pd-earn.detail.share', 'Share')) + '</th>'
+      /* 名稱／金額／佔比可點欄名排序（js/table-sort.js）；「#」是名次，隨排序重新編號、本身不排序——同收入總覽的明細彈窗。 */
+      + '<th class="fin-detail__rank">#</th><th data-sort="text">' + esc(T(dimKey)) + '</th>'
+      + '<th class="fin-amt sort-th--end" data-sort="num">' + esc(T('pd-earn.detail.amount', 'Amount')) + '</th>'
+      + '<th class="fin-detail__share sort-th--end" data-sort="num">' + esc(T('pd-earn.detail.share', 'Share')) + '</th>'
       + '</tr></thead><tbody>'
-      + rows.map(function (row, i) {
+      /* Q170 報表類空狀態：這段期間這類收益是 0 → 保留表頭、表身一列說明 */
+      + (!total ? '<tr><td colspan="4" class="text-sub">' + esc(T('pd-earn.detail.empty', 'No earnings of this type in the selected range.')) + '</td></tr>' : '')
+      + (!total ? [] : rows).map(function (row, i) {
           return '<tr class="ztor-table__row"><td class="fin-detail__rank">' + (i + 1) + '</td>'
             + '<td>' + esc(row.name) + '</td>'
             + '<td class="fin-amt">' + usd(row.amount) + '</td>'
             + '<td class="fin-detail__share">' + (tenths[i] / 10).toFixed(1) + '%</td></tr>';
         }).join('')
       + '</tbody></table></div>';
+    var body = modal.querySelector('[data-earn-detail-body]');
+    if (window.ztorTableSort) window.ztorTableSort.scan(body);   // 每次開都是新表格，重新掛排序
+    if (!body.__rankRenumber) {
+      body.__rankRenumber = true;
+      body.addEventListener('ztor:sorted', function (e) {
+        var tbl = e.target.closest ? e.target.closest('table') : null;
+        if (!tbl) return;
+        Array.prototype.forEach.call(tbl.querySelectorAll('tbody tr'), function (tr, i) {
+          var cell = tr.querySelector('.fin-detail__rank');
+          if (cell) cell.textContent = String(i + 1);
+        });
+      });
+    }
     modal.hidden = false;
   }
 

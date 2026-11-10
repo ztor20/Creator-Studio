@@ -61,11 +61,12 @@
              "All" is kept because "what's earning right now, across everything" is the
              single most important question this page answers — mode-first would
              otherwise scatter that across three tabs. -->
-        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="proj-modes" role="tablist" aria-label="Release mode" data-i18n-aria-label="projects.mode.label">
-          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-mode="all"><span data-i18n="projects.mode.all">All</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-mode="fund"><span data-i18n="projects.mode.fund">Co-create</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-mode="preorder"><span data-i18n="projects.mode.preorder">Presale</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-mode="go-live"><span data-i18n="projects.mode.golive">Direct release</span> <span class="tabs__item-count"></span></div>
+        <!-- 2026-11-09 Q154：篩選清單單選一律 .filter-tabs（原底線 .tabs 只做分頁導覽） -->
+        <nav class="filter-tabs" id="proj-modes" role="tablist" aria-label="Release mode" data-i18n-aria-label="projects.mode.label">
+          <button type="button" class="filter-tabs__item filter-tabs__item--active" role="tab" aria-selected="true" data-mode="all"><span data-i18n="projects.mode.all">All</span><span class="filter-tabs__count"></span></button>
+          <button type="button" class="filter-tabs__item" role="tab" aria-selected="false" data-mode="fund"><span data-i18n="projects.mode.fund">Co-create</span><span class="filter-tabs__count"></span></button>
+          <button type="button" class="filter-tabs__item" role="tab" aria-selected="false" data-mode="preorder"><span data-i18n="projects.mode.preorder">Presale</span><span class="filter-tabs__count"></span></button>
+          <button type="button" class="filter-tabs__item" role="tab" aria-selected="false" data-mode="go-live"><span data-i18n="projects.mode.golive">Direct release</span><span class="filter-tabs__count"></span></button>
         </nav>
 
         <!-- 篩選鈕（2026-07-29 L 裁示，含標註截圖：箭頭從動作群指到最後一個 tab 右側）。
@@ -254,9 +255,9 @@
   const STATE = {
     draft:     { label:{en:'Draft',zh:'草稿'},      badge:'badge--neutral' },
     scheduled: { label:{en:'Scheduled',zh:'準備中'}, badge:'badge--info' },
-    published: { label:{en:'In progress',zh:'進行中'}, badge:'badge--info' },
+    published: { label:{en:'In progress',zh:'進行中'}, badge:'badge--success' },   /* Q156：進行中＝正在跑 */
     succeeded: { label:{en:'Succeeded',zh:'已成功'}, badge:'badge--success' },
-    live:      { label:{en:'Live',zh:'已上線'},      badge:'badge--orange' },
+    live:      { label:{en:'Live',zh:'已上線'},      badge:'badge--success' },      /* Q156／Q157：原 orange */
     cancelled: { label:{en:'Cancelled',zh:'已取消'}, badge:'badge--error' },
   };
   /* 發行模式（不可變，建立時決定）。第三個由「Live」正名為 Direct release——
@@ -427,9 +428,9 @@
     modesEl.querySelectorAll('[data-mode]').forEach(el => {
       const key = el.getAttribute('data-mode');
       const n = key === 'all' ? PROJECTS.length : PROJECTS.filter(p => p.type === key).length;
-      const cnt = el.querySelector('.tabs__item-count');
+      const cnt = el.querySelector('.filter-tabs__count');
       if (cnt) cnt.textContent = n;
-      el.classList.toggle('tabs__item--active', key === mode);
+      el.classList.toggle('filter-tabs__item--active', key === mode);
       el.setAttribute('aria-selected', String(key === mode));
     });
     /* Row 2 — 狀態（次軸）。只顯示「這個模式真的會經過」且「目前有項目」的狀態：

@@ -219,7 +219,6 @@ document.write(String.raw`  <aside class="toc">
     <a class="toc__link toc__link--sub" href="design-system-components-cards.html#chart">Chart</a>
     <a class="toc__link toc__link--sub" href="design-system-components-cards.html#waterfall">Earnings waterfall</a>
     <a class="toc__link toc__link--sub" href="design-system-components-cards.html#chart-card">Chart card</a>
-    <a class="toc__link toc__link--sub" href="design-system-components-cards.html#rank-bars">Rank bars</a>
     <a class="toc__link toc__link--sub" href="design-system-components-cards.html#chart-tip">Earnings chart tooltip</a>
     <a class="toc__link toc__link--sub" href="design-system-components-cards.html#perf-rank">Performance rank</a>
     <a class="toc__link toc__link--sub" href="design-system-components-cards.html#size-mix">Size mix</a>
@@ -253,6 +252,11 @@ document.write(String.raw`  <aside class="toc">
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-export-confirm"><span data-en>5.1.12 Export confirm</span><span data-zh>5.1.12 Export confirm</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-prepublish"><span data-en>5.1.13 Pre-publish preview</span><span data-zh>5.1.13 發布前預覽</span></a>
     <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-drawer"><span data-en>5.1.14 Drawer types</span><span data-zh>5.1.14 抽屜類型</span></a>
+    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-list-types"><span data-en>5.1.15 List types</span><span data-zh>5.1.15 清單類型</span></a>
+    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-card-types"><span data-en>5.1.16 Card types</span><span data-zh>5.1.16 卡片類型</span></a>
+    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-input-types"><span data-en>5.1.17 Input types</span><span data-zh>5.1.17 輸入類型</span></a>
+    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-selection-types"><span data-en>5.1.18 Selection types</span><span data-zh>5.1.18 選擇控件類型</span></a>
+    <a class="toc__link toc__link--sub" href="design-system-pattern.html#pattern-status-types"><span data-en>5.1.19 Status types</span><span data-zh>5.1.19 狀態標記類型</span></a>
     <a class="toc__link" href="design-system-pattern.html#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
     <a class="toc__link" href="design-system-pattern.html#states"><span data-en>5.3 States</span><span data-zh>5.3 狀態</span></a>
     <a class="toc__link" href="design-system-pattern.html#dataviz"><span data-en>5.4 Data viz</span><span data-zh>5.4 資料視覺化</span></a>

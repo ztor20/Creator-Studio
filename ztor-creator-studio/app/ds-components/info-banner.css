@@ -46,6 +46,26 @@
   display: none;
 }
 
+/* ── 標題＋說明＋動作（2026-11-09，Q159）──────────────────────
+   Q159：說明規則的訊息一律 info-banner，alert--row 只給要處理或失敗的事。
+   原本借 .alert--row.alert--info 的說明（「已上架只能改庫存」＋「下架活動」鈕、
+   「這一場跟著系列設定」、媒體庫檢視身分、已送出貼文的編輯說明）需要一行粗體重點、
+   一段說明、偶爾一顆動作鈕，於是加三個子元素，不另開元件：
+   __text 包住 __title（重點，--foreground）與 __desc（說明，沿用元件的 --foreground-muted），
+   __action 是一顆一般 Button（.btn--outline.btn--sm）靠右；帶按鈕的那條加 .info-banner--action，版面窄時整條換行、按鈕掉到文字下方。 */
+.info-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.info-banner__title { color: var(--foreground); font-weight: var(--fw-medium); }
+.info-banner__desc { font-size: var(--fs-13); }
+.info-banner__desc[hidden] { display: none; }
+.info-banner__action { flex: none; margin-left: auto; }
+.info-banner--action { flex-wrap: wrap; }   /* 有 __action 時加這個修飾類：窄版整條換行 */
+
 /* ── Dismissible variant (opt-in) ──────────────────────────────
    2026-07-27 使用者裁示：這類長期提示是雜訊，要能關掉；但「重新登入」時仍該出現。
    狀態因此存在 sessionStorage（隨工作階段結束自動清掉），不是 localStorage。

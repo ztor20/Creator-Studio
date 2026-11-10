@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
 <link rel="stylesheet" href="ds-components/export-dialog.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2"><!-- 匯出確認視窗（js/csv-export.js） -->
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：完整清單彈窗裡的兩張貼文表 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 本頁專屬的 layout hook（非可重用樣式留頁內，照 CLAUDE.md 鐵律 1）。 */
@@ -163,11 +164,12 @@
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-s="music" data-i18n="ar.tab.music">Music</button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-s="post" data-i18n="ar.tab.post">Posts</button>
         </nav>
-        <nav class="filter-tabs" role="tablist" aria-label="Period" data-ar-period>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
-          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
-        </nav>
+        <!-- 2026-11-09 Q154：期間是切換檢視 → .segmented（原 filter-tabs） -->
+        <div class="segmented" role="tablist" aria-label="Period" data-ar-period>
+          <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
+          <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
+          <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
+        </div>
       </div>
 
       <div data-ar-kpi></div>
@@ -240,6 +242,7 @@
 <script src="js/performance-store.js?v=r2.2"></script>
 <script src="js/audience-store.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script>
 /* ============================================================
    粉絲分析（Fan Analytics）· spec 5.1.7.9 · D181／D182
@@ -470,8 +473,9 @@
         + '<td style="text-align:right">' + num(r.rentals) + '</td>'
         + '</tr>';
     }).join('');
+    /* 每一欄都可點欄名排序；靠右的是數字欄（sort-th--end 讓欄名貼齊數字）。 */
     var th = function (k, right) {
-      return '<th' + (right ? ' style="text-align:right"' : '') + '>' + esc(T(k)) + '</th>';
+      return '<th' + (right ? ' class="sort-th--end" style="text-align:right" data-sort="num"' : ' data-sort="text"') + '>' + esc(T(k)) + '</th>';
     };
     return '<h4 class="card__title mt-24">' + esc(T('ar.ptype.h')) + '</h4>'
       + '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0">' + esc(T('ar.ptype.note')) + '</p>'
@@ -526,6 +530,7 @@
     if (titleEl) titleEl.textContent = T('ar.more.title').replace('{what}', T(moreBlock().moreTitle || moreBlock().title));
     moreTabs.innerHTML = moreTabsHTML();
     moreBody.innerHTML = moreBodyHTML();
+    if (window.ztorTableSort) window.ztorTableSort.scan(moreBody);   // 每次重畫都是新表格，重新掛排序
     var rows = moreRows();
     var shown = Math.min(more.shown, rows.length);
     /* 列完之後不要再寫「往下捲看更多」——底下已經沒有東西了。 */
@@ -762,7 +767,7 @@
     period = b.dataset.arP;
     this.querySelectorAll('[data-ar-p]').forEach(function (x) {
       var on = x === b;
-      x.classList.toggle('filter-tabs__item--active', on);
+      x.classList.toggle('segmented__btn--active', on);   /* Q154：segmented */
       x.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     render();

@@ -477,8 +477,13 @@
           '</div></div></div>';
       }).join('');
     }
-    q('[data-sc-items-goods]').innerHTML = rows('goods');
-    q('[data-sc-items-tickets]').innerHTML = rows('ticket');
+    /* Q170：某一類沒有品項時留一列說明（照 roster 的空列寫法），不讓清單整段空白 */
+    function emptyRow(key, fb) {
+      return '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+        '<div class="data-list__meta">' + T(key, fb) + '</div></div></div></div>';
+    }
+    q('[data-sc-items-goods]').innerHTML = rows('goods') || emptyRow('sc.items.empty.goods', 'No pickup items in this session');
+    q('[data-sc-items-tickets]').innerHTML = rows('ticket') || emptyRow('sc.items.empty.tickets', 'No event tickets in this session');
     if (window.ztorIcons) { window.ztorIcons.applyIcons(q('[data-sc-items-goods]')); window.ztorIcons.applyIcons(q('[data-sc-items-tickets]')); }
   }
   q('[data-sc-roster-search]').addEventListener('input', renderRoster);

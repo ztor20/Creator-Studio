@@ -264,6 +264,12 @@
        SECTIONS 必為 true。 */
     var SPLIT = opts.layout === 'split';
     var SECTIONS = opts.layout === 'sections' || SPLIT;
+    /* 金額欄前綴的幣別代碼（Q147，2026-11-09）：頁面傳 opts.currency（字串或函式）；
+       缺＝創作者幣別（js/currency.js），沒載到退回 TWD。 */
+    function curCode() {
+      var c = typeof opts.currency === 'function' ? opts.currency() : opts.currency;
+      return c || (window.ztorCurrency ? window.ztorCurrency.CREATOR : 'TWD');
+    }
     /* 所屬活動（SPLIT，命名與上架段「跟著活動」那一句、預覽卡的「活動名 · n 張」）：
        頁面注入 getter，回 { name, status, label }——label 是已翻譯的狀態徽章字、status 只用來
        挑徽章色（draft＝無色、on-sale／live＝success、其餘無色）。 */
@@ -1063,7 +1069,7 @@
       if (!b.conds || !b.conds.conds) b.conds = { conds: {} };
       if (host._pc) { host._pc.refresh(); host._pc.check(); return; }
       host._pc = PC.mount(host, { rules: b.conds, scope: 'bundle', times: function () { var c = tbCtx(b); return c ? c.et : null; },
-        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnS, types: PC.UNI_TYPES, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); } },
+        ctx: { capUnit: 'set', noEmpty: true, featOn: featOnS, types: PC.UNI_TYPES, pctReadout: function (cd) { return PC.pctText(cd, [finalPrice(b)]); }, currency: curCode },
         onChange: function (r) { b.conds = r; uSyncLimits(b); syncSplit(card, b); onChange(BUNDLES); } });
     }
     function limitsErrCount(b) {
@@ -1585,7 +1591,7 @@
               /* 折扣上限那句話只給共創／預購（2026-09-01 通用化）：它們的折抵有地板
                  （分潤名額不可折），超標要當場承認實際生效值。活動版維持定案時的樣子。 */
               (!getTickets
-                ? '<div class="field__hint' + (discountOver(b) ? ' fc-hint--over' : '') +
+                ? '<div class="field__hint' + (discountOver(b) ? ' field__hint--warn' : '') +
                     '" data-bd-discount-hint>' + esc(discountHintText(b)) + '</div>'
                 : '') +
             '</div>'
@@ -1690,27 +1696,26 @@
     /* ③ 販售數量：不限量／限量二選一（比照建立商品的「庫存」）。
        原本是一個「留空＝不限」的數字欄——留空是一種安靜的預設，讀不出「我選了不限量」，
        而且空欄與 0 在畫面上長得一樣。改成先選再填。 */
+    /* 「限量」開關（2026-11-09 Q152：有沒有上限是有沒有的題目，一律開關）。
+       開關本身帶 data-bd-avail＝「點了之後要變成的值」，沿用原本 [data-bd-avail] 的點擊處理。
+       關著時說明句講「沒設上限時實際受什麼限制」：共創＝由名額池推導（自動），不是不限量。 */
+    function availSwHTML(b) {
+      var on = b.avail === 'limited';
+      return '<div class="control-row"><div>' +
+          '<div class="control-row__main">' + esc(T('cpp.bd.avail.limited')) + '</div>' +
+          '<div class="control-row__sub">' + esc(T(on ? 'cpp.bd.avail.limited.sub' : (SHARES ? 'cpp.bd.avail.auto.sub' : 'cpp.bd.qty.unlim.sub'))) + '</div></div>' +
+        '<div class="switch' + (on ? ' switch--on' : '') + '" role="switch" aria-checked="' + on + '" tabindex="0"' +
+          ' aria-label="' + esc(T('cpp.bd.avail.limited')) + '" data-bd-avail="' + (on ? AVAIL_OPEN : 'limited') + '"></div>' +
+      '</div>';
+    }
     function secQtyHTML(b) {
       var limited = b.avail === 'limited';
-      function card(val, on, key) {
-        return '<button type="button" class="segmented__btn' + (on ? ' segmented__btn--active' : '') +
-          '" role="radio" aria-checked="' + on + '" data-bd-avail="' + val + '">' +
-          '<span class="radio-card__text">' +
-            '<span class="radio-card__title">' + esc(T(key)) + '</span>' +
-            '<span class="radio-card__sub">' + esc(T(key + '.sub')) + '</span>' +
-          '</span></button>';
-      }
       return '<section class="bd-sec">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sec.qty')) + '</h3>' +
           '<p class="bd-sec__sub">' + esc(T('cpp.bd.sec.qty.sub')) + '</p>' +
         '</div>' +
-        '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(T('cpp.bd.sec.qty')) + '">' +
-          /* 共創的第一個選項是「自動」（由名額池推導），不是「不限量」——兩個講法
-             對應兩種事實，掛錯字會把推導出來的上限說成沒有上限。 */
-          card(AVAIL_OPEN, !limited, SHARES ? 'cpp.bd.avail.auto' : 'cpp.bd.qty.unlim') +
-          card('limited', limited, 'cpp.bd.avail.limited') +
-        '</div>' +
+        '<div class="control-group">' + availSwHTML(b) + '</div>' +
         (!limited && SHARES
           ? '<div class="field__hint mt-8" data-bd-auto-hint>' + esc(autoHintText(b)) + '</div>' : '') +
         /* 活動變體的「不限量」其實有硬頂（各成員剩餘換算，D292）——寫出來，
@@ -1729,7 +1734,7 @@
                 /* 上限提示：活動來自票券張數（capMaxHint），共創／預購來自名額池與
                    份數的換算（capHintText）——各變體講自己的事實。 */
                 (capMaxHint(b)
-                  ? '<div class="field__hint' + (capOver(b) ? ' fc-hint--over' : '') + '" data-bd-capmax>' +
+                  ? '<div class="' + (capOver(b) ? 'field__error' : 'field__hint') + '" data-bd-capmax>' +   /* Q149：超過上限會擋儲存＝錯誤 */
                       esc(capMaxHint(b)) + '</div>'
                   : (!getTickets && capHintText(b)
                       ? '<div class="field__hint" data-bd-cap-hint>' + esc(capHintText(b)) + '</div>' : '')) +
@@ -2104,7 +2109,7 @@
           return '<div class="field"><label class="field__label">' + esc(l.name) + '</label>' +
             stepperHTML('data-bd-alloc="' + esc(l.k.id) + '" aria-label="' + esc(l.name) + '"', (b.alloc || {})[l.k.id], T('cpp.bd.sp.unit.group'), 0, lockN(b), 'bd-disc', tixLocked(b)) + '</div>';
         }).join('') + '</div>' +
-        '<div class="field__hint' + (over ? ' fc-hint--over' : '') + '" data-bd-alloc-hint>' +
+        '<div class="' + (over ? 'field__error' : 'field__hint') + '" data-bd-alloc-hint>' +   /* Q149：分配超過鎖定套數會擋儲存＝錯誤 */
           esc(over ? T('cpp.bd.sp.alloc.over').replace('{n}', lockN(b)) : T('cpp.bd.sp.alloc.hint').replace('{n}', lockN(b))) + '</div>' +
       '</div>';
     }
@@ -2204,8 +2209,9 @@
       '</section>' +
       /* 優惠碼（F7，D458；2026-10-28 D486：總開關移除——全店碼一律適用）：自成一節、不再塞在價格階梯裡（一層包一層，同建立組合包）；js/code-picker.js，render 後掛進 host。
          墓碑：ladderSwitch('data-bd-stack-toggle')、price-ladder__s「關閉時…」、--panel 的 hidden 收合、階梯內的標籤列與 --panel 列。b.stack 欄位保留不再讀。 */
-      '<section class="form-section form-section--outlined" data-feat="S64">' +
-        '<div class="form-section__head"><h3 class="form-section__title">' + esc(T('cpk.title')) + '</h3></div>' +
+      /* 2026-11-09：外殼由 .form-section--outlined 改成同彈窗其他分卡的 .bd-sec（Q66：線框段不放進彈窗，見 bundle-editor.css .bd-sec 註解）。 */
+      '<section class="bd-sec bd-sec--stack" data-feat="S64">' +
+        '<div class="bd-sec__head"><h3 class="bd-sec__title">' + esc(T('cpk.title')) + '</h3></div>' +
         '<div data-bd-codes-host></div>' +
       '</section>';
     }
@@ -2290,7 +2296,7 @@
         '</div>' +
         '<div class="field">' +
           '<label class="field__label">' + esc(T('cpp.bd.sp.desc')) + '</label>' +
-          '<textarea class="input textarea bd-desc" rows="3" data-bd-f="desc" placeholder="' + esc(T('cpp.bd.sp.desc.ph')) + '">' + esc(b.desc) + '</textarea>' +
+          '<textarea class="textarea bd-desc" rows="3" data-bd-f="desc" placeholder="' + esc(T('cpp.bd.sp.desc.ph')) + '">' + esc(b.desc) + '</textarea>' +
         '</div>' +
       '</section>' +
       (COVER
@@ -2681,7 +2687,7 @@
         if (window.ZStepper) allocBox.querySelectorAll('.zstep').forEach(window.ZStepper.sync);
       } else if (allocBox) {
         var ah = allocBox.querySelector('[data-bd-alloc-hint]');
-        if (ah) { var ov = allocOver(b); ah.classList.toggle('fc-hint--over', ov); ah.textContent = ov ? T('cpp.bd.sp.alloc.over').replace('{n}', lockN(b)) : T('cpp.bd.sp.alloc.hint').replace('{n}', lockN(b)); }
+        if (ah) { var ov = allocOver(b); ah.className = ov ? 'field__error' : 'field__hint'; ah.textContent = ov ? T('cpp.bd.sp.alloc.over').replace('{n}', lockN(b)) : T('cpp.bd.sp.alloc.hint').replace('{n}', lockN(b)); }
       }
       syncValloc(card, b);   /* 2026-10-21：多選項商品的逐選項分配 */
       /* 購買條件的預設跟著允許票種與每組張數變（限購換算成組）：焦點不在這一段時整段重畫 */
@@ -2876,14 +2882,8 @@
       var availField =
         '<div class="field">' +
           '<div class="field__label">' + esc(T('cpp.bd.avail')) + '</div>' +
-          '<div class="segmented" role="radiogroup" aria-label="' + esc(T('cpp.bd.avail')) + '">' +
-            '<button type="button" class="segmented__btn' + (b.avail !== 'limited' ? ' segmented__btn--active' : '') +
-              '" role="radio" aria-checked="' + (b.avail !== 'limited') + '" data-bd-avail="' + AVAIL_OPEN + '">' +
-              esc(T(SHARES ? 'cpp.bd.avail.auto' : 'cpp.bd.qty.unlim')) + '</button>' +
-            '<button type="button" class="segmented__btn' + (b.avail === 'limited' ? ' segmented__btn--active' : '') +
-              '" role="radio" aria-checked="' + (b.avail === 'limited') + '" data-bd-avail="limited">' +
-              esc(T('cpp.bd.avail.limited')) + '</button>' +
-          '</div>' +
+          /* 2026-11-09 Q152：不限量／限量的 segmented 改成同一個「限量」開關（availSwHTML） */
+          '<div class="control-group">' + availSwHTML(b) + '</div>' +
           /* cap 需要自己的標籤：一旦填了值，placeholder 就不再說明它是什麼，
              這個輸入框會變成 segmented 底下一個沒有名字的數字。 */
           (b.avail === 'limited'
@@ -3065,12 +3065,12 @@
               '</div>' +
               '<div class="field fc-pricing__out">' +
                 '<label class="field__label">' + esc(T('cpp.bd.price')) + '</label>' +
-                '<div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
+                '<div class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit">' + esc(curCode()) + '</span>' +
                   '<input class="amount-field__input input" data-bd-price value="' + esc(money(finalPrice(b)).replace('$', '')) + '" disabled></div>' +
               '</div>' +
             '</div>' +
             '<div class="field__hint fc-pricing__note" data-bd-price-hint>' + esc(priceHintText(b)) + '</div>' +
-            '<div class="field__hint fc-pricing__note' + (discountOver(b) ? ' fc-hint--over' : '') +
+            '<div class="field__hint fc-pricing__note' + (discountOver(b) ? ' field__hint--warn' : '') +
               '" data-bd-discount-hint>' + esc(discountHintText(b)) + '</div>' +
           '</div>' +
           '</div>' +
@@ -3223,7 +3223,7 @@
         var capMaxEl = card.querySelector('[data-bd-capmax]');
         if (capMaxEl) {
           capMaxEl.textContent = capMaxHint(b);
-          capMaxEl.classList.toggle('fc-hint--over', capOver(b));
+          capMaxEl.className = capOver(b) ? 'field__error' : 'field__hint';
         }
         /* 票券成員（2026-09-21）：改整組張數時就地更新表尾、原價算式、每場預覽的票券原價——
            重畫會把正在打字的步進器連同游標一起換掉。 */
@@ -3255,7 +3255,7 @@
         var discHintEl = card.querySelector('[data-bd-discount-hint]');
         if (discHintEl) {
           discHintEl.textContent = discountHintText(b);
-          discHintEl.classList.toggle('fc-hint--over', discountOver(b));
+          discHintEl.classList.toggle('field__hint--warn', discountOver(b));   /* Q149：超標只截掉、不擋儲存＝提醒（--warn） */
         }
         var primaryEl = card.querySelector('[data-bd-primary]');
         if (primaryEl) primaryEl.disabled = gateOffFor(b);
@@ -3296,7 +3296,7 @@
       var discHint = card.querySelector('[data-bd-discount-hint]');
       if (discHint) {
         discHint.textContent = discountHintText(b);
-        discHint.classList.toggle('fc-hint--over', discountOver(b));
+        discHint.classList.toggle('field__hint--warn', discountOver(b));
       }
       var autoHint = card.querySelector('[data-bd-auto-hint]');
       if (autoHint) autoHint.textContent = autoHintText(b);
@@ -3597,7 +3597,7 @@
     /* 開關（div role=switch）的鍵盤操作：Space／Enter 等同點擊（D342 新增的四顆＋組合折扣） */
     list.addEventListener('keydown', function (e) {
       if (e.key !== ' ' && e.key !== 'Enter') return;
-      var sw = e.target.closest && e.target.closest('[data-bd-sale-toggle],[data-bd-stack-toggle],[data-bd-shown-toggle],[data-tb-rules-follow],[data-bd-disc-toggle],[data-bd-sw]');
+      var sw = e.target.closest && e.target.closest('[data-bd-sale-toggle],[data-bd-stack-toggle],[data-bd-shown-toggle],[data-tb-rules-follow],[data-bd-disc-toggle],[data-bd-sw],.switch[data-bd-avail]');
       if (!sw) return;
       e.preventDefault(); sw.click();
     });

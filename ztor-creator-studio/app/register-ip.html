@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -38,9 +41,8 @@
      區段骨架／多選標籤／用途多選卡／$ 前綴／% 與 months 後綴／Review 摘要列已改用 ds-components 的
      form-section／chip／selection-card／amount-field／review-row（2026-07-10、2026-07-11）。 */
 
-  /* ＊ 必填 inline 驗證（檢核 §6①）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
-  .ri-field-error { display:none; margin-top:6px; font-size: var(--fs-12); color:var(--destructive); }
-  .field.is-invalid .ri-field-error { display:block; }
+  /* ＊ 必填 inline 驗證（檢核 §6①）：.input 與其 aria-invalid 狀態在 shared.css，訊息行用 DS 的 .field__error（[hidden] 切換）。
+     墓碑 2026-11-09（Q149）：頁內 .ri-field-error ＋ .field.is-invalid 那一套退場。 */
 
   /* 上傳格已填狀態（.upload-tile.is-filled）已移至 ds-components/upload-tile.css。 */
 
@@ -128,7 +130,7 @@
              1～100 的 <option> 由下方 JS 產生，不寫死 200 行 markup；產生完才載 zselect.js，
              它才吃得到完整清單（zselect 是載入時一次性升級原生 select）。 -->
         <div class="mt-24" id="ri-age" hidden>
-          <label class="field__label"><span data-i18n="ri.age">Likeness age range</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
+          <label class="field__label"><span data-i18n="ri.age">Likeness age range</span></label>
           <div class="form-grid">
             <div class="field">
               <div class="field__label" data-i18n="ri.age.from">From</div>
@@ -152,13 +154,13 @@
           <label class="field__label"><span data-i18n="ri.name">IP name</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
           <input class="input" data-ri="name" data-required maxlength="100" placeholder="e.g., Naruto Story World" data-i18n-placeholder="ri.name.ph">
           <div class="field__hint" data-ri-counter="name">0/100 characters, min 2 required</div>
-          <p class="ri-field-error" data-i18n="ri.err.name">IP name is required (2–100 characters).</p>
+          <p class="field__error" data-req-err hidden data-i18n="ri.err.name">IP name is required (2–100 characters).</p>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ri.desc">Description</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
           <textarea class="textarea" data-ri="desc" data-required maxlength="2000" placeholder="Describe your IP — what it is, what makes it valuable" data-i18n-placeholder="ri.desc.ph"></textarea>
           <div class="field__hint" data-ri-counter="desc">0/2000 characters, min 10 required</div>
-          <p class="ri-field-error" data-i18n="ri.err.desc">Description is required (10–2000 characters).</p>
+          <p class="field__error" data-req-err hidden data-i18n="ri.err.desc">Description is required (10–2000 characters).</p>
         </div>
       </section>
 
@@ -173,7 +175,7 @@
            槽位表（ASSET_SLOTS）留著沒退場——它現在的角色是提示來源與 demo 檔名來源。 -->
       <section class="form-section form-section--outlined" id="ri-assets">
         <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.assets">Asset upload</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
+          <h3 class="form-section__title"><span data-i18n="ri.assets">Asset upload</span></h3>
           <p class="form-section__sub" data-i18n="ri.assets.sub">The files a licensee actually receives — different from the ownership proof below, which only the platform sees. What to include depends on your IP type; the hint under the upload area lists it. All optional.</p>
         </div>
         <div class="upload-tile upload-tile--file" id="ri-assets-drop">
@@ -187,7 +189,7 @@
 
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.proof">Proof of ownership</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
+          <h3 class="form-section__title"><span data-i18n="ri.proof">Proof of ownership</span></h3>
           <p class="form-section__sub" data-i18n="ri.proof.sub">Contracts, certificates, or creation evidence. Helps verification — verification rules pending product alignment.</p>
         </div>
         <div class="upload-tile upload-tile--file" data-ri-asset="proof">
@@ -208,12 +210,13 @@
           <h3 class="form-section__title"><span data-i18n="ri.usage">Permitted usage</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
           <p class="form-section__sub" data-i18n="ri.usage.sub">Select at least one.</p>
         </div>
-        <div class="selection-grid" id="ri-usage">
-          <button type="button" class="selection-card" data-usage="streaming"><span class="selection-card__title" data-i18n="ri.usage.streaming">Streaming (VOD/PPV)</span><span class="selection-card__sub" data-i18n="ri.usage.streaming-d">Renters can create video content for streaming.</span></button>
-          <button type="button" class="selection-card" data-usage="adaptation"><span class="selection-card__title" data-i18n="ri.usage.adaptation">Adaptation (derivative works)</span><span class="selection-card__sub" data-i18n="ri.usage.adaptation-d">New stories, characters, or content based on your IP.</span></button>
-          <button type="button" class="selection-card" data-usage="promotion"><span class="selection-card__title" data-i18n="ri.usage.promotion">Promotion only</span><span class="selection-card__sub" data-i18n="ri.usage.promotion-d">Marketing and promotional use, no standalone content.</span></button>
-          <button type="button" class="selection-card" data-usage="merch"><span class="selection-card__title" data-i18n="ri.usage.merch">Merchandise</span><span class="selection-card__sub" data-i18n="ri.usage.merch-d">Physical or digital products featuring your IP.</span></button>
-          <button type="button" class="selection-card" data-usage="live"><span class="selection-card__title" data-i18n="ri.usage.live">Live events</span><span class="selection-card__sub" data-i18n="ri.usage.live-d">Concerts, screenings, meetups using your IP.</span></button>
+        <!-- 2026-11-09：多選不用 selection-card（規格禁止多選）→ T5 勾選清單 .radio-list--check（Q126） -->
+        <div class="radio-list radio-list--check" id="ri-usage" aria-label="Permitted usage">
+          <label class="radio-list__item"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-usage="streaming"><span class="zcheck__box"></span></span><span class="radio-list__text"><span class="radio-list__title" data-i18n="ri.usage.streaming">Streaming (VOD/PPV)</span><span class="radio-list__sub" data-i18n="ri.usage.streaming-d">Renters can create video content for streaming.</span></span></label>
+          <label class="radio-list__item"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-usage="adaptation"><span class="zcheck__box"></span></span><span class="radio-list__text"><span class="radio-list__title" data-i18n="ri.usage.adaptation">Adaptation (derivative works)</span><span class="radio-list__sub" data-i18n="ri.usage.adaptation-d">New stories, characters, or content based on your IP.</span></span></label>
+          <label class="radio-list__item"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-usage="promotion"><span class="zcheck__box"></span></span><span class="radio-list__text"><span class="radio-list__title" data-i18n="ri.usage.promotion">Promotion only</span><span class="radio-list__sub" data-i18n="ri.usage.promotion-d">Marketing and promotional use, no standalone content.</span></span></label>
+          <label class="radio-list__item"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-usage="merch"><span class="zcheck__box"></span></span><span class="radio-list__text"><span class="radio-list__title" data-i18n="ri.usage.merch">Merchandise</span><span class="radio-list__sub" data-i18n="ri.usage.merch-d">Physical or digital products featuring your IP.</span></span></label>
+          <label class="radio-list__item"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-usage="live"><span class="zcheck__box"></span></span><span class="radio-list__text"><span class="radio-list__title" data-i18n="ri.usage.live">Live events</span><span class="radio-list__sub" data-i18n="ri.usage.live-d">Concerts, screenings, meetups using your IP.</span></span></label>
         </div>
       </section>
 
@@ -248,9 +251,9 @@
             <input class="input amount-field__input" data-ri="royalty" data-required type="number" min="0" max="30" step="0.5" placeholder="12" data-i18n-placeholder="ri.royalty.ph">
             <span class="amount-field__unit">%</span>
           </span>
-            <label class="zcheck mt-8"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-ri-req="royalty"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ri.royalty.on-request">Royalty on request</span></label>
+            <div class="control-row mt-8"><div class="control-row__main" data-i18n="ri.royalty.on-request">Royalty on request</div><div class="switch" role="switch" aria-checked="false" tabindex="0" data-ri-req="royalty" aria-label="Royalty on request"></div></div>
           <div class="field__hint" data-i18n="ri.royalty.hint">The percentage you earn from gross revenue of every project that uses your IP. Industry range: 5–15%. Allowed: 0–30%.</div>
-          <p class="ri-field-error" data-i18n="ri.err.royalty">Enter a royalty rate between 0 and 30%.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ri.err.royalty">Enter a royalty rate between 0 and 30%.</p>
         </div>
       </section>
 
@@ -273,20 +276,20 @@
         <div class="form-grid">
           <div class="field">
             <label class="field__label"><span data-i18n="ri.price.standard">One-off licence fee</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
-            <span class="amount-field amount-field--readonly" data-ri-amount="standard">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <span class="amount-field amount-field--readonly amount-field--code" data-ri-amount="standard">
+              <span class="amount-field__unit" data-currency-code>TWD</span>
               <input class="input amount-field__input" data-ri="standard" type="number" min="0" placeholder="5,000" data-i18n-placeholder="ri.price.standard.ph">
             </span>
-            <label class="zcheck mt-8"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-ri-req="standard"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ri.price.on-request">Price on request</span></label>
-            <p class="ri-field-error" data-i18n="ri.err.standard">Set a fee, or mark it as price on request, when listing for rental.</p>
+            <div class="control-row mt-8"><div class="control-row__main" data-i18n="ri.price.on-request">Price on request</div><div class="switch" role="switch" aria-checked="false" tabindex="0" data-ri-req="standard" aria-label="Price on request"></div></div>
+            <p class="field__error" data-req-err hidden data-i18n="ri.err.standard">Set a fee, or mark it as price on request, when listing for rental.</p>
           </div>
           <div class="field">
-            <label class="field__label"><span data-i18n="ri.price.exclusive">Exclusive license</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
-            <span class="amount-field amount-field--readonly" data-ri-amount="exclusive">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <label class="field__label"><span data-i18n="ri.price.exclusive">Exclusive license</span></label>
+            <span class="amount-field amount-field--readonly amount-field--code" data-ri-amount="exclusive">
+              <span class="amount-field__unit" data-currency-code>TWD</span>
               <input class="input amount-field__input" data-ri="exclusive" type="number" min="0" placeholder="7,000" data-i18n-placeholder="ri.price.exclusive.ph">
             </span>
-            <label class="zcheck mt-8"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-ri-req="exclusive"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ri.price.on-request">Price on request</span></label>
+            <div class="control-row mt-8"><div class="control-row__main" data-i18n="ri.price.on-request">Price on request</div><div class="switch" role="switch" aria-checked="false" tabindex="0" data-ri-req="exclusive" aria-label="Price on request"></div></div>
             <div class="field__hint" data-i18n="ri.price.exclusive.hint">Leave empty if not offered.</div>
           </div>
         </div>
@@ -340,7 +343,11 @@
           <div class="review-row__item review-row__item--kv" data-rev-row="prices" hidden><span class="review-row__name" data-i18n="ri.rev.prices">Prices</span><span class="review-row__value" data-rev="prices"></span></div>
         </div>
         <!-- 上架狀態提示（依選擇切換語氣）。List for rental 對應提示截圖未涵蓋，文案為示例（產品待確認）。 -->
-        <div class="badge ri-list-note" id="ri-list-note" hidden></div>
+        <!-- Q159（2026-11-09）：這是說明上架規則的一句話，不是狀態 → .info-banner（原 .badge，rental 時借橘色 badge--orange，Q157 橘色不當狀態） -->
+        <div class="info-banner ri-list-note" id="ri-list-note" hidden>
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-ri-list-note-text></span>
+        </div>
       </div>
 
       <!-- 發布前檢核（檢核 §6）：必填齊全才開放 Register。 -->
@@ -379,6 +386,7 @@
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script src="js/currency.js?v=r2.2"></script><!-- Q147：授權費前綴＝創作者幣別代碼（data-currency-code） -->
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script>
 /* 登錄 IP 流程互動 · spec 5.1.4.1（四步：Type & Info → Usage Rules → Pricing & Earnings → Review）
@@ -515,7 +523,7 @@
       name: val('[data-ri="name"]'),
       desc: val('[data-ri="desc"]'),
       proof: !!document.querySelector('.upload-tile.is-filled[data-ri-asset="proof"]'),
-      usage: Array.from(document.querySelectorAll('#ri-usage .selection-card--active')).map(c => c.dataset.usage),
+      usage: Array.from(document.querySelectorAll('#ri-usage [data-usage]:checked')).map(c => c.dataset.usage),
       territory: Array.from(document.querySelectorAll('#ri-territory .chip--active')).map(c => c.dataset.territory),
       royalty: val('[data-ri="royalty"]'),
       list: listCard ? listCard.dataset.list : "",
@@ -523,9 +531,9 @@
       exclusive: val('[data-ri="exclusive"]'),
       /* 2026-07-27：最短租期退場（期間不再是計價單位）。改記三個「請洽詢」旗標。 */
       req: {
-        standard:  !!document.querySelector('[data-ri-req="standard"]:checked'),
-        exclusive: !!document.querySelector('[data-ri-req="exclusive"]:checked'),
-        royalty:   !!document.querySelector('[data-ri-req="royalty"]:checked')
+        standard:  !!document.querySelector('[data-ri-req="standard"].switch--on'),
+        exclusive: !!document.querySelector('[data-ri-req="exclusive"].switch--on'),
+        royalty:   !!document.querySelector('[data-ri-req="royalty"].switch--on')
       },
     };
   }
@@ -539,12 +547,24 @@
 
   /* 「請洽詢」勾選：收起對應的金額欄（洽詢中還攤著一個數字會自相矛盾），並重算摘要。
      2026-07-27 定價改版，欄位層級開關（費用／獨家／分潤各自可洽詢）。 */
+  /* 2026-11-09 Q152：「請洽詢」是有沒有的題目，由單顆勾選改成開關（.switch，div role=switch） */
   document.querySelectorAll('[data-ri-req]').forEach(function (box) {
-    box.addEventListener('change', function () {
+    function flip() {
+      var on = !box.classList.contains('switch--on');
+      box.classList.toggle('switch--on', on); box.setAttribute('aria-checked', String(on));
       var wrap = document.querySelector('[data-ri-amount="' + box.getAttribute('data-ri-req') + '"]');
-      if (wrap) wrap.hidden = box.checked;
+      if (wrap) wrap.hidden = on;
+      /* 開了請洽詢＝這格已有答案（規格 §6）：收掉這格的紅字與紅框；關回來時等使用者離開欄位再重驗 */
+      if (on && wrap) {
+        var inp = wrap.querySelector('input');
+        if (inp) inp.setAttribute('aria-invalid', 'false');
+        var err = wrap.closest('.field') && wrap.closest('.field').querySelector('[data-req-err]');
+        if (err) err.hidden = true;
+      }
       syncReview();
-    });
+    }
+    box.addEventListener('click', flip);
+    box.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   });
 
   function syncReview() {
@@ -621,14 +641,13 @@
 
     // 上架狀態提示（示例文案，產品待確認）
     const note = document.getElementById("ri-list-note");
+    const noteText = note.querySelector("[data-ri-list-note-text]");
     if (s.list === "private") {
       note.hidden = false;
-      note.className = "badge ri-list-note";
-      note.textContent = T("ri.note.private", "This IP is private. List anytime from the IP detail page. Only you can use this IP.");
+      noteText.textContent = T("ri.note.private", "This IP is private. List anytime from the IP detail page. Only you can use this IP.");
     } else if (s.list === "rental") {
       note.hidden = false;
-      note.className = "badge badge--orange ri-list-note";
-      note.textContent = T("ri.note.rental", "This IP will be listed for rental once registered. Marketplace visibility stays OFF until you turn it on.");
+      noteText.textContent = T("ri.note.rental", "This IP will be listed for rental once registered. Marketplace visibility stays OFF until you turn it on.");
     } else {
       note.hidden = true;
     }
@@ -646,9 +665,11 @@
       desc:         s.desc.length >= 10 && s.desc.length <= 2000,
       usage:        s.usage.length > 0,
       territory:    s.territory.length > 0,
-      royalty:      s.royalty !== "" && Number(s.royalty) >= 0 && Number(s.royalty) <= 30,
+      /* 規格 5.1.4.1 §6 第 1 條：版稅「可改為請洽詢」、一次性授權費「金額或請洽詢二選一」——開了請洽詢就算通過
+         （2026-11-10 修：原本只看數字，打開「分潤請洽詢」後檢核仍未過、紅字也不收） */
+      royalty:      s.req.royalty || (s.royalty !== "" && Number(s.royalty) >= 0 && Number(s.royalty) <= 30),
       listdecision: !!s.list,
-      standard:     s.list !== "rental" || !!s.standard,   // 僅 rental 時要求；private 視為通過
+      standard:     s.list !== "rental" || s.req.standard || !!s.standard,   // 僅 rental 時要求；private 視為通過
     };
     let done = 0, totalC = 0;
     Object.keys(checks).forEach(k => {
@@ -757,8 +778,8 @@
   });
 
   /* ---- 多選：Permitted usage ---- */
-  document.querySelectorAll("#ri-usage .selection-card").forEach(c => {
-    c.addEventListener("click", () => { c.classList.toggle("selection-card--active"); syncReview(); });
+  document.querySelectorAll("#ri-usage [data-usage]").forEach(c => {
+    c.addEventListener("change", () => { syncReview(); });
   });
 
   /* ---- 多選：Territory（含 Worldwide 與個別地區互斥示意；最終規則產品待確認）---- */
@@ -818,12 +839,18 @@
     if (el.dataset.ri === "desc" && !bad) { const l = el.value.trim().length; bad = l < 10 || l > 2000; }
     const wrap = fieldWrap(el);
     el.setAttribute("aria-invalid", bad ? "true" : "false");
-    if (wrap) wrap.classList.toggle("is-invalid", bad);
+    const msg = wrap && wrap.querySelector("[data-req-err]");   // Q149：.field__error 用 [hidden] 切換
+    if (msg) msg.hidden = !bad;
     return !bad;
   }
   document.querySelectorAll("[data-required]").forEach(el => {
     el.addEventListener("blur", () => validateField(el));
-    el.addEventListener("input", () => { if (el.value.trim()) { el.setAttribute("aria-invalid", "false"); fieldWrap(el)?.classList.remove("is-invalid"); } });
+    el.addEventListener("input", () => {
+      if (!el.value.trim()) return;
+      el.setAttribute("aria-invalid", "false");
+      const msg = fieldWrap(el)?.querySelector("[data-req-err]");
+      if (msg) msg.hidden = true;
+    });
   });
 
   /* ---- Register：硬閘（已由 syncReview gate disabled）＋ 送出收尾 ----

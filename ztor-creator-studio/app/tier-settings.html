@@ -28,10 +28,14 @@
 <link rel="stylesheet" href="ds-components/card-group.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2"><!-- 共用確認／告知彈窗 ztorDialog 的外殼 -->
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2"><!-- 日期欄佔位（partials/date-input.js） -->
+<link rel="stylesheet" href="ds-components/date-range.css?v=r2.2"><!-- 加碼期間（普查 3.1 第 4 點） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* tier-settings 專屬 layout hooks（非可重用樣式留頁內）。 */
-  .tier-card { margin-bottom: 16px; }
+  /* Q164（2026-11-09）：設定頁一律設定列、不包卡。四個分級原本是四張 .card，改成跟 .settings-row 同一種
+     「列＋分隔線」：同樣的上下內距與 --border-soft 列線。 */
+  .tier-card { padding: var(--sp-14) 0; border-bottom: 1px solid var(--border-soft); }
   .tier-card__head {
     display: flex;
     align-items: center;
@@ -126,9 +130,9 @@
             <p class="settings-section__sub" data-i18n="tier-settings.thresh.sub">A fan moves up only when they pass <strong>both</strong> gates — inside the top % <em>and</em> above the points floor. The top % widens down the ladder (Inner Circle &lt; Super Fans &lt; Ranked Fans) while the points floor drops.</p>
 
             <!-- Inner Circle -->
-            <section class="card tier-card">
+            <div class="tier-card">
               <div class="tier-card__head">
-                <div class="tier-card__name"><span class="badge badge--orange"><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></div>
+                <div class="tier-card__name"><span class="badge badge--tier badge--tier-inner"><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></div>
                 <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="tier-settings.tier.inner-count">13 fans today</span>
               </div>
               <div class="gate-grid">
@@ -150,12 +154,12 @@
                   <input class="input" value="800" inputmode="numeric">
                 </div>
               </div>
-            </section>
+            </div>
 
             <!-- Super Fans -->
-            <section class="card tier-card">
+            <div class="tier-card">
               <div class="tier-card__head">
-                <div class="tier-card__name"><span class="badge badge--info"><span data-i18n="tier-settings.tier.superfan">Super Fans</span></span></div>
+                <div class="tier-card__name"><span class="badge badge--tier badge--tier-super"><span data-i18n="tier-settings.tier.superfan">Super Fans</span></span></div>
                 <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="tier-settings.tier.superfan-count">115 fans today</span>
               </div>
               <div class="gate-grid">
@@ -177,12 +181,12 @@
                   <input class="input" value="650" inputmode="numeric">
                 </div>
               </div>
-            </section>
+            </div>
 
             <!-- Ranked Fans -->
-            <section class="card tier-card">
+            <div class="tier-card">
               <div class="tier-card__head">
-                <div class="tier-card__name"><span class="badge badge--success"><span data-i18n="tier-settings.tier.devoted">Ranked Fans</span></span></div>
+                <div class="tier-card__name"><span class="badge badge--tier badge--tier-ranked"><span data-i18n="tier-settings.tier.devoted">Ranked Fans</span></span></div>
                 <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="tier-settings.tier.devoted-count">257 fans today</span>
               </div>
               <div class="gate-grid">
@@ -204,16 +208,16 @@
                   <input class="input" value="500" inputmode="numeric">
                 </div>
               </div>
-            </section>
+            </div>
 
             <!-- Fan (base, no gate) -->
-            <section class="card tier-card" style="margin-bottom:0">
+            <div class="tier-card">
               <div class="tier-card__head">
-                <div class="tier-card__name"><span class="badge badge--neutral"><span data-i18n="tier-settings.tier.fan">Fan</span></span></div>
+                <div class="tier-card__name"><span class="badge badge--tier badge--tier-fan"><span data-i18n="tier-settings.tier.fan">Fan</span></span></div>
                 <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="tier-settings.tier.fan-count">898 fans today</span>
               </div>
               <p class="text-sub" style="font-size: var(--fs-12);margin:4px 0 0" data-i18n="tier-settings.tier.fan-base">Base tier — every fan starts here. No threshold to set.</p>
-            </section>
+            </div>
 
             <!-- Save-time preview + monotonic-decrease rule -->
             <div class="info-banner mt-16">
@@ -232,7 +236,7 @@
                互動與推薦每 90 天最多得分掛 data-feat="S66"；全站活動、賽季加倍、衰減由 Admin 設定，只放一句說明。 -->
           <section class="settings-section" id="multipliers" hidden>
             <h2 class="settings-section__title" data-i18n="tier-settings.nav.multipliers">Scoring</h2>
-            <section class="card">
+            <div><!-- Q164（2026-11-09）：設定頁一律設定列，不包卡 -->
             <h4 class="group-title" data-i18n="tier-settings.mult.title">Activity value</h4>
             <div class="settings-row">
               <div><div class="settings-row__label" data-i18n="tier-settings.mult.purchase">Purchases</div><div class="settings-row__hint" data-i18n="tier-settings.mult.purchase-hint">Shop orders, event tickets, project backing</div></div>
@@ -307,14 +311,15 @@
             <p class="group-desc" data-i18n="tier-settings.season.desc">Boost the points fans earn on your board for a period.</p>
             <div class="settings-row">
               <div><div class="settings-row__label" data-i18n="tier-settings.season.period">Period</div></div>
-              <span class="flex-row"><input class="input" type="date" value="2026-11-20" aria-label="Starts" data-i18n-aria-label="tier-settings.season.from"><span aria-hidden="true">–</span><input class="input" type="date" value="2026-11-26" aria-label="Ends" data-i18n-aria-label="tier-settings.season.to"></span>
+              <!-- 2026-11-09（輸入欄位普查 3.1 第 4 點）：手刻區間收成 .date-range -->
+              <div class="date-range"><span class="date-range__field"><input class="input" type="date" value="2026-11-20" aria-label="Starts" data-i18n-aria-label="tier-settings.season.from"></span><span class="date-range__sep" aria-hidden="true">–</span><span class="date-range__field"><input class="input" type="date" value="2026-11-26" aria-label="Ends" data-i18n-aria-label="tier-settings.season.to"></span></div>
             </div>
             <div class="settings-row" style="border-bottom:0">
               <div><div class="settings-row__label" data-i18n="tier-settings.season.mult">Multiplier</div><div class="settings-row__hint" data-i18n="tier-settings.season.mult-hint">Default 2</div></div>
               <span class="amount-field amount-field--suffix" style="max-width:120px"><input class="input amount-field__input" value="3" inputmode="decimal"><span class="amount-field__unit">×</span></span>
             </div>
             </div>
-            </section>
+            </div>
             <div class="info-banner">
               <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
               <span data-i18n="tier-settings.platform.note">Platform activities, platform-wide season boosts and how points fade are set by Ztor for all creators — not here.</span>
@@ -461,5 +466,6 @@
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/ztor-dialog.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
 </body>
 </html>

@@ -290,7 +290,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (10px button
 | `shadow-float` | `0 8px 24px -8px rgba(12,10,9,0.08), 0 2px 6px -2px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` | E3 floating — dropdowns, popovers, tooltips（2026-07-21：product-list 的 hover/drag 浮起改用去 rim 的 `shadow-lift-flat`，見下一列） |
 | `shadow-lift-flat` | 亮 = `shadow-float` 去掉 `0 0 0 1px` 那層（`0 8px 24px -8px rgba(12,10,9,0.08), 0 2px 6px -2px rgba(12,10,9,0.05)`）；暗 = 與 `shadow-float` 相同 | E3 變體，僅 product-list 列 hover／drag 浮起用（2026-07-21，使用者反饋「hover 不要 border」）。亮色列表卡背景（`--card` 白）與頁面背景色差已夠明顯，rim 反而被誤讀成邊框；暗色仍需要 rim 才看得出浮起（深底陰影本身不夠明顯），故暗色不變 |
 | `shadow-overlay` | `0 16px 40px -8px rgba(12,10,9,0.18), 0 0 0 1px rgba(23,23,23,0.08)` | E4 overlay — modals, dialogs, drawers |
-| `shadow-card-hover` | `var(--shadow-float)` | 舊「可點卡片 hover 借 E3」的別名；2026-10-20 起可點卡片 hover 改走 `--clickable-card-lift` / `--clickable-card-hover-bg`，此 token 僅剩 `.brand-card` 等少數處使用 |
+| `shadow-card-hover` | `var(--shadow-float)` | 舊「可點卡片 hover 借 E3」的別名；2026-10-20 起可點卡片 hover 改走 `--clickable-card-lift` / `--clickable-card-hover-bg`，2026-11-09 最後一位消費者 `.brand-card` 拿掉 hover 後零引用，**已退役**（定義暫留，待下次 token 清理一併刪） |
 | `shadow-raise` | `0 1px 2px rgba(0,0,0,0.06)` (dark `0.5`) | Low control raise — primary buttons, input drop, segmented active |
 | `shadow-raise-strong` | `0 1px 2px rgba(0,0,0,0.16)` (dark `0.6`) | Floating control — switch knob, chart marker drop |
 | `shadow-hairline` | `0 0 0.833px rgba(0,0,0,0.2)` | Sub-pixel border simulation |
@@ -426,6 +426,6 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 
 ### 1.10 Imagery
 
-**Full-bleed photographic hero on the Dashboard**, with a centered radial veil so white copy holds ≥5:1 contrast over the image. Elsewhere imagery is functional: IP cover art, product thumbnails, creator avatars. Data is shown through the chart family (line / stacked-bar / rank-bars), not decorative illustration. No stock photography in chrome.
+**Full-bleed photographic hero on the Dashboard**, with a centered radial veil so white copy holds ≥5:1 contrast over the image. Elsewhere imagery is functional: IP cover art, product thumbnails, creator avatars. Data is shown through the chart family (line / stacked-bar / split-bar / perf-rank), not decorative illustration. No stock photography in chrome.
 
 ---

@@ -64,3 +64,20 @@
   padding: 0;
   cursor: pointer;
 }
+
+/* ── .date-input-pair · 日期時間＝「日期＋時間」兩格（2026-11-09 Q146）─────────────
+   頁面寫 <input type="datetime-local">，partials/date-input.js 執行期把它換成本容器：
+   前格 date、後格 time（各自再包 .date-input），原欄位改 hidden 留作值的載體。
+   欄距與窄螢幕改單欄的斷點照 .form-grid（建立活動的兩格就是 form-grid），列距收緊成 --sp-8：
+   兩格是同一個值的兩半，直排時不該像兩個不同欄位那樣隔 28px。 */
+.date-input-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-8) var(--sp-14);
+}
+.date-input-pair[hidden] { display: none; }
+/* 規則列（.rule-row，flex）裡直接放日期時間欄時，整組當一格伸縮。 */
+.rule-row > .date-input-pair { flex: 1 1 0; min-width: 0; }
+@media (max-width: 480px) {
+  .date-input-pair { grid-template-columns: minmax(0, 1fr); }
+}

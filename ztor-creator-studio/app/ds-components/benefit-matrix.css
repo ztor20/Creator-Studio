@@ -181,3 +181,93 @@
   background: var(--popover);
   padding-top: var(--sp-4);
 }
+
+/* ============================================================
+   .bmx--readonly — 唯讀版（頁面上的分級對照表）
+   2026-11-09（Q171 使用者裁決）：原 tier-overview.css（.tier-ov）併進本元件。
+   同一份分級權益資料原本有兩支元件：彈窗裡可編輯的 .bmx 與頁面上唯讀的 .tier-ov，
+   現在合成一支，唯讀版是本元件的變體。tier-overview.css 留墓碑。
+
+   與 base 的差別：
+     · 欄寬：列名 168px ＋ 欄等寬可縮（base 是列名彈性＋固定 132px 欄、整張至少 760px）
+     · 格子靠左、恆為 --control-h-sm 高（唯讀／編輯兩面切換時列高不跳）
+     · 列名用次要色、可帶 <small> 補充；列高 --sp-14
+     · 有／沒有用色：__yes 綠、__no 淡
+   兩面：唯讀值 .bmx__read、輸入框／開關 .bmx__edit 都留在 DOM，任一祖先掛 .is-editing 就切到編輯面。
+
+   anatomy
+     .bmx.bmx--readonly[.bmx--cols3][.bmx--compact]   容器（窄螢幕自己橫向捲）
+       .bmx__head               欄頭列（第一格空白，其餘放分級 badge）
+         .bmx__cell
+       .bmx__row[--locked]      一列比較項目
+         .bmx__label            列名（可帶 <small>；要放說明鈕時包 .bmx__labelrow）
+         .bmx__cell[--wrap|--fluid]
+           .bmx__read / .bmx__edit
+           .bmx__yes / .bmx__no
+         .bmx__rowmenu          列尾「…」選單，只在編輯面出現
+   ============================================================ */
+.bmx--readonly {
+  --bmx-cols: 168px repeat(4, minmax(0, 1fr));
+  min-width: 0;
+}
+.bmx--readonly.bmx--compact { --bmx-cols: 132px repeat(4, minmax(0, 1fr)); }
+.bmx--readonly.bmx--cols3   { --bmx-cols: 168px repeat(3, minmax(0, 1fr)); }
+/* 有列尾選單的表多一欄放它；欄寬固定，分級欄才不會因此錯開。所有列共用同一組欄，
+   沒有選單的列最後一格自然留白。 */
+.bmx--readonly:has(.bmx__rowmenu)              { --bmx-cols: 168px repeat(4, minmax(0, 1fr)) 32px; }
+.bmx--readonly.bmx--compact:has(.bmx__rowmenu) { --bmx-cols: 132px repeat(4, minmax(0, 1fr)) 32px; }
+.bmx--readonly.bmx--cols3:has(.bmx__rowmenu)   { --bmx-cols: 168px repeat(3, minmax(0, 1fr)) 32px; }
+
+.bmx--readonly .bmx__head { align-items: center; }
+.bmx--readonly .bmx__row  { padding: var(--sp-14) 0; }
+.bmx--readonly.bmx--compact .bmx__head,
+.bmx--readonly.bmx--compact .bmx__row { gap: var(--sp-8); }
+
+.bmx--readonly .bmx__label {
+  display: block;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.bmx--readonly .bmx__label small {
+  display: block;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+/* 列名帶說明鈕時，鈕貼著文字、不推到欄位最右。 */
+.bmx__labelrow { display: inline-flex; align-items: center; gap: var(--sp-6); }
+
+.bmx--readonly .bmx__cell {
+  justify-content: flex-start;
+  min-height: var(--control-h-sm);
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+}
+.bmx--readonly .bmx__cell .amount-field { width: 100%; max-width: 104px; }
+/* 長說明格（例如「影響哪裡」）：讓字換行、行高放鬆。 */
+.bmx__cell--wrap { line-height: var(--lh-comfy); color: var(--foreground-muted); }
+/* 單位字長的輸入框不受 104px 上限；也用在 .settings-row__value 上的唯讀／編輯兩面。 */
+.bmx__cell--fluid .amount-field { max-width: none; }
+
+/* 有／沒有。用色而不用圖示大小差異——一整欄掃下來要能立刻數出「這一階拿到幾項」。 */
+.bmx__yes { color: var(--status-success); }
+.bmx__no  { color: var(--muted-foreground); }
+
+/* 兩面切換。選擇器掛「任一祖先帶 .is-editing」：同一張卡裡還有不走矩陣骨架的
+   .settings-row（例如行為加權）也用這兩面。 */
+.bmx__edit { display: none; }
+.is-editing .bmx__read { display: none; }
+.is-editing .bmx__edit { display: flex; align-items: center; width: 100%; }
+/* 不可編輯的列（例如權益數量是算出來的）在編輯面降一階，看得出不是給你改的。 */
+.is-editing .bmx__row--locked .bmx__cell { opacity: 0.55; }
+
+.bmx__rowmenu { display: none; justify-self: end; }
+.is-editing .bmx__rowmenu { display: block; }
+
+/* 窄到排不下時整張橫向捲，不硬折——折行會讓同一列的值錯開。捲軸隱藏。 */
+@media (max-width: 640px) {
+  .bmx--readonly { overflow-x: auto; scrollbar-width: none; }
+  .bmx--readonly::-webkit-scrollbar { display: none; }
+  .bmx--readonly > .bmx__head,
+  .bmx--readonly > .bmx__row { min-width: 560px; }
+}
