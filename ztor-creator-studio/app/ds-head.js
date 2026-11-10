@@ -97,7 +97,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/restock-modal.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/stock-tip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/store-settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
@@ -146,7 +145,6 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/social-links.css?v=r2.2">
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/tier-overview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/brand-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart-tip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">

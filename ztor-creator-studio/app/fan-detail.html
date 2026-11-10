@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
@@ -175,7 +176,7 @@
         <div class="fan-hero__main">
           <div class="fan-hero__title">
             <h1 class="fan-hero__name" data-i18n="fan-detail.name">Wei Yu-han</h1>
-            <span class="badge badge--orange"><span data-i18n="fan-detail.tier.inner">Inner Circle</span></span>
+            <span class="badge badge--tier badge--tier-inner"><span data-i18n="fan-detail.tier.inner">Inner Circle</span></span>
             <span class="badge badge--success" data-feat="S118"><span data-i18n="fan-detail.status.active">Active</span></span>
           </div>
           <div class="fan-hero__facts">
@@ -261,13 +262,14 @@
         <div class="list-toolbar fd-points-bar" data-dock-source>
         <!-- 2026-10-27 demo（UIA-304）：時間軸與點數明細併成一份清單；分類沿用右側「點數來源」的五類，
              「調整」只在 Admin 代管態出現（創作者看不看得到調整紀錄未定，UIA-296）。 -->
-        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="fd-pts-filter" role="tablist" aria-label="Points category" data-i18n-aria-label="fan-detail.pts.filter.label">
-          <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all"><span data-i18n="fan-detail.pts.filter.all">All</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="purchase"><span data-i18n="fan-detail.repmix.spend">Purchases</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="event"><span data-i18n="fan-detail.repmix.events">Event check-ins</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="interact"><span data-i18n="fan-detail.repmix.interact">Interactions</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="referral"><span data-i18n="fan-detail.repmix.referral">Referrals</span><span class="tabs__item-count" data-cat-count></span></button>
-          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="platform" data-feat="S118"><span data-i18n="fan-detail.repmix.platform">Platform activities</span><span class="tabs__item-count" data-cat-count></span></button>
+        <!-- 2026-11-09 Q154：篩選清單單選一律 .filter-tabs（原底線 .tabs 只做分頁導覽） -->
+        <nav class="filter-tabs" id="fd-pts-filter" role="tablist" aria-label="Points category" data-i18n-aria-label="fan-detail.pts.filter.label">
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all"><span data-i18n="fan-detail.pts.filter.all">All</span><span class="filter-tabs__count" data-cat-count></span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="purchase"><span data-i18n="fan-detail.repmix.spend">Purchases</span><span class="filter-tabs__count" data-cat-count></span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="event"><span data-i18n="fan-detail.repmix.events">Event check-ins</span><span class="filter-tabs__count" data-cat-count></span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="interact"><span data-i18n="fan-detail.repmix.interact">Interactions</span><span class="filter-tabs__count" data-cat-count></span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="referral"><span data-i18n="fan-detail.repmix.referral">Referrals</span><span class="filter-tabs__count" data-cat-count></span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="platform" data-feat="S118"><span data-i18n="fan-detail.repmix.platform">Platform activities</span><span class="filter-tabs__count" data-cat-count></span></button>
           <!-- 2026-11-02 #460：全站活動（Type C）屬後續階段，release2.4 沒有這類明細，分頁掛 S118 只在最終版出現（不留一個永遠是 0 的分頁）。 -->
           <!-- 2026-10-30 使用者要求：拿掉「調整」分頁——調整列仍在「全部」裡（分類欄寫「調整」），完整紀錄改看卡片右上的「調整紀錄」 -->
         </nav>
@@ -327,11 +329,12 @@
 
         <!-- 2026-10-27（UIA-306）：工作列與忠誠點數同一套——左側依來源篩選；累積消費已在頁首 KPI，這裡不重複，只留補充數字。 -->
         <div class="list-toolbar fd-spend-bar">
-          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="fd-spend-filter" role="tablist" aria-label="Source" data-i18n-aria-label="fan-detail.spend.src.label">
-            <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all"><span data-i18n="fan-detail.pts.filter.all">All</span><span class="tabs__item-count" data-cat-count></span></button>
-            <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="eshop"><span data-i18n="fan-detail.spend.src.eshop">E-Shop</span><span class="tabs__item-count" data-cat-count></span></button>
-            <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="events"><span data-i18n="fan-detail.spend.src.events">Event tickets</span><span class="tabs__item-count" data-cat-count></span></button>
-            <button class="tabs__item" type="button" role="tab" aria-selected="false" data-cat="projects"><span data-i18n="fan-detail.spend.src.projects">Projects</span><span class="tabs__item-count" data-cat-count></span></button>
+          <!-- 2026-11-09 Q154：篩選清單單選一律 .filter-tabs（原底線 .tabs 只做分頁導覽） -->
+          <nav class="filter-tabs" id="fd-spend-filter" role="tablist" aria-label="Source" data-i18n-aria-label="fan-detail.spend.src.label">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all"><span data-i18n="fan-detail.pts.filter.all">All</span><span class="filter-tabs__count" data-cat-count></span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="eshop"><span data-i18n="fan-detail.spend.src.eshop">E-Shop</span><span class="filter-tabs__count" data-cat-count></span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="events"><span data-i18n="fan-detail.spend.src.events">Event tickets</span><span class="filter-tabs__count" data-cat-count></span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="projects"><span data-i18n="fan-detail.spend.src.projects">Projects</span><span class="filter-tabs__count" data-cat-count></span></button>
           </nav>
         </div>
 
@@ -349,28 +352,28 @@
               <div role="columnheader" class="fd-cell--num" data-i18n="fan-detail.col.amount">Amount</div>
               <div role="columnheader" aria-label="Open"></div>
             </div>
-            <div class="product-list__row fd-spend-row" role="row" data-cat="eshop" data-go="order-detail.html" tabindex="0">
+            <div class="product-list__row product-list__row--link fd-spend-row" role="row" data-cat="eshop" data-go="order-detail.html" tabindex="0">
               <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.spend.r1">x</div></div></div>
               <div class="fd-cell" role="cell" data-i18n="fan-detail.spend.src.eshop">x</div>
               <div class="fd-cell" role="cell">2026/10/25 14:32</div>
               <div class="fd-cell fd-cell--num" role="cell" style="color:var(--foreground)">$48</div>
               <div class="fd-cell" role="cell"><i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i></div>
             </div>
-            <div class="product-list__row fd-spend-row" role="row" data-cat="events" data-go="order-detail.html" tabindex="0">
+            <div class="product-list__row product-list__row--link fd-spend-row" role="row" data-cat="events" data-go="order-detail.html" tabindex="0">
               <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.spend.r2">x</div></div></div>
               <div class="fd-cell" role="cell" data-i18n="fan-detail.spend.src.events">x</div>
               <div class="fd-cell" role="cell">2026/03/20 12:05</div>
               <div class="fd-cell fd-cell--num" role="cell" style="color:var(--foreground)">$60</div>
               <div class="fd-cell" role="cell"><i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i></div>
             </div>
-            <div class="product-list__row fd-spend-row" role="row" data-cat="projects" data-go="order-detail.html" tabindex="0">
+            <div class="product-list__row product-list__row--link fd-spend-row" role="row" data-cat="projects" data-go="order-detail.html" tabindex="0">
               <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="rocket" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.spend.r3">x</div></div></div>
               <div class="fd-cell" role="cell" data-i18n="fan-detail.spend.src.projects">x</div>
               <div class="fd-cell" role="cell">2026/03/02 11:20</div>
               <div class="fd-cell fd-cell--num" role="cell" style="color:var(--foreground)">$200</div>
               <div class="fd-cell" role="cell"><i data-lucide="chevron-right" class="ztor-icon" aria-hidden="true"></i></div>
             </div>
-            <div class="product-list__row fd-spend-row" role="row" data-cat="eshop" data-go="order-detail.html" tabindex="0">
+            <div class="product-list__row product-list__row--link fd-spend-row" role="row" data-cat="eshop" data-go="order-detail.html" tabindex="0">
               <div class="product-list__product" role="cell"><div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div><div class="product-list__body"><div class="product-list__title" data-i18n="fan-detail.spend.r4">x</div></div></div>
               <div class="fd-cell" role="cell" data-i18n="fan-detail.spend.src.eshop">x</div>
               <div class="fd-cell" role="cell">2026/01/18 15:40</div>
@@ -379,6 +382,8 @@
             </div>
           </section>
           </div>
+          <!-- Q170（2026-11-09）：篩到 0 筆（或這位粉絲還沒有消費）時一句說明，不留空白 -->
+          <p class="text-sub mt-16" style="font-size: var(--fs-13)" data-fd-spend-none hidden></p>
         </section>
       </div>
 
@@ -429,6 +434,18 @@
               </div>
           </section>
           </div>
+          <!-- Q170（2026-11-09）：紀錄類空狀態——一列都沒有時收起表格、改一句說明（不放建立鈕） -->
+          <p class="text-sub" style="font-size: var(--fs-13)" data-fd-part-empty hidden data-i18n="fan-detail.part.empty">No participation yet — events and projects show up here once this fan joins one.</p>
+          <script>
+            (function () {
+              var list = document.querySelector('.product-list--fd-part');
+              var empty = document.querySelector('[data-fd-part-empty]');
+              if (!list || !empty) return;
+              var has = !!list.querySelector('.product-list__row');
+              list.closest('.product-list-scroll').hidden = !has;
+              empty.hidden = has;
+            })();
+          </script>
         </section>
       </div>
 
@@ -633,10 +650,10 @@
       <p class="text-sub" style="font-size:var(--fs-12);margin:0 0 var(--sp-12)" data-i18n="fan-detail.tags.sub">Quick-filter labels used across the fan list.</p>
       <div class="tag-input" data-fd-tags>
         <div class="tag-input__field">
-          <span class="chip chip--active chip--removable"><span data-i18n="fan-detail.chip.vip">VIP</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
-          <span class="chip chip--active chip--removable"><span data-i18n="fan-detail.chip.high-spender">High spender</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
-          <span class="chip chip--active chip--removable"><span data-i18n="fan-detail.tags.event-goer">Event attendee</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
-          <span class="chip chip--active chip--removable"><span data-i18n="fan-detail.tags.early-backer">Early backer</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
+          <span class="chip chip--value chip--removable"><span data-i18n="fan-detail.chip.vip">VIP</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
+          <span class="chip chip--value chip--removable"><span data-i18n="fan-detail.chip.high-spender">High spender</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
+          <span class="chip chip--value chip--removable"><span data-i18n="fan-detail.tags.event-goer">Event attendee</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
+          <span class="chip chip--value chip--removable"><span data-i18n="fan-detail.tags.early-backer">Early backer</span><button class="chip__remove" type="button" aria-label="Remove" data-i18n-aria-label="fan-detail.tags.remove"><i data-lucide="x" class="ztor-icon"></i></button></span>
           <input class="tag-input__entry" type="text" placeholder="Add a tag, press Enter" data-i18n-placeholder="fan-detail.tags.entry-ph" aria-label="Add tag" data-i18n-aria-label="fan-detail.tags.add">
         </div>
         <span class="tag-input__suggest-label" data-i18n="fan-detail.tags.suggest">Existing tags</span>
@@ -699,12 +716,12 @@
   const fanId = (function () { try { return new URLSearchParams(location.search).get('fan') || '1'; } catch (e) { return '1'; } })();
   const fan = FANS ? (FANS.get(fanId) || FANS.get('1')) : null;
   const swapped = !!fan && fan.id !== '1';
-  const TIER_BADGE = { inner: ['badge--orange', 'fans.tier.inner'], super: ['badge--info', 'fans.tier.super'], devoted: ['badge--success', 'fans.tier.devoted'], fan: ['badge--neutral', 'fans.tier.fan'] };
-  const STATUS_BADGE = { active: ['badge--success', 'fans.status.active'], recovered: ['badge--info', 'fans.status.recovered'], risk: ['badge--error', 'fans.status.risk'] };
+  const TIER_BADGE = { inner: ['badge--tier badge--tier-inner', 'fans.tier.inner'], super: ['badge--tier badge--tier-super', 'fans.tier.super'], devoted: ['badge--tier badge--tier-ranked', 'fans.tier.devoted'], fan: ['badge--tier badge--tier-fan', 'fans.tier.fan'] };   /* Q158：分級＝中性底＋圖示 */
+  const STATUS_BADGE = { active: ['badge--success', 'fans.status.active'], recovered: ['badge--info', 'fans.status.recovered'], risk: ['badge--warning', 'fans.status.risk'] };   /* Q156：流失風險＝要你處理＝黃 */
   function setBadge(badge, pair) {
     if (!badge || !pair) return;
     Array.from(badge.classList).forEach(c => { if (c.indexOf('badge--') === 0) badge.classList.remove(c); });   /* 保留版本閘等其他 class */
-    badge.classList.add(pair[0]);
+    badge.classList.add(...pair[0].split(' '));
     badge.innerHTML = '<span data-i18n="' + pair[1] + '"></span>';
     badge.firstChild.textContent = T(pair[1]);
   }
@@ -1056,18 +1073,29 @@
     const rows = Array.from(document.querySelectorAll('[data-panel="spending"] .fd-spend-row'));
     let cat = 'all';
     function render() {
-      nav.querySelectorAll('.tabs__item').forEach(b => {
+      nav.querySelectorAll('.filter-tabs__item').forEach(b => {
         const c = b.dataset.cat;
         b.querySelector('[data-cat-count]').textContent = c === 'all' ? rows.length : rows.filter(r => r.dataset.cat === c).length;
       });
       rows.forEach(r => { r.hidden = !(cat === 'all' || r.dataset.cat === cat); });
+      /* Q170：一列都沒有時收起表格、改一句說明（全部＝還沒有消費；某來源＝這個來源沒有紀錄） */
+      const shown = rows.filter(r => !r.hidden).length;
+      const none = document.querySelector('[data-fd-spend-none]');
+      const scroller = document.querySelector('[data-panel="spending"] .product-list--fd-spend')?.closest('.product-list-scroll');
+      if (scroller) scroller.hidden = shown === 0;
+      if (none) {
+        none.hidden = shown > 0;
+        const k = cat === 'all' ? 'fan-detail.spend.empty' : 'fan-detail.spend.none';
+        none.setAttribute('data-i18n', k);
+        none.textContent = (window.i18nT && window.i18nT(k)) || (cat === 'all' ? 'No spending yet — orders show up here once this fan buys something.' : 'No records from this source.');
+      }
     }
     nav.addEventListener('click', e => {
-      const b = e.target.closest('.tabs__item'); if (!b) return;
+      const b = e.target.closest('.filter-tabs__item'); if (!b) return;
       cat = b.dataset.cat;
-      nav.querySelectorAll('.tabs__item').forEach(x => {
+      nav.querySelectorAll('.filter-tabs__item').forEach(x => {
         const on = x === b;
-        x.classList.toggle('tabs__item--active', on);
+        x.classList.toggle('filter-tabs__item--active', on);
         x.setAttribute('aria-selected', on ? 'true' : 'false');
       });
       render();
@@ -1109,7 +1137,7 @@
       field.querySelectorAll('.chip').forEach(c => c.remove());
       mine.forEach(e => {
         const c = document.createElement('span');
-        c.className = 'chip chip--active chip--removable';
+        c.className = 'chip chip--value chip--removable';
         c.dataset.tagId = idOf(e);
         c.innerHTML = '<span></span><button class="chip__remove" type="button"><i data-lucide="x" class="ztor-icon"></i></button>';
         c.firstChild.textContent = labelOf(e);
@@ -1223,7 +1251,7 @@
       const rows = getRows();
       /* 2026-11-02 #460：計數只算目前版本看得到的列（S118 示範列在 release2.4 收起），分頁上的筆數跟著版本變 */
       const visible = rows.filter(r => (!r.hasAttribute('data-admin-only') || isAdmin()) && featOn(r.dataset.feat));
-      nav.querySelectorAll('.tabs__item').forEach(b => {
+      nav.querySelectorAll('.filter-tabs__item').forEach(b => {
         const c = b.dataset.cat;
         const n = c === 'all' ? visible.length : visible.filter(r => r.dataset.cat === c).length;
         b.querySelector('[data-cat-count]').textContent = n;
@@ -1245,11 +1273,11 @@
       if (empty) empty.hidden = rows.some(r => !r.hidden);
     }
     nav.addEventListener('click', e => {
-      const b = e.target.closest('.tabs__item'); if (!b) return;
+      const b = e.target.closest('.filter-tabs__item'); if (!b) return;
       cat = b.dataset.cat;
-      nav.querySelectorAll('.tabs__item').forEach(x => {
+      nav.querySelectorAll('.filter-tabs__item').forEach(x => {
         const on = x === b;
-        x.classList.toggle('tabs__item--active', on);
+        x.classList.toggle('filter-tabs__item--active', on);
         x.setAttribute('aria-selected', on ? 'true' : 'false');
       });
       render();

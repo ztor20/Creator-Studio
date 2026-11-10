@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：版本歷史、費率例外；費率設定表是固定列的輸入表，不排序 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -90,14 +91,14 @@
       <span style="width:72px;font-family:var(--font-ui);font-size:var(--fs-14);font-weight:var(--fw-regular)">Atom</span>
       <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment-atom" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
       <span class="text-sub" aria-hidden="true">＋</span>
-      <span class="amount-field amount-field--readonly" style="width:120px"><span class="amount-field__unit" data-currency-base-symbol>$</span><input class="input amount-field__input" id="fee-payment-atom-fixed" type="number" inputmode="decimal" value="2.40" aria-label="Atom fixed fee per transaction"></span>
+      <span class="amount-field amount-field--readonly amount-field--code" style="width:120px"><span class="amount-field__unit" data-currency-base-code>HKD</span><input class="input amount-field__input" id="fee-payment-atom-fixed" type="number" inputmode="decimal" value="2.40" aria-label="Atom fixed fee per transaction"></span>
       <span class="text-sub" data-currency-fx-for="fee-payment-atom-fixed"></span>
     </div>
     <div style="display:flex;align-items:center;gap:var(--sp-12);flex-wrap:wrap">
       <span style="width:72px;font-family:var(--font-ui);font-size:var(--fs-14);font-weight:var(--fw-regular)">Stripe</span>
       <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment-stripe" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
       <span class="text-sub" aria-hidden="true">＋</span>
-      <span class="amount-field amount-field--readonly" style="width:120px"><span class="amount-field__unit" data-currency-base-symbol>$</span><input class="input amount-field__input" id="fee-payment-stripe-fixed" type="number" inputmode="decimal" value="2.35" aria-label="Stripe fixed fee per transaction"></span>
+      <span class="amount-field amount-field--readonly amount-field--code" style="width:120px"><span class="amount-field__unit" data-currency-base-code>HKD</span><input class="input amount-field__input" id="fee-payment-stripe-fixed" type="number" inputmode="decimal" value="2.35" aria-label="Stripe fixed fee per transaction"></span>
       <span class="text-sub" data-currency-fx-for="fee-payment-stripe-fixed"></span>
     </div>
   </div>
@@ -231,10 +232,10 @@
     <table class="ztor-table">
       <thead>
         <tr>
-          <th data-i18n="fees.history.col.version">Version</th>
-          <th data-i18n="fees.history.col.effective">Effective</th>
-          <th data-i18n="fees.history.col.scope">Scope</th>
-          <th data-i18n="fees.history.col.change">Change</th>
+          <th data-sort="text" data-i18n="fees.history.col.version">Version</th>
+          <th data-sort="text" data-i18n="fees.history.col.effective">Effective</th>
+          <th data-sort="text" data-i18n="fees.history.col.scope">Scope</th>
+          <th data-sort="text" data-i18n="fees.history.col.change">Change</th>
         </tr>
       </thead>
       <tbody id="fee-history-body">
@@ -257,8 +258,8 @@
     <div class="admin-table-wrap">
       <table class="ztor-table" id="fee-exc-table">
         <thead><tr>
-          <th data-i18n="fees.exc.col-creator">Creator</th>
-          <th data-i18n="fees.exc.col-override">Overrides</th>
+          <th data-sort="text" data-i18n="fees.exc.col-creator">Creator</th>
+          <th data-sort="text" data-i18n="fees.exc.col-override">Overrides</th>
           <th data-i18n="fees.exc.col-actions"></th>
         </tr></thead>
         <tbody id="fee-exc-body"></tbody>
@@ -343,6 +344,7 @@
 <script src="js/events-store.js?v=r2.2"></script><!-- 幣別換算的匯率表（D316：js/currency.js 委派 ztorEvents.fx） -->
 <script src="js/currency.js?v=r2.2"></script><!-- 平台基準幣別（D316）：固定額的符號與換算讀數 -->
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
      結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫平台費、逐葉粒度，D141）＋換匯手續費（依付款幣別，不逐 Creator，D517）。
@@ -408,7 +410,7 @@
         var row = document.createElement('div');
         row.className = 'fee-exc-prod__row';
         row.innerHTML =
-          '<select class="input" data-prod-select>' +
+          '<select class="select" data-prod-select>' +
             '<option value="">' + t('fees.exc.pick-product', 'Choose a product…') + '</option>' +
             ESHOP_PRODUCTS.map(function (p) { return '<option value="' + p.id + '">' + p.name + '</option>'; }).join('') +
           '</select>' +
@@ -416,7 +418,7 @@
           '<button type="button" class="btn btn--ghost btn--sm btn--icon" data-prod-remove aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
         rows.appendChild(row);
         if (window.ztorIcons) window.ztorIcons.applyIcons(row);
-        var sel = row.querySelector('[data-prod-select]'); if (sel) sel.focus();
+        if (window.ztorSelect) window.ztorSelect.mount(row);
         return;
       }
       var rm = e.target.closest ? e.target.closest('[data-prod-remove]') : null;
@@ -468,6 +470,7 @@
       c3.className = 'text-sub'; c3.textContent = change || '—';
       tr.appendChild(c0); tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
       hist.insertBefore(tr, hist.firstChild);
+      if (window.ztorTableSort) window.ztorTableSort.refresh(hist.closest('table'));   // 新版本排最上＝新的預設順序
     }
 
     /* 把預設樹 clone 進指定容器（供彈窗）：顯示來源欄、輸入以 placeholder 帶預設、填入既有覆寫、
@@ -551,6 +554,7 @@
       });
       var empty = document.getElementById('fee-exc-empty');
       if (empty) empty.hidden = state.length > 0;
+      if (window.ztorTableSort) window.ztorTableSort.refresh(excBody.closest('table'));
     }
 
     excBody.addEventListener('click', function (e) {

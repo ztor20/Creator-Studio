@@ -68,6 +68,7 @@
 <!-- 2026-08-18 撤除：sticky-actions（底部浮出的動作列）。頁面動作改由 .pd-detail__topbar 自己黏在視窗頂端。 -->
 <!-- 跨頁提示（建立項目按下發布後導向這裡，由 js/toast.js 的佇列顯示一則成功提示） -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）；時程表兩張是固定的里程碑列，不排序 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -133,7 +134,7 @@
         <img class="pd-hero__cover" id="pd-poster" src="images/projects/f-i-am-speed.webp" alt="">
         <div class="pd-hero__main">
           <div class="pd-hero__badges flex-row" style="gap:8px;flex-wrap:wrap">
-            <span class="badge badge--orange" id="pd-badge-status"><span data-i18n="project-detail.badge.live">Live</span></span>
+            <span class="badge badge--success" id="pd-badge-status"><span data-i18n="project-detail.badge.live">Live</span></span>
             <!-- 2026-08-31 撤除（墓碑）：類型徽章 #pd-badge-type（共創／預購／直接發佈）。
                  使用者裁示把發行模式移進麵包屑第一節（「共創項目」「直接發佈項目」「預購項目」），
                  那裡本來就是「這是哪一類的東西」的位置；留著徽章就是同一件事在標題上下講兩遍。
@@ -486,7 +487,7 @@
                  這裡先沿用本頁預購 KPI 既有的示範值 $28，重整還原。 -->
             <div class="field" style="max-width:280px">
               <label class="field__label" for="pd-pre-unit" data-i18n="pd-bundle.unit">Unit price · USD</label>
-              <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="pd-pre-unit" class="amount-field__input input" value="28"></div>
+              <div class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit">USD</span><input id="pd-pre-unit" class="amount-field__input input" value="28"></div>
               <div class="field__hint" data-i18n="pd-bundle.unit.hint">What one copy of the work costs. Every plan price is worked out from it.</div>
             </div>
             <div id="pd-bundle-editor-pre"></div>
@@ -500,6 +501,8 @@
         </div>
       </div>
 
+      <!-- Q163（2026-11-09）：詳情頁的編輯段一律 .form-section--outlined（展示內容、公開資訊、募資期間、協作者、IP 租用五段同輪由 .card 改）；
+           「發布時程」是狀態紀錄、不是編輯段，維持 .card。 -->
       <div class="tab-panel" data-panel="setup" data-editable data-mode="view">
         <div class="bento">
 
@@ -507,11 +510,11 @@
                對齊建立流程 F6 的兩個素材槽（documents 5.1.2.2 §2.2.2、5.1.2.1 F6、D164）。
                方形／橫式版位不另上傳素材，一律由直式原圖 object-fit:cover 置中裁切（D156 移除
                方形裁切工具，D164 定案取圖方式）。圖片素材 → 展示媒體（Demo 影片／音樂）。 -->
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.showcase.title">Showcase</h3>
+          <section class="form-section form-section--outlined bento--span-12">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="project-detail.showcase.title">Showcase</h3>
+              <p class="form-section__sub" data-i18n="project-detail.showcase.sub">Portrait images shown to fans. The first one is the key visual.</p>
             </div>
-            <p class="field__hint" style="margin:-4px 0 18px" data-i18n="project-detail.showcase.sub">Portrait images shown to fans. The first one is the key visual.</p>
 
             <div class="field__label" style="margin-bottom:10px"><span data-i18n="project-detail.showcase.images">Images</span> <span class="text-sub" data-i18n="project-detail.showcase.images-hint">· portrait 750 × 1125 · first is the key visual, the rest are the gallery</span></div>
             <!-- 2026-07-31：動作列（替換／刪除）不再手刻，改由共用元件 partials/upload-tile.js 產生，
@@ -530,7 +533,7 @@
             </div>
             <p class="field__hint" style="margin-top:10px" data-i18n="project-detail.showcase.hint">Hover an image to replace or delete it.</p>
 
-            <div class="field__label" style="margin:20px 0 10px"><span data-i18n="project-detail.showcase.demo">Demo media</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></div>
+            <div class="field__label" style="margin:20px 0 10px"><span data-i18n="project-detail.showcase.demo">Demo media</span></div>
             <div class="form-grid">
               <button type="button" class="upload-tile upload-tile--video">
                 <span class="upload-tile__icon"><i data-lucide="video" class="ztor-icon"></i></span>
@@ -554,11 +557,11 @@
 
           <!-- 4.8 公開資訊——2026-07-25 由摘要清單改「全部攤開＋inline 可編輯」（照建立流程風格）。
                簡介來自項目 store；演職名單／常見問答／標籤為可增刪的 demo，原型不落地。 -->
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.details.title">Public details</h3>
+          <section class="form-section form-section--outlined bento--span-12">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="project-detail.details.title">Public details</h3>
+              <p class="form-section__sub" data-i18n="project-detail.details.sub">Public content fans see on the project page — edit it here directly.</p>
             </div>
-            <p class="field__hint" style="margin:-4px 0 18px" data-i18n="project-detail.details.sub">Public content fans see on the project page — edit it here directly.</p>
 
             <div class="field">
               <label class="field__label" for="pd-about-synopsis"><span data-i18n="project-detail.details.synopsis">Synopsis</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
@@ -619,10 +622,12 @@
                (see ASSUMPTIONS.md).
                2026-07-24：拿掉最外層 .card 外框——每個「套組」自己已是 .form-section--outlined 有框，
                外面再包一層卡＝卡中卡疊框。改為無框 section（保留 bento--span-12 滿寬）。 -->
-          <section class="card bento--span-12" data-type="fund preorder">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="pd-setup.schedule.title">Campaign dates</h3>
-              <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-schedule" data-i18n="project-detail.schedule.editbtn">Edit dates</button>
+          <section class="form-section form-section--outlined bento--span-12" data-type="fund preorder">
+            <div class="form-section__head form-section__head--actions">
+              <div class="form-section__head-titles">
+                <h3 class="form-section__title" data-i18n="pd-setup.schedule.title">Campaign dates</h3>
+              </div>
+              <div class="form-section__head-actions"><button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-schedule" data-i18n="project-detail.schedule.editbtn">Edit dates</button></div>
             </div>
             <div style="overflow-x:auto">
             <table class="ztor-table">
@@ -697,18 +702,18 @@
           </section>
 
           <!-- ── 合作者（§2.2.6）───────────────────────────────────────────── -->
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.collab.title">Collaborators</h3>
+          <section class="form-section form-section--outlined bento--span-12">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="project-detail.collab.title">Collaborators</h3>
             </div>
             <div style="overflow-x:auto">
             <table class="ztor-table">
               <thead>
                 <tr class="ztor-table__row">
-                  <th scope="col" data-i18n="project-detail.collab.col.name">Collaborator</th>
-                  <th scope="col" data-i18n="project-detail.collab.col.role">Role</th>
-                  <th scope="col" data-i18n="project-detail.collab.col.status">Confirmation status</th>
-                  <th scope="col" data-i18n="project-detail.collab.col.share">Revenue share</th>
+                  <th scope="col" data-sort="text" data-i18n="project-detail.collab.col.name">Collaborator</th>
+                  <th scope="col" data-sort="text" data-i18n="project-detail.collab.col.role">Role</th>
+                  <th scope="col" data-sort="text" data-i18n="project-detail.collab.col.status">Confirmation status</th>
+                  <th scope="col" data-sort="num" data-i18n="project-detail.collab.col.share">Revenue share</th>
                 </tr>
               </thead>
               <tbody id="pd-collab-list">
@@ -738,11 +743,11 @@
           </section>
 
           <!-- ── IP Rental（§2.2.7）──────────────────────────────────────────── -->
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.ip.title">IP Rental</h3>
+          <section class="form-section form-section--outlined bento--span-12">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="project-detail.ip.title">IP Rental</h3>
             </div>
-            <a class="btn btn--outline mt-16" style="width:100%;justify-content:center" href="my-ip.html" data-i18n="project-detail.ip.link">Go to IP Assets links</a>
+            <a class="btn btn--outline" style="width:100%;justify-content:center" href="my-ip.html" data-i18n="project-detail.ip.link">Go to IP Assets links</a>
           </section>
 
         </div>
@@ -777,9 +782,9 @@
                預期交付與里程碑完成度是兩個各自獨立的數字，擠在同一張卡裡要靠一條分隔線
                才分得開；拆成兩格就由版面本身講清楚。標題撤除——底下那一段已經叫「項目進度」，
                再頂一個「交付藍圖」等於同一件事取兩個名字。
-               底色走 --nest-surface（.card--muted），與軸上其他面同一層。 -->
-          <div class="kpi card--muted bento--span-4" data-prog-kpi="delivery" data-type="fund preorder"></div>
-          <div class="kpi card--muted bento--span-4" data-prog-kpi="milestones" data-type="fund preorder"></div>
+               2026-11-09（Q162）：拿掉 .card--muted——一個元素只掛一支元件的面；兩格坐在頁面層 bento，照規則就是 .kpi。 -->
+          <div class="kpi bento--span-4" data-prog-kpi="delivery" data-type="fund preorder"></div>
+          <div class="kpi bento--span-4" data-prog-kpi="milestones" data-type="fund preorder"></div>
 
           <!-- 時間軸走無底卡（2026-08-17 使用者反饋）：這一區的主角是軸本身，外面再包一張卡
                等於在軸線外多畫一個框。交付物清單已併進「完成作品」那一顆里程碑，所以
@@ -1106,17 +1111,19 @@
             <div style="overflow-x:auto">
               <table class="ztor-table">
                 <thead><tr>
-                  <th style="width:150px" data-i18n="pd-earn.col.date">Date</th>
-                  <th style="text-align:right;width:110px" data-i18n="pd-earn.col.amount">Amount</th>
-                  <th data-i18n="pd-earn.col.type">Activity type</th>
+                  <th style="width:150px" data-sort="text" data-i18n="pd-earn.col.date">Date</th>
+                  <th class="sort-th--end" style="text-align:right;width:110px" data-sort="num" data-i18n="pd-earn.col.amount">Amount</th>
+                  <th data-sort="text" data-i18n="pd-earn.col.type">Activity type</th>
                 </tr></thead>
-                <tbody>
+                <tbody class="when-data">
                   <tr class="ztor-table__row"><td>2026-08-16</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 40</td><td data-i18n="pd-earn.act.critic15">Critic commission (15%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-08-12</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 30</td><td data-i18n="pd-earn.act.ott" data-earn-royalty-act>OTT royalty (2%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-08-05</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.license">Licensing (2%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-07-28</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 200</td><td data-i18n="pd-earn.act.critic12">Critic commission (12%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-07-19</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.advance">Critic advance</td></tr>
                 </tbody>
+                <!-- Q170 報表類空狀態（Cheat Codes Empty）：保留表頭、表身一列說明；放在資料 tbody 之後，table-sort 只排第一個 tbody -->
+                <tbody><tr class="when-empty"><td colspan="3" class="text-sub" data-i18n="pd-earn.ledger.empty">No earnings yet. Each payment will be recorded here as it comes in.</td></tr></tbody>
               </table>
             </div>
           </section>
@@ -1195,11 +1202,11 @@
             <div style="overflow-x:auto">
               <table class="ztor-table">
                 <thead><tr>
-                  <th data-i18n="pd-cf.col.plan">Plan</th>
-                  <th style="width:80px" data-i18n="pd-cf.col.price">Price</th>
-                  <th style="width:130px" data-i18n="pd-cf.col.slots">Slots</th>
-                  <th style="width:120px" data-i18n="pd-cofund.col.pct">Filled</th>
-                  <th style="text-align:right;width:110px" data-i18n="pd-cf.col.units">Units sold</th>
+                  <th data-sort="text" data-i18n="pd-cf.col.plan">Plan</th>
+                  <th style="width:80px" data-sort="num" data-i18n="pd-cf.col.price">Price</th>
+                  <th style="width:130px" data-sort="num" data-i18n="pd-cf.col.slots">Slots</th>
+                  <th style="width:120px" data-sort="num" data-i18n="pd-cofund.col.pct">Filled</th>
+                  <th class="sort-th--end" style="text-align:right;width:110px" data-sort="num" data-i18n="pd-cf.col.units">Units sold</th>
                 </tr></thead>
                 <tbody id="pd-cofund-tiers"></tbody>
               </table>
@@ -1209,14 +1216,15 @@
           <!-- 支持者明細：示意名單（人名固定），方案名稱取自方案編輯器、日期以 fundFrom
                起算——原型沒有逐筆支持者資料。 -->
           <section class="card bento--span-12">
-            <div class="card__head"><h3 class="card__title" data-i18n="cocreate.backers.title">Backer detail</h3><button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button></div>
+            <!-- 墓碑 2026-11-09（Q169）：卡頭「查看完整明細」沒有任何處理器（死按鈕），拿掉。 -->
+            <div class="card__head"><h3 class="card__title" data-i18n="cocreate.backers.title">Backer detail</h3></div>
             <div style="overflow-x:auto">
               <table class="ztor-table">
                 <thead><tr>
-                  <th data-i18n="pd-cf.col.backer">Backer</th>
-                  <th data-i18n="pd-cf.col.plan">Plan</th>
-                  <th style="width:170px" data-i18n="pd-cf.col.date">Date</th>
-                  <th style="text-align:right;width:130px" data-i18n="pd-cf.col.charge">Charge</th>
+                  <th data-sort="text" data-i18n="pd-cf.col.backer">Backer</th>
+                  <th data-sort="text" data-i18n="pd-cf.col.plan">Plan</th>
+                  <th style="width:170px" data-sort="text" data-i18n="pd-cf.col.date">Date</th>
+                  <th class="sort-th--end" style="text-align:right;width:130px" data-sort="text" data-i18n="pd-cf.col.charge">Charge</th>
                 </tr></thead>
                 <tbody id="pd-cofund-backers"></tbody>
               </table>
@@ -1283,14 +1291,15 @@
           </section>
           <!-- 訂單明細：示意名單（人名固定），編號接在集單數之後、日期以 fundFrom 起算。 -->
           <section class="card bento--span-12" id="pd-pre-orders-card">
-            <div class="card__head"><h3 class="card__title" data-i18n="pd-pre.orders.title">Pre-order detail</h3><button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button></div>
+            <!-- 墓碑 2026-11-09（Q169）：卡頭「查看完整明細」沒有任何處理器（死按鈕），拿掉。 -->
+            <div class="card__head"><h3 class="card__title" data-i18n="pd-pre.orders.title">Pre-order detail</h3></div>
             <div style="overflow-x:auto">
               <table class="ztor-table">
                 <thead><tr>
-                  <th style="width:52px">#</th>
-                  <th data-i18n="pd-cf.col.backer">Buyer</th>
-                  <th style="width:170px" data-i18n="pd-cf.col.date">Order date</th>
-                  <th style="text-align:right;width:130px" data-i18n="pd-cf.col.charge">Charge</th>
+                  <th style="width:52px" data-sort="num">#</th>
+                  <th data-sort="text" data-i18n="pd-cf.col.backer">Buyer</th>
+                  <th style="width:170px" data-sort="text" data-i18n="pd-cf.col.date">Order date</th>
+                  <th class="sort-th--end" style="text-align:right;width:130px" data-sort="text" data-i18n="pd-cf.col.charge">Charge</th>
                 </tr></thead>
                 <tbody id="pd-pre-orders-body"></tbody>
               </table>
@@ -1346,41 +1355,21 @@
                 <h3 class="card__title" data-i18n="pd-roy.region.title">Regional performance</h3>
                 <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
               </div>
-              <ul class="rank-bars rank-bars--barline mt-16">
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.tw">Taiwan</span></div></div>
-                  <span class="rank-bar__amt">US$612</span><span class="rank-bar__pct">38.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.jp">Japan</span></div></div>
-                  <span class="rank-bar__amt">US$288</span><span class="rank-bar__pct">18.1%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:47%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.us">United States</span></div></div>
-                  <span class="rank-bar__amt">US$173</span><span class="rank-bar__pct">10.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:28%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.hk">Hong Kong</span></div></div>
-                  <span class="rank-bar__amt">US$129</span><span class="rank-bar__pct">8.1%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:21%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.sg">Singapore</span></div></div>
-                  <span class="rank-bar__amt">US$87</span><span class="rank-bar__pct">5.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:14%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.my">Malaysia</span></div></div>
-                  <span class="rank-bar__amt">US$74</span><span class="rank-bar__pct">4.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:12%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.kr">South Korea</span></div></div>
-                  <span class="rank-bar__amt">US$58</span><span class="rank-bar__pct">3.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:9%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-accent)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.th">Thailand</span></div></div>
-                  <span class="rank-bar__amt">US$43</span><span class="rank-bar__pct">2.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:7%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--muted-foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.ca">Canada</span></div></div>
-                  <span class="rank-bar__amt">US$32</span><span class="rank-bar__pct">2.0%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:5%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.au">Australia</span></div></div>
-                  <span class="rank-bar__amt">US$26</span><span class="rank-bar__pct">1.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:4%"></div></div></li>
-                <li class="rank-bar rank-bar--amount">
-                  <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.other">Other regions</span></div></div>
-                  <span class="rank-bar__amt">US$68</span><span class="rank-bar__pct">4.3%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:11%"></div></div></li>
-              </ul>
+              <!-- Q167（2026-11-09）：「哪個地區／平台賺最多」是同一指標比大小，排名一律走 perf-rank（原本是 rank-bars--barline）。
+                   名次、名稱、金額、佔比與長條比例照原值；「其他」列照 perf-rank 的 --rest 去強調、名次寫 —。 -->
+              <ol class="perf-rank mt-16">
+                <li class="perf-rank__row" style="--w:100%; --hue:var(--primary)"><span class="perf-rank__idx">1</span><span class="perf-rank__name" data-i18n="pd-roy.rg.tw">Taiwan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">38.5%</span><span class="perf-rank__val">US$612</span></li>
+                <li class="perf-rank__row" style="--w:47%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name" data-i18n="pd-roy.rg.jp">Japan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.1%</span><span class="perf-rank__val">US$288</span></li>
+                <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name" data-i18n="pd-roy.rg.us">United States</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.9%</span><span class="perf-rank__val">US$173</span></li>
+                <li class="perf-rank__row" style="--w:21%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name" data-i18n="pd-roy.rg.hk">Hong Kong</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">8.1%</span><span class="perf-rank__val">US$129</span></li>
+                <li class="perf-rank__row" style="--w:14%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name" data-i18n="pd-roy.rg.sg">Singapore</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">US$87</span></li>
+                <li class="perf-rank__row" style="--w:12%; --hue:var(--status-success)"><span class="perf-rank__idx">6</span><span class="perf-rank__name" data-i18n="pd-roy.rg.my">Malaysia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.7%</span><span class="perf-rank__val">US$74</span></li>
+                <li class="perf-rank__row" style="--w:9%; --hue:var(--status-info)"><span class="perf-rank__idx">7</span><span class="perf-rank__name" data-i18n="pd-roy.rg.kr">South Korea</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">3.6%</span><span class="perf-rank__val">US$58</span></li>
+                <li class="perf-rank__row" style="--w:7%; --hue:var(--status-accent)"><span class="perf-rank__idx">8</span><span class="perf-rank__name" data-i18n="pd-roy.rg.th">Thailand</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.7%</span><span class="perf-rank__val">US$43</span></li>
+                <li class="perf-rank__row" style="--w:5%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">9</span><span class="perf-rank__name" data-i18n="pd-roy.rg.ca">Canada</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.0%</span><span class="perf-rank__val">US$32</span></li>
+                <li class="perf-rank__row" style="--w:4%; --hue:var(--foreground)"><span class="perf-rank__idx">10</span><span class="perf-rank__name" data-i18n="pd-roy.rg.au">Australia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.6%</span><span class="perf-rank__val">US$26</span></li>
+                <li class="perf-rank__row perf-rank__row--rest" style="--w:11%; --hue:var(--border)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="pd-roy.rg.other">Other regions</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.3%</span><span class="perf-rank__val">US$68</span></li>
+              </ol>
             </section>
 
             <div class="bento--span-6" data-royalty-fam="music" hidden>
@@ -1390,32 +1379,18 @@
                   <h3 class="card__title" data-i18n="pd-roy.platform.title">Streaming platforms</h3>
                   <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
                 </div>
-                <ul class="rank-bars rank-bars--barline mt-16">
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Spotify</span></div></div>
-                    <span class="rank-bar__amt">US$486</span><span class="rank-bar__pct">30.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--destructive)"></span><span class="rank-bar__label">YouTube</span></div></div>
-                    <span class="rank-bar__amt">US$342</span><span class="rank-bar__pct">21.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:70%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">KKBOX</span></div></div>
-                    <span class="rank-bar__amt">US$297</span><span class="rank-bar__pct">18.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:61%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label">Apple Music</span></div></div>
-                    <span class="rank-bar__amt">US$214</span><span class="rank-bar__pct">13.5%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:44%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">LINE MUSIC</span></div></div>
-                    <span class="rank-bar__amt">US$118</span><span class="rank-bar__pct">7.4%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:24%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.pf.friday">friDay Music</span></div></div>
-                    <span class="rank-bar__amt">US$62</span><span class="rank-bar__pct">3.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:13%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Amazon Music</span></div></div>
-                    <span class="rank-bar__amt">US$41</span><span class="rank-bar__pct">2.6%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:8%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">Deezer</span></div></div>
-                    <span class="rank-bar__amt">US$30</span><span class="rank-bar__pct">1.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:6%"></div></div></li>
-                </ul>
+                <!-- Q167（2026-11-09）：「哪個地區／平台賺最多」是同一指標比大小，排名一律走 perf-rank（原本是 rank-bars--barline）。
+                     名次、名稱、金額、佔比與長條比例照原值；「其他」列照 perf-rank 的 --rest 去強調、名次寫 —。 -->
+                <ol class="perf-rank mt-16">
+                  <li class="perf-rank__row" style="--w:100%; --hue:var(--status-success)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Spotify</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">30.6%</span><span class="perf-rank__val">US$486</span></li>
+                  <li class="perf-rank__row" style="--w:70%; --hue:var(--destructive)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">YouTube</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">21.5%</span><span class="perf-rank__val">US$342</span></li>
+                  <li class="perf-rank__row" style="--w:61%; --hue:var(--status-info)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">KKBOX</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.7%</span><span class="perf-rank__val">US$297</span></li>
+                  <li class="perf-rank__row" style="--w:44%; --hue:var(--foreground)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">Apple Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">13.5%</span><span class="perf-rank__val">US$214</span></li>
+                  <li class="perf-rank__row" style="--w:24%; --hue:var(--chart-3)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">LINE MUSIC</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">7.4%</span><span class="perf-rank__val">US$118</span></li>
+                  <li class="perf-rank__row" style="--w:13%; --hue:var(--primary)"><span class="perf-rank__idx">6</span><span class="perf-rank__name" data-i18n="pd-roy.pf.friday">friDay Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">3.9%</span><span class="perf-rank__val">US$62</span></li>
+                  <li class="perf-rank__row" style="--w:8%; --hue:var(--chart-4)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">Amazon Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.6%</span><span class="perf-rank__val">US$41</span></li>
+                  <li class="perf-rank__row" style="--w:6%; --hue:var(--chart-5)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Deezer</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.9%</span><span class="perf-rank__val">US$30</span></li>
+                </ol>
               </section>
             </div>
 
@@ -1426,29 +1401,17 @@
                   <h3 class="card__title" data-i18n="pd-roy.ott.title">OTT platforms</h3>
                   <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
                 </div>
-                <ul class="rank-bars rank-bars--barline mt-16">
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Netflix</span></div></div>
-                    <span class="rank-bar__amt">US$1,240</span><span class="rank-bar__pct">34.8%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:100%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label">Disney+</span></div></div>
-                    <span class="rank-bar__amt">US$880</span><span class="rank-bar__pct">24.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:71%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">iQIYI 愛奇藝</span></div></div>
-                    <span class="rank-bar__amt">US$595</span><span class="rank-bar__pct">16.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:48%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Prime Video</span></div></div>
-                    <span class="rank-bar__amt">US$382</span><span class="rank-bar__pct">10.7%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:31%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">CATCHPLAY+</span></div></div>
-                    <span class="rank-bar__amt">US$248</span><span class="rank-bar__pct">7.0%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:20%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">friDay 影音</span></div></div>
-                    <span class="rank-bar__amt">US$176</span><span class="rank-bar__pct">4.9%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:14%"></div></div></li>
-                  <li class="rank-bar rank-bar--amount">
-                    <div class="rank-bar__track"><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.ott.other">Other platforms</span></div></div>
-                    <span class="rank-bar__amt">US$79</span><span class="rank-bar__pct">2.2%</span><div class="project-bar rank-bar__bar"><div class="project-bar__fill" style="width:6%"></div></div></li>
-                </ul>
+                <!-- Q167（2026-11-09）：「哪個地區／平台賺最多」是同一指標比大小，排名一律走 perf-rank（原本是 rank-bars--barline）。
+                     名次、名稱、金額、佔比與長條比例照原值；「其他」列照 perf-rank 的 --rest 去強調、名次寫 —。 -->
+                <ol class="perf-rank mt-16">
+                  <li class="perf-rank__row" style="--w:100%; --hue:var(--status-success)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Netflix</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">34.8%</span><span class="perf-rank__val">US$1,240</span></li>
+                  <li class="perf-rank__row" style="--w:71%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Disney+</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">24.7%</span><span class="perf-rank__val">US$880</span></li>
+                  <li class="perf-rank__row" style="--w:48%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">iQIYI 愛奇藝</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">16.7%</span><span class="perf-rank__val">US$595</span></li>
+                  <li class="perf-rank__row" style="--w:31%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">Prime Video</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.7%</span><span class="perf-rank__val">US$382</span></li>
+                  <li class="perf-rank__row" style="--w:20%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">CATCHPLAY+</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">7.0%</span><span class="perf-rank__val">US$248</span></li>
+                  <li class="perf-rank__row" style="--w:14%; --hue:var(--status-info)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">friDay 影音</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.9%</span><span class="perf-rank__val">US$176</span></li>
+                  <li class="perf-rank__row perf-rank__row--rest" style="--w:6%; --hue:var(--border)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="pd-roy.ott.other">Other platforms</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.2%</span><span class="perf-rank__val">US$79</span></li>
+                </ol>
               </section>
             </div>
 
@@ -1468,7 +1431,7 @@
 
                 <div data-sort-section="royalty" class="mt-16">
                   <table class="ztor-table">
-                    <thead><tr><th style="width:40px">#</th><th data-i18n="pd-roy.top.col-song">Song</th><th style="text-align:right" data-i18n="pd-roy.top.col-royalty">Royalty</th></tr></thead>
+                    <thead><tr><th style="width:40px">#</th><th data-sort="text" data-i18n="pd-roy.top.col-song">Song</th><th class="sort-th--end" style="text-align:right" data-sort="num" data-i18n="pd-roy.top.col-royalty">Royalty</th></tr></thead>
                     <tbody>
                       <tr class="ztor-table__row"><td>1</td><td data-i18n="pd-roy.song.s1">Girls My Age</td><td style="text-align:right;font-weight:var(--fw-regular)">US$412</td></tr>
                       <tr class="ztor-table__row"><td>2</td><td data-i18n="pd-roy.song.s2">Man of the World</td><td style="text-align:right;font-weight:var(--fw-regular)">US$385</td></tr>
@@ -1486,7 +1449,7 @@
 
                 <div data-sort-section="plays" class="mt-16" hidden>
                   <table class="ztor-table">
-                    <thead><tr><th style="width:40px">#</th><th data-i18n="pd-roy.top.col-song">Song</th><th style="text-align:right" data-i18n="pd-roy.top.col-plays">Plays</th></tr></thead>
+                    <thead><tr><th style="width:40px">#</th><th data-sort="text" data-i18n="pd-roy.top.col-song">Song</th><th class="sort-th--end" style="text-align:right" data-sort="num" data-i18n="pd-roy.top.col-plays">Plays</th></tr></thead>
                     <tbody>
                       <tr class="ztor-table__row"><td>1</td><td data-i18n="pd-roy.song.s2">Man of the World</td><td style="text-align:right;font-weight:var(--fw-regular)">128,400</td></tr>
                       <tr class="ztor-table__row"><td>2</td><td data-i18n="pd-roy.song.s1">Girls My Age</td><td style="text-align:right;font-weight:var(--fw-regular)">117,900</td></tr>
@@ -1518,14 +1481,14 @@
                   <table class="ztor-table">
                     <thead>
                       <tr>
-                        <th data-i18n="pd-roy.deal.col-platform">Platform</th>
-                        <th data-i18n="pd-roy.deal.col-region">Territory</th>
-                        <th data-i18n="pd-roy.deal.col-term">Licence term</th>
-                        <th style="text-align:right" data-i18n="pd-roy.deal.col-fee">Licence fee</th>
-                        <th style="text-align:right" data-i18n="pd-roy.deal.col-status">Status</th>
+                        <th data-sort="text" data-i18n="pd-roy.deal.col-platform">Platform</th>
+                        <th data-sort="text" data-i18n="pd-roy.deal.col-region">Territory</th>
+                        <th data-sort="text" data-i18n="pd-roy.deal.col-term">Licence term</th>
+                        <th class="sort-th--end" style="text-align:right" data-sort="num" data-i18n="pd-roy.deal.col-fee">Licence fee</th>
+                        <th class="sort-th--end" style="text-align:right" data-sort="text" data-i18n="pd-roy.deal.col-status">Status</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="when-data">
                       <tr class="ztor-table__row">
                         <td style="font-weight:var(--fw-regular)">Netflix</td>
                         <td data-i18n="pd-roy.deal.rg-asia">Asia</td>
@@ -1569,6 +1532,8 @@
                         <td style="text-align:right"><span class="badge badge--neutral"><span data-i18n="pd-roy.deal.upcoming">Not yet started</span></span></td>
                       </tr>
                     </tbody>
+                    <!-- Q170 報表類空狀態（Cheat Codes Empty）：放在資料 tbody 之後，table-sort 只排第一個 tbody -->
+                    <tbody><tr class="when-empty"><td colspan="5" class="text-sub" data-i18n="pd-roy.deal.empty">No licensing deals yet. They show up here once the distributor reports one.</td></tr></tbody>
                   </table>
                 </div>
               </section>
@@ -1783,6 +1748,7 @@ window.ztorPdLookup = (function () {
 <script src="js/donut.js?v=r2.2"></script>       <!-- 2026-09-01：圓環的共用產生器（方案統計） -->
 <script src="js/detail-topbar.js?v=r2.2"></script><!-- 2026-09-01：詳情頁頂列的黏附行為，與系列詳情同一支 -->
 <script src="js/components.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script src="js/project-earnings-chart.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <!-- 展示內容相簿的圖片格：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
@@ -4782,6 +4748,9 @@ window.ztorPdLookup = (function () {
               '<td>' + esc(slots) + '</td><td>' + filled + '</td>' +
               '<td style="text-align:right;font-weight:var(--fw-regular)">' + countOf(i).toLocaleString('en-US') + '</td></tr>';
           }).join('');
+        } else if (tiers) {
+          /* Q170（2026-11-09）：報表類空狀態——沒有方案時表頭保留、表身一列說明（原本表身空白） */
+          tiers.innerHTML = '<tr><td colspan="5" class="text-sub">' + esc(T('pd-cf.tiers.empty', 'No plans yet.')) + '</td></tr>';
         }
 
         /* 支持者明細：示意名單（人名固定），方案名讀方案編輯器、日期以 fundFrom 起算，
@@ -4806,6 +4775,14 @@ window.ztorPdLookup = (function () {
           ].map(r => '<tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">' + esc(r[0]) +
             '</td><td>' + planName(r[1]) + '</td><td>' + r[2] +
             '</td><td style="text-align:right">' + r[3] + '</td></tr>').join('');
+        } else if (bkBody) {
+          /* Q170（2026-11-09）：紀錄類空狀態——還沒有支持者時表頭保留、表身一列說明 */
+          bkBody.innerHTML = '<tr><td colspan="4" class="text-sub">' + esc(T('cocreate.backers.empty', 'No backers yet — they show up here once someone backs a plan.')) + '</td></tr>';
+        }
+        /* 方案統計、支持者明細的列整批重生＝新的預設順序；排序狀態歸零（js/table-sort.js） */
+        if (window.ztorTableSort) {
+          if (tiers) window.ztorTableSort.refresh(tiers.closest('table'));
+          if (bkBody) window.ztorTableSort.refresh(bkBody.closest('table'));
         }
       }
 
@@ -4864,6 +4841,7 @@ window.ztorPdLookup = (function () {
               '<span class="badge badge--warning"><span>' + esc(T('cocreate.backers.retry', 'Retrying charge')) + '</span></span>']
           ].map(r => '<tr class="ztor-table__row"><td>' + r[0] + '</td><td style="font-weight:var(--fw-regular)">' +
             esc(r[1]) + '</td><td>' + r[2] + '</td><td style="text-align:right">' + r[3] + '</td></tr>').join('');
+          if (window.ztorTableSort) window.ztorTableSort.refresh(ordBody.closest('table'));
         }
       }
 
@@ -5057,6 +5035,7 @@ window.ztorPdLookup = (function () {
     var BD = window.ZtorBundleEditor.mount({
       list: root,
       addBtn: '[data-bundle-add]',
+      currency: 'USD',   // Q147：本頁金額欄標 USD（單位價格 · USD）
       t: T,
       /* 2026-09-01 使用者裁示「詳情頁這一塊跟建立頁一樣改 popup」：同一天建立頁
          先改的分段版型（清單列＋兩步彈窗、彈窗內一段一張分卡）這裡跟進，
@@ -5083,6 +5062,7 @@ window.ztorPdLookup = (function () {
     var BDPre = rootPre ? window.ZtorBundleEditor.mount({
       list: rootPre,
       addBtn: '[data-bundle-add-pre]',
+      currency: 'USD',   // Q147
       t: T,
       shares: false,
       layout: 'sections',   /* 2026-09-01：同上，預購方案跟建立頁一起改分段彈窗 */
@@ -5199,7 +5179,7 @@ window.ztorPdLookup = (function () {
       function addChip(text) {
         if (!text || current().includes(text)) return;
         const c = document.createElement('span');
-        c.className = 'chip chip--active chip--removable'; c.dataset.tag = '';
+        c.className = 'chip chip--value chip--removable'; c.dataset.tag = '';
         c.innerHTML = text + '<button class="chip__remove" type="button" data-tag-remove aria-label="remove">×</button>';
         field.insertBefore(c, entry); syncSuggest();
       }
@@ -5246,9 +5226,10 @@ window.ztorPdLookup = (function () {
       published: { en: 'In progress', zh: '進行中' },  succeeded: { en: 'Succeeded', zh: '已成功' },
       live:      { en: 'Live', zh: '已上線' },          cancelled: { en: 'Cancelled', zh: '已取消' }
     };
+    /* Q156／Q157 狀態共用色表（2026-11-09）：準備中＝排了還沒開始→info；進行中、已上線＝正在跑→success（已上線原 orange，橘色退出狀態徽章）。 */
     const STATUS_TONE = {
-      draft: 'badge--neutral', scheduled: 'badge--info', published: 'badge--info',
-      succeeded: 'badge--success', live: 'badge--orange', cancelled: 'badge--error'
+      draft: 'badge--neutral', scheduled: 'badge--info', published: 'badge--success',
+      succeeded: 'badge--success', live: 'badge--success', cancelled: 'badge--error'
     };
     /* 狀態徽章的唯一改寫入口（2026-08-07）：完成作品上架後要把徽章換成「已上線」。
        走這支而不是各自寫死字串，字彙與徽章色才會跟 render() 用同一份表——原本發文
@@ -5548,5 +5529,6 @@ window.ztorPdLookup = (function () {
 <script src="js/toast.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
 </body>
 </html>

@@ -8,7 +8,7 @@
      2026-11-02 頁型改版（UI-CHANGES #458，使用者看過格式示範後裁示「套用」；D508）：
      · 麵包屑 → page-intro → list-toolbar 底線式頁面分頁（Q38）「賺分事件／分級／粉絲管理指標／其他設定／修改紀錄」→ 每個分頁一張 .card。
      · 卡頭（.card__head--wrap）左一句說明、右「變更歷史」（切到修改紀錄並篩選該類）＋「編輯」；預設唯讀、按編輯就地切成輸入框
-       （.tier-ov 唯讀／編輯兩面，格子恆為 --control-h-sm 高，切換時表格不跳動），出現取消／儲存，以卡為單位比對與還原。全頁沒有全域「儲存」。
+       （.bmx--readonly 唯讀／編輯兩面，格子恆為 --control-h-sm 高，切換時表格不跳動），出現取消／儲存，以卡為單位比對與還原。全頁沒有全域「儲存」。
      · 賺分事件的開關不受編輯模式限制（D508）：任何時候都能切、立即生效、當下記一筆；按取消不還原開關。
      · 賽季加倍逐筆新增與移除，當下記一筆，不跟著卡的編輯。
      · 本頁與平台費率、平台優惠兩頁的頁型不一致（STYLE-DECISIONS Q138 待裁決）。 -->
@@ -38,11 +38,12 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2"><!-- 修改紀錄的類別篩選 -->
-<link rel="stylesheet" href="ds-components/tier-overview.css?v=r2.2"><!-- 唯讀／編輯兩面的對照表 -->
+<link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2"><!-- .bmx--readonly：唯讀／編輯兩面的對照表（Q171，原 tier-overview.css） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -75,7 +76,7 @@
 </div>
 
 <!-- ===== 分頁 1：F9 賺分事件與事件開關（D498、D499）=====
-     事件為列、「給分／倍率｜滾動視窗｜上限｜開關」四欄，吃 .tier-ov 的四欄格線。購買類（A3、A4）只有倍率 γ、無上限；
+     事件為列、「給分／倍率｜滾動視窗｜上限｜開關」四欄，吃 .bmx--readonly 的四欄格線。購買類（A3、A4）只有倍率 γ、無上限；
      互動與推薦（B1、B4、B5、B3）各有發分值與「滾動視窗 X 天內最多 Y」。按讚與收藏各自的上限暫用現行合計值 1,500（〔產品待確認〕，UIA-325）。
      開關（D508）不在唯讀／編輯兩面裡：任何時候都能切、立即生效、當下記一筆；取消編輯不還原開關。 -->
 <div class="tab-panel tab-panel--active" data-panel="events">
@@ -94,68 +95,68 @@
 
   <div class="settings-row">
     <div><div class="settings-row__label" data-i18n="ploy.ev.ka">Base rate (K_A)</div><div class="settings-row__hint" data-i18n="ploy.ev.ka-hint">Points per 1 unit of base currency = multiplier × base rate</div></div>
-    <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:260px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.5" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.ka" data-ploy-unit="ploy.unit.per-base"><span class="amount-field__unit" data-i18n="ploy.unit.per-base">pts / 1 unit of base currency</span></span></span></div>
+    <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:260px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.5" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.ka" data-ploy-unit="ploy.unit.per-base"><span class="amount-field__unit" data-i18n="ploy.unit.per-base">pts / 1 unit of base currency</span></span></span></div>
   </div>
 
-  <div class="tier-ov-scroll mt-16">
-    <div class="tier-ov tier-ov__head">
+  <div class="bmx bmx--readonly mt-16">
+    <div class="bmx__head">
       <span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.col.rate">Points / multiplier</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.cap-window">Rolling window</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.col.cap">Cap</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.col.on">On</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.col.rate">Points / multiplier</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.cap-window">Rolling window</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.col.cap">Cap</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.col.on">On</span>
     </div>
     <!-- 購買類：只有倍率，沒有視窗與上限 -->
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.a3">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.a3">Event tickets</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" value="1.1" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.a3" data-ploy-field="ploy.ev.col.points" data-ploy-unit="×"><span class="amount-field__unit">×</span></span></span></span>
-      <span class="tier-ov__cell tier-ov__no">—</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.nocap">No cap</span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a3" aria-label="Event tickets" data-i18n-aria-label="ploy.ev.a3"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.a3">
+      <span class="bmx__label"><span data-i18n="ploy.ev.a3">Event tickets</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" value="1.1" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.a3" data-ploy-field="ploy.ev.col.points" data-ploy-unit="×"><span class="amount-field__unit">×</span></span></span></span>
+      <span class="bmx__cell bmx__no">—</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.nocap">No cap</span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a3" aria-label="Event tickets" data-i18n-aria-label="ploy.ev.a3"></div></span>
     </div>
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.a4">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.a4">E-Shop products</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" value="1.0" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.a4" data-ploy-field="ploy.ev.col.points" data-ploy-unit="×"><span class="amount-field__unit">×</span></span></span></span>
-      <span class="tier-ov__cell tier-ov__no">—</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.nocap">No cap</span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a4" aria-label="E-Shop products" data-i18n-aria-label="ploy.ev.a4"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.a4">
+      <span class="bmx__label"><span data-i18n="ploy.ev.a4">E-Shop products</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" value="1.0" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.a4" data-ploy-field="ploy.ev.col.points" data-ploy-unit="×"><span class="amount-field__unit">×</span></span></span></span>
+      <span class="bmx__cell bmx__no">—</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.nocap">No cap</span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a4" aria-label="E-Shop products" data-i18n-aria-label="ploy.ev.a4"></div></span>
     </div>
     <!-- 互動與推薦：每次給分＋X 天內最多 Y -->
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.b1">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.b1">Co-create vote</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="150" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="ploy.unit.votes"><span class="amount-field__unit" data-i18n="ploy.unit.votes">votes</span></span></span></span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b1" aria-label="Co-create vote" data-i18n-aria-label="ploy.ev.b1"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.b1">
+      <span class="bmx__label"><span data-i18n="ploy.ev.b1">Co-create vote</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="150" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="ploy.unit.votes"><span class="amount-field__unit" data-i18n="ploy.unit.votes">votes</span></span></span></span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b1" aria-label="Co-create vote" data-i18n-aria-label="ploy.ev.b1"></div></span>
     </div>
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.b4">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.b4">Like</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="5" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1500" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b4" aria-label="Like" data-i18n-aria-label="ploy.ev.b4"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.b4">
+      <span class="bmx__label"><span data-i18n="ploy.ev.b4">Like</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="5" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1500" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b4" aria-label="Like" data-i18n-aria-label="ploy.ev.b4"></div></span>
     </div>
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.b5">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.b5">Save</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1500" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b5" aria-label="Save" data-i18n-aria-label="ploy.ev.b5"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.b5">
+      <span class="bmx__label"><span data-i18n="ploy.ev.b5">Save</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1500" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b5" aria-label="Save" data-i18n-aria-label="ploy.ev.b5"></div></span>
     </div>
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.b3">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.b3">Invite to follow</span><small><span data-i18n="ploy.ev.cat.ref">Referral</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="400" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="ploy.unit.people"><span class="amount-field__unit" data-i18n="ploy.unit.people">people</span></span></span></span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b3" aria-label="Invite to follow" data-i18n-aria-label="ploy.ev.b3"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.b3">
+      <span class="bmx__label"><span data-i18n="ploy.ev.b3">Invite to follow</span><small><span data-i18n="ploy.ev.cat.ref">Referral</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="400" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="ploy.unit.people"><span class="amount-field__unit" data-i18n="ploy.unit.people">people</span></span></span></span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b3" aria-label="Invite to follow" data-i18n-aria-label="ploy.ev.b3"></div></span>
     </div>
     <!-- D499 A6 線下掃碼領點（S143）：只有開關；點數、名額、有效期在商品與場次設定（說明見表下兩行）。 -->
-    <div class="tier-ov tier-ov__row" data-ploy-ev="ploy.ev.a6" data-feat="S143">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.ev.a6">Offline scan to earn</span><small><span data-i18n="ploy.ev.cat.off">Offline</span> <span class="badge badge--warning" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.ev.a6-short">Set per session</span>
-      <span class="tier-ov__cell tier-ov__no">—</span>
-      <span class="tier-ov__cell tier-ov__no">—</span>
-      <span class="tier-ov__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a6" aria-label="Offline scan to earn" data-i18n-aria-label="ploy.ev.a6"></div></span>
+    <div class="bmx__row" data-ploy-ev="ploy.ev.a6" data-feat="S143">
+      <span class="bmx__label"><span data-i18n="ploy.ev.a6">Offline scan to earn</span><small><span data-i18n="ploy.ev.cat.off">Offline</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.ev.a6-short">Set per session</span>
+      <span class="bmx__cell bmx__no">—</span>
+      <span class="bmx__cell bmx__no">—</span>
+      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a6" aria-label="Offline scan to earn" data-i18n-aria-label="ploy.ev.a6"></div></span>
     </div>
   </div>
   <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.ev.note-off">Turning an event off stops new points right away. It only affects points from now on: nothing is recalculated and points already given stay.</p>
@@ -180,38 +181,38 @@
       </span>
     </div>
   </div>
-  <div class="tier-ov-scroll">
+  <div class="bmx bmx--readonly">
     <!-- 欄頭的分級名稱由 JS 依顯示名稱的已儲存值填入（改名儲存後立即換上），不掛 data-i18n。 -->
-    <div class="tier-ov tier-ov__head">
+    <div class="bmx__head">
       <span></span>
-      <span class="tier-ov__cell"><span class="badge badge--orange" data-tier-name="fans.tier.inner">Inner Circle</span></span>
-      <span class="tier-ov__cell"><span class="badge badge--info" data-tier-name="fans.tier.super">Super Fans</span></span>
-      <span class="tier-ov__cell"><span class="badge badge--success" data-tier-name="fans.tier.devoted">Ranked Fans</span></span>
-      <span class="tier-ov__cell"><span class="badge" data-tier-name="fans.tier.fan">Fan</span></span>
+      <span class="bmx__cell"><span class="badge badge--tier badge--tier-inner" data-tier-name="fans.tier.inner">Inner Circle</span></span>
+      <span class="bmx__cell"><span class="badge badge--tier badge--tier-super" data-tier-name="fans.tier.super">Super Fans</span></span>
+      <span class="bmx__cell"><span class="badge badge--tier badge--tier-ranked" data-tier-name="fans.tier.devoted">Ranked Fans</span></span>
+      <span class="bmx__cell"><span class="badge badge--tier badge--tier-fan" data-tier-name="fans.tier.fan">Fan</span></span>
     </div>
-    <div class="tier-ov tier-ov__row">
-      <span class="tier-ov__rowlabel" data-i18n="ploy.tier.col.name">Display name</span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><input class="input" type="text" value="Inner Circle" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.inner" data-ploy-label="fans.tier.inner" data-ploy-field="ploy.tier.col.name" aria-label="Inner Circle" data-i18n-aria-label="fans.tier.inner"></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><input class="input" type="text" value="Super Fans" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.super" data-ploy-label="fans.tier.super" data-ploy-field="ploy.tier.col.name" aria-label="Super Fans" data-i18n-aria-label="fans.tier.super"></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><input class="input" type="text" value="Ranked Fans" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.devoted" data-ploy-label="fans.tier.devoted" data-ploy-field="ploy.tier.col.name" aria-label="Ranked Fans" data-i18n-aria-label="fans.tier.devoted"></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><input class="input" type="text" value="Fan" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.fan" data-ploy-label="fans.tier.fan" data-ploy-field="ploy.tier.col.name" aria-label="Fan" data-i18n-aria-label="fans.tier.fan"></span></span>
+    <div class="bmx__row">
+      <span class="bmx__label" data-i18n="ploy.tier.col.name">Display name</span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><input class="input" type="text" value="Inner Circle" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.inner" data-ploy-label="fans.tier.inner" data-ploy-field="ploy.tier.col.name" aria-label="Inner Circle" data-i18n-aria-label="fans.tier.inner"></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><input class="input" type="text" value="Super Fans" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.super" data-ploy-label="fans.tier.super" data-ploy-field="ploy.tier.col.name" aria-label="Super Fans" data-i18n-aria-label="fans.tier.super"></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><input class="input" type="text" value="Ranked Fans" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.devoted" data-ploy-label="fans.tier.devoted" data-ploy-field="ploy.tier.col.name" aria-label="Ranked Fans" data-i18n-aria-label="fans.tier.devoted"></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><input class="input" type="text" value="Fan" data-ploy data-ploy-kind="now" data-ploy-name="fans.tier.fan" data-ploy-label="fans.tier.fan" data-ploy-field="ploy.tier.col.name" aria-label="Fan" data-i18n-aria-label="fans.tier.fan"></span></span>
     </div>
-    <div class="tier-ov tier-ov__row">
-      <span class="tier-ov__rowlabel" data-i18n="ploy.tier.col.top">Top %</span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="1" data-ploy data-ploy-kind="recompute" data-ploy-label="fans.tier.inner" data-ploy-field="ploy.tier.col.top" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="10" data-ploy data-ploy-kind="recompute" data-ploy-label="fans.tier.super" data-ploy-field="ploy.tier.col.top" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="30" data-ploy data-ploy-kind="recompute" data-ploy-label="fans.tier.devoted" data-ploy-field="ploy.tier.col.top" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></span>
-      <span class="tier-ov__cell tier-ov__no" data-i18n="ploy.tier.rest">Everyone else</span>
+    <div class="bmx__row">
+      <span class="bmx__label" data-i18n="ploy.tier.col.top">Top %</span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="1" data-ploy data-ploy-kind="recompute" data-ploy-label="fans.tier.inner" data-ploy-field="ploy.tier.col.top" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="10" data-ploy data-ploy-kind="recompute" data-ploy-label="fans.tier.super" data-ploy-field="ploy.tier.col.top" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" max="100" step="0.5" value="30" data-ploy data-ploy-kind="recompute" data-ploy-label="fans.tier.devoted" data-ploy-field="ploy.tier.col.top" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></span>
+      <span class="bmx__cell bmx__no" data-i18n="ploy.tier.rest">Everyone else</span>
     </div>
   </div>
 
   <div class="settings-row mt-16">
     <div><div class="settings-row__label" data-i18n="ploy.tier.floor">Minimum loyalty points</div><div class="settings-row__hint" data-i18n="ploy.tier.floor-hint">One value for every tier. Below it a fan is always Fan and isn’t ranked</div></div>
-    <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="500" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.tier.floor" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
+    <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="500" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.tier.floor" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
   </div>
   <div class="settings-row">
     <div><div class="settings-row__label" data-i18n="ploy.decay.grace">Demotion grace</div><div class="settings-row__hint" data-i18n="ploy.decay.grace-hint">The countdown starts when a fan falls below a tier’s bar</div></div>
-    <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
+    <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
   </div>
   <div class="settings-row" style="border-bottom:0">
     <div><div class="settings-row__label" data-i18n="ploy.tier.recompute">Tier recompute</div><div class="settings-row__hint" data-i18n="ploy.tier.recompute-hint">Cut-off scores and demotions update then; promotions happen right away</div></div>
@@ -223,7 +224,7 @@
 </div>
 
 <!-- ===== 分頁 3：F11 粉絲管理 KPI 視窗（D498）=====
-     三個指標為欄（.tier-ov--cols3）、「天數」「影響哪裡」為列；影響哪裡是說明、編輯態鎖住。定義權威在 5.1.7 F2。 -->
+     三個指標為欄（.bmx--readonly.bmx--cols3）、「天數」「影響哪裡」為列；影響哪裡是說明、編輯態鎖住。定義權威在 5.1.7 F2。 -->
 <div class="tab-panel" data-panel="kpi">
 <section class="card mt-16" data-ploy-card="kpi">
   <div class="card__head card__head--wrap">
@@ -237,24 +238,24 @@
       </span>
     </div>
   </div>
-  <div class="tier-ov-scroll">
-    <div class="tier-ov tier-ov--cols3 tier-ov__head">
+  <div class="bmx bmx--readonly bmx--cols3">
+    <div class="bmx__head">
       <span></span>
-      <span class="tier-ov__cell"><span class="badge badge--success" data-i18n="ploy.kpi.active">Active fans</span></span>
-      <span class="tier-ov__cell"><span class="badge badge--warning" data-i18n="ploy.kpi.risk">At risk</span></span>
-      <span class="tier-ov__cell"><span class="badge badge--info" data-i18n="ploy.kpi.recent">Recent points</span></span>
+      <span class="bmx__cell"><span class="badge badge--success" data-i18n="ploy.kpi.active">Active fans</span></span>
+      <span class="bmx__cell"><span class="badge badge--warning" data-i18n="ploy.kpi.risk">At risk</span></span>
+      <span class="bmx__cell"><span class="badge badge--info" data-i18n="ploy.kpi.recent">Recent points</span></span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row">
-      <span class="tier-ov__rowlabel" data-i18n="ploy.kpi.days">Days</span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="now" data-ploy-label="ploy.kpi.active" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="30" data-ploy data-ploy-kind="now" data-ploy-label="ploy.kpi.risk" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="7" data-ploy data-ploy-kind="now" data-ploy-label="ploy.kpi.recent" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+    <div class="bmx__row">
+      <span class="bmx__label" data-i18n="ploy.kpi.days">Days</span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="now" data-ploy-label="ploy.kpi.active" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="30" data-ploy data-ploy-kind="now" data-ploy-label="ploy.kpi.risk" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="7" data-ploy data-ploy-kind="now" data-ploy-label="ploy.kpi.recent" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row tier-ov__row--locked">
-      <span class="tier-ov__rowlabel" data-i18n="ploy.kpi.where">Used for</span>
-      <span class="tier-ov__cell tier-ov__cell--wrap" data-i18n="ploy.kpi.active-hint">At least one earning action in this many days; the revenue KPI uses the same window</span>
-      <span class="tier-ov__cell tier-ov__cell--wrap" data-i18n="ploy.kpi.risk-hint">No earning action in this many days</span>
-      <span class="tier-ov__cell tier-ov__cell--wrap" data-i18n="ploy.kpi.recent-hint">The “+X in the last N days” line under loyalty points</span>
+    <div class="bmx__row bmx__row--locked">
+      <span class="bmx__label" data-i18n="ploy.kpi.where">Used for</span>
+      <span class="bmx__cell bmx__cell--wrap" data-i18n="ploy.kpi.active-hint">At least one earning action in this many days; the revenue KPI uses the same window</span>
+      <span class="bmx__cell bmx__cell--wrap" data-i18n="ploy.kpi.risk-hint">No earning action in this many days</span>
+      <span class="bmx__cell bmx__cell--wrap" data-i18n="ploy.kpi.recent-hint">The “+X in the last N days” line under loyalty points</span>
     </div>
   </div>
 </section>
@@ -281,42 +282,42 @@
   <!-- F2 全站活動給分與上限。資格條件依 §7.5，本頁只調給分與上限。候選一列（完成個人資料或綁定付款）功能是否存在
        〔產品待確認〕（§8.29 第 3 項），所以只唯讀列出、不給輸入框（鎖住的列）。 -->
   <h4 class="group-title" data-i18n="ploy.act.title">Platform activities</h4>
-  <div class="tier-ov-scroll">
-    <div class="tier-ov tier-ov--cols3 tier-ov__head">
+  <div class="bmx bmx--readonly bmx--cols3">
+    <div class="bmx__head">
       <span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.col.points">Points</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.col.cap">Cap</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.col.credit">Credited by</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.col.points">Points</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.col.cap">Cap</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.col.credit">Credited by</span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row">
-      <span class="tier-ov__rowlabel" data-i18n="ploy.act.checkin">Daily check-in</span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="50" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.checkin" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.checkin-cap">Once a day</span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.credit.claim">Claimed by fan</span>
+    <div class="bmx__row">
+      <span class="bmx__label" data-i18n="ploy.act.checkin">Daily check-in</span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="50" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.checkin" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.checkin-cap">Once a day</span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.credit.claim">Claimed by fan</span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.act.streak">Streak bonus</span><small data-i18n="ploy.act.streak-hint">Every 7th day in a row; a break just restarts the count</small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="200" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.streak" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="12" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.streak" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.times90"><span class="amount-field__unit" data-i18n="ploy.unit.times90">times / 90 days</span></span></span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.credit.claim">Claimed by fan</span>
+    <div class="bmx__row">
+      <span class="bmx__label"><span data-i18n="ploy.act.streak">Streak bonus</span><small data-i18n="ploy.act.streak-hint">Every 7th day in a row; a break just restarts the count</small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="200" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.streak" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="12" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.streak" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.times90"><span class="amount-field__unit" data-i18n="ploy.unit.times90">times / 90 days</span></span></span></span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.credit.claim">Claimed by fan</span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.act.post">Community post</span><small data-i18n="ploy.act.post-hint">Counts once someone else interacts with it</small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="30" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.post" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="3" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.post" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.perday"><span class="amount-field__unit" data-i18n="ploy.unit.perday">per day</span></span></span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.credit.claim">Claimed by fan</span>
+    <div class="bmx__row">
+      <span class="bmx__label"><span data-i18n="ploy.act.post">Community post</span><small data-i18n="ploy.act.post-hint">Counts once someone else interacts with it</small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="30" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.post" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="3" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.post" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.perday"><span class="amount-field__unit" data-i18n="ploy.unit.perday">per day</span></span></span></span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.credit.claim">Claimed by fan</span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.act.invite">Invite to Ztor</span><small data-i18n="ploy.act.invite-hint">Per qualified sign-up; if the friend also follows a creator within 7 days, that creator gets 400 more</small></span>
-      <span class="tier-ov__cell"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1000" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.invite" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.invite" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.people90"><span class="amount-field__unit" data-i18n="ploy.unit.people90">people / 90 days</span></span></span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.credit.auto">Automatic</span>
+    <div class="bmx__row">
+      <span class="bmx__label"><span data-i18n="ploy.act.invite">Invite to Ztor</span><small data-i18n="ploy.act.invite-hint">Per qualified sign-up; if the friend also follows a creator within 7 days, that creator gets 400 more</small></span>
+      <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1000" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.invite" data-ploy-field="ploy.act.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
+      <span class="bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.act.invite" data-ploy-field="ploy.act.col.cap" data-ploy-unit="ploy.unit.people90"><span class="amount-field__unit" data-i18n="ploy.unit.people90">people / 90 days</span></span></span></span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.credit.auto">Automatic</span>
     </div>
-    <div class="tier-ov tier-ov--cols3 tier-ov__row tier-ov__row--locked">
-      <span class="tier-ov__rowlabel"><span data-i18n="ploy.act.profile">Profile completion or payment linked</span> <span class="badge badge--neutral" data-i18n="ploy.candidate">Candidate</span><small data-i18n="ploy.act.profile-hint">Whether this exists is pending</small></span>
-      <span class="tier-ov__cell text-sub">200&nbsp;<span data-i18n="fans.unit.points">pts</span></span>
-      <span class="tier-ov__cell text-sub" data-i18n="ploy.act.profile-cap">One-time</span>
-      <span class="tier-ov__cell tier-ov__no">—</span>
+    <div class="bmx__row bmx__row--locked">
+      <span class="bmx__label"><span data-i18n="ploy.act.profile">Profile completion or payment linked</span> <span class="badge badge--neutral" data-i18n="ploy.candidate">Candidate</span><small data-i18n="ploy.act.profile-hint">Whether this exists is pending</small></span>
+      <span class="bmx__cell text-sub">200&nbsp;<span data-i18n="fans.unit.points">pts</span></span>
+      <span class="bmx__cell text-sub" data-i18n="ploy.act.profile-cap">One-time</span>
+      <span class="bmx__cell bmx__no">—</span>
     </div>
   </div>
   <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.act.note">Caps count over a rolling 90 days and are checked when points are given. Every platform-activity point goes to the fan’s primary creator; creator activity values don’t apply.</p>
@@ -330,23 +331,23 @@
     <p class="group-desc" data-i18n="ploy.role.sub">When several artists are credited, each linked artist gets their own entry.</p>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l1">Level 1</div><div class="settings-row__hint" data-i18n="ploy.role.l1-roles">Roles</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="100" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l1" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="100" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l1" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
     </div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l2">Level 2</div><div class="settings-row__hint" data-i18n="ploy.role.l2-roles">Roles</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="80" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l2" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="80" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l2" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
     </div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l3">Level 3</div><div class="settings-row__hint" data-i18n="ploy.role.l3-roles">Roles</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="60" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l3" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="60" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l3" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
     </div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l4">Level 4</div><div class="settings-row__hint" data-i18n="ploy.role.l4-roles">Roles</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="40" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l4" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="40" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l4" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
     </div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l5">Level 5</div><div class="settings-row__hint" data-i18n="ploy.role.l5-roles">Roles</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="20" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l5" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="20" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l5" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
     </div>
     <div class="settings-row" style="border-bottom:0">
       <div><div class="settings-row__label" data-i18n="ploy.role.l0">Not scored</div><div class="settings-row__hint" data-i18n="ploy.role.l0-roles">Roles</div></div>
@@ -368,10 +369,10 @@
     <div class="admin-table-wrap admin-table-wrap--fluid">
       <table class="ztor-table">
         <thead><tr>
-          <th data-i18n="ploy.season.col.period">Period</th>
-          <th data-feat="S109" data-i18n="ploy.season.col.scope">Scope</th>
-          <th data-feat="S109" data-i18n="ploy.season.col.mult">Multiplier</th>
-          <th data-i18n="ploy.season.col.status">Status</th>
+          <th data-sort="text" data-i18n="ploy.season.col.period">Period</th>
+          <th data-feat="S109" data-sort="text" data-i18n="ploy.season.col.scope">Scope</th>
+          <th data-feat="S109" data-sort="num" data-i18n="ploy.season.col.mult">Multiplier</th>
+          <th data-sort="text" data-i18n="ploy.season.col.status">Status</th>
           <th></th>
         </tr></thead>
         <tbody id="ploy-season-body"></tbody>
@@ -387,11 +388,11 @@
     <h4 class="group-title" data-i18n="ploy.decay.title">Decay and tier retention</h4>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.decay.half">Decay half-life</div><div class="settings-row__hint" data-i18n="ploy.decay.half-hint">Days until points are worth half</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="45" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.half" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="45" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.half" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
     </div>
     <div class="settings-row" style="border-bottom:0">
       <div><div class="settings-row__label" data-i18n="ploy.decay.active">Inactive days before dropping a tier</div><div class="settings-row__hint" data-i18n="ploy.decay.active-hint">Every time a fan goes this many days with no activity, their tier cap drops one step; points stay and keep fading</div></div>
-      <div class="settings-row__value tier-ov__cell tier-ov__cell--fluid"><span class="tier-ov__read"></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.active" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.active" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
     </div>
   </div>
 
@@ -470,12 +471,12 @@
   <div class="admin-table-wrap admin-table-wrap--fluid">
     <table class="ztor-table">
       <thead><tr>
-        <th data-i18n="ploy.log.col.when">Time</th>
-        <th data-i18n="ploy.log.col.by">By</th>
-        <th data-i18n="ploy.log.col.item">Setting</th>
-        <th data-i18n="ploy.log.col.from">From</th>
-        <th data-i18n="ploy.log.col.to">To</th>
-        <th data-i18n="ploy.log.col.status">Takes effect</th>
+        <th data-sort="text" data-i18n="ploy.log.col.when">Time</th>
+        <th data-sort="text" data-i18n="ploy.log.col.by">By</th>
+        <th data-sort="text" data-i18n="ploy.log.col.item">Setting</th>
+        <th data-sort="text" data-i18n="ploy.log.col.from">From</th>
+        <th data-sort="text" data-i18n="ploy.log.col.to">To</th>
+        <th data-sort="text" data-i18n="ploy.log.col.status">Takes effect</th>
       </tr></thead>
       <tbody id="ploy-log-body"></tbody>
     </table>
@@ -556,11 +557,12 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script>
   /* 平台忠誠點數設定（spec 5.1.0.8 F1～F11）——demo，非真後端。
      · 每張卡 [data-ploy-card] 各自編輯：輸入框都掛 data-ploy，已儲存值記在 data-saved；
        編輯 → 取消把輸入框還原成 data-saved；儲存拿現值比對 data-saved，有差的每一項各記一列修改紀錄。
-     · 唯讀面（.tier-ov__read）由 refreshReads() 依 data-saved 與單位畫出來，切語言時重畫。
+     · 唯讀面（.bmx__read）由 refreshReads() 依 data-saved 與單位畫出來，切語言時重畫。
      · 事件開關與賽季加倍的新增／移除不經卡的儲存，當下就記一列（D508、D476）。
      · 加倍週與修改紀錄都存成資料、再由 render 畫成表格，切語言（i18n:applied）時整張重畫，不留單語殘字。 */
   (function () {
@@ -612,7 +614,7 @@
           '<td><span class="badge ' + st.cls + '"></span></td>' +
           '<td style="text-align:right"><button type="button" class="btn btn--ghost btn--sm" data-season-remove="' + p.id + '"></button></td>';
         tr.children[0].textContent = rangeText(p);
-        tr.children[1].textContent = scopeText(p);
+        tr.children[0].setAttribute('data-sort-value', p.from);   // 顯示文字是本地化日期，排序用起日        tr.children[1].textContent = scopeText(p);
         tr.children[2].textContent = multText(p);
         tr.children[3].firstChild.textContent = t(st.key);
         tr.children[4].firstChild.textContent = t('ploy.season.remove', 'Remove');
@@ -620,6 +622,7 @@
       });
       if (seasonEmpty) seasonEmpty.hidden = seasons.length > 0;
       regate();
+      if (window.ztorTableSort) window.ztorTableSort.refresh(seasonBody.closest('table'));
     }
 
     /* ── F6 修改紀錄（資料 → 表格）── D498：一筆異動一列（操作者、時間、參數、原值、新值、生效類別）；cat＝哪一個分頁，供篩選。
@@ -676,6 +679,7 @@
         logBody.appendChild(tr);
       });
       regate();
+      if (window.ztorTableSort) window.ztorTableSort.refresh(logBody.closest('table'));
     }
     var filterBar = document.querySelector('[data-log-filter]');
     function setFilter(cat) {
@@ -780,7 +784,7 @@
     loadStored();
     function refreshReads() {
       inputs.forEach(function (inp) {
-        var cell = inp.closest('.tier-ov__cell'), read = cell && cell.querySelector('.tier-ov__read');
+        var cell = inp.closest('.bmx__cell'), read = cell && cell.querySelector('.bmx__read');
         if (read) read.textContent = valText(inp.getAttribute('data-saved'), inp.getAttribute('data-ploy-unit'));
         var nameKey = inp.getAttribute('data-ploy-name');
         if (nameKey) {

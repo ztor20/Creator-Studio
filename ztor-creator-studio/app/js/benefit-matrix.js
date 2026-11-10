@@ -21,10 +21,10 @@
   "use strict";
 
   var TIERS = [
-    { key: "inner",   i18n: "tier-settings.tier.inner",    badge: "badge--orange"  },
-    { key: "super",   i18n: "tier-settings.tier.superfan", badge: "badge--info"    },
-    { key: "devoted", i18n: "tier-settings.tier.devoted",  badge: "badge--success" },
-    { key: "fan",     i18n: "tier-settings.tier.fan",      badge: "badge--neutral" }
+    { key: "inner",   i18n: "tier-settings.tier.inner",    badge: "badge--tier badge--tier-inner"  },   /* Q158：分級＝中性底＋圖示 */
+    { key: "super",   i18n: "tier-settings.tier.superfan", badge: "badge--tier badge--tier-super"  },
+    { key: "devoted", i18n: "tier-settings.tier.devoted",  badge: "badge--tier badge--tier-ranked" },
+    { key: "fan",     i18n: "tier-settings.tier.fan",      badge: "badge--tier badge--tier-fan"    }
   ];
 
   /* Seeded catalogue. The graded rows carry the values the old per-tier

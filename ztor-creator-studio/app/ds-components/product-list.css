@@ -83,8 +83,11 @@
 /* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §5）：浮起的那一列改成浮成一張**玻璃卡**
    （半透明＋模糊＋深投影＋頂緣內光），與 §3 的卡片同一種材質；原本是實色 --card ＋純陰影，
    在玻璃語彙裡會讀成「清單裡混進一張別種材質的卡」。
-   舊值：background: var(--card)；border-radius: var(--radius-md)；box-shadow: var(--shadow-lift-flat)（無頂緣內光）。 */
-.product-list__row:hover {
+   舊值：background: var(--card)；border-radius: var(--radius-md)；box-shadow: var(--shadow-lift-flat)（無頂緣內光）。
+   Q166（2026-11-09）：浮起只給「真的能點」的列——列預設不可點、不浮起；整列可點的列掛
+   `.product-list__row--link`（或本身是 <a href>）才浮起。原本全部列都浮起，唯讀紀錄（粉絲點數、
+   租入、取貨紀錄）看起來能點卻點不動。 */
+.product-list__row:is(.product-list__row--link, [href]):hover {
   position: relative;
   z-index: 1;
   background: var(--ztu-glass-bg);
@@ -94,9 +97,9 @@
   box-shadow: var(--shadow-lift-flat), var(--shadow-edge-top);
   transition: box-shadow 150ms ease, background-color 150ms ease;
 }
-.product-list__row:hover::after,
+.product-list__row:is(.product-list__row--link, [href]):hover::after,
 .product-list__row.is-dragging::after,
-.product-list__row:has(+ .product-list__row:hover)::after {
+.product-list__row:has(+ .product-list__row:is(.product-list__row--link, [href]):hover)::after {
   opacity: 0;
 }
 /* 最後一列不畫分隔線（skin §5）：那條線下面沒有東西可分，只是把清單封起來的一道多餘的邊。 */
@@ -653,7 +656,9 @@
 .product-list--pickup .product-list__row {
   grid-template-columns: 76px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 40px;   /* 縮圖欄維持 76：取貨列放的是 __thumb（76px 方形 QR 圖示晶片），不是會縮的 __image */
 }
-/* 整列可點進詳情頁：游標與鍵盤焦點都要讀得出來（列內的連結／按鈕仍各自可點）。 */
+/* 整列可點進詳情頁：游標與鍵盤焦點都要讀得出來（列內的連結／按鈕仍各自可點）。
+   Q166（2026-11-09）起 hover 浮起只認這個修飾類或 a[href]（見上方 :hover 規則）；`--orders`／`--eshop`／`--ip` 等頁面變體另有自己的游標規則。
+   掛的條件：整列有點擊行為（data-go、開詳情／彈窗、展開子列）。只有列內連結或 ⋯ 選單能點的列不掛。 */
 .product-list__row--link { cursor: pointer; }
 .product-list__row--link:focus-visible {
   outline: 2px solid var(--primary);

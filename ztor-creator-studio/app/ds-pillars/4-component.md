@@ -103,7 +103,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Icon](../ds-specs/4.9-icon.md) | 🟢 atom | ✓ App | 全站按鈕、導覽、提示與資料列共用的圖示集（Tabler） | [icon.css](../ds-components/icon.css) · [icons.js](../js/icons.js) · [icons-all.js](../js/icons-all.js) |
 | [Card group](../ds-specs/card-group.md) | 🔵 atom | ✓ App | 卡片內的資訊分組，用次級標題或分隔線區分不同組內容 | [card-group.css](../ds-components/card-group.css) |
 | [Card](../ds-specs/4.11-card.md) | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](../ds-components/card.css) |
-| [KPI](../ds-specs/4.12-kpi.md) | 🟡 molecule | ✓ App | 儀表板與收入頁的關鍵指標卡，以大字顯示單一數字 | [kpi.css](../ds-components/kpi.css) |
+| [KPI](../ds-specs/4.12-kpi.md) | 🟡 molecule | ✓ App | 儀表板與收入頁的關鍵指標卡，以大字顯示單一數字；只放頁面層，卡裡的數字用 Stat row（Q162） | [kpi.css](../ds-components/kpi.css) |
 | [Admin IP Bank table](../ds-specs/admin-ip-bank-table.md) | 🟠 organism | ✓ SiteSpecific | Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列 | [admin-ip-bank-table.css](../ds-components/admin-ip-bank-table.css) |
 | [Alert](../ds-specs/4.13-alert.md) | 🟡 molecule | ✓ App | 儀表板提示面板、頁內警示與頁面公告共用的提示條 | [alert.css](../ds-components/alert.css) |
 | [Accordion](../ds-specs/4.14-accordion.md) | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](../ds-components/accordion.css) |
@@ -168,7 +168,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Link field](../ds-specs/4.206-link-field.md) | 🟡 molecule | ✓ App | 系統產生、不可編輯、要能整條帶走的連結：唯讀等寬輸入框吃滿寬、行尾複製與重置、底下一行說明 | [link-field.css](../ds-components/link-field.css) |
 | [Stock allocation](../ds-specs/4.207-stock-allocation.md) | 🟠 organism | 📄 頁面專用：商品與組合包詳情（bundle-detail.html、create-bundle.html、product-detail.html） | 說明一個庫存池如何分配給各販售管道，逐列顯示鎖定量與可售量 | [stock-allocation.css](../ds-components/stock-allocation.css) |
 | [Avatar](../ds-specs/4.202-avatar.md) | 🟢 atom | ✓ App | 姓名首字的識別圓，40px（`.ztor-avatar`）、32px（`--sm`）與 64px（`--lg`）三尺寸 | [avatar.css](../ds-components/avatar.css) |
-| [Stat row](../ds-specs/4.22h1-stat-row-meter-list-day-bars.md) | 🟡 molecule | ✓ App | 卡內大數字排（取代把 `.kpi` 塞進卡片） | [stat-row.css](../ds-components/stat-row.css) |
+| [Stat row](../ds-specs/4.22h1-stat-row-meter-list-day-bars.md) | 🟡 molecule | ✓ App | 卡內大數字排（取代把 `.kpi` 塞進卡片；Q162 起卡、hero、表單段裡的數字一律用它；`--even` 等寬欄） | [stat-row.css](../ds-components/stat-row.css) |
 | [Todo list](../ds-specs/todo-list.md) | 🟡 molecule | 📄 頁面專用：活動詳情（event-detail.html） | 可編輯的待辦清單（勾選＋自行增刪） | [todo-list.css](../ds-components/todo-list.css) |
 | [Meter list](../ds-specs/meter-list.md) | 🟡 molecule | ✓ App | 逐項水位清單（名稱 → 量條 → 數字，三欄一線） | [meter-list.css](../ds-components/meter-list.css) |
 | [Next step](../ds-specs/next-step.md) | 🟡 molecule | 📄 頁面專用：專案詳情與專案列表（project-detail.html） | 一句話＋一顆主要動作，放在卡的最後一段 | [next-step.css](../ds-components/next-step.css) |
@@ -231,7 +231,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Radio card](../ds-specs/radio-card.md) | 🟡 molecule | ✓ Project | 並排的可選卡片，標題加說明，選取時以橘色小圓點標示 | [radio-card.css](../ds-components/radio-card.css) |
 | [Check card](../ds-specs/check-card.md) | 🟡 molecule | ✝ 退場（2026-11-09） | Multi-select pill card . | [check-card.css](../ds-components/check-card.css) |
 | [Radio list](../ds-specs/4.96-checkbox.md) | 🟡 molecule | ✓ Project | 輕量的垂直單選清單，每列有單選圓點、標題與可選說明 | [radio-list.css](../ds-components/radio-list.css) |
-| [Date input placeholder](../ds-specs/date-input-placeholder.md) | 🔵 atom | ✓ Project | 為日期與時間欄位加上「選擇日期」佔位字的裝飾層 | [date-input.css](../ds-components/date-input.css) |
+| [Date input placeholder](../ds-specs/date-input-placeholder.md) | 🔵 atom | ✓ Project | 為日期與時間欄位加上「選擇日期」佔位字的裝飾層；日期時間欄執行期拆成「日期＋時間」兩格（`.date-input-pair`） | [date-input.css](../ds-components/date-input.css) |
 | [Collapse group](../ds-specs/collapse-group.md) | 🟡 molecule | ✓ Project | 可收合的欄位群組，折疊時只留一行標題與值的摘要，用於活動場次 | [collapse-group.css](../ds-components/collapse-group.css) |
 | [Control row](../ds-specs/4.29-payout-bank-picker-dialog.md) | 🟡 molecule | ✓ Project | 一列式設定框，左邊放標籤與說明、右邊放開關、數字或按鈕 | [control-row.css](../ds-components/control-row.css) |
 | [Form grid](../ds-specs/form-grid.md) | 🟢 atom | ✓ Project | 2 欄或 3 欄的表單欄位排版輔助，窄螢幕自動改單欄 | [form-grid.css](../ds-components/form-grid.css) |
@@ -274,11 +274,13 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [State check](../ds-specs/4.209-state-check.md) | 🟡 molecule | ✓ Project | 唯讀的開關狀態排，以圓形勾選標記顯示各項目的開或關 | [state-check.css](../ds-components/state-check.css) |
 | [Nest](../ds-specs/4.53-nest.md) | 🔵 atom | ✓ Project | 嵌在卡片底緣的滿版子層（左右下三邊切齊母卡外緣），用於「切換模式後長出一整組設定」 | [nest.css](../ds-components/nest.css) |
 | [Chart card](../ds-specs/chart-card.md) | 🟠 organism | ✓ Project | Chart surface with title, controls, body | [chart.css](../ds-components/chart.css) |
-| [Rank bars / source breakdown](../ds-specs/rank-bars-source-breakdown.md) | 🟡 molecule | ✓ Project | Ranked bar rows and source distribution legends | [chart.css](../ds-components/chart.css) |
-| [Tooltip](../ds-specs/tooltip.md) | 🟢 atom | ✓ App | 圖示旁的說明提示（`.tip`，shared.css）；資訊卡型變體＝清單儲存格 hover 浮出的 Stock tip | [stock-tip.css](../ds-components/stock-tip.css)（資訊卡型變體） |
+| [Rank bars / source breakdown](../ds-specs/rank-bars-source-breakdown.md) | 🟡 molecule | ✝ 退場（2026-11-09，Q167 後零消費：佔比改 `split-bar`、排名改 `perf-rank`） | 原排名水平長條。`chart.css` 的 rank-bars 段落留墓碑；來源圖例 `.source-list` 仍在 Chart。 | [chart.css](../ds-components/chart.css)（rank-bars 段落為墓碑） |
+| [Tooltip](../ds-specs/tooltip.md) | 🟢 atom | ✓ App | 圖示旁的說明提示（`.tip`，shared.css）；資訊卡型變體 `.tip--card`＝清單儲存格 hover 浮出的明細卡（Q172，原 Stock tip） | shared.css |
+| [Stock tip](../ds-specs/tooltip.md) | 🟢 atom | ✝ 退場（2026-11-09，Q172 併入 Tooltip 的 `.tip--card`） | 原清單儲存格資訊卡。`stock-tip.css` 留墓碑。 | [stock-tip.css](../ds-components/stock-tip.css)（墓碑） |
 | [Toast](../ds-specs/4.107-toast.md) | 🟢 atom | ✓ App | 畫面底部中央的短暫確認提示（由下往上滑入）＋「未儲存/已儲存」狀態列（`.save-status`） | [toast.css](../ds-components/toast.css) |
 | [Artist picker](../ds-specs/4.92-artist-picker.md) | 🟡 molecule | ✝ 退場（2026-11-09） | 「＋ 新增藝人」流程已加入藝人清單列＋pending 邀請列，沿用 owner-lookup 搜尋殼 | [artist-picker.css](../ds-components/artist-picker.css) |
-| [Benefit matrix](../ds-specs/4.93-benefit-matrix.md) | 🟠 organism | ✓ App | 權益比較矩陣：一份權益目錄（列）× 四個粉絲分級（欄），取代舊版四張獨立分級卡。詳見 §4.93 | [benefit-matrix.css](../ds-components/benefit-matrix.css)、[tier-overview.css](../ds-components/tier-overview.css)（唯讀版） |
+| [Benefit matrix](../ds-specs/4.93-benefit-matrix.md) | 🟠 organism | ✓ App | 權益比較矩陣：一份權益目錄（列）× 四個粉絲分級（欄），取代舊版四張獨立分級卡。詳見 §4.93 | [benefit-matrix.css](../ds-components/benefit-matrix.css)（含唯讀版 `.bmx--readonly`，Q171） |
+| [Tier overview](../ds-specs/4.93-benefit-matrix.md) | 🟡 molecule | ✝ 退場（2026-11-09，Q171 併入 Benefit matrix 的 `.bmx--readonly`） | 原分級對照表（唯讀）。`tier-overview.css` 留墓碑。 | [tier-overview.css](../ds-components/tier-overview.css)（墓碑） |
 | [Brand card](../ds-specs/4.94-brand-card.md) | 🟡 molecule | ✓ App | 品牌合作目錄卡，分開陳列鎖定的合作條款與創作者可編輯的活動 | [brand-card.css](../ds-components/brand-card.css) |
 | [Chart tip](../ds-specs/4.95-chart-tip.md) | 🟡 molecule | ✓ App | 折線圖滑過時的浮層與熱區，點擊可開啟明細 | [chart-tip.css](../ds-components/chart-tip.css) |
 | [Checkbox](../ds-specs/4.96-checkbox.md) | 🟢 atom | ✓ App | 全站自繪的核取方塊，取代原生方塊並支援不確定狀態 | [checkbox.css](../ds-components/checkbox.css) |

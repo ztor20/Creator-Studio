@@ -187,7 +187,8 @@
     function marketRowHTML(row, sizes, opts) {
       var unspec = !row.country;
       var isFocus = !unspec && state.focus === row.key;
-      var cls = 'product-list__row' + (opts.city ? ' rowdis__child' : (opts.gid ? ' rowdis__head' : '')) +
+      /* Q166：可選取的市場列（非「未指定」）整列可點，掛 --link 才有 hover 浮起與手指游標 */
+      var cls = 'product-list__row' + (unspec ? '' : ' product-list__row--link') + (opts.city ? ' rowdis__child' : (opts.gid ? ' rowdis__head' : '')) +
         (isFocus ? ' demand-row--focus' : '') + (unspec ? ' demand-row--unspec' : '');
       var attrs = ' role="row" data-dv-market="' + esc(row.key) + '"' +
         (unspec ? '' : ' tabindex="0" aria-selected="' + (isFocus ? 'true' : 'false') + '"') +

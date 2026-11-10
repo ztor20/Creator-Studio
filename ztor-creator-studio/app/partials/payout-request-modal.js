@@ -3,7 +3,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    Loaded as a <script> on earnings.html (always available, file:// safe).
    UI chrome is bound via data-i18n / data-i18n-aria-label; bank names and
    amounts are sample DATA and stay literal (set at runtime from data-* attrs).
-   D466（2026-10-22）：金額一律用創作者幣別——前綴 data-currency-symbol、餘額說明 data-currency-hint（{sym}）、
+   D466（2026-10-22）：金額一律用創作者幣別——前綴 data-currency-code（Q147 起寫代碼，原為 data-currency-symbol）、餘額說明 data-currency-hint（{sym}）、
    手續費與預估入帳 data-currency-money，由 js/currency.js 填；宿主頁掛進彈窗後呼叫 ztorCurrency.paint(modal)，
    申請金額與 CTA 由宿主頁的 updateAmount() 寫。 */
 window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
@@ -56,8 +56,8 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
 
         <div class="field mt-24">
           <div class="field__label" data-i18n="payout.amount-label">Payout amount</div>
-          <span class="amount-field amount-field--hero">
-            <span class="amount-field__unit"><span class="amount-field__sym" data-currency-symbol></span></span>
+          <span class="amount-field amount-field--hero amount-field--code">
+            <span class="amount-field__unit" data-currency-code></span>
             <input class="input amount-field__input" type="text" inputmode="decimal" value="8,940" data-payout-amount>
           </span>
           <div class="field__hint" data-currency-hint="payout.amount-hint">Available balance: 8,940.00 · Minimum payout: 50.00</div>

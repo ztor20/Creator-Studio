@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
@@ -20,6 +21,7 @@
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2"><!-- Q168：影響力與漏斗表格 -->
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/source-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/finding-card.css?v=r2.2">
@@ -30,6 +32,7 @@
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：轉換漏斗表 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* audience 專屬 layout hook（非可重用樣式留頁內）。
@@ -274,36 +277,17 @@
               <h3 class="card__title" data-i18n="aud.infl.title">Influence</h3>
               <span class="chip chip--static" data-i18n="aud.infl.chip">Four dimensions, no single score</span>
             </div>
-            <ol class="perf-rank" style="width:100%">
-              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
-                <span class="perf-rank__idx">1</span>
-                <span class="perf-rank__name" data-i18n="aud.infl.reach">Reach</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">+3.2%</span>
-                <span class="perf-rank__val">48,210</span>
-              </li>
-              <li class="perf-rank__row" style="--w:46%; --hue:var(--chart-3)">
-                <span class="perf-rank__idx">2</span>
-                <span class="perf-rank__name" data-i18n="aud.infl.engagement">Engagement</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">+0.4pt</span>
-                <span class="perf-rank__val">4.6%</span>
-              </li>
-              <li class="perf-rank__row" style="--w:62%; --hue:var(--chart-2)">
-                <span class="perf-rank__idx">3</span>
-                <span class="perf-rank__name" data-i18n="aud.infl.value">Commercial value</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">+6.1%</span>
-                <span class="perf-rank__val" data-i18n="aud.infl.value-val">$0.43 / person</span>
-              </li>
-              <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-5)">
-                <span class="perf-rank__idx">4</span>
-                <span class="perf-rank__name" data-i18n="aud.infl.growth">Growth</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">—</span>
-                <span class="perf-rank__val" data-i18n="aud.infl.growth-val">+3.2% / mo</span>
-              </li>
-            </ol>
+            <!-- Q168（2026-11-09）：四個面向單位不同、長條互比沒有意義，改成表格（原本借 perf-rank 排行長條）。數值照舊。 -->
+            <!-- 不掛排序：四列單位各不相同（人數、百分比、金額／人、月成長），數值欄互比沒有意義（同 Q168 的理由）。 -->
+            <div class="ztor-table-scroll"><table class="ztor-table">
+              <thead><tr><th scope="col" data-i18n="aud.infl.col.metric">Dimension</th><th scope="col" class="ztor-table__amt" data-i18n="aud.infl.col.value">Value</th><th scope="col" class="ztor-table__amt" data-i18n="aud.infl.col.change">Change</th></tr></thead>
+              <tbody>
+                <tr class="ztor-table__row"><td data-i18n="aud.infl.reach">Reach</td><td class="ztor-table__amt">48,210</td><td class="ztor-table__amt">+3.2%</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.infl.engagement">Engagement</td><td class="ztor-table__amt">4.6%</td><td class="ztor-table__amt">+0.4pt</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.infl.value">Commercial value</td><td class="ztor-table__amt" data-i18n="aud.infl.value-val">$0.43 / person</td><td class="ztor-table__amt">+6.1%</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.infl.growth">Growth</td><td class="ztor-table__amt" data-i18n="aud.infl.growth-val">+3.2% / mo</td><td class="ztor-table__amt">—</td></tr>
+              </tbody>
+            </table></div>
             <p class="card__note" data-i18n="aud.infl.note">These four are never merged into one “influence score” — a single number hides which one is actually moving.</p>
           </section>
 
@@ -328,33 +312,17 @@
               <h3 class="card__title" data-i18n="aud.fun.title">Conversion funnel</h3>
               <span class="chip chip--static" data-i18n="aud.range.30d">Last 30 days</span>
             </div>
-            <ol class="perf-rank" style="width:100%">
-              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
-                <span class="perf-rank__idx">1</span><span class="perf-rank__name" data-i18n="aud.fun.follow">Follow</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">—</span><span class="perf-rank__val">48,210</span>
-              </li>
-              <li class="perf-rank__row" style="--w:32%; --hue:var(--chart-2)">
-                <span class="perf-rank__idx">2</span><span class="perf-rank__name" data-i18n="aud.fun.engage">Engage</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">15.4%</span><span class="perf-rank__val">7,424</span>
-              </li>
-              <li class="perf-rank__row" style="--w:12%; --hue:var(--chart-3)">
-                <span class="perf-rank__idx">3</span><span class="perf-rank__name" data-i18n="aud.fun.purchase">Purchase</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">412</span>
-              </li>
-              <li class="perf-rank__row" style="--w:7%; --hue:var(--chart-4)">
-                <span class="perf-rank__idx">4</span><span class="perf-rank__name" data-i18n="aud.fun.attend">Attend</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">45.1%</span><span class="perf-rank__val">186</span>
-              </li>
-              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-5)">
-                <span class="perf-rank__idx">5</span><span class="perf-rank__name" data-i18n="aud.fun.back">Back a project</span>
-                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
-                <span class="perf-rank__pct">51.6%</span><span class="perf-rank__val">96</span>
-              </li>
-            </ol>
+            <!-- Q168（2026-11-09）：漏斗的百分比是「對前一階段」的轉換率，不是排行的「佔總體 %」，改成表格（原本借 perf-rank）。數值照舊。 -->
+            <div class="ztor-table-scroll"><table class="ztor-table">
+              <thead><tr><th scope="col" data-sort="text" data-i18n="aud.fun.col.stage">Stage</th><th scope="col" class="ztor-table__amt sort-th--end" data-sort="num" data-i18n="aud.fun.col.people">People</th><th scope="col" class="ztor-table__amt sort-th--end" data-sort="num" data-i18n="aud.fun.col.conv">From previous stage</th></tr></thead>
+              <tbody>
+                <tr class="ztor-table__row"><td data-i18n="aud.fun.follow">Follow</td><td class="ztor-table__amt">48,210</td><td class="ztor-table__amt">—</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.fun.engage">Engage</td><td class="ztor-table__amt">7,424</td><td class="ztor-table__amt">15.4%</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.fun.purchase">Purchase</td><td class="ztor-table__amt">412</td><td class="ztor-table__amt">5.5%</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.fun.attend">Attend</td><td class="ztor-table__amt">186</td><td class="ztor-table__amt">45.1%</td></tr>
+                <tr class="ztor-table__row"><td data-i18n="aud.fun.back">Back a project</td><td class="ztor-table__amt">96</td><td class="ztor-table__amt">51.6%</td></tr>
+              </tbody>
+            </table></div>
             <p class="card__note" data-i18n="aud.fun.note">Percentages are conversion from the stage above. Follow and Engage come from external platforms; the last three come from Ztor and open the matching list.</p>
           </section>
 
@@ -364,16 +332,16 @@
               <h3 class="card__title" data-i18n="aud.cv.title">Commercial value</h3>
               <span class="chip chip--static" data-i18n="aud.cv.chip">Figures from Earnings</span>
             </div>
-            <div class="bento">
-              <div class="kpi bento--span-6">
-                <div class="kpi__label">ARPU</div>
-                <div class="kpi__value">$0.43</div>
-                <div class="kpi__meta" data-i18n="aud.cv.arpu-meta">Per connected audience member (48,210)</div>
+            <div class="stat-row stat-row--even">
+              <div class="stat">
+                <div class="stat__label">ARPU</div>
+                <div class="stat__value">$0.43</div>
+                <div class="stat__meta" data-i18n="aud.cv.arpu-meta">Per connected audience member (48,210)</div>
               </div>
-              <div class="kpi bento--span-6">
-                <div class="kpi__label" data-i18n="aud.cv.spend">Spend, last 30 days</div>
-                <div class="kpi__value">$20,700</div>
-                <div class="kpi__delta" data-i18n="aud.cv.spend-meta">+6.1% vs previous 30 days</div>
+              <div class="stat">
+                <div class="stat__label" data-i18n="aud.cv.spend">Spend, last 30 days</div>
+                <div class="stat__value">$20,700</div>
+                <div class="stat__meta" data-i18n="aud.cv.spend-meta">+6.1% vs previous 30 days</div>
               </div>
             </div>
             <ol class="perf-rank" style="width:100%;margin-top:var(--sp-12)">
@@ -514,6 +482,7 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script>
 /* F4 粉絲分群：維度切換。數字一律是「人」，不是播放次數——
    只計入可對應到具體帳號的行為（spec 5.1.7.8 F4 · D163）。 */

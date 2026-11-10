@@ -59,9 +59,8 @@
   /* Review 步驟摘要（無卡片化，標題＋Edit 連結一行、值在下、底線分隔）已改用
      ds-components/review-row.css 的預設堆疊變體（本頁原本的頁內摘要列樣式即其視覺基準，2026-07-11）。 */
 
-  /* ＊ 必填 inline 驗證（§4.5③）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
-  .ce-field-error { display:none; margin-top:6px; font-size: var(--fs-12); color:var(--destructive); }
-  .field.is-invalid .ce-field-error { display:block; }
+  /* ＊ 必填 inline 驗證（§4.5③）：.input 與其 aria-invalid 狀態在 shared.css，訊息行用 DS 的 .field__error（[hidden] 切換）。
+     墓碑 2026-11-09（Q149）：頁內 .ce-field-error ＋ .field.is-invalid 那一套退場。 */
 
   /* 舊版提示橫幅的間距（2026-08-09 本頁備份時新增，只此一處，不 promote）。 */
   .ce-legacy-note { margin-bottom: var(--sp-20); }
@@ -173,12 +172,12 @@
         <div class="field">
           <label class="field__label"><span data-i18n="ce.wp.film">Select video</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <select class="select" data-ce="film" data-wp-required id="ce-film"></select>
-          <p class="ce-field-error" data-i18n="ce.wp.err.film">Please choose a video to watch.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.wp.err.film">Please choose a video to watch.</p>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.wp.room">Room name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="room" data-wp-required placeholder="e.g., Friday movie night" data-i18n-placeholder="ce.wp.room.ph">
-          <p class="ce-field-error" data-i18n="ce.wp.err.room">Room name is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.wp.err.room">Room name is required.</p>
         </div>
       </div>
 
@@ -186,12 +185,12 @@
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
-          <p class="ce-field-error" data-i18n="ce.err.name">Event name is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.name">Event name is required.</p>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <textarea class="textarea" data-ce="desc" data-required placeholder="What will fans experience? Make it vivid." data-i18n-placeholder="ce.desc.ph"></textarea>
-          <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.desc">Description is required.</p>
         </div>
         <!-- 活動國家與語言（2026-08-05 使用者指示）。國家在這裡問一次，場地那一步的
              「城市／國家」欄同輪移除，同一件事不問兩遍。市場清單沿用 login 的既有那組
@@ -336,7 +335,7 @@
             <input class="input" data-ce="wpstart" data-wp-required type="date">
             <input class="input" type="time">
           </div>
-          <p class="ce-field-error" data-i18n="ce.wp.err.start">Start time is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.wp.err.start">Start time is required.</p>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.wp.end">Estimated end</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
@@ -395,7 +394,7 @@
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
-          <p class="ce-field-error" data-i18n="ce.err.venue">Venue name is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.venue">Venue name is required.</p>
         </div>
         <!-- 城市／國家欄已移除（2026-08-05 使用者指示）：國家改在「細節」那一步問一次
              （活動國家），這裡不再重複問；場地只留名稱與完整地址。 -->
@@ -432,7 +431,7 @@
         <div class="field">
           <label class="field__label"><span data-i18n="ce.date">Event date</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="date" data-required type="date">
-          <p class="ce-field-error" data-i18n="ce.err.date">Event date is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.date">Event date is required.</p>
         </div>
         <div class="form-grid form-grid--3">
           <div class="field">
@@ -465,7 +464,7 @@
           <div class="field">
             <label class="field__label"><span data-i18n="ce.attend.max">Maximum</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
             <input class="input" data-ce="capacity" data-required type="number" min="1" step="1" placeholder="e.g., 500" data-i18n-placeholder="ce.attend.max.ph">
-            <p class="ce-field-error" data-i18n="ce.err.capacity">Maximum attendance is required.</p>
+            <p class="field__error" data-req-err hidden data-i18n="ce.err.capacity">Maximum attendance is required.</p>
           </div>
         </div>
       </div>
@@ -1211,13 +1210,15 @@
     const empty = !el.value.trim();
     const wrap = fieldWrap(el);
     el.setAttribute("aria-invalid", empty ? "true" : "false");
-    if (wrap) wrap.classList.toggle("is-invalid", empty);
+    const msg = wrap && wrap.querySelector("[data-req-err]");   // Q149
+    if (msg) msg.hidden = !empty;
     return !empty;
   }
   function clearFieldError(el) {
     const wrap = fieldWrap(el);
     el.setAttribute("aria-invalid", "false");
-    if (wrap) wrap.classList.remove("is-invalid");
+    const msg = wrap && wrap.querySelector("[data-req-err]");
+    if (msg) msg.hidden = true;
   }
   const requiredEls = Array.from(document.querySelectorAll("[data-required],[data-wp-required]"));
   function activeRequired() {                    // D149：依類型取當前必填集（隱藏分支不誤擋）

@@ -44,6 +44,17 @@
    3. the cell's text, compared with Intl.Collator (zh-Hant aware)
 
    Opt out of auto-attachment with `data-no-sort` on the table.
+   A totals row marked `data-sort-pin` stays last whatever the order.
+
+   ── Tables a page draws itself (2026-11-10) ─────────────────────
+   window.ztorTableSort.scan(scope)    — wire tables that appeared in
+     scope (a modal opened, a whole table re-rendered with its thead).
+   window.ztorTableSort.refresh(scope) — rows of an already-wired table
+     were re-rendered (filter, tab, store update): the new rows become
+     the default order and every column goes back to "not sorting".
+     Also wires anything in scope not wired yet, so one call after a
+     render covers both. Rows merely appended (new code, duplicate)
+     need no call: they get a default position after the existing ones.
    ============================================================ */
 (function () {
   "use strict";
@@ -63,6 +74,9 @@
   function toNumber(text) {
     if (text == null) return null;
     var cleaned = String(text)
+      /* Money cells print the typographic minus (U+2212, "−$84.60"); without
+         this a refund would sort as a positive number. */
+      .replace(/−/g, "-")
       .replace(/[\s ,]/g, "")
       .replace(/[^\d.+-]/g, "");
     if (cleaned === "" || cleaned === "-" || cleaned === "+" || cleaned === ".") return null;
@@ -213,6 +227,10 @@
 
       buttons.push(btn);
     });
+
+    /* Kept for refresh(): a page that re-renders its rows needs the same
+       adapter and buttons to re-freeze the default order. */
+    adapter.root.__ztorSort = { adapter: adapter, buttons: buttons };
   }
 
   function detectType(adapter, head, index) {
@@ -227,6 +245,25 @@
 
   function apply(adapter, head, index, type, state) {
     var units = adapter.units();
+
+    /* A totals row (`data-sort-pin` on the row) is not data — it stays
+       at the bottom whatever the order above it. */
+    var pinned = units.filter(function (u) { return u.lead.hasAttribute("data-sort-pin"); });
+    units = units.filter(function (u) { return !u.lead.hasAttribute("data-sort-pin"); });
+
+    /* Rows a page appended after mount (a new code, a duplicated row) have
+       no home yet. Give them one after every existing row, in the order
+       they sit now — "default order" then means "as created". */
+    var maxHome = -1;
+    units.forEach(function (u) {
+      var h = u.lead.getAttribute("data-sort-home");
+      if (h !== null && +h > maxHome) maxHome = +h;
+    });
+    units.forEach(function (u) {
+      if (u.lead.getAttribute("data-sort-home") !== null) return;
+      maxHome += 1;
+      u.nodes.forEach(function (n) { n.setAttribute("data-sort-home", maxHome); });
+    });
 
     if (state === "none") {
       units.sort(function (a, b) {
@@ -254,6 +291,8 @@
       });
     }
 
+    units = units.concat(pinned);
+
     /* One reflow: build the new order in a fragment, then swap it in. */
     var frag = document.createDocumentFragment();
     units.forEach(function (unit) {
@@ -273,10 +312,17 @@
 
   function scan(scope) {
     var root = scope || document;
-    root.querySelectorAll("table.ztor-table:not([data-no-sort])").forEach(function (t) {
+    /* The scope itself may be the table (refresh(table) passes one in) —
+       querySelectorAll only looks at descendants, so check it too. */
+    function own(sel) {
+      var list = Array.prototype.slice.call(root.querySelectorAll(sel));
+      if (root.matches && root.matches(sel)) list.unshift(root);
+      return list;
+    }
+    own("table.ztor-table:not([data-no-sort])").forEach(function (t) {
       if (t.querySelector("thead th[data-sort]")) init(tableAdapter(t));
     });
-    root.querySelectorAll("[data-sort-table]:not([data-no-sort])").forEach(function (g) {
+    own("[data-sort-table]:not([data-no-sort])").forEach(function (g) {
       init(gridAdapter(g));
     });
   }
@@ -287,6 +333,34 @@
     scan();
   }
 
-  /* Tables injected later (modals, tab panels rendered on demand). */
-  window.ztorTableSort = { scan: scan };
+  /* Rows re-rendered by page code (filter, tab switch, store update) into a
+     table that is already wired: the new rows are the new default order.
+     Re-freeze that order and put every column back to "not sorting", so
+     the caret never claims an order the rows no longer have. Also wires
+     any table in scope that was not wired yet — one call after a render
+     covers both cases. */
+  function refresh(scope) {
+    var root = scope || document;
+    var roots = [];
+    if (root.__ztorSort) roots.push(root);
+    if (root.querySelectorAll) {
+      root.querySelectorAll("[data-sort-ready]").forEach(function (el) { roots.push(el); });
+    }
+    roots.forEach(function (el) {
+      var st = el.__ztorSort;
+      if (!st) return;
+      st.adapter.units().forEach(function (unit, i) {
+        unit.nodes.forEach(function (n) { n.setAttribute("data-sort-home", i); });
+      });
+      st.buttons.forEach(function (b) {
+        b.setAttribute("data-sort-state", "none");
+        if (b.parentElement) b.parentElement.setAttribute("aria-sort", "none");
+      });
+    });
+    scan(root.querySelectorAll ? root : document);
+  }
+
+  /* Tables injected later (modals, tab panels rendered on demand): scan.
+     Rows re-rendered inside an already-wired table: refresh. */
+  window.ztorTableSort = { scan: scan, refresh: refresh };
 })();

@@ -152,9 +152,8 @@
        活動分享卡的雙欄版面（本頁專屬）
        票務標題列的兩顆入口按鈕列（純版面 helper） */
 
-  /* ＊ 必填 inline 驗證（§4.5③）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
-  .ce-field-error { display:none; margin-top: var(--sp-6); font-size: var(--fs-12); color:var(--destructive); }
-  .field.is-invalid .ce-field-error { display:block; }
+  /* ＊ 必填 inline 驗證（§4.5③）：.input 與其 aria-invalid 狀態在 shared.css，訊息行用 DS 的 .field__error（[hidden] 切換）。
+     墓碑 2026-11-09（Q149）：頁內 .ce-field-error ＋ .field.is-invalid 那一套退場，改走 .field__error＋aria-invalid。 */
 
   .ce-share { display:flex; gap: var(--sp-20); align-items:flex-start; }
   .ce-share__col { flex:1 1 auto; min-width:0; }
@@ -382,12 +381,12 @@
         <div class="field">
           <label class="field__label"><span data-i18n="ce.wp.film">Select video</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <select class="select" data-ce="film" data-wp-required id="ce-film"></select>
-          <p class="ce-field-error" data-i18n="ce.wp.err.film">Please choose a video to watch.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.wp.err.film">Please choose a video to watch.</p>
         </div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.wp.room">Room name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <input class="input" data-ce="room" data-wp-required placeholder="e.g., Friday movie night" data-i18n-placeholder="ce.wp.room.ph">
-          <p class="ce-field-error" data-i18n="ce.wp.err.room">Room name is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.wp.err.room">Room name is required.</p>
         </div>
       </div>
 
@@ -415,7 +414,7 @@
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <!-- data-bky="name" 只用來預填：bookyay 帶入時名稱可改、不鎖、不掛 From bookyay（2026-09-22 D301，bkyApply 排除） -->
           <input class="input" data-ce="name" data-bky="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
-          <p class="ce-field-error" data-i18n="ce.err.name">Event name is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.name">Event name is required.</p>
         </div>
         <!-- 亮點（2026-09-22 D300）：名稱下方的一句特殊訊息（例：台北唯一一場），選填、一場只有一句。
              不掛 data-bky：bookyay 沒有對應欄位，帶入時留空、不鎖。字數上限上游待確認，
@@ -441,7 +440,7 @@
               <option value="KR" data-i18n="ce.country.kr">South Korea</option>
               <option value="US" data-i18n="ce.country.us">United States</option>
             </select>
-            <p class="ce-field-error" data-i18n="ce.err.country">Choose a country.</p>
+            <p class="field__error" data-req-err hidden data-i18n="ce.err.country">Choose a country.</p>
           </div>
         <!-- 活動語言（D328，2026-09-29 使用者裁決；5.1.6.1 §4.2 末段）：活動現場用什麼語言進行，可複選、七個選項；
              與翻譯語系（步驟 7「預覽與發布」側欄）無關。
@@ -462,7 +461,7 @@
             <option value="th" data-i18n="ce.evlang.th">Thai</option>
             <option value="vi" data-i18n="ce.evlang.vi">Vietnamese</option>
           </select>
-          <p class="ce-field-error" data-i18n="ce.err.lang">Choose at least one language.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.lang">Choose at least one language.</p>
         </div>
         </div><!-- /.form-grid 國家｜語言（D340 語言改成下拉複選後收回與國家並排：上一輪七張卡在半欄寬會折成四行，才獨立一列） -->
         <!-- 墓碑：「活動總人數」（最少／最多，`data-ce="attend-min"`／`data-ce="capacity"`）於 2026-08-10 依使用者指示撤除（ATT-002）；
@@ -486,7 +485,7 @@
           <!-- 2026-10-12：欄位標籤「描述 *」升為上面的區段主標題（#ce-desc-label 移到標題上），不在標題底下再寫一次。 -->
           <div class="rich-body" id="ce-desc" role="group" aria-labelledby="ce-desc-label" data-rich-body></div>
           <input type="hidden" data-ce="desc" data-bky="desc" data-required>
-          <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.desc">Description is required.</p>
         </div>
         <!-- 墓碑 2026-10-05（D354）：說明區塊（`#ce-info`、`[data-info-sections]`、`data-feat="S57"`，D334）整組退場，
              由上面描述的「新增描述」與無標題文字區塊取代；檔案 partials/info-sections.js、ds-components/info-sections.css 留墓碑。 -->
@@ -541,7 +540,7 @@
         <p class="field__hint mt-8" id="ce-img-ratio-note" data-feat="S56" data-di="d.img.ratio" hidden>bookyay 原圖是 1:1，可以換一張 2:3 的圖。</p>
         <!-- 2026-10-12 D404：主視覺裁切（#ce-kv-crop）退場——不提供調整裁切，只能換圖。 -->
         <div class="field" style="margin-top:var(--sp-24)">
-          <div class="field__label"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></div>
+          <div class="field__label"><span data-i18n="ce.video">Video teaser</span></div>
           <div class="upload-tile upload-tile--video" data-asset="video">
             <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.video.title">Upload a teaser</span>
@@ -621,10 +620,10 @@
             <input class="input" data-ce="wpstart" data-wp-required type="date">
             <input class="input" type="time">
           </div>
-          <p class="ce-field-error" data-i18n="ce.wp.err.start">Start time is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.wp.err.start">Start time is required.</p>
         </div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.wp.end">Estimated end</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <label class="field__label"><span data-i18n="ce.wp.end">Estimated end</span></label>
           <div class="form-grid form-grid--2">
             <input class="input" type="date">
             <input class="input" type="time">
@@ -637,12 +636,17 @@
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.wp.cap">Capacity</h3>
         </div>
-        <div class="segmented" data-seg="wpcap" data-value="unlimited">
-          <button class="segmented__btn segmented__btn--active" type="button" data-val="unlimited" data-i18n="ce.wp.cap.unlimited">No limit</button>
-          <button class="segmented__btn" type="button" data-val="limited" data-i18n="ce.wp.cap.limited">Set a limit</button>
-        </div>
-        <div class="field mt-12" data-when="wpcap" data-when-val="limited" hidden>
-          <input class="input" type="number" min="1" data-ce="wpcaplimit" placeholder="e.g., 200" data-i18n-placeholder="ce.wp.cap.limit.ph">
+        <!-- 2026-11-09 Q152：不限／設上限是有沒有的題目 → 開關＋control-group；開關本身帶 data-seg／data-value，readWP 與草稿還原照舊讀 -->
+        <div class="control-group">
+          <div class="control-row">
+            <div><div class="control-row__main" data-i18n="ce.wp.cap.limited">Set a limit</div></div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" data-seg="wpcap" data-value="unlimited" data-seg-on="limited" data-seg-off="unlimited" aria-label="Set a limit"></div>
+          </div>
+          <div class="control-group__body" data-when="wpcap" data-when-val="limited" hidden>
+            <div class="field">
+              <input class="input" type="number" min="1" data-ce="wpcaplimit" placeholder="e.g., 200" data-i18n-placeholder="ce.wp.cap.limit.ph" aria-label="Capacity">
+            </div>
+          </div>
         </div>
         <p class="field__hint" data-i18n="ce.wp.cap.hint">When full, new guests see "Room full" and can't join. Platform cap is 1,000 per party.</p>
       </div>
@@ -725,12 +729,12 @@
           <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <!-- D329（修訂 D328，5.1.6.1 F21／F6）：bookyay 的「活動地點」帶進場地名稱、帶入後鎖定。 -->
           <input class="input" data-ce="venue" data-bky="location" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
-          <p class="ce-field-error" data-i18n="ce.err.venue">Venue name is required.</p>
+          <p class="field__error" data-req-err hidden data-i18n="ce.err.venue">Venue name is required.</p>
         </div>
         <!-- 城市／國家欄已移除（2026-08-05 使用者指示）：國家改在「細節」那一步問一次
              （活動國家），這裡不再重複問；場地只留名稱與完整地址。 -->
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <label class="field__label"><span data-i18n="ce.venue.addr">Full address</span></label>
           <!-- D329：bookyay 的「地區」（行政區名稱，例如「中環」）原樣帶進完整地址、帶入後鎖定。 -->
           <input class="input" data-ce="addr" data-bky="region" placeholder="Street address" data-i18n-placeholder="ce.venue.addr.ph">
         </div>
@@ -754,11 +758,11 @@
           </button>
           <div class="field-more__body" hidden>
             <div class="field">
-              <label class="field__label"><span data-i18n="ce.venue.meet">Meeting point</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+              <label class="field__label"><span data-i18n="ce.venue.meet">Meeting point</span></label>
               <input class="input" data-ce="venue-meet" data-bky="meet" placeholder="e.g., Exit 6, west plaza" data-i18n-placeholder="ce.venue.meet.ph">
             </div>
             <div class="field">
-              <label class="field__label"><span data-i18n="ce.venue.transit">Getting there</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+              <label class="field__label"><span data-i18n="ce.venue.transit">Getting there</span></label>
               <input class="input" data-ce="venue-transit" data-bky="transit" placeholder="e.g., 5 min walk from Arena Station Exit 2" data-i18n-placeholder="ce.venue.transit.ph">
             </div>
           </div>
@@ -797,16 +801,24 @@
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.wp.ticket">Admission</h3>
         </div>
-        <div class="segmented" data-seg="wpticket" data-value="free">
-          <button class="segmented__btn segmented__btn--active" type="button" data-val="free" data-i18n="ce.wp.ticket.free">Free</button>
-          <button class="segmented__btn" type="button" data-val="paid" data-i18n="ce.wp.ticket.paid">Set a price</button>
-        </div>
-        <div class="field mt-12" data-when="wpticket" data-when-val="paid" hidden>
-          <label class="field__label"><span data-i18n="ce.wp.ticket.price">Ticket price</span></label>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-            <input class="input amount-field__input" type="number" min="0" data-ce="wpprice" placeholder="0" data-i18n-placeholder="ce.wp.ticket.price.ph">
-          </span>
+        <!-- 2026-11-09 Q152：「收不收費」是有沒有的題目（同發布作品的「收費作品」開關），不是兩種做法 → 開關＋control-group -->
+        <div class="control-group">
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="ce.wp.ticket.charge">Charge for admission</div>
+              <div class="control-row__sub" data-i18n="ce.wp.ticket.charge.sub">Off: guests join for free.</div>
+            </div>
+            <div class="switch" role="switch" aria-checked="false" tabindex="0" data-seg="wpticket" data-value="free" data-seg-on="paid" data-seg-off="free" aria-label="Charge for admission"></div>
+          </div>
+          <div class="control-group__body" data-when="wpticket" data-when-val="paid" hidden>
+            <div class="field">
+              <label class="field__label"><span data-i18n="ce.wp.ticket.price">Ticket price</span></label>
+              <span class="amount-field amount-field--readonly amount-field--code">
+                <span class="amount-field__unit" data-currency-code>TWD</span>
+                <input class="input amount-field__input" type="number" min="0" data-ce="wpprice" placeholder="0" data-i18n-placeholder="ce.wp.ticket.price.ph">
+              </span>
+            </div>
+          </div>
         </div>
         <p class="field__hint" data-i18n="ce.wp.hosthint">Hosting needs desktop Chrome or Edge. You can set up on mobile and open the room on a computer at showtime.</p>
       </div>
@@ -853,8 +865,8 @@
               <!-- 支出這一列自己就是輸入格（2026-08-06 使用者指示：不要分成「一列顯示、一格填寫」
                    兩塊）。其餘三列是算出來的、這一列是填進去的，放同一張表才看得出誰影響誰。 -->
               <div class="kv kv--input"><span class="kv__k" data-i18n="ce.calc.cost">Event costs</span>
-                <span class="amount-field amount-field--readonly calc-sum__cost">
-                  <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                <span class="amount-field amount-field--readonly amount-field--code calc-sum__cost">
+                  <span class="amount-field__unit" data-currency-code>TWD</span>
                   <input class="input amount-field__input" type="number" min="0" step="1" id="ce-expense" placeholder="0" data-i18n-placeholder="ce.calc.expense.ph">
                 </span>
               </div>
@@ -931,8 +943,8 @@
               <div class="kv"><span class="kv__k" data-i18n="ce.calc.fee">Platform fee</span><span class="kv__v" id="ce-bd-calc-fee">$0</span></div>
               <!-- #378（使用者：「支出一樣要能填，與上一步驟同步」）：跟票種那一步同一格資料（#ce-expense），兩邊任一邊改，另一邊跟著變 -->
               <div class="kv kv--input"><span class="kv__k" data-i18n="ce.calc.cost">Costs</span>
-                <span class="amount-field amount-field--readonly calc-sum__cost">
-                  <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                <span class="amount-field amount-field--readonly amount-field--code calc-sum__cost">
+                  <span class="amount-field__unit" data-currency-code>TWD</span>
                   <input class="input amount-field__input" type="number" min="0" step="1" id="ce-bd-expense" placeholder="0" data-i18n-placeholder="ce.calc.expense.ph">
                 </span>
               </div>
@@ -989,8 +1001,8 @@
              兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
         <div class="field" data-ship-when="sf" hidden>
           <label class="field__label"><span data-di="d.ship.fee">運費</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-          <span class="amount-field">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+          <span class="amount-field amount-field--readonly amount-field--code">
+            <span class="amount-field__unit" data-currency-code>TWD</span>
             <!-- data-bky="shipFee"（2026-10-07 補，5.1.6.1 F21／F24「取票方式本身，含順豐寄送的運費」）：bookyay 帶入時照值帶入並鎖定（lockField）；
                  原本取票方式鎖了、運費卻可改。取貨地點不在鎖定清單，不掛。 -->
             <input class="input amount-field__input" data-ce="ship-fee" data-bky="shipFee" type="number" min="0" step="1" placeholder="例如：120" data-di-ph="d.ship.fee.ph">
@@ -1106,7 +1118,7 @@
         </div>
         <div class="lctl__rule lctl__rule--group" data-when="sale-mode" data-when-val="schedule" hidden></div>
         <div class="field" style="margin-bottom:0">
-          <label class="field__label"><span data-di="d.sale.to">停售日期與時間</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <label class="field__label"><span data-di="d.sale.to">停售日期與時間</span></label>
           <div class="form-grid">
             <input class="input" type="date" data-ce="sale-to-d" data-bky="saleToD">
             <input class="input" type="time" data-ce="sale-to-t" data-bky="saleToT">
@@ -1835,13 +1847,15 @@
     const empty = !el.value.trim();
     const wrap = fieldWrap(el);
     el.setAttribute("aria-invalid", empty ? "true" : "false");
-    if (wrap) wrap.classList.toggle("is-invalid", empty);
+    const msg = wrap && wrap.querySelector("[data-req-err]");   // Q149：.field__error 用 [hidden] 切換
+    if (msg) msg.hidden = !empty;
     return !empty;
   }
   function clearFieldError(el) {
     const wrap = fieldWrap(el);
     el.setAttribute("aria-invalid", "false");
-    if (wrap) wrap.classList.remove("is-invalid");
+    const msg = wrap && wrap.querySelector("[data-req-err]");
+    if (msg) msg.hidden = true;
   }
   const requiredEls = Array.from(document.querySelectorAll("[data-required],[data-wp-required]"));
   function activeRequired() {                    // D149：依類型取當前必填集（隱藏分支不誤擋）
@@ -2921,14 +2935,15 @@
     const d = drafts[t.id] || {};
     const mode = tmodeOf(t);
     const v = t.type ? typeName(t) : (d.ntype == null ? "" : d.ntype);
-    const btn = (m, k) => '<button type="button" class="filter-tabs__item' +
-      (mode === m ? " filter-tabs__item--active" : "") + '" role="radio" aria-checked="' +
+    /* 2026-11-09 Q154：要存的表單值不用篩選外觀 → .segmented（同 event-detail #ed-tm-how） */
+    const btn = (m, k) => '<button type="button" class="segmented__btn' +
+      (mode === m ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' +
       (mode === m ? "true" : "false") + '" data-tmode="' + m + '">' + esc(dT(k)) + '</button>';
     /* 標題「這張票怎麼建」撤除（2026-08-11 使用者指示）：兩顆選項本身已經自解釋
        （「以票種建立」／「獨立票」），不需要再問一次。radiogroup 的 aria-label
        留著同一句文案，螢幕報讀器仍聽得到分組用途。 */
     return '<div class="field">' +
-      '<div class="filter-tabs" role="radiogroup" aria-label="' + esc(dT("d.tier.how")) + '">' +
+      '<div class="segmented" role="radiogroup" aria-label="' + esc(dT("d.tier.how")) + '">' +
         btn("type", "d.tier.how.type") + btn("solo", "d.tier.how.solo") +
       '</div>' +
     '</div>' +
@@ -3064,8 +3079,7 @@
     const own = (d.img || "").trim();
     const src = own || eventImage();
     return '<div class="field">' +
-      '<label class="field__label"><span>' + esc(dT("d.tier.img")) + '</span> ' +
-        '<span class="text-sub">' + esc(T("ce.opt", "(optional)")) + '</span></label>' +
+      '<label class="field__label"><span>' + esc(dT("d.tier.img")) + '</span></label>' +
       /* 側排（2026-09-22 D311）：彈窗改單欄之後，這一格不再住在右半欄，縮成一格 104px
          的上傳格、說明排在旁邊——圖片是選填的辨識物，不該占掉一整欄的高度。 */
       '<div class="upload-tile-aside">' +
@@ -3104,7 +3118,7 @@
     const o = opts || {};
     const dis = (o.locked || o.off) ? " disabled" : "";   // off（D396）：不適用而停用，不掛來源標記
     const inner = o.money
-      ? '<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
+      ? '<span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit">' + esc(CE_BASE_CURRENCY) + '</span>' +
         '<input class="input amount-field__input" type="number" min="0" step="1" data-tier-f="' + key + '" value="' + esc(value) +
         '" placeholder="' + esc(T(o.phKey, o.phFb)) + '"' + dis + '></span>'
       : '<input class="input" ' + (o.num ? 'type="number" min="' + (o.min0 ? "0" : "1") + '" step="1" ' : "") + 'data-tier-f="' + key +
@@ -3825,7 +3839,7 @@
     /* mdReq（D329，5.1.6.1 F7）：開始／結束時間在該場開了跨日時才必填——星號跟著開關顯示，
        錯誤句就地寫在欄位下（按了發布才標紅，同結束日期）。 */
     const err = o.mdReq && sessShowErr ? sessTimeErr(s, field) : "";
-    return '<label class="field' + (err ? " is-invalid" : "") + '"' + (o.mdReq ? ' data-sess-time-field="' + field + '"' : "") + '>' +
+    return '<label class="field"' + (o.mdReq ? ' data-sess-time-field="' + field + '"' : "") + '>' +
       '<span class="field__label">' + esc(label) +
         (o.req ? ' <span class="field__req">*</span>' : '') +
         (o.mdReq ? ' <span class="field__req" data-sess-req' + (s.multiDay ? "" : " hidden") + '>*</span>' : '') +
@@ -3834,7 +3848,7 @@
       '<input class="input"' + (o.type ? ' type="' + o.type + '"' : '') +
         ' data-sess-f="' + field + '" value="' + esc(s[field] || "") + '"' +
         (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (err ? ' aria-invalid="true"' : '') + '>' +
-      (o.mdReq ? '<span class="ce-field-error" data-sess-time-err>' + esc(err) + '</span>' : '') +
+      (o.mdReq ? '<span class="field__error" data-sess-time-err' + (err ? '' : ' hidden') + '>' + esc(err) + '</span>' : '') +
     '</label>';
   };
   /* ── 跨日活動（D328，5.1.6.1 F7）────────────────────────────────────────────
@@ -3863,7 +3877,8 @@
      墓碑 2026-10-12：原本開關列底下的揭示區（只放一格「結束日期」）撤除，結束日期改成跟結束時間同一列（見 sessWhenHTML）。 */
   function sessMultiDayHTML(s) {
     const on = !!s.multiDay;
-    return '<div class="control-group" data-sess-md-group data-feat="S53">' +
+    /* Q161（2026-11-09）：兩場以上時這組坐在場次盒（L2 線框）裡，是第 3 層 → 填色 .card--muted；只有一場時沒有盒子，它就是第 2 層線框。 */
+    return '<div class="control-group' + (multi() ? ' card--muted' : '') + '" data-sess-md-group data-feat="S53">' +
       '<div class="control-row">' +
         '<div class="control-row__main">' + esc(T("ce.sess.multiday", "Multi-day")) + (sessLocked ? " " + srcChip() : "") + '</div>' +
         '<button type="button" class="switch' + (on ? " switch--on" : "") + (sessLocked ? " switch--locked" : "") +
@@ -3886,12 +3901,12 @@
         '<div class="form-grid">' + st + en + '</div>';
     }
     const err = sessShowErr ? sessEndErr(s) : "";
-    const endD = '<label class="field' + (err ? " is-invalid" : "") + '" data-sess-end-field>' +
+    const endD = '<label class="field" data-sess-end-field>' +
         '<span class="field__label">' + esc(T("ce.sess.enddate", "End date")) + ' <span class="field__req">*</span>' +
           (sessLocked ? srcChip() : "") + '</span>' +
         '<input class="input" type="date" data-sess-f="endDate" value="' + esc(s.endDate || "") + '"' +
           (err ? ' aria-invalid="true"' : "") + '>' +
-        '<span class="ce-field-error" data-sess-end-err>' + esc(err) + '</span>' +
+        '<span class="field__error" data-sess-end-err' + (err ? '' : ' hidden') + '>' + esc(err) + '</span>' +
       '</label>';
     return '<div class="form-grid">' + f(T("ce.sess.startdate", "Start date"), "date", { type: "date", req: true }) + st + '</div>' +
       '<div class="form-grid">' + endD + en + '</div>';
@@ -3902,18 +3917,16 @@
     row.querySelectorAll("[data-sess-req]").forEach(x => { x.hidden = !s.multiDay; });
     row.querySelectorAll("[data-sess-time-field]").forEach(tf => {
       const e2 = sessShowErr ? sessTimeErr(s, tf.dataset.sessTimeField) : "";
-      tf.classList.toggle("is-invalid", !!e2);
       tf.querySelector("input")?.setAttribute("aria-invalid", e2 ? "true" : "false");
       const m2 = tf.querySelector("[data-sess-time-err]");
-      if (m2) m2.textContent = e2;
+      if (m2) { m2.textContent = e2; m2.hidden = !e2; }
     });
     const f = row.querySelector("[data-sess-end-field]");
     if (!f) return;
     const err = sessShowErr ? sessEndErr(s) : "";
-    f.classList.toggle("is-invalid", !!err);
     f.querySelector("input")?.setAttribute("aria-invalid", err ? "true" : "false");
     const m = f.querySelector("[data-sess-end-err]");
-    if (m) m.textContent = err;
+    if (m) { m.textContent = err; m.hidden = !err; }
   }
 
   /* 開放入場 ＋ 掛在它底下的「未到入場時間」。
@@ -3931,10 +3944,9 @@
     const f = row.querySelector("[data-sess-doors-field]");
     if (!f) return;
     const err = sessShowErr ? sessDoorsErr(s) : "";
-    f.classList.toggle("is-invalid", !!err);
     f.querySelector("input")?.setAttribute("aria-invalid", err ? "true" : "false");
     const m = f.querySelector("[data-sess-doors-err]");
-    if (m) m.textContent = err;
+    if (m) { m.textContent = err; m.hidden = !err; }
   }
   function sessDoorsHTML(s) {
     /* 開放入場與早到規則整併成**一個項目**（2026-08-11 使用者指示「整理成一個項目、
@@ -3964,7 +3976,8 @@
        墓碑 2026-10-12（D396）：原本的 .control-group--plain 線框＋「（選填）」標籤，以及「時間有值才露出早到處理」的規則。 */
     const on = doorsOnOf(s);
     const dErr = sessShowErr ? sessDoorsErr(s) : "";
-    return '<div class="control-group" data-sess-doors-group>' +
+    /* Q161（2026-11-09）：同上一組——在場次盒裡是第 3 層填色，沒有盒子時是第 2 層線框。 */
+    return '<div class="control-group' + (multi() ? ' card--muted' : '') + '" data-sess-doors-group>' +
       '<div class="control-row">' +
         '<div>' +
           '<div class="control-row__main"><span>' + esc(T("ce.doors", "Early entry time")) + '</span>' + (sessLocked ? " " + srcChip() : "") + '</div>' +
@@ -3976,10 +3989,10 @@
       '</div>' +
       '<div class="control-group__body"' + (on ? "" : " hidden") + '>' +
         '<div class="form-grid">' +
-          '<label class="field' + (dErr ? " is-invalid" : "") + '" data-sess-doors-field>' +
+          '<label class="field" data-sess-doors-field>' +
             '<span class="field__label">' + esc(dT("d.doors.at")) + ' <span class="field__req">*</span></span>' +
             '<input class="input" type="time" data-sess-f="doors" value="' + esc(s.doors || "") + '"' + (dErr ? ' aria-invalid="true"' : "") + '>' +
-            '<span class="ce-field-error" data-sess-doors-err>' + esc(dErr) + '</span>' +
+            '<span class="field__error" data-sess-doors-err' + (dErr ? '' : ' hidden') + '>' + esc(dErr) + '</span>' +
           '</label>' +
           '<label class="field">' +
             '<span class="field__label">' + esc(dT("d.doors.before")) + '</span>' +
@@ -4066,9 +4079,11 @@
   /* 場次盒的表面（2026-08-13 使用者指示「開放入場用線框，場次 Day 1 要用背景色」）：
      這是三層裡的 L2——區塊卡（L1）內的一段分組，照 Q66 的裁決往亮一階用 `.card--muted`
      （`--nest-surface` 薄膜＋`--nest-line`），不再用 `.control-group--plain` 的線框。
-     線框留給 L3（盒內的開放入場），填色層只到 L2，兩者才分得開。 */
+     線框留給 L3（盒內的開放入場），填色層只到 L2，兩者才分得開。
+     2026-11-09（Q161 使用者裁決，照 Q71）：順序反過來——第 2 層線框、第 3 層填色。
+     場次盒改 `.control-group--plain` 線框，盒內的跨日／提前入場兩組改 `.card--muted` 填色（見 sessMultiDayHTML／sessDoorsHTML）。 */
   const sessWrapOpen = s => '<div class="ce-sess' +
-    (series.list.length > 1 ? " card card--muted" : "") +
+    (series.list.length > 1 ? " control-group control-group--plain" : "") +
     '" data-sess="' + esc(s.id) + '" data-open="' +
     (series.list.length > 1 ? (sessOpen.has(s.id) ? "true" : "false") : "true") + '">';
 
@@ -4347,7 +4362,8 @@
      scope＝門票 id；locked＝整組鎖定（bookyay 帶入條件的門票） */
   /* D461（2026-10-20）：門票的限時購買與限購掛 S104（⚪ 只在最終版）——typeFeat 只在門票這裡傳，組合包不受影響；bookyay 帶入的限購不掛 */
   const pcCtx = { esc: esc, featOn: featOn, srcChip: () => srcChip(),
-                  pctReadout: (c, scope) => pctReadout(c, scope), typeFeat: PC.TIX_FEAT };
+                  pctReadout: (c, scope) => pctReadout(c, scope), typeFeat: PC.TIX_FEAT,
+                  currency: CE_BASE_CURRENCY };   // Q147：折扣價前綴＝創作者幣別代碼
   /* D417 決定五（2026-10-15，〔推導〕）：bookyay 帶入的門票，最終版創作者可自加「折扣」「限時折扣」兩種條件（S96；2026-10-20 D461 起改 🔵 release2.3 也提供）——
      整組鎖定照舊（bookyay 限購不能改不能移除、其他條件不能加），只有這兩種開放：新增選單只列這兩種、整顆掛 data-feat="S96"。
      D419（2026-10-15）定案：bookyay 活動沒有活動預設與「跟隨活動預設」，門票的條件就是它自己的——沒有帶入限購的門票直接在自己的條件裡加
@@ -4624,6 +4640,24 @@
         syncReview(); scheduleSave();
       });
     });
+  });
+
+  /* 2026-11-09 Q152：「有沒有」題目改成開關，但沿用 data-seg／data-value／data-when 這套揭示與讀值。
+     開關掛 data-seg-on／data-seg-off，切換時把 data-value 換成對應值，readWP 與 data-when 不用改。 */
+  function setSegSwitch(sw, val) {
+    const on = val === sw.dataset.segOn;
+    sw.classList.toggle("switch--on", on);
+    sw.setAttribute("aria-checked", String(on));
+    sw.dataset.value = on ? sw.dataset.segOn : sw.dataset.segOff;
+    document.querySelectorAll('[data-when="' + sw.dataset.seg + '"]').forEach(sub => { sub.hidden = sub.dataset.whenVal !== sw.dataset.value; });
+  }
+  document.querySelectorAll(".switch[data-seg-on]").forEach(sw => {
+    const flip = () => {
+      setSegSwitch(sw, sw.classList.contains("switch--on") ? sw.dataset.segOff : sw.dataset.segOn);
+      syncReview(); scheduleSave();
+    };
+    sw.addEventListener("click", flip);
+    sw.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } });
   });
 
   /* 墓碑（2026-08-11 同日）：活動層那一顆「未到入場時間」（`#ce-early-policy`）連同它的
@@ -6721,7 +6755,11 @@
       const endField = document.querySelector('[data-i18n="ce.wp.end"]');
       const [ed, et] = dt(r.endEst);
       pair(endField && endField.closest(".field") && endField.closest(".field").querySelector("input"), ed, et);
-      const seg = (k, v) => { const b = document.querySelector('[data-seg="' + k + '"] [data-val="' + v + '"]'); if (b) b.click(); };
+      const seg = (k, v) => {
+        const sw = document.querySelector('.switch[data-seg="' + k + '"]');   /* Q152 開關版 */
+        if (sw) { setSegSwitch(sw, v); return; }
+        const b = document.querySelector('[data-seg="' + k + '"] [data-val="' + v + '"]'); if (b) b.click();
+      };
       seg("wpcap", r.capMode === "unlimited" || !r.capacity ? "unlimited" : "limited");
       if (r.capMode !== "unlimited" && r.capacity) set("wpcaplimit", r.capacity);
       seg("wpregion", (r.region && r.region.mode) || "global");

@@ -720,11 +720,11 @@
         <div class="form-grid" style="margin-bottom:0">
           <div class="field" style="margin-bottom:0">
             <div class="field__label" data-i18n="product-detail.field.price">Price</div>
-            <span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-pd-edit-price value="24.00"></span>
+            <span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit" data-pd-cur>USD</span><input class="input amount-field__input" data-pd-edit-price value="24.00"></span>
           </div>
           <div class="field" style="margin-bottom:0">
             <div class="field__label"><span data-i18n="cp.cost">Cost</span> <span class="text-sub" data-i18n="cp.cost.note">creator only</span></div>
-            <span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-pd-edit-cost value="9.00"></span>
+            <span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit" data-pd-cur>USD</span><input class="input amount-field__input" data-pd-edit-cost value="9.00"></span>
           </div>
         </div>
       </section>
@@ -788,14 +788,13 @@
             <div class="field" data-when-var="single" data-pd-cat="physical"><input class="input" placeholder="SKU" data-pd-edit-sku aria-label="SKU"></div>
           </div>
         </div>
-        <div class="field" style="margin-bottom:0" data-pd-cat="digital">
-          <div class="segmented radio-cards segmented--locked" id="pd-edition" aria-disabled="true">
-            <button class="segmented__btn segmented__btn--active" type="button" disabled data-view-safe data-pd-edition="unlimited">
-              <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.unlimited">Unlimited edition</span><span class="radio-card__sub" data-i18n="cp.edition.unlimited-hint">Restock anytime — never auto sells out.</span></span>
-            </button>
-            <button class="segmented__btn" type="button" disabled data-view-safe data-pd-edition="limited">
-              <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.edition.limited">Limited edition</span><span class="radio-card__sub" data-i18n="cp.edition.limited-hint">Hard cap with a visible total — fans see how many remain.</span></span>
-            </button>
+        <!-- 2026-11-09 Q152：「限量」是有沒有的題目，與建立商品 #cp-edition 同一個開關；建立後鎖定（.switch--locked），只從 state 同步開或關 -->
+        <div class="control-group" data-pd-cat="digital">
+          <div class="control-row">
+            <div>
+              <div class="control-row__main" data-i18n="cp.limited.title">Limited edition</div>
+            </div>
+            <div class="switch switch--locked" id="pd-edition" role="switch" aria-checked="false" aria-disabled="true"></div>
           </div>
         </div>
         <div class="form-grid" style="margin-top:var(--sp-16);margin-bottom:0" data-when-var="single" data-when-edition="limited" data-pd-cat="digital" hidden>
@@ -872,8 +871,8 @@
           <div class="form-grid">
             <div class="field" style="margin-bottom:0" data-when-var="single">
               <div class="field__label"><span data-i18n="cp.sale.price">Discount price</span> <span class="field__req">*</span></div>
-              <span class="amount-field amount-field--readonly">
-                <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <span class="amount-field amount-field--readonly amount-field--code">
+                <span class="amount-field__unit" data-pd-cur>USD</span>
                 <input class="input amount-field__input" id="pd-sale-price" placeholder="0.00" inputmode="decimal">
               </span>
             </div>
@@ -887,7 +886,7 @@
           </div>
           <div class="field__hint" style="margin-top:var(--sp-6)" data-when-var="single" data-i18n="cp.sale.linkhint">Enter either — the other updates from your list price.</div>
           <div class="field__hint" style="margin-top:var(--sp-6)" data-when-var="multiple" hidden data-i18n="cp.sale.pct-allhint">Applied to every variation — fans pay the discounted price.</div>
-          <div class="control-group" style="margin-top:12px">
+          <div class="control-group card--muted" style="margin-top:12px"><!-- Q161（2026-11-09）：第 3 層改填色，不再是第三圈線框 -->
             <div class="control-row">
             <div>
               <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
@@ -1099,7 +1098,7 @@
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.tags">Product tags</h3>
-          <p class="form-section__sub" data-i18n="cp.optional">(optional)</p>
+          <p class="form-section__sub" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</p>
         </div>
         <div class="field" style="margin-bottom:0">
           <div class="tag-input">
@@ -1196,27 +1195,18 @@
             <p class="lctl__lock-note" data-pd-lock-note hidden data-i18n="cp.listing.unlisted-lock">Unlisted — show and sale settings are locked until it is listed again.</p>
             <div class="lctl__row lctl__row--choice">
               <div class="lctl__body">
-                <div class="radio-list radio-list--collapsible" id="pd-sale-mode">
-                  <button class="radio-list__trigger" type="button" aria-expanded="false">
-                    <span class="radio-list__dot"></span>
-                    <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                    <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+                <!-- 2026-11-09 Q153：開賣時機一律 .radio-cards（原收合式 radio-list），與組合包詳情 #bd-sale-mode 同一個樣子 -->
+                <div class="segmented radio-cards radio-cards--3" id="pd-sale-mode" role="radiogroup" data-i18n-aria-label="cp.listing.sec-sale" aria-label="Sale">
+                  <button class="segmented__btn segmented__btn--active" type="button" role="radio" aria-checked="true" data-pd-sale-mode="follow">
+                    <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-card__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
                   </button>
-                  <div class="radio-list__options" hidden>
-                    <button class="radio-list__item radio-list__item--active" type="button" data-pd-sale-mode="follow">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-follow">Sell as soon as it is listed</span><span class="radio-list__sub" data-i18n="cp.listing.sale-follow-sub">Checkout opens the moment it goes live</span></span>
-                    </button>
-                    <button class="radio-list__item" type="button" data-pd-sale-mode="schedule">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-list__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
-                    </button>
-                    <!-- 未開賣（2026-09-18 · D290）：下架後開賣退回這一項、重新上架後也停在這；只有細節頁有（建立頁不會處在「上架卻未開賣」） -->
-                    <button class="radio-list__item" type="button" data-pd-sale-mode="off">
-                      <span class="radio-list__dot"></span>
-                      <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.sale-off">Not on sale</span><span class="radio-list__sub" data-i18n="cp.listing.sale-off-sub">Checkout stays closed until you set a sale</span></span>
-                    </button>
-                  </div>
+                  <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-pd-sale-mode="schedule">
+                    <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-sched">Open at a set time</span><span class="radio-card__sub" data-i18n="cp.listing.sale-sched-sub">Fans can see it earlier but only check out from then</span></span>
+                  </button>
+                  <!-- 未開賣（2026-09-18 · D290）：下架後開賣退回這一項、重新上架後也停在這；只有細節頁有（建立頁不會處在「上架卻未開賣」） -->
+                  <button class="segmented__btn" type="button" role="radio" aria-checked="false" data-pd-sale-mode="off">
+                    <span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.listing.sale-off">Not on sale</span><span class="radio-card__sub" data-i18n="cp.listing.sale-off-sub">Checkout stays closed until you set a sale</span></span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1862,7 +1852,9 @@
       /* 規格模式（pd-var-mode）2026-07-21 起不再呈現切換器，只留庫存版本。
          #pd-edition 於 2026-09-21 補進商品設定分頁（原本這一行呼叫的目標不存在、等於死呼叫）：
          鎖定的 .segmented.radio-cards 只從資料同步哪一段亮著，不可點。 */
-      syncLockedSeg('pd-edition', 'pdEdition', state.edition);
+      /* 2026-11-09 Q152：庫存版本改成鎖定的開關（開＝限量），不再是兩張卡 */
+      const ed = document.getElementById('pd-edition');
+      if (ed) { const on = state.edition === 'limited'; ed.classList.toggle('switch--on', on); ed.setAttribute('aria-checked', String(on)); }
     }
 
     /* §2.7 內容檔形態（僅數位）：依數位次分類的 content 值顯示對應表單，一次一種。
@@ -2100,6 +2092,8 @@
     /* 依商品資料配置整頁（e-shop 以 ?id 開啟）。 */
     function applyProduct(p) {
       product = p;
+      /* Q147：金額欄前綴＝這件商品的幣別代碼（products-store 的 currency，省略＝USD；與本頁 money() 同一個判斷） */
+      document.querySelectorAll('[data-pd-cur]').forEach(function (el) { el.textContent = p.currency || 'USD'; });
       state.cat = p.cat;
       state.var = p.variant || 'single';
       state.edition = p.edition || 'unlimited';
@@ -2302,7 +2296,7 @@
         return vs.length ? vs : [amt(p.price)];
       };
       const featOn = id => { const d = window.ztorDevState; return !id || !d || !d.featOn || d.featOn(id); };
-      const ctx = { capUnit: 'item', types: PCd.UNI_TYPES, emptyKey: 'pc.empty.item', featOn: featOn, pctReadout: c => PCd.pctText(c, bases()) };
+      const ctx = { capUnit: 'item', types: PCd.UNI_TYPES, emptyKey: 'pc.empty.item', featOn: featOn, pctReadout: c => PCd.pctText(c, bases()), currency: () => (product && product.currency) || 'USD' };   /* Q147：折扣價前綴＝商品幣別代碼 */
       const editing = () => !!(panel && panel.getAttribute('data-mode') === 'edit');
       function fromProduct(p) {
         if (p && p.conds && p.conds.conds) return JSON.parse(JSON.stringify(p.conds));
@@ -2520,10 +2514,11 @@
     function setPdSaleMode(mode) {
       pdSaleMode = mode;
       if (pdSm) {
-        pdSm.querySelectorAll('.radio-list__item').forEach(b => {
-          b.classList.toggle('radio-list__item--active', b.dataset.pdSaleMode === mode);
+        pdSm.querySelectorAll('.segmented__btn').forEach(b => {   /* Q153：radio-cards */
+          const on = b.dataset.pdSaleMode === mode;
+          b.classList.toggle('segmented__btn--active', on);
+          b.setAttribute('aria-checked', String(on));
         });
-        if (window.ZtorRadioList) window.ZtorRadioList.syncTrigger(pdSm);
       }
       syncPdSaleMode();
     }
@@ -2556,9 +2551,10 @@
     }
     wirePdSchedToggle('pd-unlist-toggle', '[data-pd-unlist-fields]', 'pd-unlist-time', 'unlistAt');
     wirePdSchedToggle('pd-saleend-toggle', '[data-pd-saleend-fields]', 'pd-listing-sale-end', 'saleEnd');
-    if (pdSm) pdSm.addEventListener('radio-list:change', e => {
-      pdSaleMode = e.detail.item.dataset.pdSaleMode || 'follow';
-      syncPdSaleMode();
+    if (pdSm) pdSm.addEventListener('click', e => {
+      const btn = e.target.closest('.segmented__btn[data-pd-sale-mode]');
+      if (!btn || btn.disabled) return;
+      setPdSaleMode(btn.dataset.pdSaleMode || 'follow');
       /* 切回「立即開賣」＝把排定的開賣時間收掉，否則畫面說立刻開賣、資料卻還排著。
          D290：「未開賣」＝onSale=false（開賣時間也清）；另外兩項都是開賣（onSale=true）。改完寫進工作階段。 */
       if (pdSaleMode !== 'schedule' && pdSaleStart) { pdSaleStart.value = ''; product.saleStart = null; }
@@ -2587,7 +2583,7 @@
       function addTag(label) {
         label = label.trim(); if (!label) return;
         const chip = document.createElement('span');
-        chip.className = 'chip chip--active chip--removable';
+        chip.className = 'chip chip--value chip--removable';   /* Q155：已加入的標籤用中性 chip */
         chip.innerHTML = '<span>' + esc(label) + '</span><button class="chip__remove" type="button" data-pd-tag-remove aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
         tf.insertBefore(chip, te);
         if (window.ztorIcons) window.ztorIcons.applyIcons(chip);
@@ -2711,7 +2707,7 @@
         tf.querySelectorAll('.chip').forEach(c => c.remove());
         (Array.isArray(p.tags) ? p.tags : []).forEach(label => {
           const chip = document.createElement('span');
-          chip.className = 'chip chip--active chip--removable';
+          chip.className = 'chip chip--value chip--removable';   /* Q155 */
           chip.innerHTML = '<span>' + esc(label) + '</span><button class="chip__remove" type="button" data-pd-tag-remove aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
           tf.insertBefore(chip, te);
         });
@@ -3554,7 +3550,7 @@
     function stockState(onhand) {
       var th = window.pdThreshold ? window.pdThreshold() : 3;
       if (onhand === Infinity) return { key: 'stock.st.ok', fb: 'OK', cls: '', cell: '' };
-      if (onhand <= 0) return { key: 'shop.status.soldout', fb: 'Sold out', cls: 'badge--neutral', cell: ' variant-cell--stock-low' };
+      if (onhand <= 0) return { key: 'shop.status.soldout', fb: 'Sold out', cls: 'badge--error', cell: ' variant-cell--stock-low' };
       if (onhand < th) return { key: 'stock.st.low', fb: 'Low stock', cls: 'badge--error', cell: ' variant-cell--stock-low' };
       if (onhand === th) return { key: 'stock.st.threshold', fb: 'At threshold', cls: 'badge--warning', cell: ' variant-cell--stock-warn' };
       return { key: 'stock.st.ok', fb: 'OK', cls: '', cell: '' };
@@ -3817,16 +3813,8 @@
     function customBadge(attrs) {
       return '<span class="ztor-badge" data-feat="S71" ' + (attrs || '') + ' style="flex:none;white-space:nowrap" data-i18n-title="cp.var.std.hint" title="' + esc(T('cp.var.std.hint', 'Custom values are not counted across products.')) + '" data-i18n="cp.var.std.custom">' + esc(T('cp.var.std.custom', 'Custom')) + '</span>';
     }
-    /* 商品選項卡的唯讀摘要（DS kv 列）：一個選項一列，值用頓號串；自行輸入的值後面帶一顆「自行輸入」標記。 */
-    function renderOptionsSummary() {
-      var host = document.querySelector('[data-pd-options-summary]');
-      if (!host) return;
-      host.innerHTML = MODEL.options.map(function (o, i) {
-        var vals = (o.values || []).map(function (v) { return esc(v) + (isStdVal(o, v) === false ? ' ' + customBadge() : ''); }).join('、');
-        return '<div class="kv' + (i === 0 ? ' kv--lead' : '') + '"><span class="kv__k">' + esc(o.name || '—') + '</span>'
-          + '<span class="kv__v">' + vals + '</span></div>';
-      }).join('');
-    }
+    /* 墓碑 2026-11-09（Q169）：renderOptionsSummary（商品選項卡的唯讀 kv 摘要）找 [data-pd-options-summary]，
+       全站沒有這個節點，從來不會畫出東西。整支刪除，三個呼叫點一併拿掉。 */
 
     /* ---- 編輯 popup：DRAFT 為草稿副本，儲存才寫回 MODEL＋重繪頁面 ---- */
     var optEditor = document.querySelector('[data-pd-opt-editor]');
@@ -3869,7 +3857,8 @@
        只在選項變動時重建，打字走 input 事件寫進草稿，不重建（免得輸入框失焦）。 */
     function ecInput(field, vi, val, money) {
       var inp = '<input class="input' + (money ? ' amount-field__input' : '') + '" data-ec-field="' + field + '" data-ec-vi="' + vi + '" value="' + esc(val || '') + '">';
-      if (money) return '<span class="variant-cell--input"><span class="amount-field"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' + inp + '</span></span>';
+      /* Q147：前綴寫這件商品的幣別代碼（products-store 的 currency，省略＝USD） */
+      if (money) return '<span class="variant-cell--input"><span class="amount-field amount-field--readonly amount-field--code"><span class="amount-field__unit">' + esc((product && product.currency) || 'USD') + '</span>' + inp + '</span></span>';
       return '<span class="variant-cell--input">' + inp + '</span>';
     }
     /* 檢視態的格子＝純文字（2026-09-21 使用者反饋：「不能編輯就用文字就好，輸入框在點擊編輯才出現」）：
@@ -4162,7 +4151,6 @@
       // 單規格：價格/成本回填頁面唯讀讀數（多規格的價格在表內，由 renderPageTable 帶）
       renderPageTable();
       if (window.pdRefreshStock) window.pdRefreshStock();   /* 上限改了，頁首「在庫 / 上限」KPI 跟著換 */
-      renderOptionsSummary();
       /* 儲存後表格照 MODEL 重畫成唯讀現值 */
       fillPriceFields(MODEL);
       renderOptEditor(MODEL); renderEditCombos(MODEL);
@@ -4332,7 +4320,7 @@
         : (window.pdDelivery ? window.pdDelivery.text() : T('cp.delivery.shipping', 'Shipping'));
       rows.push({ g: 'ops', go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup', v: dmode });
       /* 上架／顯示／開賣三態一列（2026-09-11）：開賣＝此刻在販售窗口內（立即開賣，或定時開賣已到且未停售） */
-      var mode = document.querySelector('#pd-sale-mode .radio-list__item--active');
+      var mode = document.querySelector('#pd-sale-mode .segmented__btn--active');
       var nowT = Date.now();
       var sStart = $v('pd-listing-sale-start'), sEnd = on('pd-saleend-toggle') ? $v('pd-listing-sale-end') : '';
       var saleOn = !(mode && mode.getAttribute('data-pd-sale-mode') === 'schedule' && sStart && new Date(sStart).getTime() > nowT) && !(sEnd && new Date(sEnd).getTime() <= nowT);
@@ -4417,7 +4405,6 @@
     /* 初始渲染頁面主表（多規格才有列；單規格 variants 空、表格隱藏）；
        商品設定分頁的價格／選項／組合表同時畫成唯讀現值。 */
     renderPageTable();
-    renderOptionsSummary();
     fillPriceFields(MODEL);
     renderOptEditor(MODEL); renderEditCombos(MODEL);
     applyReadonly(true);
@@ -4435,7 +4422,6 @@
       MODEL = copyModel(product);
       if (!MODEL.variants.length && MODEL.options.length) regen(MODEL);
       renderPageTable();
-      renderOptionsSummary();
       fillPriceFields(MODEL);
       renderOptEditor(MODEL); renderEditCombos(MODEL);
       applyReadonly(!isEditing());

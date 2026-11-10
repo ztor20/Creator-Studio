@@ -356,6 +356,17 @@
         '<span class="radio-list__dot"></span><span class="radio-list__text"><span class="radio-list__title">' + esc(T(o.k)) + '</span></span></button>';
     }).join('') + '</div>';
   }
+  /* 有沒有限制的開關列（2026-11-09 Q152：「任何人／限定」「不限／設上限」是有沒有的題目，一律開關）。
+     開關帶 data-tb-rule-seg＋data-tb-v＝「點了之後要變成的值」，沿用 onClick 的 [data-tb-rule-seg] 分支。 */
+  function ruleSw(path, on, titleKey, subKey, T) {
+    var next = path === 'cap' ? (on ? 'none' : 'cap') : (on ? 'off' : 'on');
+    return '<div class="control-row"><div>' +
+        '<div class="control-row__main">' + esc(T(titleKey)) + '</div>' +
+        '<div class="control-row__sub">' + esc(T(subKey)) + '</div></div>' +
+      '<div class="switch' + (on ? ' switch--on' : '') + '" role="switch" aria-checked="' + !!on + '" tabindex="0"' +
+        ' aria-label="' + esc(T(titleKey)) + '" data-tb-rule-seg="' + path + '" data-tb-v="' + next + '"></div>' +
+    '</div>';
+  }
   function err(key) { return '<p class="field__error" data-tb-err="' + key + '" hidden></p>'; }
   /* ── 購買條件群組的一列（2026-10-21，UI-CHANGES 二百八十二；元件 ds-components/rules-group.css）──
      「購買條件」與「限購」整併成同一個容器 .rules-group：每一列＝左邊名稱＋一句說明、右邊讀數與調整入口同一排，
@@ -415,10 +426,9 @@
         (hint ? '<div class="field__hint">' + esc(hint) + '</div>' : '') + err(k) + '</div>';
     };
     return head +
-      '<div class="rule mt-16">' +
-        '<div class="field__label">' + esc(T('tb.rules.buy')) + '</div>' +
-        radio('on', r.on ? 'on' : 'off', [{ v: 'off', k: 'ce.rule.any' }, { v: 'on', k: 'tb.rules.restrict' }], T) +
-        (r.on ? '<div class="rule-sub">' +
+      '<div class="rule mt-16"><div class="control-group">' +
+        ruleSw('on', r.on, 'tb.rules.buy', 'tb.rules.restrict.sub', T) +
+        (r.on ? '<div class="control-group__body">' +
           radio('cond', r.cond, [{ v: 'time', k: 'ce.rule.time' }, { v: 'tier', k: 'ce.rule.tier' }, { v: 'both', k: 'ce.rule.both' }], T) +
           when('time', '<div class="rule-row">' +
             '<div class="field"><label class="field__label">' + esc(T('ce.rule.from')) + '</label><input class="input" type="datetime-local" data-tb-rule-f="from" value="' + esc(local(r.from)) + '"></div>' +
@@ -428,14 +438,13 @@
             '<select class="select" data-tb-rule-f="tier">' + tierOpts + '</select>' +
             (def.tier ? '<div class="field__hint">' + esc(T('tb.tier.hint').replace('{tier}', tierText(def, T))) + '</div>' : '') + '</div>') +
         '</div>' : '') +
-        err('tier') + err('empty') +
+        '</div>' + err('tier') + err('empty') +
       '</div>' +
-      (buyOnly ? '' : '<div class="rule">' +
-        '<div class="field__label">' + esc(T('tb.rules.cap')) + '</div>' +
-        radio('cap', r.cap, [{ v: 'none', k: 'ce.rule.any' }, { v: 'cap', k: 'ce.rule.cap.on' }], T) +
-        (r.cap === 'cap' ? '<div class="rule-sub">' +
+      (buyOnly ? '' : '<div class="rule"><div class="control-group">' +
+        ruleSw('cap', r.cap === 'cap', 'tb.rules.cap', 'tb.rules.cap.sub', T) +
+        (r.cap === 'cap' ? '<div class="control-group__body">' +
           capField('person', def.person ? def.person.sets : null) +
-        '</div>' : err('person')) +   /* D427：每次交易、限購次數兩欄退場 */
+        '</div></div>' : '</div>' + err('person')) +   /* D427：每次交易、限購次數兩欄退場 */
       '</div>');
   }
   /* 墓碑 2026-10-16（D429）：buySummary()（只有購買條件那一半的摘要，D398；唯一消費者是 bookyay 自動建立的組合包的唯讀讀數）
@@ -458,9 +467,9 @@
       return '<option value="' + v + '"' + (r.tier === v ? ' selected' : '') + '>' + esc(T('ce.rule.tier.' + v)) + '</option>';
     }).join('');
     var when = function (part, inner) { return condHas(r, part) ? '<div class="rule-when">' + inner + '</div>' : ''; };
-    var editor = '<div class="rule">' +
-        radio('on', r.on ? 'on' : 'off', [{ v: 'off', k: 'ce.rule.any' }, { v: 'on', k: 'tb.rules.restrict' }], T) +
-        (r.on ? '<div class="rule-sub">' +
+    var editor = '<div class="rule"><div class="control-group">' +
+        ruleSw('on', r.on, 'tb.rules.restrict.sw', 'tb.rules.restrict.sub', T) +
+        (r.on ? '<div class="control-group__body">' +
           radio('cond', r.cond, [{ v: 'time', k: 'ce.rule.time' }, { v: 'tier', k: 'ce.rule.tier' }, { v: 'both', k: 'ce.rule.both' }], T) +
           when('time', '<div class="rule-row">' +
             '<div class="field"><label class="field__label">' + esc(T('ce.rule.from')) + '</label><input class="input" type="datetime-local" data-tb-rule-f="from" value="' + esc(local(r.from)) + '"></div>' +
@@ -470,7 +479,7 @@
             '<select class="select" data-tb-rule-f="tier">' + tierOpts + '</select>' +
             (def.tier ? '<div class="field__hint">' + esc(T('tb.tier.hint').replace('{tier}', tierText(def, T))) + '</div>' : '') + '</div>') +
         '</div>' : '') +
-        err('tier') + err('empty') +
+        '</div>' + err('tier') + err('empty') +
       '</div>';
     return rgRowHTML({ title: title, sub: note, act: act, body: lockNote + editor });
   }
@@ -537,7 +546,7 @@
   /* 跟隨活動開關是 div role=switch（2026-10-12 由二選一改開關外框列）：補鍵盤 Enter／空白鍵＝點擊，頁面的 click 委派照用。 */
   document.addEventListener('keydown', function (e) {
     if (e.key !== ' ' && e.key !== 'Enter') return;
-    var sw = e.target && e.target.closest && e.target.closest('.follow-field .switch[data-tb-follow]');
+    var sw = e.target && e.target.closest && e.target.closest('.follow-field .switch[data-tb-follow], .switch[data-tb-rule-seg]');
     if (!sw) return;
     e.preventDefault();
     sw.click();

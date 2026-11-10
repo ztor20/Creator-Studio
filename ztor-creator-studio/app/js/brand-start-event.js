@@ -223,7 +223,7 @@
            對粉絲沒有任何損失：碼照拿、點數照給，只是這位創作者的名額滿了就不再出現
            在選單裡。稀缺的是創作者的名額，不是粉絲的回饋。 */
         '<div class="field"><label class="field__label" for="bs-limit">' +
-          T("名額上限（選填）", "Limit (optional)") + '</label>' +
+          T("名額上限", "Limit") + '</label>' +
           '<input class="input" type="number" min="1" id="bs-limit" name="limit" data-bs-limit placeholder="' +
             T("不填＝不限名額", "Leave empty for no limit") + '">' +
           '<p class="field__hint">' +
@@ -369,11 +369,10 @@
     var host = $("[data-bs-clash]", el);
     var other = clash(b, from, to);
     host.innerHTML = other
-      ? '<div class="info-banner info-banner--warning mt-16">' +
-          '<i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i><span>' +
+      ? '<div class="alert alert--row alert--warning mt-16"><span class="alert__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></span><div class="alert__body"><div class="alert__title">' +
           T("這段期間你也在推廣「" + other.name + "」，同屬" + catName(b) + "。可以同時進行，但粉絲可能覺得訊息互相打架。",
             "You are also running " + other.name + " in this window — same category. Allowed, but fans may find the two pitches compete.") +
-          '</span></div>'
+          '</div></div></div>'
       : "";
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
   }

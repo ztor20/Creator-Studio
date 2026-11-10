@@ -31,6 +31,7 @@
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/link-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：門票表 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
@@ -227,11 +228,11 @@
               <table class="ztor-table">
                 <thead>
                   <tr>
-                    <th data-i18n="od.tk.col.id">Ticket ID</th>
-                    <th data-i18n="od.tk.col.event">Event &amp; date</th>
-                    <th data-i18n="od.tk.col.tier">Ticket</th>
-                    <th data-i18n="od.tk.col.source">Source</th>
-                    <th data-i18n="od.tk.col.status">Status</th>
+                    <th data-sort="text" data-i18n="od.tk.col.id">Ticket ID</th>
+                    <th data-sort="text" data-i18n="od.tk.col.event">Event &amp; date</th>
+                    <th data-sort="text" data-i18n="od.tk.col.tier">Ticket</th>
+                    <th data-sort="text" data-i18n="od.tk.col.source">Source</th>
+                    <th data-sort="text" data-i18n="od.tk.col.status">Status</th>
                   </tr>
                 </thead>
                 <tbody data-od-tk-body></tbody>
@@ -253,19 +254,11 @@
             <div class="form-section__head">
               <h3 class="form-section__title" data-i18n="od.info.title">Order info</h3>
             </div>
-            <div class="field">
-              <div class="field__label" data-i18n="od.info.placed">Placed</div>
-              <div class="field-readout" data-od-placed>2026-06-08</div>
-            </div>
+            <!-- Q167（2026-11-09）：唯讀屬性一律 kv（原本是表單欄位 field＋field-readout，看起來像能編輯）。 -->
+            <div class="kv kv--lead"><span class="kv__k" data-i18n="od.info.placed">Placed</span><span class="kv__v" data-od-placed>2026-06-08</span></div>
             <!-- §2.2 訂單類型與來源（D411）：類型由品項推導（商品／門票／組合包，可多個），來源目前只有 ztor 前台 -->
-            <div class="field" data-feat="O36">
-              <div class="field__label" data-i18n="od.info.type">Order type</div>
-              <div class="field-readout status-axes" data-od-types>—</div>
-            </div>
-            <div class="field" data-feat="O36">
-              <div class="field__label" data-i18n="od.info.source">Source</div>
-              <div class="field-readout" data-i18n="od.info.source.ztor">ztor storefront</div>
-            </div>
+            <div class="kv" data-feat="O36"><span class="kv__k" data-i18n="od.info.type">Order type</span><span class="kv__v status-axes" data-od-types>—</span></div>
+            <div class="kv" data-feat="O36"><span class="kv__k" data-i18n="od.info.source">Source</span><span class="kv__v" data-i18n="od.info.source.ztor">ztor storefront</span></div>
             <!-- §2.2 重寄訂單信的寄送紀錄（D411）：寄出後留一筆（時間、執行的 Admin、收件信箱）；沒有紀錄時整列不出現 -->
             <div class="field" data-feat="O37" data-od-mail-field hidden>
               <div class="field__label" data-i18n="od.resend.log">Email resent</div>
@@ -279,18 +272,10 @@
             <div class="form-section__head">
               <h3 class="form-section__title" data-i18n="od.pay.title">Payment</h3>
             </div>
-            <div class="field">
-              <div class="field__label" data-i18n="od.pay.at">Paid at</div>
-              <div class="field-readout" data-od-pay-at>—</div>
-            </div>
-            <div class="field">
-              <div class="field__label" data-i18n="od.pay.provider">Payment provider</div>
-              <div class="field-readout" data-od-pay-provider>—</div>
-            </div>
-            <div class="field">
-              <div class="field__label" data-i18n="od.pay.method">Payment method</div>
-              <div class="field-readout" data-od-pay-method>—</div>
-            </div>
+            <!-- Q167（2026-11-09）：唯讀屬性一律 kv（原本是 field＋field-readout）。付款編號那格有複製鈕，維持 link-field。 -->
+            <div class="kv kv--lead"><span class="kv__k" data-i18n="od.pay.at">Paid at</span><span class="kv__v" data-od-pay-at>—</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="od.pay.provider">Payment provider</span><span class="kv__v" data-od-pay-provider>—</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="od.pay.method">Payment method</span><span class="kv__v" data-od-pay-method>—</span></div>
             <!-- 免費訂單（D414）：金額 0 不經金流，上面三格維持「—」、不出現付款編號，這裡補一句說明 -->
             <p class="field__hint" data-od-pay-free hidden data-i18n="od.pay.free">Free order — no payment is taken.</p>
             <!-- 已過期（D424 決定 1）：付款畫面倒數到期、訂單被捨棄——上面三格維持「—」、沒有付款編號，這裡說明為什麼是空的 -->
@@ -509,8 +494,8 @@
       <!-- 撤銷原因（D271，2026-09-15）：選填、自由填寫；下方預設理由 chip 一鍵帶入、帶入後可改寫。
            D431（2026-10-16）：不再進買家信，只記在訂單紀錄（品項列的撤銷紀錄），給 Admin 查。元件全用既有的 field／textarea／chip，沒有新 CSS。 -->
       <div class="field mt-16">
-        <label class="field__label" for="od-void-reason" data-i18n="od.void.reason.label">Reason (optional)</label>
-        <textarea class="input textarea" id="od-void-reason" rows="2" data-i18n-placeholder="od.void.reason.ph" placeholder="Leave a note on why this line is being voided — it's kept in the order record for Admin only."></textarea>
+        <label class="field__label" for="od-void-reason" data-i18n="od.void.reason.label">Reason</label>
+        <textarea class="textarea" id="od-void-reason" rows="2" data-i18n-placeholder="od.void.reason.ph" placeholder="Leave a note on why this line is being voided — it's kept in the order record for Admin only."></textarea>
         <div class="field__hint mt-8" data-i18n="od.void.reason.hint">Or pick a preset — you can still edit it.</div>
         <div class="chip-group mt-8" data-od-void-presets>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p1" data-i18n="od.void.reason.p1">Buyer requested cancellation by email</button>
@@ -554,15 +539,11 @@
         </div>
       </div>
       <!-- 訂單情境欄位：所購規格、次分類 -->
-      <div class="data-list mt-16">
-        <div class="data-list__row" id="od-snap-variant-row">
-          <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="od.snap.variant">Variant purchased</div></div></div>
-          <span class="text-sub" id="od-snap-variant" style="font-size: var(--fs-13)">—</span>
-        </div>
-        <div class="data-list__row">
-          <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="od.snap.cat">Category</div></div></div>
-          <span class="text-sub" id="od-snap-cat" style="font-size: var(--fs-13)">—</span>
-        </div>
+      <!-- Q167（2026-11-09）：屬性摘要一律 kv（原本拿 data-list 當鍵值列）。類別擺第一列：所購規格可能被隱藏，
+           第一列固定可見，分隔線才不會多出一條。 -->
+      <div class="mt-16">
+        <div class="kv kv--lead"><span class="kv__k" data-i18n="od.snap.cat">Category</span><span class="kv__v" id="od-snap-cat">—</span></div>
+        <div class="kv" id="od-snap-variant-row"><span class="kv__k" data-i18n="od.snap.variant">Variant purchased</span><span class="kv__v" id="od-snap-variant">—</span></div>
       </div>
       <div class="field__hint mt-8" data-i18n="od.snap.freeze">This snapshot preserves how the item looked when ordered — it doesn't change if the product is later edited or unlisted.</div>
     </div>
@@ -577,6 +558,7 @@
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- D411：門票訂單（活動交易明細）的資料來源 -->
 <script src="js/orders-store.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
 <script src="js/demand-store.js?v=r2.2"></script><!-- D360 · O33：只用 countryName（國家名跟語言） -->
 <script>
 /* ══ 依 ?id= 帶入該筆訂單（2026-08-07）══════════════════════════════════════
@@ -1188,6 +1170,7 @@
         '<td>' + (t.source ? (t.sourceKey ? '<span data-i18n="' + esc(t.sourceKey) + '">' + esc(t.source) + '</span>' : esc(t.source)) : '<span data-i18n="od.tk.src.direct">Direct purchase</span>') + '</td>' +
         '<td>' + badge({ cls: st[0] + ' badge--inline', key: st[1], text: st[2] }) + '</td></tr>';
     }).join('');
+    if (window.ztorTableSort) window.ztorTableSort.refresh($('[data-od-tk-body]').closest('table'));
     $('[data-od-tk-count]').setAttribute('data-od-tk-n', list.length);
     var evId = list[0].eventId;
     var go = $('[data-od-tk-goto]'), note = $('[data-od-tk-note]');

@@ -40,7 +40,7 @@
       field.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
       selected.forEach(function (id) {
         var chip = document.createElement('span');
-        chip.className = 'chip chip--active' + (readonly ? '' : ' chip--removable');
+        chip.className = 'chip chip--value' + (readonly ? '' : ' chip--removable');   /* Q155：已加入的值用中性 chip */
         chip.innerHTML = '<span>' + esc(window.ztorFilms.title(id)) + '</span>'
           + (readonly ? '' : '<button class="chip__remove" type="button" data-fp-remove="' + id + '" aria-label="Remove movie"><i data-lucide="x" class="ztor-icon"></i></button>');
         field.insertBefore(chip, search);

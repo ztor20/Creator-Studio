@@ -41,7 +41,8 @@
 
    限購三欄的輔助說明（D398）借 js/purchase-limits.js 的 hintHTML()——要先於本檔載入（create-event、event-detail）。
 
-   ctx（呼叫端提供）：{ esc, featOn(id), srcChip(), pctReadout(c, scope), typeFeat }
+   ctx（呼叫端提供）：{ esc, featOn(id), srcChip(), pctReadout(c, scope), typeFeat, currency }
+   ctx.currency（Q147）：折扣價欄前綴的幣別代碼，字串或函式；缺＝創作者幣別。
    粉絲分級三種（feat S82，⚪ 未排定）掛 data-feat，release2.3 由 devtools 的 regate() 收起（D366 決定五／D367 決定三）。
    ctx.typeFeat（2026-10-20 D461）：呼叫端另外給某幾種條件掛的 feat——門票傳 TIX_FEAT（限時購買、限購＝S104 ⚪），
    release2.3 的門票只剩折扣與限時折扣可加；組合包不傳，限時購買與限購照舊。bookyay 帶入的條件（bky）不掛（帶入資料照樣顯示）。
@@ -158,6 +159,9 @@
     const featOn = ctx.featOn || (() => true);
     const srcChip = ctx.srcChip || (() => "");
     const pctReadout = ctx.pctReadout || (() => "—");
+    /* ctx.currency（Q147，2026-11-09）：金額欄前綴的幣別代碼（字串或函式）；缺＝創作者幣別（js/currency.js），沒載到退回 TWD。 */
+    const curCode = (typeof ctx.currency === "function" ? ctx.currency() : ctx.currency) ||
+      (window.ztorCurrency ? window.ztorCurrency.CREATOR : "TWD");
     /* ctx.types（D400，2026-10-12）：只開放哪幾種條件；缺＝全部（活動門票）。D524 起商品與組合包傳 UNI_TYPES（沒有 buyTime）；
        release 版組合包只傳 ['buyTier']（S82 收起時整塊不畫，見 usable） */
     const ALLOW = ctx.types ? TYPES.filter(c => ctx.types.indexOf(c.k) >= 0) : TYPES;
@@ -180,8 +184,8 @@
       '</select>', l);
     function priceFieldHTML(k, c, l) {
       const price = ruleField(t("d.cond.price." + k),
-        '<span class="amount-field' + (l ? " amount-field--readonly" : "") + '">' +
-          '<span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
+        '<span class="amount-field amount-field--readonly amount-field--code">' +
+          '<span class="amount-field__unit">' + esc(curCode) + '</span>' +
           '<input class="input amount-field__input" type="number" min="0" step="1" data-rule-f="' + k + '.price" value="' +
             esc(c.price) + '" placeholder="0"' + dis(l) + '></span>', l);
       const pct = ruleField(t("d.cond.pct"), '<div class="field-readout" data-cond-pct="' + k + '">' + esc(pctReadout(c, scope)) + '</div>');
