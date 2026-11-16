@@ -29,7 +29,7 @@
                因為這張單確實要寄一件實體物出去）
      mixed     物流＋現場 QR 領取：同上，取貨品項在品項列顯示待取貨與場次入口
      pickup    純現場 QR 領取：§2.5「純取貨訂單不顯示物流商／追蹤碼欄位，改引導至
-               取貨管理」，核銷在 pickup.html 的場次 scanner
+               核銷與領點」，核銷在 pickup.html 的場次 scanner
      digital   純數位：無實體物流，改呈現數位交付狀態，不顯示物流商／追蹤碼
 
    ── 2026-08-07 第二輪：把 demo 資料補到蓋滿狀態矩陣（使用者裁示）──────
@@ -67,7 +67,7 @@
    ── 領取單位（Pickup unit）資料層（2026-09-03，使用者裁決 D240）─────────────
    定義權威在 documents/0-設計規格書.md §7.2「領取單位（Pickup unit）的正式定義」，
    本檔只落地：每個 mode:'pickup' 品項新增 units［長度＝qty］，元素含 code／status／
-   at／session；status 四值 pending（待核銷）｜done（已核銷）｜unset（取貨場次待設定，
+   at／session；status 四值 pending（待核銷）｜done（已核銷）｜unset（核銷場次待設定，
    商品未綁場次時 session 為 null）｜void（Admin 作廢，領取碼即刻失效）。組合商品
    品項 mode:'bundle'，members 展開成成員商品的領取單位（成員 qty × 組合 qty），
    組合本身不產生碼；成員 units 多帶 from 標記來源組合，mode:'ship' 的成員沒有 units
@@ -92,7 +92,7 @@
        「是否允許只作廢組合中的部分成員」屬 D242 未定清單第 1 項（隨 D253 改指作廢），
        本檔只落地「若發生，對應到哪些單位」這條已裁決規則。
    unitSummary(item) 回傳新增 voided／unset 兩個計數（見下方定義）：total／done 意義
-   不變，voided＝已因作廢失效的件數、unset＝取貨場次待設定的件數；pending（待核銷）＝
+   不變，voided＝已因作廢失效的件數、unset＝核銷場次待設定的件數；pending（待核銷）＝
    total − done − voided − unset，未另開欄位。三個消費頁共用同一口徑：**voided 的件
    不算進待核銷**（規格 5.1.5.3.1 §2.3.1／5.1.5.15 F4.1）。
 
@@ -152,7 +152,7 @@
 (function () {
   'use strict';
 
-  /* 取貨場次代號：沿用 pickup.html 既有示範場次（data-pk-url 的 tpe-signing-7f3a2），
+  /* 場次代號：沿用 pickup.html 既有示範場次（data-pk-url 的 tpe-signing-7f3a2），
      單一來源、不在各筆訂單重複硬寫字串。 */
   var PICKUP_SESSION = 'tpe-signing-7f3a2';
   /* 2026-10-22（D471，修訂 D470）：訂單詳情的品項取貨狀態要寫出「在哪一場領」——場次照品項所屬商品
@@ -162,7 +162,7 @@
     'tpe-signing-7f3a2': { nameKey: 'pk.row1.name', name: 'Taipei signing — pickup', href: 'pickup-detail.html?s=active' },
     'khh-fanmeet-9d1c4': { nameKey: 'pk.row2.name', name: 'Kaohsiung fan-meet — pickup', href: 'pickup-detail.html?s=scheduled' }
   };
-  /* 品項（或組合成員）的領取單位屬於哪一場 → { code, nameKey, name, href }；取貨場次待設定（session 為 null）＝null */
+  /* 品項（或組合成員）的領取單位屬於哪一場 → { code, nameKey, name, href }；核銷場次待設定（session 為 null）＝null */
   function sessionOf(it) {
     var u = it && it.units && it.units.filter(function (x) { return x.session; })[0];
     if (!u) return null;
@@ -337,7 +337,7 @@
     },
     {
       /* 純現場 QR 領取：整單都在簽名場次現場領，沒有物流，也沒有寄送地址。
-         §2.5 區塊狀態——出貨彈窗不顯示物流商／追蹤碼，改引導到取貨管理。 */
+         §2.5 區塊狀態——出貨彈窗不顯示物流商／追蹤碼，改引導到核銷與領點。 */
       id: 'ZT-10484', date: '2026-06-09', kind: 'pickup',
       pay: 'paid', fulfil: ['pickup'],
       text: 'zt-10484 sora 九龍夜行 原聲黑膠 編號 現場領取 kowloon after dark vinyl pickup',
@@ -857,7 +857,7 @@
             desc: 'Hand-numbered acetate LP — limited run of 50, signed.',
             manage: 'product-detail.html?id=acetate'
           },
-          /* 「取貨場次待設定」示範：商品尚未加入任何場次，領取單位還沒有 session（D240）*/
+          /* 「核銷場次待設定」示範：商品尚未加入任何場次，領取單位還沒有 session（D240）*/
           units: [
             { code: 'PU-10472-01', status: 'unset', at: null, session: null }
           ]
@@ -1033,7 +1033,7 @@
            沒有付款資訊（PAY_INFO 不登記＝付款欄全「—」）、沒有履約動作（fulfil 空）。
          · 不計收入：平台費、支付費、淨額一律 0（amounts 寫 0，訂單詳情的金額拆解另走「不計入收入」的版本）。
          · 不扣庫存：保留的庫存已釋回——原型的庫存不讀訂單，這裡只記事實，不另做扣回。
-         · 沒有領取單位（不產生取貨碼），所以取貨管理與 scanner 不會讀到它們。
+         · 沒有領取單位（不產生取貨碼），所以核銷與領點與 scanner 不會讀到它們。
        倒數幾分鐘不在本次範圍（D424 決定 1）；expiredAt 是示意的到期時間。
        三筆刻意分散：單件出貨、多件出貨＋數位、純數位——讓「已過期」分頁與訂單類型篩選交叉時都有結果。
        活動門票訂單不產生已過期（活動交易明細只列已付款與已取消，見 event-detail.html 交易明細）。 */
@@ -1291,10 +1291,10 @@
     return out;
   }
 
-  /* D472（2026-10-22）：換綁取貨場次前確認彈窗要列的「受影響件數」——尚未核銷、已歸到某個場次的領取單位數。
+  /* D472（2026-10-22）：換綁核銷場次前確認彈窗要列的「受影響件數」——尚未核銷、已歸到某個場次的領取單位數。
      pendingPickupUnits({ productId })：單售品項（mode 'pickup'、productId 相符）的件；
      pendingPickupUnits({ bundleId })：組合品項（mode 'bundle'，組合 id 取 item.bundleId，或 snap.manage 網址的 ?id=）各 pickup 成員的件總和。
-     只算 status 'pending' 且有 session 的件：已核銷（done）、已作廢（void）不算；取貨場次待設定（unset）本來就不屬於任何場次、也不算。
+     只算 status 'pending' 且有 session 的件：已核銷（done）、已作廢（void）不算；核銷場次待設定（unset）本來就不屬於任何場次、也不算。
      組合成員的示範資料沒有記 productId，所以商品的件數只含單售品項（ASSUMPTIONS UIA-292）。只看電子商店示範訂單（ORDERS），不含活動側。 */
   function pendingPickupUnits(q) {
     q = q || {};
@@ -1780,8 +1780,8 @@
     cancelledBadge: function () { return CANCELLED_BADGE; },
     unitsOf: unitsOf,
     unitSummary: unitSummary,
-    sessionOf: sessionOf,                               /* D471：品項領取單位所屬的取貨場次（訂單詳情寫出在哪一場領） */
-    pendingPickupUnits: pendingPickupUnits,             /* D472：換綁取貨場次前確認彈窗的受影響件數 */
+    sessionOf: sessionOf,                               /* D471：品項領取單位所屬的核銷場次（訂單詳情寫出在哪一場領） */
+    pendingPickupUnits: pendingPickupUnits,             /* D472：換綁核銷場次前確認彈窗的受影響件數 */
     voidState: voidState,
     voidItem: voidItem,
     wholeVoidState: wholeVoidState,                    /* D414：整單撤銷可用條件 */

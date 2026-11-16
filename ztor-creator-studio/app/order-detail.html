@@ -392,12 +392,12 @@
         <div class="field__hint mt-8" data-i18n="od.dig.note">No physical shipment — the buyer's download / access right is granted at purchase.</div>
       </div>
 
-      <!-- 純現場 QR 領取訂單：§2.5「純取貨訂單不顯示物流商／追蹤碼欄位，改引導至取貨管理查看或處理核銷」。
+      <!-- 純現場 QR 領取訂單：§2.5「純取貨訂單不顯示物流商／追蹤碼欄位，改引導至核銷與領點查看或處理核銷」。
            唯讀——核銷動作在 pickup.html 的場次 scanner，不在這裡手動標記（D111）。 -->
       <div data-od-ful-block="pickup" hidden>
         <div class="kv"><span class="kv__k" data-i18n="od.pk.status">Item status</span><span class="kv__v"><span class="badge badge--warning"><span data-i18n="orders.status.pickup">Awaiting pickup</span></span></span></div>
-        <div class="field__hint mt-8" data-i18n="od.pk.note">Nothing ships for this order — every item is redeemed by scanning its QR at the pickup session. Sessions, rosters and redemption records live in Pickup management.</div>
-        <div class="mt-8"><a class="card__link" href="pickup.html" data-i18n="od.pk.goto">Open Pickup management →</a></div>
+        <div class="field__hint mt-8" data-i18n="od.pk.note">Nothing ships for this order — every item is redeemed by scanning its QR at the redemption session. Sessions, rosters and redemption records live in Redemption & points.</div>
+        <div class="mt-8"><a class="card__link" href="pickup.html" data-i18n="od.pk.goto">Open Redemption & points →</a></div>
       </div>
     </div>
     <div class="payout-dialog__foot">
@@ -503,7 +503,7 @@
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p3" data-i18n="od.void.reason.p3">Duplicate order</button>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p4" data-i18n="od.void.reason.p4">Payment issue or suspected fraud</button>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p5" data-i18n="od.void.reason.p5">Listing or price error</button>
-          <button class="chip" type="button" data-od-void-preset="od.void.reason.p6" data-i18n="od.void.reason.p6">Pickup session cancelled or changed</button>
+          <button class="chip" type="button" data-od-void-preset="od.void.reason.p6" data-i18n="od.void.reason.p6">Redemption session cancelled or changed</button>
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p7" data-i18n="od.void.reason.p7">Not collected by the pickup deadline</button>
           <!-- D411 決定七：換票這次不做——撤銷後重新購買，原因記為換票 -->
           <button class="chip" type="button" data-od-void-preset="od.void.reason.p8" data-i18n="od.void.reason.p8">Ticket exchange</button>
@@ -637,7 +637,7 @@
 
   /* 主操作依訂單型態換臉（§2.5 區塊狀態）：
        純數位 → 唯讀的數位交付狀態
-       純取貨 → 唯讀的取貨說明＋取貨管理入口（核銷在場次 scanner，不在這裡）
+       純取貨 → 唯讀的取貨說明＋核銷與領點入口（核銷在場次 scanner，不在這裡）
      另外，待付款訂單停用出貨——§4 情境 1 是「確認付款後」才對物流品項標記出貨。 */
   var shipBtn = $('#od-ship-open');
   if (order.kind === 'digital') {
@@ -699,7 +699,7 @@
     if (!agg || !agg.total) return null;
     if (agg.unset === agg.total) return { mode: 'unset' };
     if (agg.voided === agg.total) return { mode: 'void' };
-    /* 分母＝這個脈絡下還該領的件數（扣掉已取消的），與取貨場次名單、scanner 的計數同口徑；
+    /* 分母＝這個脈絡下還該領的件數（扣掉已取消的），與核銷場次名單、scanner 的計數同口徑；
        買了幾件由同列的 Qty 欄承擔，這裡不重複。 */
     return { mode: 'summary', done: agg.done, total: agg.total - agg.voided, voided: agg.voided };
   };
@@ -708,7 +708,7 @@
      見 od.items.count）。 */
   var summaryHtml = function (label) {
     if (!label) return '';
-    if (label.mode === 'unset') return '<span data-i18n="od.units.unset">Pickup session not yet set</span>';
+    if (label.mode === 'unset') return '<span data-i18n="od.units.unset">Redemption session not set</span>';
     /* 已全數作廢的品項：終態用徽章講，與領取單位列、取貨名單、scanner 同一顆
        badge--error（2026-09-08 作廢明細一併統一，原本這裡是一句素文字） */
     if (label.mode === 'void') return badge({ cls: 'badge--error badge--inline', key: 'od.units.void', text: 'Cancelled' });
@@ -721,11 +721,11 @@
       label.done + ' of ' + label.total + ' redeemed</span>';
   };
   /* D471（5.1.5.3.1 §2.3.1；修訂 D470 的「買家下單時選場次」）：品項取貨狀態寫出領取單位所屬的那一場——照品項所屬商品
-     （組合包設了自己的場次時照組合包）的場次，就是領取單位上的 session；連到那一場的詳情，取貨場次待設定時連取貨管理。品項與組合成員共用。 */
+     （組合包設了自己的場次時照組合包）的場次，就是領取單位上的 session；連到那一場的詳情，核銷場次待設定時連核銷與領點。品項與組合成員共用。 */
   var sessionLinkHtml = function (it) {
     var ss = S.sessionOf ? S.sessionOf(it) : null;
     if (ss) return '<a class="card__link" href="' + esc(ss.href) + '"' + (ss.nameKey ? ' data-i18n="' + esc(ss.nameKey) + '"' : '') + '>' + esc(T(ss.nameKey, ss.name)) + '</a>';
-    return '<a class="card__link" href="pickup.html" data-i18n="od.pk.goto">' + esc(T('od.pk.goto', 'Open Pickup management →')) + '</a>';
+    return '<a class="card__link" href="pickup.html" data-i18n="od.pk.goto">' + esc(T('od.pk.goto', 'Open Redemption & points →')) + '</a>';
   };
   var toggleHtml = function (gid) {
     return '<button class="btn btn--icon btn--sm rowdis__toggle" type="button" data-rowdis="' + gid + '"' +
@@ -856,7 +856,7 @@
             memberFulfil = '<div class="od-item-pickup__head">' + toggleHtml(mgid) + summaryHtml(labelFromAgg(S.unitSummary(m))) + '</div>' + sessionLinkHtml(m);
             m.units.forEach(function (u) { memberExtra += unitChildRow(u, mgid); });
           } else if (m.mode === 'ticket') {
-            /* 票券成員（2026-09-29，D292 票務商品＝組合包）：不寄送、不經取貨場次，履約欄
+            /* 票券成員（2026-09-29，D292 票務商品＝組合包）：不寄送、不經核銷場次，履約欄
                只說明這是電子門票；電子門票與領取單位的關係仍待確認（主規格 §8.1）。 */
             memberFulfil = badge({ cls: 'badge--neutral badge--inline', key: 'ed.pub.pickup.eticket', text: 'E-ticket' });
           } else {
@@ -1206,7 +1206,7 @@
   /* ── §2.5 出貨與履約 popup：依訂單型態決定顯示哪一塊 ───────── */
   var digital = order.kind === 'digital';
   var pickupOnly = order.kind === 'pickup';
-  /* 三選一：有實體要寄 → 物流欄位；純數位 → 交付狀態；純現場取貨 → 取貨管理引導。
+  /* 三選一：有實體要寄 → 物流欄位；純數位 → 交付狀態；純現場取貨 → 核銷與領點引導。
      後兩者都沒有可填的欄位，所以頁尾只留一顆「關閉」，不出現「標記出貨」。 */
   var readOnly = digital || pickupOnly;
   document.querySelector('[data-od-ful-block="shipping"]').hidden = readOnly;

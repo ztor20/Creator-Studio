@@ -19,10 +19,10 @@
 
    ── 動作列（opt-in，2026-09-11）────────────────────────────
    <select data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
-           data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
-   面板最底下多一列「＋ 建立取貨場次」這種**不是選項**的動作：點了不改 value、不派 change，
+           data-zselect-action-label="Create session" data-zselect-action-icon="plus">
+   面板最底下多一列「＋ 建立場次」這種**不是選項**的動作：點了不改 value、不派 change，
    只在 <select> 上派 `zselect:action`（bubbles，detail.action＝屬性值）並關閉面板，
-   由頁面接手開彈窗。首個消費情境：建立商品的取貨場次——原本是選單旁邊一顆獨立按鈕，
+   由頁面接手開彈窗。首個消費情境：建立商品的場次——原本是選單旁邊一顆獨立按鈕，
    使用者指示併進下拉裡。鍵盤 ↑↓ 走得到、Enter 觸發；打字跳選不會跳到它。
 
    ── 下拉複選（opt-in，2026-09-30 · D340）─────────────────────

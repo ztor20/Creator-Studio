@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 取貨場次彈窗（partials/pickup-session-modal.js）注入 tag-input／chip／combobox，check 15 補抓（2026-09-11） -->
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><!-- 場次彈窗（partials/pickup-session-modal.js）注入 tag-input／chip／combobox，check 15 補抓（2026-09-11） -->
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/combobox.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
@@ -53,7 +53,7 @@
 <link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：領取項目、QR 清單、領取統計三張彈窗表 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
-  /* 5.1.5.15 取貨場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
+  /* 5.1.5.15 場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
      .pickup-board（左＝領取的活動與物品、右＝工作人員掃碼與核銷數字），F4 名單改
      .ztor-table，F5 核銷紀錄改 popup。頁內只留兩條純佈局 glue。 */
   /* 名單工作列＝電子商店的 .list-toolbar（左 tabs、右動作群）。 */
@@ -146,7 +146,7 @@
         <div class="page-crumb page-crumb--back">
           <a class="btn btn--icon-circle btn--sm page-crumb__back" href="pickup.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
           <a href="e-shop.html" class="card__link" data-i18n="pk.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
-          <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Pickup management</a>
+          <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Redemption & points</a>
         </div>
         <div class="page-intro__actions">
           <!-- 整場啟用／停用開關（2026-11-02 移出領取項目彈窗；使用者：「這不該叫發點」「是停用／啟用的 toggle」）：管整個場次的所有 QR，放頁首動作列；標籤跟著狀態顯示「啟用」或「停用」，滑過看說明，停用仍先跳確認。 -->
@@ -607,7 +607,7 @@
       <!-- D499 · 5.1.5.15 F6 掃碼領點場次詳情（?s=lps-…；O43，只在 Admin 代管態）。進到這個分支時，上面現場核銷的
            第一屏、名單工作列與名單整段收起（見下方 applyLp）；現場核銷場次完全不經過這一段。F6.5 前台交接不做畫面。 -->
       <div data-pk-lp-view data-feat="O43" hidden>
-        <!-- F6.1 事件關閉標示：與取貨管理 F5 同一句提醒（原型以 ?a6=off 示範） -->
+        <!-- F6.1 事件關閉標示：與核銷與領點 F5 同一句提醒（原型以 ?a6=off 示範） -->
         <div class="alert alert--row alert--warning mt-16" role="status" data-pk-lp-a6 hidden>
           <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
           <div class="alert__body">
@@ -689,13 +689,13 @@
         <div class="empty-card">
           <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
           <h3 class="empty-card__title" data-i18n="pk.lp.na.title">Session not found</h3>
-          <a class="btn btn--outline empty-card__cta" href="pickup.html" data-i18n="pk.lp.na.back">Back to pickup management</a>
+          <a class="btn btn--outline empty-card__cta" href="pickup.html" data-i18n="pk.lp.na.back">Back to Redemption & points</a>
         </div>
       </section>
 
       <!-- 管理領取項目 popup（5.1.5.15 F1；可核銷項目的加入／移除規則在 5.1.5.12 F2，本頁不另做表單）：
            列＝取貨商品或活動票券（5.1.5.14 F2 名單範圍）；進度＝已核銷／總件數（領取單位，D240；示意數字，總和對得上 bento）。
-           新增、移除都開「編輯場次」同一個 popup（F1 編輯入口）——已綁定其他場次的商品不可加入、移除會讓未核銷的件回到「取貨場次待設定」都在那裡處理。 -->
+           新增、移除都開「編輯場次」同一個 popup（F1 編輯入口）——已綁定其他場次的商品不可加入、移除會讓未核銷的件回到「核銷場次待設定」都在那裡處理。 -->
       <div class="payout-modal" data-pk-items-modal hidden>
        <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="pk-items-title">
         <div class="payout-dialog__head">
@@ -729,7 +729,7 @@
           </table>
           <p class="text-sub pk-ons-itemsnote" data-i18n="pk.ons.items.note">To remove an item, use “Edit session”.</p>
          </div>
-         <!-- 新增項目頁（2026-11-02 使用者：「不該開啟編輯取貨場次，只需要第二步可以添加項目的功能」）：
+         <!-- 新增項目頁（2026-11-02 使用者：「不該開啟編輯場次，只需要第二步可以添加項目的功能」）：
               與建立／編輯場次第二步同一個搜尋加入（.tag-input＋.combobox），來源取自 partials 的 pickupItemPool()；
               已綁定其他場次的商品停用並標「已綁定」（D339），組合包不在來源裡（D393）。 -->
          <div data-pk-items-v="add" hidden>
@@ -1043,7 +1043,7 @@
     }
 
     /* ── 場次狀態（?s=scheduled|active|ended|archived）──────────────────
-       取貨管理列表的各列各自帶自己的狀態進來，這一頁照那個狀態換：徽章、側欄那張
+       核銷與領點列表的各列各自帶自己的狀態進來，這一頁照那個狀態換：徽章、側欄那張
        數字卡、名單內容與工作列。四個狀態共用同一頁（IA 只有一頁 pickup-detail，
        新增頁面要先改 §3.2 sitemap）。 */
     /* 名單的場次模式（由 ?s= 決定，見下）：mixed＝原樣、pending／done＝只留該狀態的領取單位。 */
@@ -1488,7 +1488,7 @@
       if (oi) oi.addEventListener('click', function () { iView('list'); show(itemsM, true); });
       /* 新增項目頁：搜尋加入（同建立場次第二步）。這一場是 tpe（示範的台北簽書會），已在表上的不再列出 */
       var iCur = 'list', addSel = [], SESSION = 'tpe';
-      var UNITS = { lp: 6, meet: 10, poster: 0 };   /* 示意：加入後帶進來的已售件數（原本在「取貨場次待設定」） */
+      var UNITS = { lp: 6, meet: 10, poster: 0 };   /* 示意：加入後帶進來的已售件數（原本在「核銷場次待設定」） */
       var addSearch = itemsM.querySelector('[data-pk-add-search]'), addField = itemsM.querySelector('[data-pk-add-field]'), addMenuEl = itemsM.querySelector('[data-pk-add-menu]');
       function T(k, fb) { var v = window.i18nT && window.i18nT(k); return (v && v !== k) ? v : fb; }
       function esc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }

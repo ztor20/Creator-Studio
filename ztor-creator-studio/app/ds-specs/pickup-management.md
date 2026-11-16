@@ -1,8 +1,8 @@
 > 元件規格。總則、token 與元件總表見 [design-system.md](../design-system.md)。
 
-### Pickup management
+### Redemption & points
 
-#### 總表紀錄（原 §4.1 · Pickup management）
+#### 總表紀錄（原 §4.1 · Redemption & points）
 
 - `_layer`：🟠 organism
 - Status：SiteSpecific

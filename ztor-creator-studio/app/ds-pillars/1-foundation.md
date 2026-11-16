@@ -245,7 +245,7 @@ Section-level vertical rhythm is closer to `80–96px`. Card internal padding is
 
 `--w-220 · 300`
 
-用於窄欄位（如 create-product 的自訂低庫存門檻輸入、限購數量輸入、pickup session 下拉）的 `max-width` / `flex-basis`；元件寬度裸值一律改用 `var(--w-N)`。
+用於窄欄位（如 create-product 的自訂低庫存門檻輸入、限購數量輸入、session 下拉）的 `max-width` / `flex-basis`；元件寬度裸值一律改用 `var(--w-N)`。
 
 **Aspect ratio — `--img-portrait`**（2026-07-31 使用者裁決，D164）— 全站作品圖的單一直式比例：
 

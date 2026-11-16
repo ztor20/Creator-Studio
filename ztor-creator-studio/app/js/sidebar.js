@@ -472,9 +472,9 @@
       { href: "my-ip.html",     icon: "tag",    titleKey: "nav.my-ip",     descKey: "nav.my-ip-sub" },
       { href: "ip-market.html", icon: "search", titleKey: "nav.ip-market", descKey: "nav.ip-market-sub" },
     ], match: ["ip-detail.html", "manage-ip.html"] },
-    /* E-Shop dropdown (D065, partial rollback of D028; +取貨管理 D111): three
-       items — 電子商店 E-Shop (landing page) + 訂單管理 Orders + 取貨管理
-       Pickup management (on-site QR redemption workspace, sibling of Orders).
+    /* E-Shop dropdown (D065, partial rollback of D028; +核銷與領點 D111): three
+       items — 電子商店 E-Shop (landing page) + 訂單管理 Orders + 核銷與領點
+       Redemption & points (on-site QR redemption workspace, sibling of Orders).
        Store settings left the dropdown (D065): it is now reached from the
        E-Shop page F3 toolbar; store-settings.html is a standalone page (D184)
        and is matched here so E-Shop nav highlights on it. Product detail /
@@ -533,7 +533,7 @@
 
   /* feature-scope-map 未列的整頁功能在低版本不可作為任何入口。
      完整清單也供 notification/account/link 這類 NAV 以外的錨點使用。 */
-  /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
+  /* ✝ 2026-07-30：核銷與領點三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   /* ✝ 2026-09-24 D324：Admin 平台層（Creator 管理、IP Bank 兩頁＋Reporting、平台費率、影片上架審核）
      與 settings.html 移出本清單——列入 Phase 1。平台優惠設定依 D279 仍 Phase 4，留在清單。
