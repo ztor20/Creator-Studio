@@ -119,6 +119,44 @@
   padding-left: var(--sp-12);
   padding-right: 52px;
 }
+/* 後綴單位改成「排在輸入框右邊」（2026-11-16 使用者：「檢查這些輸入框，前面都有一個大空格，有的單位和數值還黏在一起，
+   請確認設計系統中的元件是否統一修改」，Q175）：
+   原本單位是蓋在輸入框上（absolute），輸入框只固定留 52px（唯讀 40px）給它——「%」放得下，「次／90 天」「則／天」
+   「months」這種長單位就壓在數字上。改成 flex：輸入框吃剩下的寬、單位照自己的字寬。
+   框（底色、1px 邊、圓角、focus 環）移到外層 .amount-field，輸入框本身透明，兩塊看起來仍是同一個框；
+   輸入框停用或唯讀時，外層換成停用底（同 .input:disabled，Q133）。兩種後綴（有按鈕底色的、--readonly 透明的）一起改。 */
+.amount-field--suffix {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius);
+  background-color: var(--ztu-film);
+  box-shadow: 0 0 0 1px var(--border);
+  transition: box-shadow 150ms ease;
+}
+.amount-field--suffix:focus-within {
+  box-shadow: 0 0 0 1px var(--ring), 0 0 0 3px color-mix(in srgb, var(--ring) 20%, transparent);
+}
+.amount-field--suffix:has(> .amount-field__input:is(:disabled, [readonly])) {
+  background-color: var(--disabled-field-bg);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.amount-field--suffix .amount-field__input.input,
+.amount-field--suffix.amount-field--readonly .amount-field__input.input {
+  flex: 1 1 auto;
+  order: 1;
+  min-width: var(--sp-40);   /* 至少放得下三位數；外層太窄時寧可撐出來，也不讓數字被切掉 */
+  width: auto;
+  padding-right: var(--sp-8);
+  border-radius: var(--radius) 0 0 var(--radius);
+  background-color: transparent;
+  box-shadow: none;
+}
+.amount-field--suffix .amount-field__unit {
+  position: static;
+  flex: none;
+  white-space: nowrap;
+  order: 2;   /* 單位一律排右邊：有些頁面 HTML 把單位寫在輸入框前面（舊做法 absolute 看不出來），不靠 DOM 順序 */
+}
 /* Static suffix — no button chrome, just a muted label sitting in the
    input's own padding (matches .ri-affix__sign / .bd-price-input__sym). */
 .amount-field--suffix.amount-field--readonly .amount-field__unit {
@@ -126,9 +164,7 @@
   background: transparent;
   padding: 0 var(--sp-12) 0 0;
 }
-.amount-field--suffix.amount-field--readonly .amount-field__input.input {
-  padding-right: 40px;
-}
+/* 墓碑：.amount-field--suffix.amount-field--readonly 的輸入框 padding-right:40px（Q175 改成 flex 後不需要預留）。 */
 
 /* ============================================================
    Hero size — large, single-focus money input for a modal's headline

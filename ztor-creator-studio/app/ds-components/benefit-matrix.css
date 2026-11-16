@@ -243,9 +243,18 @@
   font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
 }
-.bmx--readonly .bmx__cell .amount-field { width: 100%; max-width: 104px; }
+.bmx--readonly .bmx__cell .amount-field { width: 100%; max-width: 168px; }   /* Q175：單位排在輸入框右邊後，長單位（次／90 天）也要留得下數字 */
+/* 唯讀版的值靠左，編輯面的輸入文字也靠左——否則切到編輯時數字跑到格子中間，看起來前面多一大格空白（Q175）。
+   一般比較表（.bmx，格子置中）維持置中。 */
+.bmx--readonly .bmx__cell .input { text-align: left; }
 /* 長說明格（例如「影響哪裡」）：讓字換行、行高放鬆。 */
 .bmx__cell--wrap { line-height: var(--lh-comfy); color: var(--foreground-muted); }
+/* 設定卡裡的值一律前景色（2026-11-16 使用者：「不管能修改或不能修改的都用一樣的白色就好」，Q174）：
+   唯讀表格（.bmx--readonly）每一列的值格——可改的、不能改的（原本掛 .text-sub）、長說明格——
+   以及設定列上的值（.settings-row__value.bmx__cell）都用 --foreground。能不能改由「編輯」後有沒有輸入框表達，不靠顏色。
+   欄名（.bmx__head）維持次要色；.bmx__no（沒有／不適用的「—」）維持次要色，它表示空缺。 */
+.bmx--readonly .bmx__row > .bmx__cell:not(.bmx__no),
+.settings-row__value.bmx__cell { color: var(--foreground); }
 /* 單位字長的輸入框不受 104px 上限；也用在 .settings-row__value 上的唯讀／編輯兩面。 */
 .bmx__cell--fluid .amount-field { max-width: none; }
 
@@ -290,6 +299,10 @@
 .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit { grid-area: 1 / 1; }
 .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit { display: flex; flex-wrap: wrap; justify-content: flex-end; row-gap: var(--sp-8); max-width: 100%; min-width: 0; visibility: hidden; }
 .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__read { max-width: 100%; min-width: 0; overflow-wrap: anywhere; text-align: right; }
+/* 2026-11-16 使用者：讀取面的值右邊要留空。編輯面的後綴單位文字離框右緣 var(--sp-8)（amount-field 後綴單位內距），
+   讀取面與同欄的純文字值一起退 var(--sp-8)，切換編輯時「點／%」不左右跳、整欄右緣對齊。 */
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__read,
+.settings-row__value.bmx__cell:not(:has(> .bmx__edit)) { padding-right: var(--sp-8); }
 .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit > .flex-row { flex-wrap: wrap; justify-content: flex-end; row-gap: var(--sp-8); min-width: 0; }
 /* 並排的輸入框照自己的寬度，不吃滿整格——否則換行後每一個都拉成整格寬，把左邊標籤擠成一字一行。
    日期欄會被 js/date-input.js 包一層 .date-input，所以兩種都要算。 */
@@ -298,6 +311,8 @@
 .is-editing .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit { visibility: visible; }
 /* 編輯面不繼承大數字的 32px 字級與行高，否則輸入框外層會被撐成 40px、比唯讀面高。 */
 .stat__value > .bmx__edit { font-size: var(--fs-13); line-height: 1; letter-spacing: normal; }
+/* 大數字前面若有固定的前綴（例：「1 元基準幣別 =」），輸入框接在前綴後面同一行，不吃滿整格換到下一行。 */
+.is-editing .stat__value > .bmx__edit { width: auto; }
 /* 不可編輯的列（例如權益數量是算出來的）在編輯面降一階，看得出不是給你改的。 */
 .is-editing .bmx__row--locked .bmx__cell { opacity: 0.55; }
 
