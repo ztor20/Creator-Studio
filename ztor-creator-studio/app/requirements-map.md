@@ -25,6 +25,11 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-16 Q173 設計系統（UI-CHANGES 五百三十二）**：唯讀／編輯兩面保留控制項高度與寬度 → `ds-components/benefit-matrix.css`，消費頁 `admin-platform-loyalty.html`、`fans-crm.html`；純呈現，不涉規格。
+> **2026-11-16 D533 原型同步（UI-CHANGES 五百三十一）**：5.1.0.8 儲存前確認、離開前提醒 → `admin-platform-loyalty.html` `#ploy-confirm`。
+> **2026-11-16 D532 原型同步（UI-CHANGES 五百三十）**：5.1.0.8 頁面佈局——分級共用參數獨立一區、其他設定每個主題一張卡 → `admin-platform-loyalty.html`。
+> **2026-11-16 D531 原型同步（UI-CHANGES 五百二十九）**：5.1.0.8 頁面佈局——編輯移到分頁列右側、以分頁為單位；基礎比率（K_A）獨立一區 → `admin-platform-loyalty.html`。
+
 > **2026-11-09 D522 原型同步（UI-CHANGES 四百八十八）**：5.1.2.2.1 F14 作品定價幣種改用全站幣別清單 → `partials/work-fields.js` 下拉吃 `js/currency.js`，`publish-work.html`、`create-project.html` 載入 `js/currency.js`。
 
 > **2026-11-09 D521 原型同步（UI-CHANGES 四百八十七、ASSUMPTIONS UIA-339；tier 🟢 release2.2／🔵 release2.3，只寫標籤、尚未 port）**：5.1.5.11、5.1.5.12、5.1.5.14、5.1.5.15、5.1.6.1、5.1.6.3 → 取貨場次、活動票券 scanner、掃碼領點場次建立後就能掃／領，開始與結束時間只用於顯示狀態：`scanner.html` 移除未開始／已結束阻擋畫面與 `.scanner-block`，早於提前入場時間只顯示提示卡、核銷照常；`create-event.html`、`event-detail.html` 移除「仍可入場／不能入場」二選一，掃碼器卡從已排程起顯示；`partials/pickup-session-modal.js` 時間欄位下加說明、`pickup-detail.html` 與 `js/i18n.js` 文案同步。

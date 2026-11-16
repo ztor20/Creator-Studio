@@ -314,7 +314,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
   - `.payout-bank-card--add`（新增銀行卡）還沒有 Q136 hover（Q165）。
 - **刻意不收**：
   - 物件卡九種外殼這輪不合併成一支，資訊量差很多，真合併另案（Q165）。
-  - 平台忠誠點數（`admin-platform-loyalty.html`）與粉絲名單（`fans-crm.html`）的「門檻與權益」「計分」分頁保留卡片：卡片的範圍就是「一起儲存」的範圍，設定頁儲存方式 Q138 還沒裁決，先不拆（Q164）。
+  - 平台忠誠點數（`admin-platform-loyalty.html`）與粉絲名單（`fans-crm.html`）的「門檻與權益」「計分」分頁保留卡片，不套設定列（Q164）。平台忠誠點數 2026-11-16 起編輯與儲存改以分頁為單位（D531），一個分頁可以有幾張卡一起儲存：基礎比率與分級的共用參數各自獨立一卡、其他設定每個主題一卡（D532）；粉絲名單維持卡片的範圍就是一起儲存的範圍。
   - 平台費率（`admin-platform-fees.html`）整頁保留：是大型編輯器（費率表、版本、生效範圍），不是一列一列的設定，套設定列反而難讀（Q164）。
   - 活動內文 `.rich-body` 的區塊殼（可拖曳的內文區塊清單）不算卡片類型，另案處理。
 

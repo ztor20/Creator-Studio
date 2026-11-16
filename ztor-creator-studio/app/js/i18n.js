@@ -555,8 +555,13 @@
     /* 2026-11-02 頁型改版（UI-CHANGES #458，D508）：頁面分頁＋每頁一張卡、卡內就地編輯 */
     'ploy.tab.kpi': { en: 'Fans KPIs', zh: '粉絲管理指標' },
     'ploy.tab.other': { en: 'More settings', zh: '其他設定' },
-    'ploy.history': { en: 'History', zh: '變更歷史' },
     'ploy.edit': { en: 'Edit', zh: '編輯' },
+    /* D533：儲存確認與離開未存 */
+    'ploy.cf.save.title': { en: 'Save these changes?', zh: '儲存這些修改？' },
+    'ploy.cf.lead': { en: 'You changed these settings:', zh: '這次修改的項目：' },
+    'ploy.cf.leave.title': { en: 'Save your changes?', zh: '要儲存修改嗎？' },
+    'ploy.cf.leave.keep': { en: 'Keep editing', zh: '繼續編輯' },
+    'ploy.cf.leave.discard': { en: 'Discard changes', zh: '放棄修改' },
     'ploy.ev.head': { en: 'How many points each action gives and how often it can earn. Switches work any time and take effect right away — no need to press Edit.', zh: '每種行為給多少點、多久內最多拿幾次。開關隨時可切、立即生效，不必先按編輯。' },
     'ploy.ev.col.rate': { en: 'Points / multiplier', zh: '給分／倍率' },
     'ploy.ev.a6-short': { en: 'Set per session', zh: '在商品與場次設定' },
@@ -814,7 +819,6 @@
     'fees.swap.title':      { en: 'Currency swap fee', zh: '換匯手續費' },
     'fees.swap.sub':        { en: 'Built into the one price the fan sees when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.', zh: '粉絲付款幣別與品項基準幣別不同時，併進粉絲看到的單一價格；相同時不收。歸平台，不計入創作者收入。' },
     'fees.swap.fx-note':    { en: 'Exchange rates update automatically every day and can’t be edited. Only the fee is set here.', zh: '匯率每日自動更新，不能手改；這裡只調手續費。' },
-    'fees.swap.sample':     { en: 'Sample rates', zh: '示意值' },
     'fees.swap.col.cur':    { en: 'Fan pays in', zh: '粉絲付款幣別' },
     'fees.swap.col.rate':   { en: 'Fee rate', zh: '費率' },
     'fees.swap.col.countries': { en: 'Registered countries', zh: '適用註冊國家' },
