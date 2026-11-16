@@ -1,5 +1,5 @@
 window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
-/* Pickup session modal · spec 5.1.5.11 F3 (E-Shop · Pickup Management · D111).
+/* Session modal · spec 5.1.5.11 F3 (E-Shop · Redemption & points · D111).
    The ONE shared create/edit popup, loaded as a <script> on pickup.html,
    create-product.html and product-detail.html (file:// safe). From a product
    context it pre-adds that product to "pickup items" but the creator can still
@@ -20,7 +20,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    openForProduct(id | { name, meta }), close }. hooks: { onCreate(session) }.
    UI chrome = data-i18n; sample item/ticket lists are literals. */
 (function () {
-  /* 2026-10-10（D393）：組合包不可直接加入取貨場次，清單不放組合商品。組合下單時展開成
+  /* 2026-10-10（D393）：組合包不可直接加入場次，清單不放組合商品。組合下單時展開成
      成員原子商品的領取單位（D240），成員各自沿用自己商品的場次（一商品一場次，D339）；
      成員可能分屬不同場次，組合包無法同時屬於兩場，所以場次沒有組合包的入口。 */
   /* 2026-09-30（D339 一商品一場次）：`session`＝這件商品目前綁在哪一場（key 同下方 KNOWN：
@@ -58,7 +58,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pickup-dialog-title">
     <div class="payout-dialog__head">
       <div>
-        <h2 class="payout-dialog__title" id="pickup-dialog-title" data-i18n="pks.title">Create pickup session</h2>
+        <h2 class="payout-dialog__title" id="pickup-dialog-title" data-i18n="pks.title">Create session</h2>
         <p class="text-sub" style="margin:6px 0 0;font-size:var(--fs-13)" data-pks-sub data-i18n="pks.step1.sub">First, set where and when this session runs.</p>
       </div>
       <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pks-close><i data-lucide="x" class="ztor-icon"></i></button>
@@ -178,7 +178,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
        { id: 既有 QR id | null, name, points, total, claimed } */
     var qrRows = [], qrRemoved = [];
     /* D499：kind＝這一場的類型（onsite 現場核銷／lp 掃碼領點）；typeChoice＝這次開窗要不要先選類型
-       （只有 Admin 代管態＋版本含 O43、從取貨管理建立新場次時）；lpEdit＝正在編輯的掃碼領點場次。 */
+       （只有 Admin 代管態＋版本含 O43、從核銷與領點建立新場次時）；lpEdit＝正在編輯的掃碼領點場次。 */
     var kind = 'onsite', typeChoice = false, lpEdit = null, isEditing = false, defaults = null;
     function T(k, fb) { var v = window.i18nT && window.i18nT(k); return (v && v !== k) ? v : (fb || ''); }
     function lpAllowed() { var SE = window.ztorScanEarn; return !!(SE && SE.visible()); }
@@ -590,7 +590,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     }
 
     return {
-      /* D499：openBlank({ type: 'lp' }) 預選類型（取貨管理篩在「掃碼領點」時，F4.3〔推導〕）；
+      /* D499：openBlank({ type: 'lp' }) 預選類型（核銷與領點篩在「掃碼領點」時，F4.3〔推導〕）；
          openExisting({ lp: 場次 id }) 編輯掃碼領點場次。兩個參數都可省略，省略＝原本的現場核銷行為。 */
       openBlank: function (o) { if (ensure()) open(null, 'pks.title', o); },
       openExisting: function (o) { if (ensure()) open(null, 'pks.title.edit', o); },
@@ -609,8 +609,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 })();
 
 /* ── 選單底下的場次資訊（2026-09-11 使用者指示）────────────────────────────
-   建立商品／商品細節的「取貨場次」選了一個（或剛建好一個）之後，選單底下要列出那個場次
-   的地點、時間、狀態與前往取貨管理的入口。同一份邏輯兩頁共用，放在這裡是因為建立場次的
+   建立商品／商品細節的「場次」選了一個（或剛建好一個）之後，選單底下要列出那個場次
+   的地點、時間、狀態與前往核銷與領點的入口。同一份邏輯兩頁共用，放在這裡是因為建立場次的
    彈窗也住在這裡——「剛建好的場次長什麼樣」只有這支知道。
 
    用法：
@@ -679,7 +679,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         created[v] = session || {};
         var o = document.createElement('option');
         o.value = v;
-        o.textContent = (session && session.name) || T('pks.title', 'New pickup session');
+        o.textContent = (session && session.name) || T('pks.title', 'New session');
         sel.insertBefore(o, sel.querySelector('option[value="__new"]'));   /* 原生選單的「建立」選項（組合包頁）維持在最後 */
         sel.value = v;
         sel.dispatchEvent(new Event('change', { bubbles: true }));
@@ -689,8 +689,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   };
 })();
 
-/* ── 組合包的取貨場次（D471，2026-10-22 使用者裁決，修訂 D470）──────────────────
-   組合包沒有自己的取貨方式，成員照各自商品的設定；取貨場次預設「繼承」（各成員沿用自己商品的場次，
+/* ── 組合包的場次（D471，2026-10-22 使用者裁決，修訂 D470）──────────────────
+   組合包沒有自己的取貨方式，成員照各自商品的設定；場次預設「繼承」（各成員沿用自己商品的場次，
    每個成員有自己的場次），也可以改用組合包自己的一個場次——設了以後，這個組合包的成員領取單位都屬於
    這一場（D240 不變：領取單位仍逐成員各一個，組合包本身不產生領取碼）。
    建立組合包（create-bundle）與組合詳情（bundle-detail）的「取貨與核銷」區共用這一支：
@@ -698,7 +698,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
        members: () => [{ name, product }],   // 目前的商品成員（product＝products-store 記錄，取貨方式經 ztorDelivery 讀）
        value: 'khh' | null,                   // 組合包自己的場次；null＝繼承
        onChange: function (key|null) {},      // 開關或選單改了
-       onCreate: function (done) {},          // 選單底部「建立取貨場次」：頁面開彈窗，建好呼叫 done(session)
+       onCreate: function (done) {},          // 選單底部「建立場次」：頁面開彈窗，建好呼叫 done(session)
        confirm: function (chg, proceed, revert) {}   // 選填（D472）：有效場次要變之前先問；組合詳情給、建立組合包不給
      });
      api.refresh()   // 成員變了就重畫成員列
@@ -714,14 +714,14 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     '<div class="data-list" data-bp-list></div>' +
     '<div class="control-group mt-16" data-feat="S34.1" data-bp-own>' +
       '<div class="control-row">' +
-        '<div><div class="control-row__main" data-i18n="bd.pickup.own">Use the bundle’s own pickup session</div>' +
+        '<div><div class="control-row__main" data-i18n="bd.pickup.own">Use the bundle’s own session</div>' +
         '<div class="control-row__sub" data-i18n="bd.pickup.own.sub">Every member’s pickup units go to this session.</div></div>' +
-        '<div class="switch" role="switch" aria-checked="false" tabindex="0" data-bp-toggle data-i18n-aria-label="bd.pickup.own" aria-label="Use the bundle’s own pickup session"></div>' +
+        '<div class="switch" role="switch" aria-checked="false" tabindex="0" data-bp-toggle data-i18n-aria-label="bd.pickup.own" aria-label="Use the bundle’s own session"></div>' +
       '</div>' +
       '<div class="control-group__body" data-bp-body hidden>' +
         '<div class="field" style="margin-bottom:0">' +
-          '<div class="field__label" data-i18n="bd.pickup.own.label">Bundle pickup session</div>' +
-          '<select class="select" data-bp-select data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new" data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">' +
+          '<div class="field__label" data-i18n="bd.pickup.own.label">Bundle session</div>' +
+          '<select class="select" data-bp-select data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new" data-zselect-action-label="Create session" data-zselect-action-icon="plus">' +
             '<option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>' +
             '<option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>' +
             '<option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>' +
@@ -730,7 +730,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
             '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.loc">Location</span><span class="kv__v" data-bp-si-loc></span></div>' +
             '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.time">Time</span><span class="kv__v" data-bp-si-time></span></div>' +
             '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.status">Status</span><span class="kv__v"><span class="badge" data-bp-si-status><span></span></span></span></div>' +
-            '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.manage">Pickup management</span><span class="kv__v"><a class="card__link" href="pickup-detail.html" data-bp-si-link data-view-safe data-i18n="cp.delivery.session.view">View session</a></span></div>' +
+            '<div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.manage">Redemption & points</span><span class="kv__v"><a class="card__link" href="pickup-detail.html" data-bp-si-link data-view-safe data-i18n="cp.delivery.session.view">View session</a></span></div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -802,12 +802,12 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function flip() { var was = { on: on, val: sel.value }; on = !on; commit(was); }
     tgl.addEventListener('click', flip);
     tgl.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
-    /* 頁面沒有載 zselect（組合包兩頁的下拉是原生的）時，「建立取貨場次」改成選單最後一個選項——選到它就開彈窗、選單退回原值 */
+    /* 頁面沒有載 zselect（組合包兩頁的下拉是原生的）時，「建立場次」改成選單最後一個選項——選到它就開彈窗、選單退回原值 */
     var last = sel.value;
     function create() { if (opts.onCreate) opts.onCreate(function (session) { if (info) info.addCreated(session); }); }
     if (!window.ztorSelect) {
       var act = document.createElement('option');
-      act.value = '__new'; act.setAttribute('data-i18n', 'cp.delivery.session.new'); act.textContent = T('cp.delivery.session.new', 'Create pickup session');
+      act.value = '__new'; act.setAttribute('data-i18n', 'cp.delivery.session.new'); act.textContent = T('cp.delivery.session.new', 'Create session');
       sel.appendChild(act);
     }
     sel.addEventListener('change', function () {
@@ -824,7 +824,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 })();
 
 /* ── D499／D503 掃碼領點（O43）：示範資料＋停用確認視窗 ────────────────────────────────
-   取貨場次的示範資料一向住在這支（上面的 PRODUCTS／KNOWN），所以掃碼領點的場次、場次裡的 QR 與領取紀錄也放這裡，
+   場次的示範資料一向住在這支（上面的 PRODUCTS／KNOWN），所以掃碼領點的場次、場次裡的 QR 與領取紀錄也放這裡，
    三頁（pickup.html／pickup-detail.html／建立或編輯場次的彈窗）讀同一份。
    D503（2026-11-02）：點數 QR 只存在於掃碼領點場次裡（場次.qrs[]），不再是電子商店商品；原本 js/products-store.js 的
    忠誠點數商品與兩邊的雙向同步（D501）整段撤除。這裡是唯一正本。

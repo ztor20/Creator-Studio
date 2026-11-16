@@ -56,12 +56,12 @@
 //   delivery   ['ship'] | ['qr'] | ['ship','qr']   取貨方式勾選集合（D470，2026-10-22；至少一種，僅實體；新建預設 ['ship']）
 //              舊值相容（D470 連帶規則第 12 條〔推導〕）：單值 'qr'→['qr']、'ship'／省略→['ship']；載入時由 normDelivery() 原樣轉入，
 //              頁面一律經 window.ztorDelivery 讀
-//   pickupSession  'tpe' | 'khh' | null   現場 QR 領取所屬的取貨場次（場次代號同 partials/pickup-session-modal.js 的 KNOWN）。
+//   pickupSession  'tpe' | 'khh' | null   現場 QR 領取所屬的核銷場次（場次代號同 partials/pickup-session-modal.js 的 KNOWN）。
 //              單售商品同時只屬於一個場次（D339，D471 保留；D470 一度改成多值，已由 D471 撤回）；null＝還沒加入任何場次
 //   currency   'TWD'（nick 商品）| 省略＝USD   價格幣別（priceText／product-detail 的 money() 讀它）
 //   variants[i].locks  { single: n|null, bundles: { <bundleId>: n|null } }   逐選項組合鎖定（D255／D258）；
 //              有它時商品層 pool.locks 由 seedListing() 加總得出（見該函式）
-//   組合（BUNDLE_SEED）的 pickupSession（選填，D471 2026-10-22 新增）：組合包自己的取貨場次代號（tpe／khh）。
+//   組合（BUNDLE_SEED）的 pickupSession（選填，D471 2026-10-22 新增）：組合包自己的場次代號（tpe／khh）。
 //              沒寫／null＝繼承——各成員沿用自己商品的場次；設了＝這個組合包的成員領取單位都屬於這一場（組合包本身仍不產生領取碼，D240）
 //   組合（BUNDLE_SEED）的 holdSets／pendingCheckout（選填，D465／D478）：被保留的套數／結帳中（保留中）的訂單筆數。
 //              pendingCheckout 大於 0 時組合商品細節頁的成員區唯讀（D478：下架後還要等這些訂單結清才能改成員）；
@@ -169,7 +169,7 @@
       cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
       status: 'live', price: '120.00', cost: '38.00', stock: '29', cap: '50', sold: '21', threshold: '5',
       /* 現場 QR 領取示範：簽名場次現場領取的限量收藏品。刻意保留舊的單值寫法 delivery 'qr'，
-         示範 D470 舊資料原樣轉入：載入後＝只勾現場 QR 領取、取貨場次 tpe */
+         示範 D470 舊資料原樣轉入：載入後＝只勾現場 QR 領取、核銷場次 tpe */
       delivery: 'qr', pickupSession: 'tpe',
       catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品',
       /* 詳細規格／取貨與退貨說明（2026-09-23 · D319 補），同 zine 的形狀與理由；取貨與退貨說明改寫成
@@ -1374,7 +1374,7 @@
     /* 隱藏＋非公開連結（沿用 e-shop 既有第二列「Vinyl + poster set」）；無折扣 */
     'vinyl-poster-set': {
       id: 'vinyl-poster-set', persona: 'default', name: '黑膠＋海報典藏組', img: 'vinyl-poster-set.webp',
-      /* D471 示範：組合包改用自己的取貨場次（高雄見面會）——這一組賣出的成員領取單位都屬於高雄場；
+      /* D471 示範：組合包改用自己的核銷場次（高雄見面會）——這一組賣出的成員領取單位都屬於高雄場；
          對照 signing-set 沒設＝繼承，成員各自沿用自己的場次（黑膠台北、手環高雄） */
       pickupSession: 'khh',
       description: '編號黑膠與簽名海報，只給持連結的人。',
@@ -2189,5 +2189,5 @@
   document.addEventListener('i18n:applied', patchAll);
 
   /* ✝ 2026-11-02 墓碑（D503）：忠誠點數商品（window.ztorLoyaltyProducts、LP_SEED、sessionStorage 'ztor.loyalty.session'）撤除——
-     點數 QR 只在取貨管理的掃碼領點場次裡產生，正本改在 partials/pickup-session-modal.js 的 window.ztorScanEarn（場次.qrs[]）。 */
+     點數 QR 只在核銷與領點的掃碼領點場次裡產生，正本改在 partials/pickup-session-modal.js 的 window.ztorScanEarn（場次.qrs[]）。 */
 })();

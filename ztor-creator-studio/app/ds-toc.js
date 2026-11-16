@@ -180,7 +180,7 @@ document.write(String.raw`  <aside class="toc">
     <a class="toc__link toc__link--sub" href="design-system-components-flow.html#preview-column">Preview column</a>
     <a class="toc__link toc__link--sub" href="design-system-components-flow.html#preview-panel">Preview panel</a>
     <a class="toc__link toc__link--sub" href="design-system-components-flow.html#fan-store">Fan store preview</a>
-    <a class="toc__link toc__link--sub" href="design-system-components-flow.html#pickup">Pickup management</a>
+    <a class="toc__link toc__link--sub" href="design-system-components-flow.html#pickup">Redemption & points</a>
     <a class="toc__link toc__link--sub" href="design-system-components-flow.html#bundle-preview-card">Bundle preview card</a>
     <a class="toc__link toc__link--sub" href="design-system-components-flow.html#fan-event-page">Fan page mirror</a>
     <a class="toc__link toc__link--sub" href="design-system-components-flow.html#fan-phone">Fan phone (create-flow phone mirror)</a>
