@@ -2339,6 +2339,23 @@ html:not([data-embed]) .detail-topbar.is-stuck.has-tabs { min-height: calc(64px 
 .tip--btn .tip__bubble { right: auto; left: 50%; transform: translate(-50%, 4px); white-space: nowrap; }
 .tip--btn:hover .tip__bubble, .tip--btn:focus-within .tip__bubble { opacity: 1; transform: translate(-50%, 0); }
 
+/* .tip--label（2026-11-16 使用者裁示「欄位 hover 上去要有 tooltips 解釋是什麼」）：觸發點是文字本身（表頭欄名），
+   不另加 ⓘ icon——一排九個欄名各掛一顆 icon 太吵。欄名外觀不變（使用者裁示不要底線），只有游標換成 help；
+   泡泡置中、往下開：表頭是表格第一列，往上開會被外框或表格上緣蓋掉。
+   結構：<span class="tip tip--label" tabindex="0"><span>欄名</span><span class="tip__bubble" role="tooltip">說明</span></span>。 */
+.tip--label { display: inline; color: inherit; }
+.tip--label:hover, .tip--label:focus-visible { color: inherit; }
+.tip--label .tip__bubble {
+  top: calc(100% + 8px); bottom: auto; right: auto; left: 50%;
+  transform: translate(-50%, -4px);
+  width: max-content; max-width: 220px; white-space: normal;
+  text-transform: none; letter-spacing: normal; font-weight: var(--fw-regular);
+}
+.tip--label:hover .tip__bubble, .tip--label:focus-visible .tip__bubble { transform: translate(-50%, 0); }
+/* .tip--end：最右邊那一欄，泡泡改成靠右緣往左長——置中會超出表格右緣，在會捲動的容器（例：彈窗 body）裡撐出橫向捲軸 */
+.tip--label.tip--end .tip__bubble { left: auto; right: 0; transform: translateY(-4px); }
+.tip--label.tip--end:hover .tip__bubble, .tip--label.tip--end:focus-visible .tip__bubble { transform: translateY(0); }
+
 /* Card view — responsive grid of project cards (alternative to the data-list view) */
 .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-20); }
 .project-card {

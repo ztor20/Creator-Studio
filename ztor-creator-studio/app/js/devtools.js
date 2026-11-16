@@ -592,6 +592,17 @@
      未設定時完全不渲染、對其他頁零影響。用於「建立後鎖定」的欄位在 demo
      仍能預覽替代版面（如 product-detail 的實體/數位、單一/多規格、限量）。*/
   var PAGE_GROUPS = (window.ZTOR_DEV_PAGE_GROUPS && window.ZTOR_DEV_PAGE_GROUPS.length) ? window.ZTOR_DEV_PAGE_GROUPS : [];
+  /* 頁面自訂的一次性示範動作（2026-11-11 D529）：頁面在載入 devtools 前設
+     window.ZTOR_DEV_PAGE_ACTIONS = [{ key, label, desc, run }]，開發 tab 畫成按鈕、按一下呼叫 run()。
+     給「期間有人下單」這類只能靠時間差才看得到的狀態用；未設定時不渲染。 */
+  var PAGE_ACTIONS = (window.ZTOR_DEV_PAGE_ACTIONS && window.ZTOR_DEV_PAGE_ACTIONS.length) ? window.ZTOR_DEV_PAGE_ACTIONS : [];
+  function pageActionsHtml() {
+    if (!PAGE_ACTIONS.length) return '';
+    return '<div class="ztd__group"><p class="ztd__group-label">本頁示範動作</p>'
+      + PAGE_ACTIONS.map(function (a) {
+        return '<button class="ztd__row" data-act="page-action" data-key="' + a.key + '"><span>' + a.label + (a.desc ? '<span class="ztd__opt-desc">' + a.desc + '</span>' : '') + '</span></button>';
+      }).join('') + '</div>';
+  }
 
   /* [local-default] 本機預覽預設情境：周湯豪 · 有資料 · 多場活動 · Deck for Sony。
      上游預設為 eventDay:'no-event' / version:'full'；此處為本機 clone 的在地覆寫，
@@ -832,6 +843,7 @@
       /* ── 開發：本頁預覽開關（pageGroups，逐頁才有）＋Inspect＋Validation ── */
       +     '<div class="ztd__tabpanel" data-tab-panel="dev"' + (activeTab !== 'dev' ? ' hidden' : '') + '>'
       +       pageGroupsHtml()
+      +       pageActionsHtml()
       +       '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
       +         '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
       +         '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
@@ -1059,6 +1071,7 @@
     if (act === 'toggle-skip') { state.skipValidation = !state.skipValidation; return update(); }
     if (act === 'toggle-future') { state.showFuture = !state.showFuture; return update(); }
     if (act === 'toggle-inspect') { setInspect(!inspecting); return; }
+    if (act === 'page-action') { var pa = PAGE_ACTIONS.filter(function (x) { return x.key === btn.getAttribute('data-key'); })[0]; if (pa && pa.run) pa.run(); return; }
     var kind = btn.getAttribute('data-kind');
     if (!kind) return;
     var val = btn.getAttribute('data-val');

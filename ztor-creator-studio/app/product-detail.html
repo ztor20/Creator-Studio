@@ -281,17 +281,19 @@
             <div class="variant-table variant-table--stock" data-pd-variant-table>
               <div class="variant-table__head">
                 <span data-i18n="cp.var.col.variant">Variant</span>
-                <span data-i18n="stock.col.onhand">On hand</span>
+                <span><span class="tip tip--label" tabindex="0"><span data-i18n="stock.col.onhand">On hand</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.onhand"></span></span></span>
                 <!-- 上限（2026-09-21，spec 5.1.5.1 §2.10「在庫（限量時帶上限）」）：只在限量商品出現，
                      顯隱沿用建立商品的 .variant-cell--total ↔ .variant-table--limited（applyVis 依 edition 掛） -->
-                <span class="variant-cell--total" data-i18n="cp.var.col.total">Total</span>
-                <span data-i18n="stock.lock-single">Locked</span>
-                <span data-i18n="stock.col.bundle">Bundles</span>
-                <span data-i18n="cp.var.col.free">Unlocked</span>
-                <span data-i18n="stock.col.incoming">Restocking</span>
-                <span data-i18n="stock.col.status">Status</span>
+                <span class="variant-cell--total"><span class="tip tip--label" tabindex="0"><span data-i18n="cp.var.col.total">Total</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.total"></span></span></span>
+                <span><span class="tip tip--label" tabindex="0"><span data-i18n="stock.lock-single">Locked</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.locked"></span></span></span>
+                <span><span class="tip tip--label" tabindex="0"><span data-i18n="stock.col.bundle">Bundles</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.bundle"></span></span></span>
+                <span><span class="tip tip--label" tabindex="0"><span data-i18n="cp.var.col.free">Unlocked</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.free"></span></span></span>
+                <span><span class="tip tip--label" tabindex="0"><span data-i18n="stock.col.held">Reserved</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.held"></span></span></span><!-- D529：保留中獨立一欄（2026-11-16 使用者裁示分開欄位） -->
+                <span><span class="tip tip--label" tabindex="0"><span data-i18n="stock.col.incoming">Restocking</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.incoming"></span></span></span>
+                <span><span class="tip tip--label tip--end" tabindex="0"><span data-i18n="stock.col.status">Status</span><span class="tip__bubble" role="tooltip" data-i18n="stock.tip.status"></span></span></span>
                 <span></span>
               </div>
+              <!-- 2026-11-16 欄名 hover 出說明（.tip--label，使用者裁示「欄位 hover 上去要有 tooltips 解釋是什麼」） -->
               <!-- 列（與分組標題）由 renderPageTable() 依商品資料填入 -->
             </div>
           </div>
@@ -1557,6 +1559,7 @@
             current: parseInt(p.stock, 10) || 0,
             /* D525：修改庫存的下限＝目前－未鎖定可賣（ListingState.freeQty＝在庫－各管道鎖定－未鎖定格的保留） */
             max: window.ListingState ? window.ListingState.freeQty(p) : undefined,
+            held: window.ListingState ? window.ListingState.holdTotal(p) : 0,   /* D529：每列顯示保留中 */
             threshold: parseInt(p.threshold, 10) || 0,
             status: p.status }
         : { name: 'Pirate Queen zine vol. 02', current: 3, threshold: 4, status: 'low' };
@@ -1574,8 +1577,9 @@
         var label = onlyVi != null ? (v.combo || []).join(' / ') : comboName(v, two);
         /* 唯讀縮圖（2026-09-11 D268，5.1.5.6 §4 ①；併在名稱格，Q117）：該組合自己的圖或沿用主圖 */
         var thumb = (window.ProductsStore && window.ProductsStore.variantThumb) ? window.ProductsStore.variantThumb(p, v, { label: (v.combo || []).join(' / ') }) : '';
-        /* D525：逐組合的下限＝目前－該組合沒被任何管道鎖走的量（ListingState.variantFree） */
-        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb, max: window.ListingState ? window.ListingState.variantFree(v) : undefined };
+        /* D525／D529：逐組合的下限＝目前－該組合未鎖定格扣掉保留後還能賣的量；held＝該組合保留中 */
+        var L = window.ListingState;
+        var item = { name: label, current: parseInt(v.stock, 10) || 0, vi: i, thumb: thumb, max: L ? L.variantFreeSellable(v) : undefined, held: L ? L.variantHoldTotal(v) : 0 };
         var gl = two ? (v.combo || [])[0] : null;
         if (!byLabel[gl]) { byLabel[gl] = { label: gl, items: [] }; groups.push(byLabel[gl]); }
         byLabel[gl].items.push(item);
@@ -1590,8 +1594,10 @@
     /* D525 修改庫存：同一個彈窗的另一種模式；卡頭改全部、列尾 ⋯ 只改那一列 */
     function openAdjust(onlyVi) {
       var p = storeProduct();
-      if (isMulti(p)) restock.openAdjust(variantGroups(p, onlyVi));
-      else restock.openAdjustSingle(singleItem(p));
+      /* D529 儲存時重新檢查：給彈窗一個 reload，送出當下重讀 store 的最新在庫與保留 */
+      var reload = function () { var q = storeProduct(); return isMulti(q) ? variantGroups(q, onlyVi) : [{ label: null, items: [singleItem(q)] }]; };
+      if (isMulti(p)) restock.openAdjust(variantGroups(p, onlyVi), null, reload);
+      else restock.openAdjustSingle(singleItem(p), null, reload);
     }
     /* D525：把在庫直接改成新的數字（多選項逐組合、單一規格整件），pool.total 跟著在庫走 */
     function applySet(entries) {
@@ -2028,7 +2034,7 @@
       setStat('[data-pd-kpi-onhand]', total);
       setStat('[data-pd-kpi-sellable]', chQty('single'));
       /* D465：保留中＝各格保留加總；單售有鎖時寫「可賣/配額」，小字帶未鎖定（可賣/配額） */
-      setStat('[data-pd-kpi-held]', isMultiVar() ? 0 : L.holdTotal(product));
+      setStat('[data-pd-kpi-held]', isMultiVar() ? L.variantsHoldTotal(product.variants) : L.holdTotal(product));   /* D529：多選項加總各組合 */
       const sOf = document.querySelector('[data-pd-kpi-sellable-of]'), sMeta = document.querySelector('[data-pd-kpi-sellable-meta]');
       const sLock = isMultiVar() ? null : L.lockOf(product, 'single');
       if (sOf) { sOf.hidden = sLock === null; sOf.textContent = sLock === null ? '' : ' / ' + sLock; }
@@ -3573,13 +3579,7 @@
        多選項＝一列一個組合，逐組合各自有值（價格與成本沒填就沿用商品層的值）。
        兩階層（顏色×尺寸）仍依第一個選項分組。可改的欄位是輸入框，庫存唯讀。 */
     function lockText(v) { return (v === null || v === undefined) ? '—' : esc(String(v)); }
-    /* D465（2026-10-21）：某一格有保留時寫成「可賣/配額」（例 50/60，主規格 §7.14「保留」的呈現參考），title 帶保留數；沒保留只寫配額 */
-    function quotaText(quota, hold) {
-      if (quota === null || quota === undefined) return '—';
-      var h = Number(hold) || 0;
-      if (!(h > 0) || quota === '∞') return esc(String(quota));
-      return '<span title="' + esc(T('stock.hold.title', '{n} reserved — awaiting payment').replace('{n}', h)) + '">' + esc(String(Math.max(0, quota - h))) + '<span class="text-sub">/' + esc(String(quota)) + '</span></span>';
-    }
+    /* 2026-11-16：保留中改成獨立一欄（D529 後續、使用者裁示），鎖定與未鎖定格只寫配額，原「可賣/配額」寫法 quotaText() 退場 */
     /* 庫存管理表（2026-09-11 · A 案）：表格整張唯讀，只留庫存的欄位——
        組合（底下 SKU 小字）／在庫（限量帶 / 上限）／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／補貨／⋯。
        狀態依門檻：在庫 0＝售罄、低於門檻＝低庫存（紅字）、等於門檻＝到門檻（黃字）、其餘正常。
@@ -3601,9 +3601,10 @@
         /* 上限（2026-09-21）：限量商品逐列各自的上限，獨立一欄（原本只有單一規格那一列以「在庫 / 上限」小字併在在庫格，
            多選項列沒有）；不限量商品的表不掛 --limited，這一格藏起來。 */
         + '<span class="variant-cell--ro variant-cell--total" data-vc="total">' + (o.cap ? esc(String(o.cap)) : '—') + '</span>'
-        + '<span class="variant-cell--ro" data-vc="locked">' + (o.lockHold ? quotaText(o.locked, o.lockHold) : lockText(o.locked)) + '</span>'
+        + '<span class="variant-cell--ro" data-vc="locked">' + lockText(o.locked) + '</span>'
         + '<span class="variant-cell--ro" data-vc="bundle">' + (o.bundle ? esc(String(o.bundle)) : '—') + '</span>'
-        + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + quotaText(o.free, o.freeHold) + '</span>'
+        + '<span class="variant-cell--ro variant-cell--free" data-vc="free">' + esc(String(o.free)) + '</span>'
+        + '<span class="variant-cell--ro variant-cell--reserved' + (o.held ? ' is-on' : '') + '" data-vc="held">' + (o.held ? esc(String(o.held)) : '—') + '</span>'
         + '<span class="variant-cell--ro variant-cell--incoming' + (inc ? ' is-on' : '') + '">' + (inc ? '+' + inc : '—') + '</span>'
         + '<span>' + (st.cls ? '<span class="badge ' + st.cls + '"><span data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span></span>' : '<span class="text-sub" data-i18n="' + st.key + '">' + esc(T(st.key, st.fb)) + '</span>') + '</span>'
         + kebabHTML(!o.delisted);
@@ -3627,12 +3628,12 @@
         var total = (product.pool && product.pool.total === 'unlimited') ? '∞' : Number(product.pool ? product.pool.total : 0);
         var lock = L.lockOf(product, 'single');
         var bl = 0; Object.keys((product.pool && product.pool.locks && product.pool.locks.bundles) || {}).forEach(function (k) { var n = Number(product.pool.locks.bundles[k]); if (isFinite(n)) bl += n; });
-        /* 未鎖定＝在庫 − 各管道鎖定（鎖定量含各自的保留、不再另扣）；未鎖定格自己的保留寫成「可賣/配額」（D465） */
+        /* 未鎖定＝在庫 − 各管道鎖定（鎖定量含各自的保留、不再另扣）；保留中另一欄（D529） */
         var free = total === '∞' ? '∞' : L.unlockedQty(product);
         var only = document.createElement('div');
         only.className = 'variant-table__row';
         only.setAttribute('data-vi', 'single');
-        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, lockHold: L.holdOf(product, 'single'), bundle: bl, free: free, freeHold: L.holdOf(product, 'free'), sku: product.sku || '', vi: 'single', delisted: !!product.delisted });
+        only.innerHTML = rowHTML({ label: product.name || '—', stock: total, cap: cap, locked: lock, bundle: bl, free: free, held: L.holdTotal(product), sku: product.sku || '', vi: 'single', delisted: !!product.delisted });
         pageTable.appendChild(only);
       } else {
         var two = MODEL.variants[0].combo.length >= 2;
@@ -3645,6 +3646,8 @@
           var label = two ? v.combo.slice(1).join(' / ') : v.combo.join(' / ');
           var lockV = lockGet(v, 'single');
           var blv = bundleLockedOf(v);
+          /* D529：保留讀 store 裡同一個組合（MODEL 是編輯草稿、不帶 holds） */
+          var srcV = (product.variants || []).filter(function (x) { return comboKey(x.combo || []) === comboKey(v.combo); })[0] || v;
           var row = document.createElement('div');
           row.className = 'variant-table__row' + (v.delisted ? ' variant-table__row--delisted' : '');
           row.setAttribute('data-vi', vi);
@@ -3656,6 +3659,7 @@
             locked: lockV,
             bundle: blv,
             free: Math.max(0, Number(v.stock || 0) - (lockV === null ? 0 : lockV) - blv),
+            held: window.ListingState ? window.ListingState.variantHoldTotal(srcV) : 0,
             sku: v.sku,
             vi: vi,
             delisted: !!v.delisted
@@ -4629,6 +4633,34 @@
     document.addEventListener('i18n:applied', function () { if (isActive() && view) render(); });
     if (isActive()) show();
   })();
+</script>
+<script>
+  /* D529 示範：修改庫存打開期間有粉絲進入結帳——開發 tab 的「本頁示範動作」按一下，替這件商品第一個還有得賣的格子加 1 件保留，
+     再回彈窗按儲存就會看到「數字已變動」。只動示範資料，重新整理即恢復。 */
+  window.ZTOR_DEV_PAGE_ACTIONS = [{
+    key: 'sim-checkout', label: '模擬有粉絲進入結帳', desc: '這件商品加 1 件保留',
+    run: function () {
+      var id = new URLSearchParams(location.search).get('id');
+      var p = (window.ztorGetProduct && window.ztorGetProduct(id)) || window.pdProduct;
+      var L = window.ListingState;
+      if (!p || !L) return;
+      var bump = function (h, k) { h[k] = (Number(h[k]) || 0) + 1; };
+      if (p.variant === 'multiple' && (p.variants || []).length) {
+        var v = p.variants.filter(function (x) { return L.variantFreeSellable(x) > 0; })[0];
+        if (!v) return;
+        v.holds = v.holds || { single: 0, free: 0, bundles: {} };
+        bump(v.holds, 'free');
+      } else {
+        if (!p.pool) return;
+        p.pool.holds = p.pool.holds || { single: 0, free: 0, bundles: {} };
+        if (L.lockOf(p, 'single') !== null && L.channelQty(p, 'single') > 0) bump(p.pool.holds, 'single');
+        else if (L.freeQty(p) > 0) bump(p.pool.holds, 'free');
+        else return;
+      }
+      if (window.pdRefreshStock) window.pdRefreshStock();
+      document.dispatchEvent(new CustomEvent('pd:stock', { detail: p }));
+    }
+  }];
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 
