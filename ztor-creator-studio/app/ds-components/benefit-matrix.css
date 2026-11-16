@@ -258,6 +258,46 @@
 .bmx__edit { display: none; }
 .is-editing .bmx__read { display: none; }
 .is-editing .bmx__edit { display: flex; align-items: center; width: 100%; }
+/* 兩面保留控制項高度（2026-11-16 使用者：「點擊編輯時，可修改的欄位都會因為換樣式而長高」，Q173）：
+   「列高以較高的狀態為基準」原本只寫在 .bmx--readonly .bmx__cell，兩面搬到表格以外就沒有保留——
+   單值列（.settings-row__value.bmx__cell，沒有說明時列高只剩一行字）與卡內大數字（.stat__value 內的兩面）
+   切到編輯會被 36px 的輸入框撐高。這裡把同一條規則擴到所有放兩面的容器：唯讀面也先占 --control-h-sm。
+   大數字用 baseline 對齊，讓數字與單位同一條基線；32px 數字在 36px 高的格子裡多 4px，編輯面剛好填滿。 */
+/* 只作用在真的放了兩面的格子（:has），不動一般比較表的格子。 */
+.bmx__cell:has(> .bmx__read) { min-height: var(--control-h-sm); }
+.stat__value:has(> .bmx__edit) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sp-4);
+  min-height: var(--control-h-sm);
+}
+.is-editing .stat__value:has(> .bmx__edit) { align-items: center; }
+/* 單值列（.settings-row__value 上的兩面）連寬度也固定：兩面疊在同一格，用 visibility 切換，
+   格子的寬高取兩面中較大的那個。只靠 min-height 不夠——窄畫面時編輯面的輸入框比唯讀文字寬，
+   會把左邊的標籤擠成多折一行，整列照樣長高（Q173，375px 實測）。 */
+/* 格子不超過這一列給的寬度（min-width:0＋minmax）；編輯面放得下就一行、放不下就換行（例：粉絲名單期間的兩個日期框在 375px），
+   換行後格子取較高的那一面，唯讀時也先占好，切換照樣不跳。 */
+.settings-row__value.bmx__cell:has(> .bmx__read) {
+  display: grid;
+  grid-template-columns: minmax(0, auto);
+  align-items: center;
+  justify-items: end;
+  min-width: 0;
+  max-width: 100%;
+}
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__read,
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit { grid-area: 1 / 1; }
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit { display: flex; flex-wrap: wrap; justify-content: flex-end; row-gap: var(--sp-8); max-width: 100%; min-width: 0; visibility: hidden; }
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__read { max-width: 100%; min-width: 0; overflow-wrap: anywhere; text-align: right; }
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit > .flex-row { flex-wrap: wrap; justify-content: flex-end; row-gap: var(--sp-8); min-width: 0; }
+/* 並排的輸入框照自己的寬度，不吃滿整格——否則換行後每一個都拉成整格寬，把左邊標籤擠成一字一行。
+   日期欄會被 js/date-input.js 包一層 .date-input，所以兩種都要算。 */
+.settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit > .flex-row > :is(.input, .date-input) { width: auto; min-width: 0; flex: 0 1 auto; }
+.is-editing .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__read { display: block; visibility: hidden; }
+.is-editing .settings-row__value.bmx__cell:has(> .bmx__read) > .bmx__edit { visibility: visible; }
+/* 編輯面不繼承大數字的 32px 字級與行高，否則輸入框外層會被撐成 40px、比唯讀面高。 */
+.stat__value > .bmx__edit { font-size: var(--fs-13); line-height: 1; letter-spacing: normal; }
 /* 不可編輯的列（例如權益數量是算出來的）在編輯面降一階，看得出不是給你改的。 */
 .is-editing .bmx__row--locked .bmx__cell { opacity: 0.55; }
 

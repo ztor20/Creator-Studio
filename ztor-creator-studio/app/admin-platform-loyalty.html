@@ -7,8 +7,9 @@
      平台常數、誠信規則）掛 S132 ⚪、職務分點 S108 ⚪、回填 S111 ⚪，只在最終版。
      2026-11-02 頁型改版（UI-CHANGES #458，使用者看過格式示範後裁示「套用」；D508）：
      · 麵包屑 → page-intro → list-toolbar 底線式頁面分頁（Q38）「賺分事件／分級／粉絲管理指標／其他設定／修改紀錄」→ 每個分頁一張 .card。
-     · 卡頭（.card__head--wrap）左一句說明、右「變更歷史」（切到修改紀錄並篩選該類）＋「編輯」；預設唯讀、按編輯就地切成輸入框
-       （.bmx--readonly 唯讀／編輯兩面，格子恆為 --control-h-sm 高，切換時表格不跳動），出現取消／儲存，以卡為單位比對與還原。全頁沒有全域「儲存」。
+     · 卡頭（.card__head--wrap）一句說明；「編輯」放分頁列右側（.list-toolbar__actions，D531），作用於目前分頁；預設唯讀、按編輯就地切成輸入框
+       （.bmx--readonly 唯讀／編輯兩面，格子恆為 --control-h-sm 高，切換時表格不跳動），出現取消／儲存，以分頁為單位比對與還原；修改紀錄分頁不顯示這組按鈕。
+       各分頁的「變更歷史」入口已於 D530 拿掉；賺分事件的基礎比率（K_A）D531 起獨立一區、用 .stat-row 大數字；分級的三個共用參數 D532 起同樣獨立一區；其他設定 D532 起每個主題一張卡。
      · 賺分事件的開關不受編輯模式限制（D508）：任何時候都能切、立即生效、當下記一筆；按取消不還原開關。
      · 賽季加倍逐筆新增與移除，當下記一筆，不跟著卡的編輯。
      · 本頁與平台費率、平台優惠兩頁的頁型不一致（STYLE-DECISIONS Q138 待裁決）。 -->
@@ -38,10 +39,12 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2"><!-- 修改紀錄的類別篩選 -->
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2"><!-- 基礎比率大數字（D531） -->
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2"><!-- .bmx--readonly：唯讀／編輯兩面的對照表（Q171，原 tier-overview.css） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2"><!-- 儲存確認的修改項目（D533） -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js） -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -73,30 +76,38 @@
     <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tab="other" data-feat="S132"><span data-i18n="ploy.tab.other">More settings</span></button>
     <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tab="log"><span data-i18n="ploy.tab.log">Change log</span></button>
   </nav>
+  <!-- 編輯／取消／儲存放在分頁列右側（2026-11-16 使用者：「編輯按鈕可以在 topbar 上的右邊」，D531）：
+       作用於目前分頁，一個分頁一份編輯狀態；修改紀錄分頁沒有可改的參數，整組收起。 -->
+  <div class="list-toolbar__actions" data-ploy-top>
+    <span data-idle><button class="btn btn--outline" type="button" data-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="ploy.edit">Edit</span></button></span>
+    <span data-busy hidden class="flex-row">
+      <button class="btn btn--outline" type="button" data-cancel><span data-i18n="ploy.cancel">Cancel</span></button>
+      <button class="btn btn--primary" type="button" data-save><span data-i18n="ploy.save">Save</span></button>
+    </span>
+  </div>
 </div>
 
 <!-- ===== 分頁 1：F9 賺分事件與事件開關（D498、D499）=====
      事件為列、「給分／倍率｜滾動視窗｜上限｜開關」四欄，吃 .bmx--readonly 的四欄格線。購買類（A3、A4）只有倍率 γ、無上限；
      互動與推薦（B1、B4、B5、B3）各有發分值與「滾動視窗 X 天內最多 Y」。按讚與收藏各自的上限暫用現行合計值 1,500（〔產品待確認〕，UIA-325）。
      開關（D508）不在唯讀／編輯兩面裡：任何時候都能切、立即生效、當下記一筆；取消編輯不還原開關。 -->
-<div class="tab-panel tab-panel--active" data-panel="events">
-<section class="card mt-16" data-ploy-card="events">
-  <div class="card__head card__head--wrap">
-    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.ev.head">How many points each action gives and how often it can earn. Switches work any time and take effect right away.</p>
-    <div class="flex-row">
-      <button class="btn btn--ghost btn--sm" type="button" data-history="events"><i data-lucide="history" class="ztor-icon"></i><span data-i18n="ploy.history">History</span></button>
-      <span data-idle><button class="btn btn--outline btn--sm" type="button" data-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="ploy.edit">Edit</span></button></span>
-      <span data-busy hidden class="flex-row">
-        <button class="btn btn--outline btn--sm" type="button" data-cancel><span data-i18n="ploy.cancel">Cancel</span></button>
-        <button class="btn btn--primary btn--sm" type="button" data-save><i data-lucide="check" class="ztor-icon"></i><span data-i18n="ploy.save">Save</span></button>
-      </span>
+<div class="tab-panel tab-panel--active" data-panel="events" data-ploy-card="events">
+<!-- 基礎比率（K_A）獨立一區（2026-11-16 使用者：「這一塊可以重新設計，或是變成一個獨立 section」，D531）：
+     全頁購買類計分的乘數，用大數字呈現；公式放數字底下。與事件表同一個分頁、同一份編輯狀態。 -->
+<section class="card mt-16">
+  <div class="stat-row" style="margin-bottom:0">
+    <div class="stat">
+      <div class="stat__label" data-i18n="ploy.ev.ka">Base rate (K_A)</div>
+      <div class="stat__value" data-ploy-read-scope><span class="bmx__read" data-read-num></span> <span class="stat__of bmx__read" data-i18n="ploy.unit.per-base">pts per 1 unit of base currency</span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:260px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.5" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.ka" data-ploy-unit="ploy.unit.per-base"><span class="amount-field__unit" data-i18n="ploy.unit.per-base">pts / 1 unit of base currency</span></span></span></div>
+      <div class="stat__meta" data-i18n="ploy.ev.ka-hint">Points per 1 unit of base currency = multiplier × base rate</div>
     </div>
   </div>
-
-  <div class="settings-row">
-    <div><div class="settings-row__label" data-i18n="ploy.ev.ka">Base rate (K_A)</div><div class="settings-row__hint" data-i18n="ploy.ev.ka-hint">Points per 1 unit of base currency = multiplier × base rate</div></div>
-    <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:260px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.5" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.ka" data-ploy-unit="ploy.unit.per-base"><span class="amount-field__unit" data-i18n="ploy.unit.per-base">pts / 1 unit of base currency</span></span></span></div>
+</section>
+<section class="card mt-16">
+  <div class="card__head card__head--wrap">
+    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.ev.head">How many points each action gives and how often it can earn. Switches work any time and take effect right away.</p>
   </div>
+
 
   <div class="bmx bmx--readonly mt-16">
     <div class="bmx__head">
@@ -168,18 +179,31 @@
 <!-- ===== 分頁 2：F10 分級（D497、D498）=====
      照「粉絲分級設定」彈窗格式：四級為欄、參數為列；全站共用值（S_floor、降級緩衝、每週重算）放卡內 settings-row。
      顯示名稱改了只在本頁與修改紀錄看得到，示範不會同步到其他頁（UIA-325）。 -->
-<div class="tab-panel" data-panel="tiers">
-<section class="card mt-16" data-ploy-card="tiers">
+<div class="tab-panel" data-panel="tiers" data-ploy-card="tiers">
+<!-- 所有分級共用的三個參數獨立一區、放分級表上方（2026-11-16 使用者：「其他分頁中類似的問題也都處理一次」，D532）：
+     比照賺分事件的基礎比率，用 .stat-row 大數字；與分級表同一份編輯。 -->
+<section class="card mt-16">
+  <div class="stat-row stat-row--even" style="margin-bottom:0">
+    <div class="stat">
+      <div class="stat__label" data-i18n="ploy.tier.floor">Minimum loyalty points</div>
+      <div class="stat__value" data-ploy-read-scope><span class="bmx__read" data-read-num></span> <span class="stat__of bmx__read" data-i18n="fans.unit.points"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="500" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.tier.floor" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
+      <div class="stat__meta" data-i18n="ploy.tier.floor-hint">One value for every tier. Below it a fan is always Fan and isn’t ranked</div>
+    </div>
+    <div class="stat">
+      <div class="stat__label" data-i18n="ploy.decay.grace">Demotion grace</div>
+      <div class="stat__value" data-ploy-read-scope><span class="bmx__read" data-read-num></span> <span class="stat__of bmx__read" data-i18n="ploy.unit.days"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
+      <div class="stat__meta" data-i18n="ploy.decay.grace-hint">The countdown starts when a fan falls below a tier’s bar</div>
+    </div>
+    <div class="stat">
+      <div class="stat__label" data-i18n="ploy.tier.recompute">Tier recompute</div>
+      <div class="stat__value"><span data-i18n="ploy.tier.weekly">Every week</span></div>
+      <div class="stat__meta"><span data-i18n="ploy.tier.recompute-hint">Cut-off scores and demotions update then; promotions happen right away</span> <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></div>
+    </div>
+  </div>
+</section>
+<section class="card mt-16">
   <div class="card__head card__head--wrap">
     <p class="settings-row__hint" style="margin:0" data-i18n="ploy.tier.order">Fans at or above the minimum are ranked, and the top % above decides their tier; anyone outside the last cut-off stays Fan.</p>
-    <div class="flex-row">
-      <button class="btn btn--ghost btn--sm" type="button" data-history="tiers"><i data-lucide="history" class="ztor-icon"></i><span data-i18n="ploy.history">History</span></button>
-      <span data-idle><button class="btn btn--outline btn--sm" type="button" data-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="ploy.edit">Edit</span></button></span>
-      <span data-busy hidden class="flex-row">
-        <button class="btn btn--outline btn--sm" type="button" data-cancel><span data-i18n="ploy.cancel">Cancel</span></button>
-        <button class="btn btn--primary btn--sm" type="button" data-save><i data-lucide="check" class="ztor-icon"></i><span data-i18n="ploy.save">Save</span></button>
-      </span>
-    </div>
   </div>
   <div class="bmx bmx--readonly">
     <!-- 欄頭的分級名稱由 JS 依顯示名稱的已儲存值填入（改名儲存後立即換上），不掛 data-i18n。 -->
@@ -206,18 +230,6 @@
     </div>
   </div>
 
-  <div class="settings-row mt-16">
-    <div><div class="settings-row__label" data-i18n="ploy.tier.floor">Minimum loyalty points</div><div class="settings-row__hint" data-i18n="ploy.tier.floor-hint">One value for every tier. Below it a fan is always Fan and isn’t ranked</div></div>
-    <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="500" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.tier.floor" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
-  </div>
-  <div class="settings-row">
-    <div><div class="settings-row__label" data-i18n="ploy.decay.grace">Demotion grace</div><div class="settings-row__hint" data-i18n="ploy.decay.grace-hint">The countdown starts when a fan falls below a tier’s bar</div></div>
-    <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
-  </div>
-  <div class="settings-row" style="border-bottom:0">
-    <div><div class="settings-row__label" data-i18n="ploy.tier.recompute">Tier recompute</div><div class="settings-row__hint" data-i18n="ploy.tier.recompute-hint">Cut-off scores and demotions update then; promotions happen right away</div></div>
-    <div class="settings-row__value"><span data-i18n="ploy.tier.weekly">Every week</span> <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></div>
-  </div>
   <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.tier.eff">New names show as soon as you save; top %, minimum points and demotion grace take effect from the next weekly recompute.</p>
   <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.tier.rename">A new name shows everywhere the tier appears: the fan leaderboard, Fans and Media Vault.</p>
 </section>
@@ -229,14 +241,6 @@
 <section class="card mt-16" data-ploy-card="kpi">
   <div class="card__head card__head--wrap">
     <p class="settings-row__hint" style="margin:0" data-i18n="ploy.kpi.head">How many recent days each Fans KPI looks at. KPIs switch to the new days as soon as you save.</p>
-    <div class="flex-row">
-      <button class="btn btn--ghost btn--sm" type="button" data-history="kpi"><i data-lucide="history" class="ztor-icon"></i><span data-i18n="ploy.history">History</span></button>
-      <span data-idle><button class="btn btn--outline btn--sm" type="button" data-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="ploy.edit">Edit</span></button></span>
-      <span data-busy hidden class="flex-row">
-        <button class="btn btn--outline btn--sm" type="button" data-cancel><span data-i18n="ploy.cancel">Cancel</span></button>
-        <button class="btn btn--primary btn--sm" type="button" data-save><i data-lucide="check" class="ztor-icon"></i><span data-i18n="ploy.save">Save</span></button>
-      </span>
-    </div>
   </div>
   <div class="bmx bmx--readonly bmx--cols3">
     <div class="bmx__head">
@@ -262,26 +266,16 @@
 </div>
 
 <!-- ===== 分頁 4：其他設定（最終版，S132）=====
-     七組形狀不同（對照表、單值、唯讀摘要），同一張卡內用 Q71 第 1 級分組（.group-divider＋.group-title），
-     可改的值一樣走唯讀／編輯兩面、以整張卡為單位儲存；賽季加倍逐筆新增與移除、當下記一筆，不跟著卡的編輯。
+     七組形狀不同（對照表、單值、唯讀摘要），D532 起每組一張卡（卡頭 .card__title），
+     可改的值一樣走唯讀／編輯兩面、以整個分頁為單位儲存（D531）；賽季加倍逐筆新增與移除、當下記一筆，不跟著卡的編輯。
      每組自帶上方分隔線，掛閘門的組收起時連線一起收。 -->
-<div class="tab-panel" data-panel="other" data-feat="S132">
-<section class="card mt-16" data-ploy-card="other">
-  <div class="card__head card__head--wrap">
-    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.other.head">Platform activities, role shares, season boosts, decay and platform rules. Scoring changes count for later events; tier changes take effect from the next weekly recompute.</p>
-    <div class="flex-row">
-      <button class="btn btn--ghost btn--sm" type="button" data-history="other"><i data-lucide="history" class="ztor-icon"></i><span data-i18n="ploy.history">History</span></button>
-      <span data-idle><button class="btn btn--outline btn--sm" type="button" data-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="ploy.edit">Edit</span></button></span>
-      <span data-busy hidden class="flex-row">
-        <button class="btn btn--outline btn--sm" type="button" data-cancel><span data-i18n="ploy.cancel">Cancel</span></button>
-        <button class="btn btn--primary btn--sm" type="button" data-save><i data-lucide="check" class="ztor-icon"></i><span data-i18n="ploy.save">Save</span></button>
-      </span>
-    </div>
-  </div>
+<div class="tab-panel" data-panel="other" data-feat="S132" data-ploy-card="other">
+<p class="settings-row__hint" style="margin:var(--sp-16) 0 0" data-i18n="ploy.other.head">Platform activities, role shares, season boosts, decay and platform rules. Scoring changes count for later events; tier changes take effect from the next weekly recompute.</p>
+<section class="card mt-16">
 
   <!-- F2 全站活動給分與上限。資格條件依 §7.5，本頁只調給分與上限。候選一列（完成個人資料或綁定付款）功能是否存在
        〔產品待確認〕（§8.29 第 3 項），所以只唯讀列出、不給輸入框（鎖住的列）。 -->
-  <h4 class="group-title" data-i18n="ploy.act.title">Platform activities</h4>
+  <div class="card__head"><h3 class="card__title" data-i18n="ploy.act.title">Platform activities</h3></div>
   <div class="bmx bmx--readonly bmx--cols3">
     <div class="bmx__head">
       <span></span>
@@ -325,9 +319,9 @@
 
   <!-- F7 職務分點（D476 第 1 項）：多人署名的交易依職務對每位署名藝人各發一筆。六級：五級百分比 Admin 可改
        （預設 100／80／60／40／20），0% 不計分固定唯讀。級名「第 N 級」是呈現假設（UIA-296）。掛 S108（⚪）。 -->
-  <div data-feat="S108">
-    <div class="group-divider"></div>
-    <h4 class="group-title" data-i18n="ploy.role.title">Points by credited role</h4>
+</section>
+<section class="card mt-16" data-feat="S108">
+    <div class="card__head"><h3 class="card__title" data-i18n="ploy.role.title">Points by credited role</h3></div>
     <p class="group-desc" data-i18n="ploy.role.sub">When several artists are credited, each linked artist gets their own entry.</p>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l1">Level 1</div><div class="settings-row__hint" data-i18n="ploy.role.l1-roles">Roles</div></div>
@@ -355,15 +349,14 @@
     </div>
     <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.role.note1">Co-holders each get the full share.</p>
     <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.role.note2">Unclassified roles wait unscored.</p>
-  </div>
+</section>
 
   <!-- F3 賽季加倍：可設定多段。D476 第 6 項：範圍分全平台／特定藝人、倍率可設定（預設 2）；同一層級多個加倍同時生效時
        不相乘取最高；創作者在分級設定的「我的賽季加倍」覆寫平台設定。範圍與倍率兩欄、彈窗的兩個欄位掛 S109（⚪）；
        JS 畫完表格呼叫 ztorDevState.regate()。逐筆新增、移除，當下記一筆修改紀錄，不跟著卡的編輯／儲存。 -->
-  <div>
-    <div class="group-divider"></div>
-    <div class="flex-row" style="justify-content:space-between;align-items:flex-start">
-      <h4 class="group-title" data-i18n="ploy.season.title">Season boosts</h4>
+<section class="card mt-16">
+    <div class="card__head">
+      <h3 class="card__title" data-i18n="ploy.season.title">Season boosts</h3>
       <button class="btn btn--outline btn--sm" type="button" id="ploy-season-add"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="ploy.season.add">Add period</span></button>
     </div>
     <div class="admin-table-wrap admin-table-wrap--fluid">
@@ -380,12 +373,11 @@
     </div>
     <p class="text-sub" id="ploy-season-empty" hidden style="margin:var(--sp-12) 0 0" data-i18n="ploy.season.empty">No season boosts scheduled.</p>
     <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.season.rule">Every behaviour earns points × the multiplier during a boost.</p>
-  </div>
+</section>
 
   <!-- F4 衰減與等級保留（等級類，下一次每週重算起生效）。「任何行為」的範圍〔產品待確認〕（§8.29 第 11 項）。降級緩衝在分級分頁。 -->
-  <div>
-    <div class="group-divider"></div>
-    <h4 class="group-title" data-i18n="ploy.decay.title">Decay and tier retention</h4>
+<section class="card mt-16">
+    <div class="card__head"><h3 class="card__title" data-i18n="ploy.decay.title">Decay and tier retention</h3></div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.decay.half">Decay half-life</div><div class="settings-row__hint" data-i18n="ploy.decay.half-hint">Days until points are worth half</div></div>
       <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="45" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.half" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
@@ -394,22 +386,20 @@
       <div><div class="settings-row__label" data-i18n="ploy.decay.active">Inactive days before dropping a tier</div><div class="settings-row__hint" data-i18n="ploy.decay.active-hint">Every time a fan goes this many days with no activity, their tier cap drops one step; points stay and keep fading</div></div>
       <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.active" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
     </div>
-  </div>
+</section>
 
   <!-- F5 平台常數（唯讀）：幣別與匯率規則見主規格 §7.15（D316），本頁不設定；基準費率自 D498 起是賺分事件分頁的 K_A。 -->
-  <div>
-    <div class="group-divider"></div>
-    <h4 class="group-title" data-i18n="ploy.const.title">Platform constants</h4>
+<section class="card mt-16">
+    <div class="card__head"><h3 class="card__title" data-i18n="ploy.const.title">Platform constants</h3></div>
     <div class="settings-row" style="border-bottom:0">
       <div><div class="settings-row__label" data-i18n="ploy.const.currency">Platform base currency</div><div class="settings-row__hint" data-i18n="ploy.const.currency-hint">Exchange rates follow the platform currency rules</div></div>
       <div class="settings-row__value">HKD <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></div>
     </div>
-  </div>
+</section>
 
   <!-- F5 誠信規則：平台強制，創作者與 Admin 都不能關（§7.5）；本頁只列摘要、不給開關。 -->
-  <div>
-    <div class="group-divider"></div>
-    <h4 class="group-title" data-i18n="ploy.int.title">Integrity rules</h4>
+<section class="card mt-16">
+    <div class="card__head"><h3 class="card__title" data-i18n="ploy.int.title">Integrity rules</h3></div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.int.ledger">Event ledger</div><div class="settings-row__hint" data-i18n="ploy.int.ledger-hint">Every point traces to one event; corrections are reversals, never edits</div></div>
       <span class="badge badge--neutral" data-i18n="ploy.always">Always on</span>
@@ -430,13 +420,12 @@
       <div><div class="settings-row__label" data-i18n="ploy.int.cap">Cap checks</div><div class="settings-row__hint" data-i18n="ploy.int.cap-hint">Rolling 90 days, checked when points are given, never retroactive</div></div>
       <span class="badge badge--neutral" data-i18n="ploy.always">Always on</span>
     </div>
-  </div>
+</section>
 
   <!-- F8 歷史訂單回填（D476 第 9 項）：上線時由平台執行一次、創作者不需操作。只放狀態與規則摘要，沒有「執行」按鈕
        （執行方式與畫面規格未定，UIA-296）；起始日期 D479 第 2 項定為上線前 365 天。掛 S111（⚪）。 -->
-  <div data-feat="S111">
-    <div class="group-divider"></div>
-    <h4 class="group-title" data-i18n="ploy.bf.title">Order backfill at launch</h4>
+<section class="card mt-16" data-feat="S111">
+    <div class="card__head"><h3 class="card__title" data-i18n="ploy.bf.title">Order backfill at launch</h3></div>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.bf.status">Status</div><div class="settings-row__hint" data-i18n="ploy.bf.status-hint">Ztor runs it once when loyalty points launch</div></div>
       <span class="badge badge--neutral" data-i18n="ploy.bf.st.pending">Not run yet</span>
@@ -449,7 +438,6 @@
     <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.bf.r2">Backfilled points fade from the original order date.</p>
     <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.bf.r3">No season boost applies; refunded orders are skipped.</p>
     <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.bf.r4">Each backfilled entry is marked “Backfill” in the ledger.</p>
-  </div>
 </section>
 </div>
 
@@ -498,6 +486,25 @@
 </div>
 <footer class="app-footer"><span>Ztor Creator Studio · R 2.3 prototype</span><span>·</span><span data-i18n="admin.studio">Admin Creator Studio</span></footer>
 </main></div>
+
+<!-- 儲存確認與離開未存（D533）：同一個窄殼（5.1.8 類型 2「確認後執行」、類型 8「離開未存」），比照活動詳情 #ed-confirm。
+     儲存確認＝列出這次改了哪些項目（原值 → 新值），取消＋儲存；
+     離開未存＝切分頁或離開本頁時還有沒存的修改，同樣列出項目，三選一：繼續編輯／放棄修改／儲存。 -->
+<div class="payout-modal" id="ploy-confirm" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="ploy-cf-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ploy-cf-title"></h2>
+      <button class="btn btn--icon" type="button" data-cf-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" id="ploy-cf-body"></div>
+    <div class="payout-dialog__foot">
+      <span style="flex:1"></span>
+      <button class="btn btn--outline" type="button" data-cf-close id="ploy-cf-cancel"></button>
+      <button class="btn btn--outline" type="button" id="ploy-cf-alt" hidden></button>
+      <button class="btn btn--primary" type="button" id="ploy-cf-ok"></button>
+    </div>
+  </section>
+</div>
 
 <!-- 新增賽季加倍（中央彈窗，Q27）：起訖兩個日期，結束須晚於開始。 -->
 <div class="payout-modal" id="ploy-season-modal" hidden>
@@ -784,8 +791,8 @@
     loadStored();
     function refreshReads() {
       inputs.forEach(function (inp) {
-        var cell = inp.closest('.bmx__cell'), read = cell && cell.querySelector('.bmx__read');
-        if (read) read.textContent = valText(inp.getAttribute('data-saved'), inp.getAttribute('data-ploy-unit'));
+        var cell = inp.closest('.bmx__cell, [data-ploy-read-scope]'), read = cell && cell.querySelector('.bmx__read');
+        if (read) read.textContent = read.hasAttribute('data-read-num') ? inp.getAttribute('data-saved') : valText(inp.getAttribute('data-saved'), inp.getAttribute('data-ploy-unit'));   /* 基礎比率大數字只放數字，單位另一格（D531） */
         var nameKey = inp.getAttribute('data-ploy-name');
         if (nameKey) {
           var badge = document.querySelector('[data-tier-name="' + nameKey + '"]');
@@ -805,39 +812,146 @@
 
     /* ── 卡內編輯（以卡為單位）：唯讀 ⇄ 編輯；取消還原成已儲存值；儲存比對 data-saved，有差的每一項各記一列。
        生效類別讀 data-ploy-kind（D479 第 5 項、D498）。事件開關不在唯讀／編輯兩面裡，不受這段影響（D508）。 ── */
+    /* ── 確認彈窗（D533）：儲存確認與離開未存共用 #ploy-confirm ── */
+    var cf = document.getElementById('ploy-confirm'), cfOk = null, cfAlt = null;
+    function escH(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function changesHTML(rows) {
+      return '<p class="text-sub" style="margin:0 0 var(--sp-12)">' + escH(t('ploy.cf.lead', 'You changed these settings:')) + '</p><div>' +
+        rows.map(function (row, i) {
+          return '<div class="kv' + (i ? '' : ' kv--lead') + '"><span class="kv__k">' + escH(itemText(row)) + '</span><span class="kv__v">' +
+            escH(fromText(row)) + ' → ' + escH(toText(row)) + '</span></div>';
+        }).join('') + '</div>';
+    }
+    function openConfirm(o) {
+      document.getElementById('ploy-cf-title').textContent = o.title;
+      document.getElementById('ploy-cf-body').innerHTML = o.body;
+      document.getElementById('ploy-cf-cancel').textContent = o.cancel;
+      var alt = document.getElementById('ploy-cf-alt');
+      alt.hidden = !o.alt; alt.textContent = o.alt || '';
+      document.getElementById('ploy-cf-ok').textContent = o.ok;
+      cfOk = o.onOk || null; cfAlt = o.onAlt || null;
+      cf.hidden = false; document.body.classList.add('is-modal-open');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(cf);
+    }
+    function closeConfirm() { cf.hidden = true; document.body.classList.remove('is-modal-open'); cfOk = null; cfAlt = null; }
+    cf.addEventListener('click', function (e) {
+      if (e.target === cf || e.target.closest('[data-cf-close]')) { closeConfirm(); return; }
+      if (e.target.closest('#ploy-cf-alt')) { var a = cfAlt; closeConfirm(); if (a) a(); return; }
+      if (e.target.closest('#ploy-cf-ok')) { var k = cfOk; closeConfirm(); if (k) k(); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !cf.hidden) closeConfirm(); });
+    /* 離開未存（D533）：有沒存的修改時先問；三選一＝繼續編輯（關窗）／放棄修改／儲存。go＝確定離開後要做的事 */
+    function guardLeave(cards, go) {
+      var dirty = cards.filter(function (c) { return c && c._ploy && c._ploy.diff().length; });
+      if (!dirty.length) { go(); return; }
+      var rows = [];
+      dirty.forEach(function (c) { rows = rows.concat(c._ploy.diff()); });
+      openConfirm({
+        title: t('ploy.cf.leave.title', 'Save your changes?'),
+        body: changesHTML(rows),
+        cancel: t('ploy.cf.leave.keep', 'Keep editing'),
+        alt: t('ploy.cf.leave.discard', 'Discard changes'),
+        ok: t('ploy.save', 'Save'),
+        onAlt: function () { dirty.forEach(function (c) { c._ploy.cancel(); }); go(); },
+        onOk: function () { dirty.forEach(function (c) { c._ploy.commit(c._ploy.diff()); }); go(); }
+      });
+    }
+    function allCards() { return Array.prototype.slice.call(document.querySelectorAll('[data-ploy-card]')); }
+    /* 離開本頁：站內連結（含側欄、麵包屑、登出）先問；關分頁或重新整理攔不到自訂彈窗，退回瀏覽器原生提示 */
+    window.addEventListener('beforeunload', function (e) {
+      if (!allCards().some(function (c) { return c._ploy && c._ploy.diff().length; })) return;
+      e.preventDefault(); e.returnValue = '';
+    });
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('a[href]');
+      if (!link || link.closest('#ploy-confirm')) return;
+      var href = link.getAttribute('href') || '';
+      if (!href || href.charAt(0) === '#') return;
+      if (!allCards().some(function (c) { return c._ploy && c._ploy.diff().length; })) return;
+      e.preventDefault();
+      var logout = link.hasAttribute('data-logout') && typeof window.ztorLogout === 'function';
+      if (logout) e.stopPropagation();
+      var blank = link.target === '_blank';
+      guardLeave(allCards(), function () {
+        if (logout) window.ztorLogout();
+        else if (blank) window.open(link.href, '_blank', 'noopener');
+        else location.href = link.href;
+      });
+    }, true);
+
+    /* 編輯／取消／儲存在分頁列右側一組（D531）：作用於目前分頁的 [data-ploy-card]；每個分頁各自記編輯狀態，
+       切分頁時按鈕跟著顯示該分頁的狀態；修改紀錄分頁沒有 [data-ploy-card]，整組收起。 */
+    var top = document.querySelector('[data-ploy-top]');
+    var topIdle = top.querySelector('[data-idle]'), topBusy = top.querySelector('[data-busy]');
+    function activeCard() {
+      var panel = document.querySelector('.tab-panel.tab-panel--active');
+      if (!panel) return null;
+      return panel.matches('[data-ploy-card]') ? panel : panel.querySelector('[data-ploy-card]');
+    }
+    function syncTop() {
+      var c = activeCard();
+      top.hidden = !c;
+      if (!c) return;
+      var on = c.classList.contains('is-editing');
+      topIdle.hidden = on; topBusy.hidden = !on;
+    }
+    top.querySelector('[data-edit]').addEventListener('click', function () { var c = activeCard(); if (c) c._ploy.edit(); });
+    top.querySelector('[data-cancel]').addEventListener('click', function () { var c = activeCard(); if (c) c._ploy.cancel(); });
+    top.querySelector('[data-save]').addEventListener('click', function () { var c = activeCard(); if (c) c._ploy.save(); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-card]'), function (card) {
       var cat = card.getAttribute('data-ploy-card');
       var own = inputs.filter(function (i) { return i.closest('[data-ploy-card]') === card; });
-      var idle = card.querySelector('.card__head [data-idle]'), busy = card.querySelector('.card__head [data-busy]');
-      function setEditing(on) { card.classList.toggle('is-editing', on); idle.hidden = on; busy.hidden = !on; }
-      card.querySelector('[data-edit]').addEventListener('click', function () {
+      function setEditing(on) { card.classList.toggle('is-editing', on); syncTop(); }
+      card._ploy = {};
+      card._ploy.edit = (function () {
         setEditing(true);
         var first = own.filter(function (i) { return i.offsetParent !== null; })[0];
         if (first) first.focus();
       });
-      card.querySelector('[data-cancel]').addEventListener('click', function () {
+      card._ploy.cancel = (function () {
         own.forEach(function (i) { i.value = i.getAttribute('data-saved'); });
         setEditing(false);
       });
-      card.querySelector('[data-save]').addEventListener('click', function () {
+      /* 這次改了哪些項目（還沒寫入）：留空視為沒改 */
+      card._ploy.diff = function () {
         var when = nowStamp(), rows = [];
+        if (!card.classList.contains('is-editing')) return rows;
         own.forEach(function (inp) {
           var was = inp.getAttribute('data-saved'), now = inp.value.trim();
-          if (now === '') { inp.value = was; return; }   /* 留空視為沒改 */
-          if (now === was) return;
+          if (now === '' || now === was) return;
           rows.push({ when: when, cat: cat, kind: 'param', label: inp.getAttribute('data-ploy-label'), field: inp.getAttribute('data-ploy-field'),
-                      unit: inp.getAttribute('data-ploy-unit'), from: was, to: now, status: inp.getAttribute('data-ploy-kind') || 'event' });
+                      unit: inp.getAttribute('data-ploy-unit'), from: was, to: now, status: inp.getAttribute('data-ploy-kind') || 'event', _inp: inp });
+        });
+        return rows;
+      };
+      /* 寫入：確認彈窗按「儲存」之後才呼叫（D533） */
+      card._ploy.commit = function (rows) {
+        own.forEach(function (inp) { if (inp.value.trim() === '') inp.value = inp.getAttribute('data-saved'); });
+        rows.forEach(function (row) {
+          var inp = row._inp; delete row._inp;
           if (inp.getAttribute('data-ploy-name')) inp.setAttribute('data-custom', '1');   /* 改過的分級名稱不再跟著介面語言換 */
-          inp.setAttribute('data-saved', now);
+          inp.setAttribute('data-saved', row.to);
         });
         setEditing(false);
-        if (!rows.length) { toast(t('ploy.unchanged', 'Nothing has changed since the last save.')); return; }
+        if (!rows.length) return;
         log = rows.concat(log);
         persist();
         refreshReads();
         renderLog();
         toast(t('ploy.saved', 'Saved'), true);
-      });
+      };
+      /* 按「儲存」：沒改就直接收起；有改先跳確認彈窗列出修改項目（D533） */
+      card._ploy.save = function (after) {
+        var rows = card._ploy.diff();
+        if (!rows.length) { card._ploy.commit(rows); toast(t('ploy.unchanged', 'Nothing has changed since the last save.')); if (after) after(); return; }
+        openConfirm({
+          title: t('ploy.cf.save.title', 'Save these changes?'),
+          body: changesHTML(rows),
+          cancel: t('ploy.cancel', 'Cancel'),
+          ok: t('ploy.save', 'Save'),
+          onOk: function () { card._ploy.commit(rows); if (after) after(); }
+        });
+      };
     });
 
     /* ── F9 事件開關（D498、D508）：任何時候都能切（不必先按編輯），立即生效、當下記一列（開 → 關）；
@@ -860,7 +974,7 @@
       if (LS) LS.reset();
       inputs.forEach(function (inp) { inp.value = inp.defaultValue; inp.setAttribute('data-saved', inp.defaultValue); inp.removeAttribute('data-custom'); });
       Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-switch]'), function (sw) { setStopped(sw, true); });
-      Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-card].is-editing [data-cancel]'), function (b) { b.click(); });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-card].is-editing'), function (c) { c._ploy.cancel(); });
       if (window.applyI18n) window.applyI18n(); else { syncNames(); refreshReads(); }
       toast(t('ploy.reset-done', 'Back to the defaults'), true);
     });
@@ -878,7 +992,7 @@
       sw.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     });
 
-    /* ── 頁面級分頁 ＋「變更歷史」（切到修改紀錄並篩選該類）── */
+    /* ── 頁面級分頁 ── */
     var tablist = document.querySelector('[data-tabs]');
     function showTab(name) {
       Array.prototype.forEach.call(tablist.querySelectorAll('.tabs__item'), function (b) {
@@ -889,10 +1003,12 @@
       Array.prototype.forEach.call(document.querySelectorAll('.tab-panel[data-panel]'), function (p) {
         p.classList.toggle('tab-panel--active', p.dataset.panel === name);
       });
+      syncTop();
     }
-    tablist.addEventListener('click', function (e) { var b = e.target.closest('.tabs__item'); if (b && b.dataset.tab) showTab(b.dataset.tab); });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-history]'), function (btn) {
-      btn.addEventListener('click', function () { setFilter(btn.getAttribute('data-history')); showTab('log'); window.scrollTo({ top: 0 }); });
+    tablist.addEventListener('click', function (e) {
+      var b = e.target.closest('.tabs__item');
+      if (!b || !b.dataset.tab || b.classList.contains('tabs__item--active')) return;
+      guardLeave([activeCard()], function () { showTab(b.dataset.tab); });   /* D533：目前分頁有沒存的修改先問 */
     });
 
     syncNames();
