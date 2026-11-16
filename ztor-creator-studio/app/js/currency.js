@@ -200,7 +200,8 @@
     root.querySelectorAll('[data-currency-hint]').forEach(function (el) {
       var key = el.getAttribute('data-currency-hint');
       /* {sym}（D466，2026-10-22）：創作者幣別符號，申請提款彈窗的餘額說明句在用 */
-      el.textContent = T(key, el.textContent).replace(/\{cur\}/g, creatorCurrency()).replace(/\{sym\}/g, symbol(creatorCurrency()));
+      /* {basesym}（D537，2026-11-16）：平台基準幣別符號，平台忠誠點數設定的基礎比率標籤「每花 HK$1 得」在用 */
+      el.textContent = T(key, el.textContent).replace(/\{cur\}/g, creatorCurrency()).replace(/\{sym\}/g, symbol(creatorCurrency())).replace(/\{basesym\}/g, symbol(BASE));
     });
   }
 
