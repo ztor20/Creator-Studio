@@ -23,6 +23,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    每列下限＝目前－item.max（呼叫端給該品項的未鎖定可賣；下限＝鎖定＋保留），低於下限該列紅框、整單不能送出；
    新的在庫數＝目前＝這列不改。onSubmit(entries, 'adjust')：entries 的 qty 是有正負的差額、to 是新的在庫數。
 
+   2026-11-11 D529（5.1.5.6 §8 ②④）：每列顯示保留中（item.held）與最低數。2026-11-16 使用者裁示「用欄位顯示」：
+   修改庫存的表改五欄——目前｜保留中｜最低｜新的在庫數｜差額（.restock-table--adjust），名稱下不再寫小字。openAdjust*(…, reload)
+   的 reload() 回傳與開窗時同形狀的最新 groups；送出當下重讀一次，任何一列的目前數量、保留中或下限變了 →
+   不送出，把那幾列換成最新數字（已填的新在庫數保留），顯示「數字已變動」提示（.alert--row.alert--warning），再按一次才送。
+
    createRestock(host, hooks) → { openProduct, openBundle, openSingle,
    openVariants, close }. hooks: { onSubmit(entries, mode) }；entries 每筆帶單據層的 supplier／eta／note（同一單相同）（onReceive 2026-09-11 撤除：到貨確認改在商品庫存分頁的「補貨中」卡逐單做）.
    Each entry = { member, name, qty, current, supplier }. UI chrome = data-i18n;
@@ -53,6 +58,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       <!-- D525：修改庫存時才出現——下限說明＋低於下限的錯誤（那一列本身另標 aria-invalid 紅框） -->
       <p class="field__hint" data-restock-adjust-hint hidden data-i18n="restock.adjust.hint">Stock can't go below what's locked to sales channels or reserved by unpaid orders. To go lower, lower the lock first.</p>
       <p class="field__error" data-restock-adjust-err hidden data-i18n="restock.adjust.err">Some items are below their minimum</p>
+      <!-- D529：儲存時重新檢查，打開以後數字變了（期間有粉絲進入結帳）→ 不儲存、換成最新數字 -->
+      <div class="alert alert--row alert--warning" data-restock-stale hidden role="status">
+        <span class="alert__icon"><i data-lucide="refresh-cw" class="ztor-icon"></i></span>
+        <span class="alert__body"><span class="alert__title" data-i18n="restock.adjust.stale.title">Stock changed while you were editing</span><span class="alert__meta" data-i18n="restock.adjust.stale.desc">Nothing was saved. The rows now show the latest numbers — check them and save again.</span></span>
+      </div>
       <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--foreground-subtle)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
       <!-- 預計到貨時間（僅計時補貨）→ 供應商 → 備註（Figma：表格下方，改用 .field＝有 label→input 間距）-->
@@ -82,7 +92,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 
   window.ZTOR_PARTIALS.createRestock = function (host, hooks) {
     hooks = hooks || {};
-    var modal = null, lastFocused = null, originRow = null;
+    var modal = null, lastFocused = null, originRow = null, reloadFn = null;
 
     function chrome(el) {
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
@@ -106,35 +116,43 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       /* D525 下限＝目前－未鎖定可賣（呼叫端給 max；沒給或 Infinity＝整個在庫都能動，下限 0） */
       var free = (item.max == null || !isFinite(item.max)) ? cur : Math.max(0, Math.min(cur, num(item.max)));
       var min = cur - free;
-      var minTxt = ((window.i18nT && window.i18nT('restock.adjust.min')) || 'Min {n}').replace('{n}', min);
+      var held = Math.max(0, num(item.held));
       var imgInner = item.img ? '<img src="' + esc(item.img) + '" alt="">' : '<i data-lucide="package" class="ztor-icon"></i>';
       return '' +
-        '<div class="restock-table__row" data-restock-line data-current="' + cur + '" data-min="' + min + '" data-name="' + esc(item.name) + '"' + (item.vi != null ? ' data-vi="' + esc(item.vi) + '"' : '') + '>' +
+        '<div class="restock-table__row" data-restock-line data-current="' + cur + '" data-min="' + min + '" data-held="' + held + '" data-name="' + esc(item.name) + '"' + (item.vi != null ? ' data-vi="' + esc(item.vi) + '"' : '') + '>' +
           '<div class="restock-table__id">' +
             (item.thumb ? item.thumb : '<span class="restock-table__img">' + imgInner + '</span>') +
-            '<span class="restock-table__name">' + esc(item.name) + (adj && min > 0 ? '<br><small class="text-sub">' + esc(minTxt) + '</small>' : '') + '</span>' +
+            '<span class="restock-table__name">' + esc(item.name) + '</span>' +
           '</div>' +
-          '<input class="input restock-table__ro" value="' + cur + '" readonly tabindex="-1" aria-label="Current stock">' +
+          '<input class="input restock-table__ro" value="' + cur + '" readonly tabindex="-1" aria-label="Current stock" data-restock-cur>' +
+          (adj ? '<input class="input restock-table__ro" value="' + (held || '—') + '" readonly tabindex="-1" aria-label="Reserved" data-restock-held>' +
+                 '<input class="input restock-table__ro" value="' + min + '" readonly tabindex="-1" aria-label="Minimum" data-restock-min>' : '') +
           '<input class="input" inputmode="numeric" placeholder="0" data-restock-qty aria-label="' + (adj ? 'New stock' : 'Restock quantity') + '"' + (adj ? ' value="' + cur + '"' : '') + '>' +
           '<input class="input restock-table__ro" value="' + (adj ? '0' : cur) + '" readonly tabindex="-1" data-restock-after aria-label="' + (adj ? 'Difference' : 'After restock') + '">' +
         '</div>';
     }
     /* A member's variant matrix: groups = [{label, items}] → .restock-table（含一次欄名列） */
+    /* 欄名＋hover 說明（2026-11-16 使用者裁示，.tip--label；說明文案鍵＝欄名鍵＋.tip） */
+    function colHTML(key, fb, end) {
+      return '<span class="restock-table__col"><span class="tip tip--label' + (end ? ' tip--end' : '') + '" tabindex="0"><span data-i18n="' + key + '">' + fb + '</span>' +
+        '<span class="tip__bubble" role="tooltip" data-i18n="' + key + '.tip"></span></span></span>';
+    }
     function matrixHTML(groups) {
       var adj = kind === 'adjust';
       var head =
         '<div class="restock-table__head">' +
           '<span></span>' +
-          '<span class="restock-table__col" data-i18n="restock.col.current">Current</span>' +
-          '<span class="restock-table__col" data-i18n="' + (adj ? 'restock.col.new' : 'restock.col.qty') + '">' + (adj ? 'New stock' : 'Restock') + '</span>' +
-          '<span class="restock-table__col" data-i18n="' + (adj ? 'restock.col.diff' : 'restock.col.after') + '">' + (adj ? 'Change' : 'After') + '</span>' +
+          colHTML('restock.col.current', 'Current') +
+          (adj ? colHTML('restock.col.held', 'Reserved') + colHTML('restock.col.min', 'Minimum') : '') +
+          (adj ? colHTML('restock.col.new', 'New stock') : colHTML('restock.col.qty', 'Restock')) +
+          (adj ? colHTML('restock.col.diff', 'Change', true) : colHTML('restock.col.after', 'After', true)) +
         '</div>';
       var body = '';
       (groups || []).forEach(function (g) {
         if (g.label) body += '<div class="restock-table__group">' + esc(g.label) + '</div>';
         (g.items || []).forEach(function (it) { body += lineHTML(it); });
       });
-      return '<div class="restock-table">' + head + body + '</div>';
+      return '<div class="restock-table' + (adj ? ' restock-table--adjust' : '') + '">' + head + body + '</div>';
     }
     /* members = [{name, groups}]; tabbed = bundle (member tabs) vs product (one panel) */
     function renderMembers(members, tabbed) {
@@ -250,7 +268,37 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       b.innerHTML = '<span data-i18n="' + key + '">' + txt + '</span>';
       if (window.applyI18n) window.applyI18n(b);
     }
+    /* D529 儲存時重新檢查：重讀最新數字，對每一列比目前數量／保留中／下限；有變就就地換成最新值，回傳 true＝有變 */
+    function restale() {
+      if (kind !== 'adjust' || !reloadFn) return false;
+      var fresh = {};
+      (reloadFn() || []).forEach(function (g) {
+        (g.items || []).forEach(function (it) {
+          var cur = num(it.current);
+          var free = (it.max == null || !isFinite(it.max)) ? cur : Math.max(0, Math.min(cur, num(it.max)));
+          fresh[it.vi != null ? 'v' + it.vi : 'n' + it.name] = { cur: cur, min: cur - free, held: Math.max(0, num(it.held)) };
+        });
+      });
+      var changed = false;
+      modal.querySelectorAll('[data-restock-line]').forEach(function (line) {
+        var key = line.hasAttribute('data-vi') ? 'v' + line.getAttribute('data-vi') : 'n' + line.getAttribute('data-name');
+        var f = fresh[key];
+        if (!f) return;
+        if (f.cur === num(line.getAttribute('data-current')) && f.min === num(line.getAttribute('data-min')) && f.held === num(line.getAttribute('data-held'))) return;
+        changed = true;
+        line.setAttribute('data-current', f.cur);
+        line.setAttribute('data-min', f.min);
+        line.setAttribute('data-held', f.held);
+        var c = line.querySelector('[data-restock-cur]'); if (c) c.value = f.cur;
+        var hEl = line.querySelector('[data-restock-held]'); if (hEl) hEl.value = f.held || '—';
+        var mEl = line.querySelector('[data-restock-min]'); if (mEl) mEl.value = f.min;
+      });
+      return changed;
+    }
     function submit() {
+      var stale = modal.querySelector('[data-restock-stale]');
+      if (restale()) { if (stale) stale.hidden = false; recalcAll(); return; }   /* 數字變了：不送、換成最新（D529） */
+      if (stale) stale.hidden = true;
       if (recalcAll()) return;   /* 修改庫存有列低於下限：不送（D525） */
       var entries = collect();
       if (!entries.length) return;
@@ -311,6 +359,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (supEl) supEl.value = '';
       var noteEl = modal.querySelector('[data-restock-notes]');
       if (noteEl) noteEl.value = '';
+      var staleEl = modal.querySelector('[data-restock-stale]');
+      if (staleEl) staleEl.hidden = true;
       var f = modal.querySelector(kind === 'adjust' ? '[data-restock-qty]' : 'input, button');
       if (f) f.focus();
     }
@@ -325,9 +375,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     /* A PRODUCT restock — variants as a matrix, NO member tabs.
        groups = [{label, items}] (single-variant → one groupless line;
        2-option → sub-grouped by option-1). */
-    function openProduct(groups, row, k) {
+    function openProduct(groups, row, k, reload) {
       if (!ensure()) return;
       kind = k === 'adjust' ? 'adjust' : 'restock';
+      reloadFn = (kind === 'adjust' && typeof reload === 'function') ? reload : null;
       originRow = row || null;
       renderMembers([{ name: '', groups: groups }], false);
       open();
@@ -338,6 +389,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function openBundle(members, row) {
       if (!ensure()) return;
       kind = 'restock';   /* 組合包沒有修改庫存（D525〔推導〕） */
+      reloadFn = null;
       originRow = row || null;
       var norm = (members || []).map(function (m) {
         if (m.matrix) return { name: m.name, groups: m.matrix };
@@ -355,8 +407,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       openSingle: function (item, row) { openProduct([{ label: null, items: [item || {}] }], row); },
       openVariants: function (product, variants, row) { openProduct([{ label: null, items: variants || [] }], row); },
       /* D525 修改庫存：同一張表，第二欄填新的在庫數 */
-      openAdjust: function (groups, row) { openProduct(groups, row, 'adjust'); },
-      openAdjustSingle: function (item, row) { openProduct([{ label: null, items: [item || {}] }], row, 'adjust'); },
+      /* reload（D529）：選填，回傳最新 groups，送出當下重新檢查用 */
+      openAdjust: function (groups, row, reload) { openProduct(groups, row, 'adjust', reload); },
+      openAdjustSingle: function (item, row, reload) { openProduct([{ label: null, items: [item || {}] }], row, 'adjust', reload); },
       close: close
     };
   };

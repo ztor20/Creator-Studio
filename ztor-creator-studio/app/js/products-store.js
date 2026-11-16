@@ -120,7 +120,8 @@
       variants: [
         /* 2026-09-11（D268）：部分組合各自一張圖（img）、其餘沿用主圖，讓表上同時看得到實線／虛線兩種列 */
         { combo: ['S'],  sku: 'TEE-S',  stock: '2',  img: 'tee-black.webp' },
-        { combo: ['M'],  sku: 'TEE-M',  stock: '18', img: 'tee-black.webp' },
+        /* D529 示範（2026-11-11）：M 有 2 件粉絲正在結帳（未鎖定格的保留）——商品庫存表 M 列寫 16/18，修改庫存 M 最低 2 */
+        { combo: ['M'],  sku: 'TEE-M',  stock: '18', img: 'tee-black.webp', holds: { single: 0, free: 2, bundles: {} } },
         { combo: ['L'],  sku: 'TEE-L',  stock: '15' },
         { combo: ['XL'], sku: 'TEE-XL', stock: '7' }
       ],
@@ -628,6 +629,9 @@
   (function () {
     var v = WISHYOU_PRODUCTS['wy-26ms-tshirt-white'] && WISHYOU_PRODUCTS['wy-26ms-tshirt-white'].variants;
     if (v) v.forEach(function (x) { if (x.combo.indexOf('XL') !== -1) x.price = 2080; });
+    /* D529 保留示範（2026-11-11）：M 有 2 件粉絲正在結帳（未鎖定格的保留）——商品庫存表 M 列未鎖定寫成「可賣/配額」，
+       保留中 2，修改庫存 M 列最低含這 2 件 */
+    if (v) v.forEach(function (x) { if (x.combo[0] === 'M') x.holds = { single: 0, free: 2, bundles: {} }; });
   })();
   /* 逐組合商品圖示範（2026-09-11 D268）：nick persona 也要看得到「自己的圖／沿用主圖」兩種列——
      圖沿用該商品 gallery 的第二張（站內既有檔），只給部分尺寸。 */
