@@ -133,7 +133,7 @@
 - `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ 並排的可選卡片，標題加說明，選取時以橘色小圓點標示 ｜ 規格 `ds-specs/radio-card.md`
 - `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ 輕量的垂直單選清單，每列有單選圓點、標題與可選說明 ｜ 規格 `ds-specs/4.96-checkbox.md`
 - `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ 上架前就緒檢查＋還差幾項 banner ｜ 規格 `ds-specs/4.22g-readiness-card.md`
-- `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table__col, .restock-table__group ｜ E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs); plus an ad… ｜ 規格 `ds-specs/4.29c-restock-order.md`
+- `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table--adjust, .restock-table__col ｜ E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs); plus an ad… ｜ 規格 `ds-specs/4.29c-restock-order.md`
 - `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ 流程 Review 步驟的摘要列，顯示欄位名、值與右側編輯連結 ｜ 規格 `ds-specs/4.49-review-row.md`
 - `review-status.css` — .review-status, .review-status--flat, .review-status__head, .review-status__thumb, .review-status__title ｜ 送審件的狀態面板，顯示審核狀態、退件理由與可用的動作 ｜ 規格 `ds-specs/4.119-review-status.md`
 - `rich-body.css` — .rich-body, .rich-body__blocks, .rich-body__block, .rich-body__main, .rich-body__grip ｜ 描述區塊編輯器：描述＝一串可排序的區塊，三種型別——文字／圖片／影片 ｜ 規格 `ds-specs/4.222-rich-body.md`

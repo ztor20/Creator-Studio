@@ -121,7 +121,8 @@
        free     未鎖定格的保留（單售沒鎖、或沒鎖定的組合包的單記這裡）
        bundles  各組合包鎖定格的保留（件數＝套數 × 每套用量；組合包層另記 bundle.holdSets）
      付款成功：該格保留與配額各減、已售加；到期或付款失敗：該格保留減、配額不變（量回到該格可賣）。
-     多選項商品的保留原型不示範（逐選項組合的保留粒度規格未寫，維持 0）。 */
+     多選項商品（D529〔推導〕）：保留記在下單的那個選項組合的那一格，資料在 variants[i].holds（形狀同上），
+     見下方 variantHoldOf／variantHoldTotal；商品層的保留中＝各組合加總（variantsHoldTotal）。 */
   function holds(product) {
     var h = (product && product.pool && product.pool.holds) || {};
     return { single: num(h.single), free: num(h.free), bundles: h.bundles || {} };
@@ -269,6 +270,32 @@
     return locked === null ? variantFree(variant) : locked;
   }
   /* 商品層的加總：多選項商品的管道分配表是唯讀彙總，數字全部由這三個函式算。 */
+  /* ── 逐選項組合的保留（D529〔推導〕，§7.14「保留」多選項商品）──
+     variants[i].holds = { single, free, bundles:{<id>:n} }；有鎖的那格才算該格保留，沒鎖的單記在未鎖定格（free）。 */
+  function vHolds(variant) {
+    var h = (variant && variant.holds) || {};
+    return { single: num(h.single), free: num(h.free), bundles: h.bundles || {} };
+  }
+  function variantHoldOf(variant, channel) {
+    var h = vHolds(variant);
+    if (channel === 'free') return h.free;
+    if (channel === 'single' || channel === undefined || channel === null) return variantLockOf(variant, 'single') === null ? 0 : h.single;
+    var bid = (typeof channel === 'string') ? channel : channel.bundle;
+    return variantLockOf(variant, bid) === null ? 0 : num(h.bundles[bid]);
+  }
+  /** 這個選項組合的保留中＝各格保留加總。 */
+  function variantHoldTotal(variant) {
+    var h = vHolds(variant), sum = h.free + (variantLockOf(variant, 'single') === null ? 0 : h.single), k;
+    for (k in h.bundles) if (Object.prototype.hasOwnProperty.call(h.bundles, k) && variantLockOf(variant, k) !== null) sum += num(h.bundles[k]);
+    return sum;
+  }
+  /** 未鎖定格扣掉自己的保留後還能賣的量（修改庫存的下限＝在庫－這個數，D525／D529）。 */
+  function variantFreeSellable(variant) {
+    return Math.max(0, variantFree(variant) - vHolds(variant).free);
+  }
+  function variantsHoldTotal(variants) {
+    return (variants || []).reduce(function (a, v) { return a + variantHoldTotal(v); }, 0);
+  }
   function variantsTotal(variants) {
     return (variants || []).reduce(function (a, v) { return a + variantStock(v); }, 0);
   }
@@ -1103,6 +1130,10 @@
     variantLockOf: variantLockOf,
     variantLockedTotal: variantLockedTotal,
     variantFree: variantFree,
+    variantHoldOf: variantHoldOf,
+    variantHoldTotal: variantHoldTotal,
+    variantFreeSellable: variantFreeSellable,
+    variantsHoldTotal: variantsHoldTotal,
     variantChannelQty: variantChannelQty,
     variantsTotal: variantsTotal,
     variantsFree: variantsFree,

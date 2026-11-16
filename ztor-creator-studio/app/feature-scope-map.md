@@ -296,7 +296,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 32 · 🟣 18 · ⚪ 38 · ⚫ 退場 5�
 | `S68` | 　需求看板頁（E-Shop 第四個導覽目的地：篩選、摘要指標、市場需求表、計畫生產量與差距、資料不足與參考同類商品、資料來源說明） | Demand board page | ⚪ TBD      | ✅ built  | D360／5.1.5.16 F1–F5；整頁 `data-page-feat="S68"`，並登記進 `js/sidebar.js`／`js/devtools.js` 兩份 `FULL_ROUTES`（低版本藏側欄入口、直連導回）；資料與算法在 `js/demand-store.js`（示範資料）。上線階段〔產品待確認〕 |
 | `S69` | 　商品層需求數據入口（商品細節頁開彈窗，看該商品自己的需求數據） | Product-level demand data entry | ⚪ TBD      | ✅ built  | D360／5.1.5.1 §2.19；與看板同一口徑（`ztorDemand.productSlice`）；入口適用範圍（草稿、數位商品）〔產品待確認〕（§8.30 第 17 項） |
 | `S144` | 　商品相關貼文分頁（商品細節頁：發新貼文、編輯、取消排程、重試） | Product posts tab | 🔵 release2.3 | ✅ built  | D520／5.1.5.1 §2.21、5.1.5.7「發布後的編輯與管理」；相關貼文只收新品貼文面板發出的 |
-| `S145` | 　修改庫存（商品清單列選單與商品細節頁庫存管理：直接填新的在庫數、可增可減、最低到鎖定＋保留，紀錄標「修改庫存」） | Adjust stock | 🔵 release2.3 | ✅ built  | D525／5.1.5.6 §8、5.1.5.1 §2.10 |
+| `S145` | 　修改庫存（商品清單列選單與商品細節頁庫存管理：直接填新的在庫數、可增可減、最低到鎖定＋保留，紀錄標「修改庫存」） | Adjust stock | 🔵 release2.3 | ✅ built  | D525／5.1.5.6 §8、5.1.5.1 §2.10；D529 每列顯示保留中、儲存時重新檢查（數字變了不儲存、換成最新） |
 | `S70` | 　服飾配件大類→次分類、適用對象、系統屬性＋自訂規格（建立商品、商品細節） | Apparel category, department & system attributes | ⚪ TBD      | ✅ built  | D360／5.1.5.2 F2、5.1.5.1 §2.6；13 大類、次分類、屬性清單在 `js/apparel-taxonomy.js`，商品記錄欄位見 `js/products-store.js`（group／category／subCategory／audience／attrs／customSpecs）；屬性值域與適用大類、既有商品遷移〔產品待確認〕（§8.30 第 8–10 項） |
 | `S71` | 　尺寸顏色快捷預設擴充與自行輸入（建立商品選項建構器、商品細節選項） | Size & colour preset chips + custom values | ⚪ TBD      | ✅ built  | D360（修訂 D249）／5.1.5.2 F3.1、5.1.5.1 §2.8；標準清單在 `js/apparel-taxonomy.js` 的 sizes／colours；清單內容與色號〔產品待確認〕（§8.30 第 6 項）；自行輸入的尺寸跨商品歸「其他尺寸」 |
 

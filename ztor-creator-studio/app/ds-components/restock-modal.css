@@ -52,8 +52,10 @@
 .restock-table {
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  /* 2026-11-16：欄名掛 .tip--label 後泡泡要能浮出表格外，不再用 overflow:hidden 裁圓角；
+     列本來就透明，只有表頭有薄膜底，改由表頭自己帶上圓角（同 .variant-table-wrap--menu 的做法） */
 }
+.restock-table > .restock-table__head { border-radius: calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px) 0 0; }
 .restock-table__head,
 .restock-table__row {
   display: grid;
@@ -61,6 +63,13 @@
   gap: var(--sp-10);
   align-items: center;
   padding: var(--sp-10) var(--sp-16);   /* Q112：--radius-xl 外框內的列，左右內距至少 --sp-16（舊值 --sp-14） */
+}
+.restock-table--adjust .restock-table__head,
+.restock-table--adjust .restock-table__row {
+  /* 修改庫存（D525／D529，2026-11-16 使用者裁示「用欄位顯示」）：目前｜保留中｜最低｜新的在庫數｜差額。
+     三格唯讀窄欄 56px、可填的新在庫數 72px、差額 56px，名稱欄吃剩下的寬 */
+  grid-template-columns: minmax(0, 1fr) 56px 56px 56px 72px 56px;
+  gap: var(--sp-8);
 }
 .restock-table__head {
   /* 表頭用薄膜、列透明（2026-09-11，使用者第二次抓到同一種錯——表格坐在玻璃卡上還用實色）：
@@ -114,4 +123,6 @@
 @media (max-width: 560px) {
   .restock-table__head,
   .restock-table__row { grid-template-columns: minmax(0, 1fr) 60px 60px 60px; gap: var(--sp-6); padding: var(--sp-10); }
+  .restock-table--adjust .restock-table__head,
+  .restock-table--adjust .restock-table__row { grid-template-columns: minmax(0, 1fr) 44px 44px 44px 56px 44px; gap: var(--sp-4); }
 }
