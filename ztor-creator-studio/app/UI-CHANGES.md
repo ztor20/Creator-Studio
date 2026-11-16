@@ -15,6 +15,41 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-16（五百二十六）· 庫存表與補貨／修改庫存表的欄名 hover 出說明（B 反饋導入）
+
+**標籤**：release2.3
+
+- **動機**：使用者指示「欄位 hover 上去要有 tooltips 解釋是什麼」；同輪補充「樣式不需要有底線，和之前一樣就好」。
+- **Tooltip 新變體 `.tip--label`**（`shared.css`）：觸發點是欄名文字本身，外觀不變、只有游標換成 help；泡泡置中往下開（表頭在第一列，往上會被裁）。最右欄加 `.tip--end` 靠右往左長，避免在彈窗裡撐出橫向捲軸。
+- **商品細節頁 › 庫存管理表**：在庫、上限、鎖給單售、鎖給組合、未鎖定、保留中、補貨中、狀態八個欄名各有說明（`stock.tip.*`）。
+- **補貨／修改庫存彈窗**：當前數量、補貨數量、補後數量、保留中、最低、新的在庫數、差額各有說明（鍵名＝欄名鍵＋`.tip`）；`partials/restock-modal.js` 新增 `colHTML()`。
+- `.restock-table` 拿掉 `overflow:hidden`，表頭自帶上圓角，讓泡泡浮得出表格。
+- 設計系統：展示頁 `design-system-components-flow.html#tip-label`、規格 `ds-specs/tooltip.md`、changelog。
+
+## 2026-11-16（五百二十五）· 保留中改成獨立欄位：商品庫存表加一欄、修改庫存彈窗改五欄（B 反饋導入 · D529 後續）
+
+**標籤**：release2.3
+
+- **動機**：使用者看了 #524 的做法後指示「請分開欄位，修改庫存的彈窗表格也要用欄位去顯示這類資訊」。原本保留藏在「可賣/總量」的寫法與名稱下的小字裡，要自己減、也跟彈窗寫法不一致。
+- **商品細節頁 › 庫存管理表**：未鎖定右邊多一欄「保留中」（`.variant-cell--reserved`，大於 0 才轉前景色、沒有寫「—」）；鎖定與未鎖定格改回只寫數字，`quotaText()` 退場。避開建立商品已用掉的 `.variant-cell--held`（留倉）。
+- **修改庫存彈窗**：表格改五欄 目前｜保留中｜最低｜新的在庫數｜差額（`.restock-table--adjust`），名稱下不再寫小字；儲存時重新檢查換數字時，三個唯讀欄一起換。文案 `restock.col.held`、`restock.col.min`、`stock.col.held` 新增，`restock.adjust.min`、`restock.adjust.held` 退場。
+- 設計系統：`variant-builder.css`、`restock-modal.css` 欄軌；展示頁 forms／flow 兩頁的示範表同步；規格 `ds-specs/variant-builder.md`、`4.29c-restock-order.md`。
+- 規格：5.1.5.6 v1.14 §8 ②、5.1.5.1 v1.93 §2.10；規則手冊同步。
+
+## 2026-11-11（五百二十四）· 修改庫存每列顯示保留中、儲存時重新檢查；多選項商品逐選項組合記保留（A · D529）
+
+**標籤**：release2.3
+
+- **動機**：Asana 單「Stock edit while fans are in checkout」要求改庫存時看得到粉絲結帳中扣住的量、不能把它改掉，而且打開以後有人下單時，儲存不能蓋掉期間的變動。商品的保留（D465）本來就有，缺的是修改庫存的這兩件事，以及多選項商品逐選項組合的保留。
+- **修改庫存彈窗**（`partials/restock-modal.js`）：
+  - 名稱下小字改成「最低 N · 保留中 H」，各自有才寫（新文案 `restock.adjust.held`）。
+  - 新增 `reload` 參數：送出當下重讀最新數字，任何一列的目前數量、保留中或下限變了就不儲存，就地換成最新值（已填的新在庫數保留），表下出現提示 `.alert--row.alert--warning`（`restock.adjust.stale.*`）；再按一次才送。
+- **逐選項組合保留**（`js/listing-state.js`）：新增 `variantHoldOf`、`variantHoldTotal`、`variantFreeSellable`、`variantsHoldTotal`；資料在 `variants[i].holds`。
+- **商品細節頁**：保留中 KPI 對多選項商品改為各組合加總；庫存表的鎖定與未鎖定格有保留時照單一規格寫成「可賣/配額」；修改庫存的下限扣掉該組合未鎖定格的保留。
+- **電子商店清單**：列選單的修改庫存同樣帶保留中與重新檢查，單一規格改讀商品資料的在庫。
+- **示範**：nick 的白 Tee、default 的九龍夜行 T 恤 M 各有 2 件保留；dev 面板開發 tab 新增「本頁示範動作」（`ZTOR_DEV_PAGE_ACTIONS`），商品細節頁有「模擬有粉絲進入結帳」，修改庫存開著時按一下再儲存，就會看到數字已變動。
+- 規格：5.1.5.6 v1.13 §8、5.1.5.1 v1.92 §2.10、7.14「保留」。ASSUMPTIONS UIA-342。
+
 ## 2026-11-09（五百二十三）· 2026-11-10 · 五類收斂補齊：空狀態、死連結、rank-bars 退場、篩選與類型徽章、register-ip 修正、類型總卡與裁決狀態（B 反饋導入 · D infra／文件）
 
 **標籤**：release2.4

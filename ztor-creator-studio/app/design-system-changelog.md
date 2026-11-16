@@ -4,6 +4,12 @@
 
 ## Changelog
 
+- **2026-11-16** — Tooltip 新增變體 `.tip--label`（＋`.tip--end`）：表頭欄名 hover／focus 浮出說明，泡泡往下開；商品細節頁庫存管理表、補貨／修改庫存表套用。`.restock-table` 拿掉 `overflow:hidden`、表頭自帶上圓角，讓泡泡能浮出。展示頁 `design-system-components-flow.html#tip-label`、規格 `ds-specs/tooltip.md`。
+
+- **2026-11-16** — 保留中改成獨立欄位（D529 後續，使用者裁示）：§variant-builder `.variant-table--stock` 在未鎖定右邊多一欄 `.variant-cell--reserved`（56px），鎖定／未鎖定格不再寫「可賣/配額」；§4.29c 修改庫存模式加 `.restock-table--adjust`，五欄 目前／保留中／最低／新的在庫數／差額，名稱下不再寫小字。展示頁 `design-system-components-forms.html`、`design-system-components-flow.html` 同步。
+
+- **2026-11-11** — §4.29c Restock order：修改庫存模式補兩個狀態（D529）——名稱下小字加「保留中 H」；儲存時重新檢查，數字變了就不儲存、換成最新數字並在表下顯示 `.alert--row.alert--warning`（沿用 §4.13 Alert，不新增樣式）。展示頁 `design-system-components-flow.html` 同步。
+
 - **2026-11-09** — §1.4 Radius：文件與展示頁的圓角值追上 `_tokens.css`。2026-08-28 r2.3 換裝已把整組改成 `--radius-sm`／`--radius` 10px、`--radius-lg` 16px、`--radius-xl` 24px、`--radius-shell` 30px（舊值 3／6／8／16／28），文件一直寫舊值；展示頁的圓角示範方塊原本寫死舊值，改成直接吃 token，之後不會再跟實際值脫節。
 
 - **2026-11-09** — §4.29c Restock order：新增「修改庫存」模式（D525）——同一張表，不顯示方式卡、供應商與預計到貨；欄名換成目前／新的在庫數／差額，名稱下一行「最低 N」，低於下限用共用的 `.input[aria-invalid]` 紅框＋表下 `.field__error`、送出停用。同日稍早 D523 的第三張卡「減少庫存」撤回，方式卡維持兩張。沒有新增 class 或 token。design-system.html 補修改庫存模式示範。

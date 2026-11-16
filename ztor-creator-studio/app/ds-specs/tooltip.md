@@ -10,6 +10,15 @@
 
 shadcn baseline — not promoted to a project CSS file
 
+### 變體 · 欄名說明 `.tip--label`（2026-11-16 使用者裁示「欄位 hover 上去要有 tooltips 解釋是什麼」）
+
+- 觸發點是表頭欄名文字本身：外觀不變、不加底線（2026-11-16 使用者裁示），只有 `cursor: help`；`tabindex="0"` 讓鍵盤也能停。不加 ⓘ icon。
+- 泡泡 `.tip__bubble` 置中往下開（`top: calc(100% + 8px)`、`left: 50%`），最寬 220px，`text-transform`／`letter-spacing`／字重重設成一般內文。表頭是表格第一列，往上開會被外框裁掉。
+- `.tip--end`：最右一欄，泡泡靠右緣往左長，避免在會捲動的容器（彈窗 body）撐出橫向捲軸。
+- 用在：商品細節頁庫存管理表（`.variant-table--stock` 表頭）、補貨／修改庫存表（`.restock-table__col`，文案鍵＝欄名鍵＋`.tip`）。
+- 表格不能 `overflow:hidden`：`.restock-table` 因此改由表頭自帶上圓角。
+- 展示：`design-system-components-flow.html#tip-label`。
+
 ### 變體 · 資訊卡型 `.tip--card`（原 §4.89 Stock tip，2026-11-09 Q172 合併）
 
 **Q172（2026-11-09 使用者裁決）**：Stock tip 是同一支提示的大版本，改成 tooltip 的變體 `.tip--card`，樣式搬進 `shared.css`（`.tip` 旁邊），`stock-tip.css` 留墓碑、總表標 ✝。class 對照：`.stock-tip`→`.tip--card`、`.stock-tip__pop`→`.tip__card`、`.stock-tip__row／__name／__qty（--low／--out）`→`.tip__row／.tip__name／.tip__qty（--low／--out）`、`.stock-tip--anchored／--up／--follow`→`.tip--anchored／.tip--up／.tip--follow`（只在 `.tip--card` 上有效）。消費頁（`e-shop.html`、`store-settings.html`、`media-vault.html`＋`js/media-vault.js`）同輪改名，行為不變。`.tip--card` 單獨掛在觸發格上，**不與 `.tip` 併用**——`.tip` 的 `inline-grid`／`cursor: help` 會改掉儲存格本身的排版。下文舊 class 名一律照上面對照讀。
