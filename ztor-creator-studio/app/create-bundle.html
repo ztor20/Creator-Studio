@@ -15,8 +15,8 @@
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- 取貨場次彈窗的掃碼網址（.linkf，普查 3.6） -->
-<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2"><!-- D471：共用「建立取貨場次」彈窗（.pks-step） -->
+<link rel="stylesheet" href="ds-components/link-field.css?v=r2.2"><!-- 核銷場次彈窗的掃碼網址（.linkf，普查 3.6） -->
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2"><!-- D471：共用「建立場次」彈窗（.pks-step） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
@@ -493,8 +493,8 @@
     </section>
 
     <!-- 取貨與核銷（5.1.5.4 F9）：成員含現場 QR 領取商品時才出現（同組合詳情 5.1.5.9 §2.6）。D470：組合包沒有自己的取貨方式，
-         成員照各自商品的設定；D471（2026-10-22 使用者裁決）：取貨場次預設繼承（各成員沿用自己的場次），可改用組合包自己的一個場次。
-         D473（2026-10-22 使用者裁決「組合包的取貨場次也要放第二步，但一樣 release2.3 不要有」）：整節從步驟 1 組合物之後搬到步驟 2
+         成員照各自商品的設定；D471（2026-10-22 使用者裁決）：核銷場次預設繼承（各成員沿用自己的場次），可改用組合包自己的一個場次。
+         D473（2026-10-22 使用者裁決「組合包的核銷場次也要放第二步，但一樣 release2.3 不要有」）：整節從步驟 1 組合物之後搬到步驟 2
          「上架與開賣」之後、「購買條件」之前（同建立商品步驟 2 的取貨方式位置）；整節掛 S34.1＝只在最終版，release2.3 建立組合包不出現這一節
          （成員唯讀列表一併不出現〔推導〕，ASSUMPTIONS UIA-293）。組合詳情不受影響。
          內容由 partials/pickup-session-modal.js 的 mountBundlePickup 畫（組合詳情同一支），存檔寫進組合記錄的 pickupSession（null＝繼承）。 -->
@@ -642,7 +642,7 @@
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（D524 起沒有限時購買） -->
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
-<script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
+<script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的核銷場次（mountBundlePickup）與共用建立場次彈窗 -->
 <script src="js/row-disclosure.js?v=r2.2"></script>
 <script src="partials/section-outline.js?v=r2.2"></script><!-- 本頁大綱的行為（UI-CHANGES 一百七十七）；要先於下面的頁面腳本載入 -->
 <script>
@@ -2164,7 +2164,7 @@
         ? { kind: 'ticket', eventId: m.eventId, tierIds: (m.tierIds || []).slice(), qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null }
         : { kind: 'product', productId: m.productId, qty: m.qty || 1, lock: LS ? LS.bundleMemberLock(bundleDraft, m) : null }),
       eventId: (ticketMember() || {}).eventId || null,
-      /* D471：組合包自己的取貨場次（選填；null＝繼承，各成員沿用自己商品的場次） */
+      /* D471：組合包自己的核銷場次（選填；null＝繼承，各成員沿用自己商品的場次） */
       pickupSession: cbPickupApi ? cbPickupApi.get() : null,
       lockSets: bundleDraft.lockSets,
       preorder: !!bundleDraft.preorder, limitedTag: !!bundleDraft.limitedTag,   /* 2026-10-30 呈現假設（UIA-321）：賣完轉預購／前台限量標籤 */
@@ -2621,7 +2621,7 @@
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
-<!-- D471：共用「建立取貨場次」彈窗＋組合包的取貨場次區（mountBundlePickup） -->
+<!-- D471：共用「建立場次」彈窗＋組合包的核銷場次區（mountBundlePickup） -->
 <div data-pickup-modal-host></div>
 </body>
 </html>

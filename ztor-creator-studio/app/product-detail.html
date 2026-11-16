@@ -1004,7 +1004,7 @@
         <!-- D470（2026-10-22，5.1.5.1 §2.11；取代 2026-09-22 的二選一 segmented 切換）：取貨方式改勾選——物流配送、現場 QR 領取或兩者，
              至少一種（儲存時沒勾就停在編輯態、就地紅字）。取消勾選某種方式後，新的訂單不能再選這種方式〔推導〕；
              已有選這種方式的未完成訂單怎麼處理〔產品待確認，主規格 §8.12〕——原型不實作、就地不阻擋（ASSUMPTIONS UIA-291）。
-             同建立商品步驟 2 的 .control-row--check；檢視態整列不可點（control-row.css）。取貨場次仍只有一個（D339，D471 撤回 D470 的多場次）。 -->
+             同建立商品步驟 2 的 .control-row--check；檢視態整列不可點（control-row.css）。核銷場次仍只有一個（D339，D471 撤回 D470 的多場次）。 -->
         <div class="control-group mb-16" id="pd-delivery">
           <label class="control-row control-row--check">
             <span>
@@ -1018,14 +1018,14 @@
             </span>
             <span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="pd-dl-qr" data-pd-dl><span class="zcheck__box"></span></span>
           </label>
-          <!-- 現場 QR 領取的取貨場次：單售商品只屬於一個場次（D339，D471 保留）；「建立取貨場次」在下拉的動作列（2026-09-11） -->
+          <!-- 現場 QR 領取的核銷場次：單售商品只屬於一個場次（D339，D471 保留）；「建立場次」在下拉的動作列（2026-09-11） -->
           <div class="control-group__body" data-pd-qr-body hidden>
             <div class="field">
-              <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
-              <div class="field__hint" data-i18n="pd.delivery.session.desc">Redeemed at this session's scanner. Each item has its own pickup QR in the buyer's ztor account, scanned one at a time; the session's URL, password, roster and redemption records live in Pickup management.</div>
+              <div class="field__label" data-i18n="cp.delivery.session">Redemption session</div>
+              <div class="field__hint" data-i18n="pd.delivery.session.desc">Redeemed at this session's scanner. Each item has its own pickup QR in the buyer's ztor account, scanned one at a time; the session's URL, password, roster and redemption records live in Redemption & points.</div>
               <select class="select" id="pd-pickup-session" data-pd-dl
                       data-zselect-action="new-session" data-zselect-action-i18n="cp.delivery.session.new"
-                      data-zselect-action-label="Create pickup session" data-zselect-action-icon="plus">
+                      data-zselect-action-label="Create session" data-zselect-action-icon="plus">
                 <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
                 <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
                 <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
@@ -1034,7 +1034,7 @@
                 <div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.loc">Location</span><span class="kv__v" data-pd-si-loc></span></div>
                 <div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.time">Time</span><span class="kv__v" data-pd-si-time></span></div>
                 <div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.status">Status</span><span class="kv__v"><span class="badge" data-pd-si-status><span></span></span></span></div>
-                <div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.manage">Pickup management</span><span class="kv__v"><a class="card__link" href="pickup-detail.html" data-pd-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
+                <div class="kv"><span class="kv__k" data-i18n="cp.delivery.session.manage">Redemption & points</span><span class="kv__v"><a class="card__link" href="pickup-detail.html" data-pd-si-link data-i18n="cp.delivery.session.view">View session</a></span></div>
               </div>
             </div>
           </div>
@@ -1427,7 +1427,7 @@
 <script src="js/demand-board.js?v=r2.2"></script><!-- D360 · S69：ztorDemandView（需求看板與本頁彈窗共用的 renderer）；本頁沒有 [data-demand-board]，頁面接線段不會跑 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/faux-qr.js?v=r2.2"></script>
-<script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁取貨場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
+<script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁核銷場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/purchase-limits.js?v=r2.2"></script><!-- D398：限購（欄位與輔助說明；與建立商品、組合包、活動門票共用；D427 起只剩每人總限購） -->
@@ -2109,7 +2109,7 @@
         state.edition = 'unlimited';
       }
       if (window.pdStockSw) window.pdStockSw.seed(p);
-      /* D470：取貨方式勾選集合與取貨場次由商品資料決定（舊的單值資料已由 products-store 原樣轉入）；沒有資料＝物流配送 */
+      /* D470：取貨方式勾選集合與核銷場次由商品資料決定（舊的單值資料已由 products-store 原樣轉入）；沒有資料＝物流配送 */
       (function () {
         const d = window.ztorDelivery ? window.ztorDelivery.of(p) : { ship: true, qr: false, session: null };
         state.ship = d.ship; state.qr = d.qr;
@@ -2210,7 +2210,7 @@
         if (el) { el.setAttribute('data-i18n', dkey); el.textContent = dtxt; }
       });
     }
-    /* D470（5.1.5.1 §2.11）：勾選寫回 state 與商品記錄（product.delivery）；勾了現場 QR 領取才出現取貨場次。
+    /* D470（5.1.5.1 §2.11）：勾選寫回 state 與商品記錄（product.delivery）；勾了現場 QR 領取才出現核銷場次。
        都沒勾＝就地紅字、儲存時停在編輯態（pdDelivery.valid）。取消勾選時已有選這種方式的未完成訂單怎麼處理
        〔產品待確認〕——原型不擋、不另提示（ASSUMPTIONS UIA-291）。重量的＊跟著物流配送的勾選。 */
     function paintDelivery() {
@@ -2857,7 +2857,7 @@
           danger: !!opts.destructive, noCancel: !!opts.noCancel
         }).then(ok => { if (ok) { if (opts.onConfirm) opts.onConfirm(); } else if (opts.onCancel) opts.onCancel(); });
       }
-      window.pdAskConfirm = askConfirm;   /* D472：§2.11 取貨場次換綁確認（取貨場次選單的腳本在本段之後，呼叫時才取用） */
+      window.pdAskConfirm = askConfirm;   /* D472：§2.11 核銷場次換綁確認（核銷場次選單的腳本在本段之後，呼叫時才取用） */
 
       const commit = () => { if (S && S.commit) S.commit(product); };
       /* 下架一律先確認（§7.14「下架確認與組合包連動」· D288 裁決一）；仍在上架中組合包裡＝列出組合包、確認＝一同下架（裁決二）。
@@ -3153,7 +3153,7 @@
 <div data-pickup-modal-host></div>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
 <script>
-  /* D111 現場 QR 領取 → 建立取貨場次共用 popup（本商品預先加入）。 */
+  /* D111 現場 QR 領取 → 建立場次共用 popup（本商品預先加入）。 */
   window.ztorFauxQr = window.ztorFauxQr || function (seed) {
     seed = seed || 7; var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
     function fnd(ox, oy) {
@@ -3178,7 +3178,7 @@
           /* 2026-09-11：不再跳走，剛建的場次直接成為選項並在底下列出資訊（同 create-product）。 */
           onCreate: function (session) { if (info) info.addCreated(session); }
         }) : null;
-    /* 取貨場次（單售商品一個場次，D339／D471）：初始值讀商品資料（原本 HTML 寫死選台北場），選取寫回商品記錄 */
+    /* 核銷場次（單售商品一個場次，D339／D471）：初始值讀商品資料（原本 HTML 寫死選台北場），選取寫回商品記錄 */
     var sel = document.getElementById('pd-pickup-session');
     if (sel && window.pdProduct && window.ztorDelivery) sel.value = window.ztorDelivery.of(window.pdProduct).session || '';
     var info = (sel && window.ZTOR_PARTIALS.bindPickupSessionInfo)
@@ -3206,9 +3206,9 @@
       var k = (window.ztorOrders && window.ztorOrders.pendingPickupUnits && p.id) ? window.ztorOrders.pendingPickupUnits({ productId: p.id }) : 0;
       var body = to
         ? T('pk.rebind.body', '{k} unredeemed items of this product will move from “{from}” to “{to}”. Redeemed items stay redeemed.').replace('{to}', sessionLabel(to))
-        : T('pk.unbind.body', '{k} unredeemed items of this product will leave “{from}” and go back to “Pickup session not yet set”. Redeemed items stay redeemed.');
+        : T('pk.unbind.body', '{k} unredeemed items of this product will leave “{from}” and go back to “Redemption session not set”. Redeemed items stay redeemed.');
       ask({
-        title: T('pk.rebind.title', 'Change the pickup session for “{n}”?').replace('{n}', p.name || ((document.getElementById('pd-title') || {}).textContent || '').trim()),
+        title: T('pk.rebind.title', 'Change the redemption session for “{n}”?').replace('{n}', p.name || ((document.getElementById('pd-title') || {}).textContent || '').trim()),
         body: body.replace('{k}', String(k)).replace('{from}', sessionLabel(from)),
         okKey: to ? 'pk.rebind.ok' : 'pk.unbind.ok', okFallback: to ? 'Change session' : 'Unlink session',
         onConfirm: writeSession,
@@ -4068,7 +4068,7 @@
       if (window.pdSizeGuide) snap.push({ el: null, sg: window.pdSizeGuide.get() });
       /* 服飾配件的大類／次分類／適用對象／系統屬性（D360 · S70）：選項會隨大類重畫，不能靠逐個 select 記值，整組記在頁尾腳本的 state */
       if (window.pdApparel) snap.push({ el: null, apparel: window.pdApparel.get() });
-      /* 取貨方式勾選與取貨場次（D470）：整組記在 pdDelivery，取消時一次還原 */
+      /* 取貨方式勾選與核銷場次（D470）：整組記在 pdDelivery，取消時一次還原 */
       if (window.pdDelivery) snap.push({ el: null, delivery: window.pdDelivery.get() });
       return snap;
     }
@@ -4319,7 +4319,7 @@
       else rows.push({ g: 'pricing', go: 'rules', key: 'product-detail.limit2.title', fb: 'Purchase limits',
         v: window.pdLimits ? window.pdLimits.text() : T('product-detail.setov.off', 'Off') });
       /* 概覽列的值顯示目前方式（標題已改泛稱，2026-09-22） */
-      /* D470：勾了哪幾種就列哪幾種，現場 QR 領取後面括號列出加入的取貨場次 */
+      /* D470：勾了哪幾種就列哪幾種，現場 QR 領取後面括號列出加入的核銷場次 */
       var dmode = (product && product.cat === 'digital') ? T('pd.digital-delivery.title', 'Delivery & access')
         : (window.pdDelivery ? window.pdDelivery.text() : T('cp.delivery.shipping', 'Shipping'));
       rows.push({ g: 'ops', go: 'delivery', key: 'product-detail.delivery.card', fb: 'Delivery & pickup', v: dmode });

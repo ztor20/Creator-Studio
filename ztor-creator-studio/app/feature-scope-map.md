@@ -111,7 +111,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 - 組合包「無法販售」徽章（D391 補充二）：`js/listing-state.js` `STATUS_META.unavailable`，bundle-detail 頁首與 e-shop 活動組合包列使用；只出現在多場次活動移除場次之後，跟著 S87，不另掛標記。
 - 定時開賣在未來的 bookyay 活動不出現「立即開賣」（第 11 題推導）：event-detail `#ed-golive-row`，不掛標記。
 
-**2026-10-22 D470＋D471 取貨方式改勾選、移到建立商品步驟 2**（不新增功能編號、不掛標記，屬 S26／S33／S34 🟢 release2.2 的功能；使用者已說不進 release2.2，只進 release2.3 與最終版，UI-CHANGES 二百九十二）：`create-product.html` 步驟 1 只留「物流資料」（重量常駐、其餘收合）、步驟 2 開賣設定之後新增「取貨方式」勾選（物流配送／現場 QR 領取，至少一種）與取貨場次、取貨與退貨說明；`product-detail.html` 取貨方式改勾選、物流資料一律可編輯；單售商品仍只屬於一個取貨場次（D339 保留，彈窗「已綁定」照舊）。兩個版本都有，不切換。組合包自己的取貨場次另登記 S34.1 ⚪（只在最終版）。
+**2026-10-22 D470＋D471 取貨方式改勾選、移到建立商品步驟 2**（不新增功能編號、不掛標記，屬 S26／S33／S34 🟢 release2.2 的功能；使用者已說不進 release2.2，只進 release2.3 與最終版，UI-CHANGES 二百九十二）：`create-product.html` 步驟 1 只留「物流資料」（重量常駐、其餘收合）、步驟 2 開賣設定之後新增「取貨方式」勾選（物流配送／現場 QR 領取，至少一種）與場次、取貨與退貨說明；`product-detail.html` 取貨方式改勾選、物流資料一律可編輯；單售商品仍只屬於一個場次（D339 保留，彈窗「已綁定」照舊）。兩個版本都有，不切換。組合包自己的場次另登記 S34.1 ⚪（只在最終版）。
 
 **2026-10-20 D460 活動層預設購票規則永久移除**（所有版本，屬 S72 活動詳情與建立活動，🔵 release2.3；新登記 S103 ⚪，見該列）：create-event 票務設定彈窗的「購票規則」區塊（`#ce-rules-sec`／`#ce-rules`）、單張門票購買條件的「跟隨活動預設」開關與繼承摘要、event-detail 票務分頁的「預設購票規則」卡（`#ed-evrules`）與其草稿／變更偵測／儲存／離開防護項目，全部移除；條件只在單張門票自己的購買條件與組合包自己的購買條件。下面 D387／D388 兩段提到的「預設購票規則卡」自此作廢，只留門票彈窗的購買條件編輯。
 
@@ -123,7 +123,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **2026-10-12 D397 原型同步**（不新增功能編號、不掛新標記，🔵 release2.3）：`event-detail.html` 總覽右欄新增 `#ed-bky-scancard`（bookyay 現場掃碼卡，已排程／售票中，屬 S73／S56 延伸，同 D394）；票務商品的「建立組合包」（空狀態＋有組合包時的新增卡）帶 `?ev=&from=event-detail` 進 `create-bundle.html` 預帶票券成員（屬 S72 活動詳情與建立組合包的票券成員）；`scanner.html`（O29，🟢 release2.2 頁面）新增活動票券提前入場的結果呈現與兩顆示範鈕，屬活動提前入場設定（S72 活動頁面本體，release2.3）的掃描端，release2.2 凍結版不搬。
 
-**2026-10-12 D401 原型同步**（不新增功能編號、不掛新標記，🔵 release2.3）：`#ed-bky-scancard` 撤除，改把原本的掃碼器卡 `#ed-scanner` 在已排程／售票中搬到總覽右欄（同 S73／S56 延伸）並加「前往領取場次」；`create-bundle.html` 從活動詳情進入鎖定活動（S72）；`pickup.html`（🟢 release2.2 頁面）新增 `?ev=` 篩選，只由活動詳情的「前往領取場次」帶入，release2.2 凍結版不搬（是否同步待使用者決定）。
+**2026-10-12 D401 原型同步**（不新增功能編號、不掛新標記，🔵 release2.3）：`#ed-bky-scancard` 撤除，改把原本的掃碼器卡 `#ed-scanner` 在已排程／售票中搬到總覽右欄（同 S73／S56 延伸）並加「前往核銷場次」；`create-bundle.html` 從活動詳情進入鎖定活動（S72）；`pickup.html`（🟢 release2.2 頁面）新增 `?ev=` 篩選，只由活動詳情的「前往核銷場次」帶入，release2.2 凍結版不搬（是否同步待使用者決定）。
 
 **2026-10-12 D394 bookyay 活動的現場報到台**（不新增功能編號、不掛新標記，同 D385 的做法屬 S73／S56 延伸，🔵 release2.3）：`event-detail.html` `#ed-scanner` 對 bookyay 活動收起 ztor 掃碼器三格（`[data-ztor-scan]`），改顯示 `#ed-bky-scan`（bookyay 掃描器連結＋複製，值＝`ev.bkyScanUrl`）與 `#ed-scanner-bky`（前往取貨管理）；release2.3 與最終版都看得到。
 
@@ -179,7 +179,7 @@ ID 起始 `S01…` ｜ 🟢 46 · 🔵 32 · 🟣 18 · ⚪ 38 · ⚫ 退場 5�
 |       | **　　取貨方式**                      | Fulfillment method                               |            |          |                                                           |
 | `S33` | 　　　物流配送（重量/分類/尺寸/寄件地）           | Logistics fields                                 | 🟢 release2.2 | ✅ built  | data entry only — no carrier API                          |
 | `S34` | 　　　現場 QR 領取（領取說明）               | On-site QR pickup                                | 🟢 release2.2 | ✅ built  |                                                           |
-| `S34.1` | 　　　組合包自己的取貨場次（選填；設了之後成員領取單位歸組合包的場次） | Bundle-level pickup session (optional) | ⚪ TBD | ✅⬆ ahead | D471（2026-10-22）：只在最終版，release2.3 沒有（使用者：「組合包可以另外設取貨場次在 release2.3 不需要」）；release2.3 組合包只沿用各成員自己的場次。規格 5.1.5.4 F9、5.1.5.9 §2.6；2026-10-22 原型已實作（UI-CHANGES 二百九十二）：`partials/pickup-session-modal.js` mountBundlePickup 的開關列 `[data-bp-own]` 掛 `data-feat="S34.1"`，`create-bundle.html` 取貨與核銷節、`bundle-detail.html` §2.6；`js/devtools.js` FEAT_TIER 後備補一筆。2026-10-22 D473（UI-CHANGES 二百九十四）：`create-bundle.html` 的「取貨與核銷」整節搬到步驟 2（上架與開賣之後、購買條件之前）並整節掛 `data-feat="S34.1"`，release2.3 建立組合包不出現這一節（含成員唯讀列表）；組合詳情只有開關列受控，不變 |
+| `S34.1` | 　　　組合包自己的場次（選填；設了之後成員領取單位歸組合包的場次） | Bundle-level session (optional) | ⚪ TBD | ✅⬆ ahead | D471（2026-10-22）：只在最終版，release2.3 沒有（使用者：「組合包可以另外設場次在 release2.3 不需要」）；release2.3 組合包只沿用各成員自己的場次。規格 5.1.5.4 F9、5.1.5.9 §2.6；2026-10-22 原型已實作（UI-CHANGES 二百九十二）：`partials/pickup-session-modal.js` mountBundlePickup 的開關列 `[data-bp-own]` 掛 `data-feat="S34.1"`，`create-bundle.html` 取貨與核銷節、`bundle-detail.html` §2.6；`js/devtools.js` FEAT_TIER 後備補一筆。2026-10-22 D473（UI-CHANGES 二百九十四）：`create-bundle.html` 的「取貨與核銷」整節搬到步驟 2（上架與開賣之後、購買條件之前）並整節掛 `data-feat="S34.1"`，release2.3 建立組合包不出現這一節（含成員唯讀列表）；組合詳情只有開關列受控，不變 |
 | `S140` | 　　數位商品型別卡（建立商品頁的「數位」選項；release2.4 只在 Admin 代管態出現） | Digital product type card | 🟣 release2.4 | ✅ built | D499 決定 7（2026-11-02）／5.1.5.2 F16；`create-product.html` 型別卡掛 `data-feat`，另以 `adminScope()` 判斷只給 Admin 代管態 |
 | `S141` | 　　　數位類別「文檔」與「會員卡」 | Digital categories: Document, VIP membership card | ⚪ TBD | ✅ built | D499 決定 7：release2.4 只能建忠誠點數，這兩類只在最終版 |
 | `S142` | 　　　數位類別「忠誠點數」與忠誠點數商品（建立、商品細節 QR 卡、清單列；只在 Admin 代管態） | Loyalty points product (admin only) | ⚫ 退場 | ✅ built | D503 撤除，QR 改在掃碼領點場次產生（2026-11-02；原 🟣 release2.4，D499 決定 1、4～7） |
@@ -332,16 +332,16 @@ ID 起始 `O01…` ｜ 🟢 26 · 🔵 14 · ⚪ 1 · ⚫ 退場 2（2026-11-05 
 | `O21` | 　　　QR 領取（二維碼 / 標記已領取） | QR pickup | 🟢 release2.2 | ✅ built |  |
 | `O22` | 　　　數位（下載） | Digital download | 🔵 release2.3 | ✅⬆ ahead | digital goods deferred |
 | `O23` | 　　退款與爭議（部分 / 整單退款） | Refund & dispute | ⚫ 退場 | 🟡 gap | 2026-09-09（D253）已退場——平台不提供任何退款動作 |
-|       | **　取貨管理（Pickup Management）** — 2026-07-03 新增模組（D111），2026-07-30 併入 Phase 1（D157） | Pickup management |            |          |                                          |
-| `O24` | 　取貨管理入口（E-Shop 下拉第三個目的地）     | Pickup management entry          | 🟢 release2.2 | ✅ built | 規格 5.1.5.11 |
-| `O25` | 　　取貨場次清單（篩選 / 搜尋 / 分批載入）     | Pickup session list              | 🟢 release2.2 | ✅ built | 5.1.5.11 F4 |
-| `O26` | 　　建立取貨場次                          | Create pickup session            | 🟢 release2.2 | ✅ built | 5.1.5.12 |
-| `O27` | 　　取貨場次詳情（名單 / 核銷紀錄 / 匯出）     | Pickup session detail            | 🟢 release2.2 | ✅ built | 5.1.5.15；名單一列一領取單位（D240） |
+|       | **　核銷與領點（Redemption & points）** — 2026-07-03 新增模組（D111），2026-07-30 併入 Phase 1（D157） | Redemption & points |            |          |                                          |
+| `O24` | 　核銷與領點入口（E-Shop 下拉第三個目的地）     | Redemption & points entry          | 🟢 release2.2 | ✅ built | 規格 5.1.5.11 |
+| `O25` | 　　場次清單（篩選 / 搜尋 / 分批載入）     | Session list              | 🟢 release2.2 | ✅ built | 5.1.5.11 F4 |
+| `O26` | 　　建立場次                          | Create session            | 🟢 release2.2 | ✅ built | 5.1.5.12 |
+| `O27` | 　　場次詳情（名單 / 核銷紀錄 / 匯出）     | Session details            | 🟢 release2.2 | ✅ built | 5.1.5.15；名單一列一領取單位（D240） |
 | `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 release2.2 | ✅ built | 5.1.5.15 F2 |
 | `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 release2.2 | ✅ built | 5.1.5.14；二元核銷、一碼一件（D122／D240） |
 | `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 release2.2 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
 | `O31` | 　　作廢品項（Admin 專屬、取貨型）           | Void item (admin only)           | 🟢 release2.2 | ✅ built | 2026-09-07 上游拍板列入 eShop 2.2；creator 態可見但停用（§4.4）；出貨型／數位待產品確認（§8.27） |
-| `O43` | 　　取貨場次類型「掃碼領點」（建立時選類型、在場次裡新增與管理 QR〔新增／編輯／停用／刪除，D503〕、啟用／停用、每個 QR 的已領／總名額、QR 下載、領取紀錄依 QR 篩選、A6 關閉提醒；只在 Admin 代管態） | Scan-to-earn-points session (admin only) | 🟣 release2.4 | ✅ built | D499 決定 2、3、10、D503／5.1.5.11、5.1.5.12 F4 F5、5.1.5.15 F6；不進 release2.2 |
+| `O43` | 　　場次類型「掃碼領點」（建立時選類型、在場次裡新增與管理 QR〔新增／編輯／停用／刪除，D503〕、啟用／停用、每個 QR 的已領／總名額、QR 下載、領取紀錄依 QR 篩選、A6 關閉提醒；只在 Admin 代管態） | Scan-to-earn-points session (admin only) | 🟣 release2.4 | ✅ built | D499 決定 2、3、10、D503／5.1.5.11、5.1.5.12 F4 F5、5.1.5.15 F6；不進 release2.2 |
 | `O32` | 　　平台費展開（依費率葉節點列出計費基準與平台費） | Platform fee breakdown | 🟢 release2.2 | ✅ built | 2026-09-29（D333）；同日使用者裁示列入 Phase 1；`order-detail.html` 平台費列的展開把手與展開列掛 `data-feat="O32"`；支付費不展開 |
 | `O33` | 　　收件國家與城市（買家卡的兩個欄位，完整地址保留；沒值顯示未提供地區） | Shipping country & city | ⚪ TBD      | ✅ built  | D360／5.1.5.3.1 §2.4；資料層 `js/orders-store.js` 的 buyer.country（ISO 兩碼）／buyer.city；前台（粉絲結帳頁）同步新增前欄位先空著（需求看板「未提供地區」的來源） |
 | `O34` | 　　付款資訊（訂單詳情付款區＋清單付款時間、付款方式、發貨時間欄） | Payment info & paid / shipped times | 🔵 release2.3 | ✅ built | D411（2026-10-13）／5.1.5.3 F3、5.1.5.3.1 §2.2.1；付款編號用共用 link-field 複製；活動交易明細的付款時間欄未掛標記（動態表格欄，devtools 不重跑 data-feat，避免欄位錯位）。電子商店範圍、是否同步進 release2.2 待使用者決定 |
