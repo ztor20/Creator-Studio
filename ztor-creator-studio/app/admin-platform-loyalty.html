@@ -38,11 +38,8 @@
 <link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2"><!-- 修改紀錄的類別篩選 -->
-<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2"><!-- 基礎比率大數字（D531） -->
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2"><!-- .bmx--readonly：唯讀／編輯兩面的對照表（Q171，原 tier-overview.css） -->
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2"><!-- 儲存確認的修改項目（D533） -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
@@ -68,6 +65,9 @@
 
 <!-- 頁面級分頁（Q38：底線式，連 .list-toolbar 殼一起帶；標籤包 span 才能用 --underline-label）。
      「其他設定」掛 S132：release2.4 整個分頁收起，只剩四個。 -->
+<!-- 分頁列貼頂（2026-11-16 使用者：「往下轉的時候，topbar 要 fix 在上面」）：用清單頁同一套 Snap dock（ds-specs/4.90、js/sticky-dock.js）。
+     薄殼（只包分頁列，同我的 IP／專案）：sticky 掛在 .list-dock 自己，在 .page 這個高容器裡移動。 -->
+<div class="list-dock">
 <div class="list-toolbar">
   <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist" data-tabs>
     <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-tab="events"><span data-i18n="ploy.ev.title">Earning events</span></button>
@@ -86,6 +86,7 @@
     </span>
   </div>
 </div>
+</div><!-- /.list-dock（薄殼：只包分頁列，sticky 掛在它自己，在 .page 裡移動） -->
 
 <!-- ===== 分頁 1：F9 賺分事件與事件開關（D498、D499）=====
      事件為列、「給分／倍率｜滾動視窗｜上限｜開關」四欄，吃 .bmx--readonly 的四欄格線。購買類（A3、A4）只有倍率 γ、無上限；
@@ -95,18 +96,14 @@
 <!-- 基礎比率（K_A）獨立一區（2026-11-16 使用者：「這一塊可以重新設計，或是變成一個獨立 section」，D531）：
      全頁購買類計分的乘數，用大數字呈現；公式放數字底下。與事件表同一個分頁、同一份編輯狀態。 -->
 <section class="card mt-16">
-  <div class="stat-row" style="margin-bottom:0">
-    <div class="stat">
-      <div class="stat__label" data-i18n="ploy.ev.ka">Base rate (K_A)</div>
-      <div class="stat__value" data-ploy-read-scope><span class="bmx__read" data-read-num></span> <span class="stat__of bmx__read" data-i18n="ploy.unit.per-base">pts per 1 unit of base currency</span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:260px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.5" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.ka" data-ploy-unit="ploy.unit.per-base"><span class="amount-field__unit" data-i18n="ploy.unit.per-base">pts / 1 unit of base currency</span></span></span></div>
-      <div class="stat__meta" data-i18n="ploy.ev.ka-hint">Points per 1 unit of base currency = multiplier × base rate</div>
-    </div>
+  <!-- 基礎比率（2026-11-16 使用者：「UI 看起來有點頭重腳輕」「基礎比率也要寫得好理解一點，換個方式說」）：
+       不用大數字，改成跟下方表格同密度的設定列——左邊白話說明、右邊數值；修改紀錄與確認仍寫「基礎比率（K_A）」對照規格。 -->
+  <div class="settings-row" style="border-bottom:0">
+    <div><div class="settings-row__label" data-currency-hint="ploy.ka.title">Per HK$1 spent</div><div class="settings-row__hint" data-i18n="ploy.ka.hint">Then × the item multiplier</div></div>
+    <div class="settings-row__value settings-row__value--lg bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.5" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.ka" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
   </div>
 </section>
 <section class="card mt-16">
-  <div class="card__head card__head--wrap">
-    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.ev.head">How many points each action gives and how often it can earn. Switches work any time and take effect right away.</p>
-  </div>
 
 
   <div class="bmx bmx--readonly mt-16">
@@ -119,60 +116,57 @@
     </div>
     <!-- 購買類：只有倍率，沒有視窗與上限 -->
     <div class="bmx__row" data-ploy-ev="ploy.ev.a3">
-      <span class="bmx__label"><span data-i18n="ploy.ev.a3">Event tickets</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.a3">Event tickets</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span></small></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" value="1.1" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.a3" data-ploy-field="ploy.ev.col.points" data-ploy-unit="×"><span class="amount-field__unit">×</span></span></span></span>
       <span class="bmx__cell bmx__no">—</span>
       <span class="bmx__cell text-sub" data-i18n="ploy.ev.nocap">No cap</span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a3" aria-label="Event tickets" data-i18n-aria-label="ploy.ev.a3"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.a3" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a3" aria-label="Event tickets" data-i18n-aria-label="ploy.ev.a3"></div></span></span>
     </div>
     <div class="bmx__row" data-ploy-ev="ploy.ev.a4">
-      <span class="bmx__label"><span data-i18n="ploy.ev.a4">E-Shop products</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.a4">E-Shop products</span><small><span data-i18n="ploy.ev.cat.buy">Purchase</span></small></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" value="1.0" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.a4" data-ploy-field="ploy.ev.col.points" data-ploy-unit="×"><span class="amount-field__unit">×</span></span></span></span>
       <span class="bmx__cell bmx__no">—</span>
       <span class="bmx__cell text-sub" data-i18n="ploy.ev.nocap">No cap</span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a4" aria-label="E-Shop products" data-i18n-aria-label="ploy.ev.a4"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.a4" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a4" aria-label="E-Shop products" data-i18n-aria-label="ploy.ev.a4"></div></span></span>
     </div>
     <!-- 互動與推薦：每次給分＋X 天內最多 Y -->
     <div class="bmx__row" data-ploy-ev="ploy.ev.b1">
-      <span class="bmx__label"><span data-i18n="ploy.ev.b1">Co-create vote</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.b1">Co-create vote</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span></small></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="150" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b1" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="ploy.unit.votes"><span class="amount-field__unit" data-i18n="ploy.unit.votes">votes</span></span></span></span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b1" aria-label="Co-create vote" data-i18n-aria-label="ploy.ev.b1"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.b1" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b1" aria-label="Co-create vote" data-i18n-aria-label="ploy.ev.b1"></div></span></span>
     </div>
     <div class="bmx__row" data-ploy-ev="ploy.ev.b4">
-      <span class="bmx__label"><span data-i18n="ploy.ev.b4">Like</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.b4">Like</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span></small></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="5" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1500" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b4" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b4" aria-label="Like" data-i18n-aria-label="ploy.ev.b4"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.b4" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b4" aria-label="Like" data-i18n-aria-label="ploy.ev.b4"></div></span></span>
     </div>
     <div class="bmx__row" data-ploy-ev="ploy.ev.b5">
-      <span class="bmx__label"><span data-i18n="ploy.ev.b5">Save</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.b5">Save</span><small><span data-i18n="ploy.ev.cat.int">Interaction</span></small></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="1500" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b5" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b5" aria-label="Save" data-i18n-aria-label="ploy.ev.b5"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.b5" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b5" aria-label="Save" data-i18n-aria-label="ploy.ev.b5"></div></span></span>
     </div>
     <div class="bmx__row" data-ploy-ev="ploy.ev.b3">
-      <span class="bmx__label"><span data-i18n="ploy.ev.b3">Invite to follow</span><small><span data-i18n="ploy.ev.cat.ref">Referral</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.b3">Invite to follow</span><small><span data-i18n="ploy.ev.cat.ref">Referral</span></small></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="400" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.col.points" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="1" value="90" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.cap-window" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></span>
       <span class="bmx__cell"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="10" data-ploy data-ploy-kind="event" data-ploy-label="ploy.ev.b3" data-ploy-field="ploy.ev.cap-max" data-ploy-unit="ploy.unit.people"><span class="amount-field__unit" data-i18n="ploy.unit.people">people</span></span></span></span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b3" aria-label="Invite to follow" data-i18n-aria-label="ploy.ev.b3"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.b3" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.b3" aria-label="Invite to follow" data-i18n-aria-label="ploy.ev.b3"></div></span></span>
     </div>
     <!-- D499 A6 線下掃碼領點（S143）：只有開關；點數、名額、有效期在商品與場次設定（說明見表下兩行）。 -->
     <div class="bmx__row" data-ploy-ev="ploy.ev.a6" data-feat="S143">
-      <span class="bmx__label"><span data-i18n="ploy.ev.a6">Offline scan to earn</span><small><span data-i18n="ploy.ev.cat.off">Offline</span> <span class="badge badge--neutral" data-ploy-stopped hidden data-i18n="ploy.ev.stopped">Stopped</span></small></span>
+      <span class="bmx__label"><span data-i18n="ploy.ev.a6">Offline scan to earn</span><small><span data-i18n="ploy.ev.cat.off">Offline</span></small></span>
       <span class="bmx__cell text-sub" data-i18n="ploy.ev.a6-short">Set per session</span>
       <span class="bmx__cell bmx__no">—</span>
       <span class="bmx__cell bmx__no">—</span>
-      <span class="bmx__cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a6" aria-label="Offline scan to earn" data-i18n-aria-label="ploy.ev.a6"></div></span>
+      <span class="bmx__cell"><span class="bmx__read"><span class="badge badge--success" data-ploy-sw-badge="ploy.ev.a6" data-i18n="ploy.ev.badge-on">Earning</span></span><span class="bmx__edit"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" data-ploy-switch="ploy.ev.a6" aria-label="Offline scan to earn" data-i18n-aria-label="ploy.ev.a6"></div></span></span>
     </div>
   </div>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.ev.note-off">Turning an event off stops new points right away. It only affects points from now on: nothing is recalculated and points already given stay.</p>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.ev.note-scope">Changes apply from now on and never recalculate past entries. Creators can’t override these settings.</p>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-feat="S143"><span data-i18n="ploy.ev.a6-where">Points, quota and validity are set on the product and the pickup session, not here.</span> <span data-i18n="ploy.ev.a6-off">When off, no scan gives points and the fan app shows “Offline points paused”. Points already given are not affected.</span></p>
 </section>
 </div>
 
@@ -180,31 +174,22 @@
      照「粉絲分級設定」彈窗格式：四級為欄、參數為列；全站共用值（S_floor、降級緩衝、每週重算）放卡內 settings-row。
      顯示名稱改了只在本頁與修改紀錄看得到，示範不會同步到其他頁（UIA-325）。 -->
 <div class="tab-panel" data-panel="tiers" data-ploy-card="tiers">
-<!-- 所有分級共用的三個參數獨立一區、放分級表上方（2026-11-16 使用者：「其他分頁中類似的問題也都處理一次」，D532）：
-     比照賺分事件的基礎比率，用 .stat-row 大數字；與分級表同一份編輯。 -->
+<!-- 所有分級共用的三個參數獨立一區、放分級表上方（D532）；2026-11-16 起跟基礎比率一樣改成設定列，不用大數字（使用者：「頭重腳輕」）。與分級表同一份編輯。 -->
 <section class="card mt-16">
-  <div class="stat-row stat-row--even" style="margin-bottom:0">
-    <div class="stat">
-      <div class="stat__label" data-i18n="ploy.tier.floor">Minimum loyalty points</div>
-      <div class="stat__value" data-ploy-read-scope><span class="bmx__read" data-read-num></span> <span class="stat__of bmx__read" data-i18n="fans.unit.points"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="500" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.tier.floor" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
-      <div class="stat__meta" data-i18n="ploy.tier.floor-hint">One value for every tier. Below it a fan is always Fan and isn’t ranked</div>
-    </div>
-    <div class="stat">
-      <div class="stat__label" data-i18n="ploy.decay.grace">Demotion grace</div>
-      <div class="stat__value" data-ploy-read-scope><span class="bmx__read" data-read-num></span> <span class="stat__of bmx__read" data-i18n="ploy.unit.days"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">days</span></span></span></div>
-      <div class="stat__meta" data-i18n="ploy.decay.grace-hint">The countdown starts when a fan falls below a tier’s bar</div>
-    </div>
-    <div class="stat">
-      <div class="stat__label" data-i18n="ploy.tier.recompute">Tier recompute</div>
-      <div class="stat__value"><span data-i18n="ploy.tier.weekly">Every week</span></div>
-      <div class="stat__meta"><span data-i18n="ploy.tier.recompute-hint">Cut-off scores and demotions update then; promotions happen right away</span> <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></div>
-    </div>
+  <div class="settings-row">
+    <div><div class="settings-row__label" data-i18n="ploy.tier.floor">Minimum loyalty points</div><div class="settings-row__hint" data-i18n="ploy.tier.floor-hint">One value for every tier. Below it a fan is always Fan and isn’t ranked</div></div>
+    <div class="settings-row__value settings-row__value--lg bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="500" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.tier.floor" data-ploy-unit="fans.unit.points"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></div>
+  </div>
+  <div class="settings-row">
+    <div><div class="settings-row__label" data-i18n="ploy.decay.grace">Demotion grace</div><div class="settings-row__hint" data-i18n="ploy.decay.grace-hint">The countdown starts when a fan falls below a tier’s bar</div></div>
+    <div class="settings-row__value settings-row__value--lg bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:128px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" value="14" data-ploy data-ploy-kind="recompute" data-ploy-label="ploy.decay.grace" data-ploy-unit="ploy.unit.days"><span class="amount-field__unit" data-i18n="ploy.unit.days">pts</span></span></span></div>
+  </div>
+  <div class="settings-row" style="border-bottom:0">
+    <div><div class="settings-row__label" data-i18n="ploy.tier.recompute">Tier recompute</div><div class="settings-row__hint" data-i18n="ploy.tier.recompute-hint">Cut-off scores and demotions update then; promotions happen right away</div></div>
+    <div class="settings-row__value settings-row__value--lg bmx__cell bmx__cell--fluid"><span data-i18n="ploy.tier.weekly">Every week</span></div>
   </div>
 </section>
 <section class="card mt-16">
-  <div class="card__head card__head--wrap">
-    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.tier.order">Fans at or above the minimum are ranked, and the top % above decides their tier; anyone outside the last cut-off stays Fan.</p>
-  </div>
   <div class="bmx bmx--readonly">
     <!-- 欄頭的分級名稱由 JS 依顯示名稱的已儲存值填入（改名儲存後立即換上），不掛 data-i18n。 -->
     <div class="bmx__head">
@@ -230,8 +215,6 @@
     </div>
   </div>
 
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.tier.eff">New names show as soon as you save; top %, minimum points and demotion grace take effect from the next weekly recompute.</p>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.tier.rename">A new name shows everywhere the tier appears: the fan leaderboard, Fans and Media Vault.</p>
 </section>
 </div>
 
@@ -239,9 +222,6 @@
      三個指標為欄（.bmx--readonly.bmx--cols3）、「天數」「影響哪裡」為列；影響哪裡是說明、編輯態鎖住。定義權威在 5.1.7 F2。 -->
 <div class="tab-panel" data-panel="kpi">
 <section class="card mt-16" data-ploy-card="kpi">
-  <div class="card__head card__head--wrap">
-    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.kpi.head">How many recent days each Fans KPI looks at. KPIs switch to the new days as soon as you save.</p>
-  </div>
   <div class="bmx bmx--readonly bmx--cols3">
     <div class="bmx__head">
       <span></span>
@@ -270,7 +250,6 @@
      可改的值一樣走唯讀／編輯兩面、以整個分頁為單位儲存（D531）；賽季加倍逐筆新增與移除、當下記一筆，不跟著卡的編輯。
      每組自帶上方分隔線，掛閘門的組收起時連線一起收。 -->
 <div class="tab-panel" data-panel="other" data-feat="S132" data-ploy-card="other">
-<p class="settings-row__hint" style="margin:var(--sp-16) 0 0" data-i18n="ploy.other.head">Platform activities, role shares, season boosts, decay and platform rules. Scoring changes count for later events; tier changes take effect from the next weekly recompute.</p>
 <section class="card mt-16">
 
   <!-- F2 全站活動給分與上限。資格條件依 §7.5，本頁只調給分與上限。候選一列（完成個人資料或綁定付款）功能是否存在
@@ -314,15 +293,12 @@
       <span class="bmx__cell bmx__no">—</span>
     </div>
   </div>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.act.note">Caps count over a rolling 90 days and are checked when points are given. Every platform-activity point goes to the fan’s primary creator; creator activity values don’t apply.</p>
-  <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.act.claim-note">Unclaimed points expire at 00:00 server time (UTC+8) when the day ends and can’t be claimed later.</p>
 
   <!-- F7 職務分點（D476 第 1 項）：多人署名的交易依職務對每位署名藝人各發一筆。六級：五級百分比 Admin 可改
        （預設 100／80／60／40／20），0% 不計分固定唯讀。級名「第 N 級」是呈現假設（UIA-296）。掛 S108（⚪）。 -->
 </section>
 <section class="card mt-16" data-feat="S108">
     <div class="card__head"><h3 class="card__title" data-i18n="ploy.role.title">Points by credited role</h3></div>
-    <p class="group-desc" data-i18n="ploy.role.sub">When several artists are credited, each linked artist gets their own entry.</p>
     <div class="settings-row">
       <div><div class="settings-row__label" data-i18n="ploy.role.l1">Level 1</div><div class="settings-row__hint" data-i18n="ploy.role.l1-roles">Roles</div></div>
       <div class="settings-row__value bmx__cell bmx__cell--fluid"><span class="bmx__read"></span><span class="bmx__edit"><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="numeric" min="0" max="100" value="100" data-ploy data-ploy-kind="event" data-ploy-label="ploy.role.l1" data-ploy-field="ploy.role.col.share" data-ploy-unit="%"><span class="amount-field__unit">%</span></span></span></div>
@@ -345,10 +321,8 @@
     </div>
     <div class="settings-row" style="border-bottom:0">
       <div><div class="settings-row__label" data-i18n="ploy.role.l0">Not scored</div><div class="settings-row__hint" data-i18n="ploy.role.l0-roles">Roles</div></div>
-      <div class="settings-row__value">0% <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></div>
+      <div class="settings-row__value bmx__cell bmx__cell--fluid">0%</div>
     </div>
-    <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.role.note1">Co-holders each get the full share.</p>
-    <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="ploy.role.note2">Unclassified roles wait unscored.</p>
 </section>
 
   <!-- F3 賽季加倍：可設定多段。D476 第 6 項：範圍分全平台／特定藝人、倍率可設定（預設 2）；同一層級多個加倍同時生效時
@@ -372,7 +346,6 @@
       </table>
     </div>
     <p class="text-sub" id="ploy-season-empty" hidden style="margin:var(--sp-12) 0 0" data-i18n="ploy.season.empty">No season boosts scheduled.</p>
-    <p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-12) 0 0" data-i18n="ploy.season.rule">Every behaviour earns points × the multiplier during a boost.</p>
 </section>
 
   <!-- F4 衰減與等級保留（等級類，下一次每週重算起生效）。「任何行為」的範圍〔產品待確認〕（§8.29 第 11 項）。降級緩衝在分級分頁。 -->
@@ -388,15 +361,7 @@
     </div>
 </section>
 
-  <!-- F5 平台常數（唯讀）：幣別與匯率規則見主規格 §7.15（D316），本頁不設定；基準費率自 D498 起是賺分事件分頁的 K_A。 -->
-<section class="card mt-16">
-    <div class="card__head"><h3 class="card__title" data-i18n="ploy.const.title">Platform constants</h3></div>
-    <div class="settings-row" style="border-bottom:0">
-      <div><div class="settings-row__label" data-i18n="ploy.const.currency">Platform base currency</div><div class="settings-row__hint" data-i18n="ploy.const.currency-hint">Exchange rates follow the platform currency rules</div></div>
-      <div class="settings-row__value">HKD <span class="badge badge--neutral" data-i18n="ploy.readonly">Read-only</span></div>
-    </div>
-</section>
-
+  <!-- D537（2026-11-16）：「平台常數」卡拿掉——平台基準幣別直接寫在賺分事件分頁的基礎比率上（每花 HK$1 得），F5 只剩下面的誠信規則卡。 -->
   <!-- F5 誠信規則：平台強制，創作者與 Admin 都不能關（§7.5）；本頁只列摘要、不給開關。 -->
 <section class="card mt-16">
     <div class="card__head"><h3 class="card__title" data-i18n="ploy.int.title">Integrity rules</h3></div>
@@ -447,14 +412,14 @@
 <div class="tab-panel" data-panel="log">
 <section class="card mt-16">
   <div class="card__head card__head--wrap">
-    <p class="settings-row__hint" style="margin:0" data-i18n="ploy.log.note">Every change is logged. Nothing here recalculates past entries, and points already credited stay as they are.</p>
-    <nav class="filter-tabs" role="tablist" data-log-filter>
-      <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all" data-i18n="ploy.log.all">All</button>
-      <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="events" data-i18n="ploy.ev.title">Earning events</button>
-      <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="tiers" data-i18n="ploy.tier.title">Tiers</button>
-      <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="kpi" data-i18n="ploy.tab.kpi">Fans KPIs</button>
-      <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="other" data-feat="S132" data-i18n="ploy.tab.other">More settings</button>
-    </nav>
+    <!-- 分類篩選改下拉（2026-11-16 使用者：「改成下拉篩選」）。 -->
+    <select class="select" style="width:var(--w-220)" aria-label="Category" data-i18n-aria-label="ploy.log.col.item" data-log-filter>
+      <option value="all" data-i18n="ploy.log.all">All</option>
+      <option value="events" data-i18n="ploy.ev.title">Earning events</option>
+      <option value="tiers" data-i18n="ploy.tier.title">Tiers</option>
+      <option value="kpi" data-i18n="ploy.tab.kpi">Fans KPIs</option>
+      <option value="other" data-feat="S132" data-i18n="ploy.tab.other">More settings</option>
+    </select>
   </div>
   <div class="admin-table-wrap admin-table-wrap--fluid">
     <table class="ztor-table">
@@ -468,17 +433,6 @@
       </tr></thead>
       <tbody id="ploy-log-body"></tbody>
     </table>
-  </div>
-  <div class="info-banner mt-16">
-    <i data-lucide="clock" class="ztor-icon info-banner__icon"></i>
-    <span data-i18n="ploy.pending">Changes apply from now on and never recalculate past entries.</span>
-  </div>
-  <!-- 2026-11-02（UI-CHANGES 四百六十）：原型專用「還原預設」。儲存的設定寫在這台瀏覽器（js/loyalty-settings.js），
-       其他頁照著讀；這顆清掉它、全頁回到規格預設。放在修改紀錄卡最底下、用 ghost 小按鈕：它不是產品功能（正式版沒有），
-       只是讓看原型的人能回到起點，不該跟每張卡的編輯／儲存搶位置。 -->
-  <div class="flex-row mt-16">
-    <button class="btn btn--ghost btn--sm" type="button" data-ploy-reset><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="ploy.reset">Reset to defaults</span></button>
-    <span class="text-sub" style="font-size:var(--fs-12)" data-i18n="ploy.reset-hint">Prototype only: clears the settings saved in this browser so every page goes back to the defaults.</span>
   </div>
 </section>
 </div>
@@ -559,11 +513,14 @@
 </div>
 
 <script src="js/icons.js?v=r2.2"></script>
+<script src="js/sticky-dock.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/loyalty-settings.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script><!-- 幣別符號表（SYMBOL），js/currency.js 讀它 -->
+<script src="js/currency.js?v=r2.2"></script><!-- D537：基礎比率標籤的平台基準幣別符號（{basesym}） -->
 <script src="js/table-sort.js?v=r2.2"></script>
 <script>
   /* 平台忠誠點數設定（spec 5.1.0.8 F1～F11）——demo，非真後端。
@@ -689,16 +646,17 @@
       if (window.ztorTableSort) window.ztorTableSort.refresh(logBody.closest('table'));
     }
     var filterBar = document.querySelector('[data-log-filter]');
+    /* 「其他設定」分頁在這個版本收起（S132）時，下拉也不列這一類 */
+    var otherTab = document.querySelector('.tabs__item[data-tab="other"]');
+    if (otherTab && (otherTab.hidden || getComputedStyle(otherTab).display === 'none')) {
+      var oo = filterBar.querySelector('option[value="other"]'); if (oo) oo.remove();
+    }
     function setFilter(cat) {
       filter = cat;
-      Array.prototype.forEach.call(filterBar.querySelectorAll('.filter-tabs__item'), function (b) {
-        var on = b.getAttribute('data-cat') === cat;
-        b.classList.toggle('filter-tabs__item--active', on);
-        b.setAttribute('aria-selected', on ? 'true' : 'false');
-      });
+      if (filterBar.value !== cat) filterBar.value = cat;
       renderLog();
     }
-    filterBar.addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (b) setFilter(b.getAttribute('data-cat')); });
+    filterBar.addEventListener('change', function () { setFilter(filterBar.value); });
 
     /* 賽季加倍：移除與新增當下記一列（D476；不跟卡的編輯）。 */
     if (seasonBody) seasonBody.addEventListener('click', function (e) {
@@ -784,15 +742,15 @@
         if (inp.getAttribute('data-saved') !== inp.defaultValue) raw.values[keyOf(inp)] = inp.getAttribute('data-saved');
       });
       Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-switch]'), function (sw) {
-        if (!sw.classList.contains('switch--on')) raw.switches[sw.getAttribute('data-ploy-switch')] = false;
+        if (sw.getAttribute('data-saved-on') === '0') raw.switches[sw.getAttribute('data-ploy-switch')] = false;
       });
       LS.save(raw);
     }
     loadStored();
     function refreshReads() {
       inputs.forEach(function (inp) {
-        var cell = inp.closest('.bmx__cell, [data-ploy-read-scope]'), read = cell && cell.querySelector('.bmx__read');
-        if (read) read.textContent = read.hasAttribute('data-read-num') ? inp.getAttribute('data-saved') : valText(inp.getAttribute('data-saved'), inp.getAttribute('data-ploy-unit'));   /* 基礎比率大數字只放數字，單位另一格（D531） */
+        var cell = inp.closest('.bmx__cell'), read = cell && cell.querySelector('.bmx__read');
+        if (read) read.textContent = valText(inp.getAttribute('data-saved'), inp.getAttribute('data-ploy-unit'));
         var nameKey = inp.getAttribute('data-ploy-name');
         if (nameKey) {
           var badge = document.querySelector('[data-tier-name="' + nameKey + '"]');
@@ -910,6 +868,7 @@
       });
       card._ploy.cancel = (function () {
         own.forEach(function (i) { i.value = i.getAttribute('data-saved'); });
+        Array.prototype.forEach.call(card.querySelectorAll('[data-ploy-switch]'), function (sw) { setStopped(sw, swSaved(sw)); });
         setEditing(false);
       });
       /* 這次改了哪些項目（還沒寫入）：留空視為沒改 */
@@ -922,12 +881,20 @@
           rows.push({ when: when, cat: cat, kind: 'param', label: inp.getAttribute('data-ploy-label'), field: inp.getAttribute('data-ploy-field'),
                       unit: inp.getAttribute('data-ploy-unit'), from: was, to: now, status: inp.getAttribute('data-ploy-kind') || 'event', _inp: inp });
         });
+        /* 事件開關（D534）：跟著同一次儲存；生效類別「立即」 */
+        Array.prototype.forEach.call(card.querySelectorAll('[data-ploy-switch]'), function (sw) {
+          var was = swSaved(sw), now = sw.classList.contains('switch--on');
+          if (was === now) return;
+          rows.push({ when: when, cat: cat, kind: 'param', label: sw.getAttribute('data-ploy-switch'), field: 'ploy.ev.col.on',
+                      from: { key: was ? 'ploy.ev.on' : 'ploy.ev.off' }, to: { key: now ? 'ploy.ev.on' : 'ploy.ev.off' }, status: 'now', _sw: sw, _on: now });
+        });
         return rows;
       };
       /* 寫入：確認彈窗按「儲存」之後才呼叫（D533） */
       card._ploy.commit = function (rows) {
         own.forEach(function (inp) { if (inp.value.trim() === '') inp.value = inp.getAttribute('data-saved'); });
         rows.forEach(function (row) {
+          if (row._sw) { setSwSaved(row._sw, row._on); delete row._sw; delete row._on; return; }
           var inp = row._inp; delete row._inp;
           if (inp.getAttribute('data-ploy-name')) inp.setAttribute('data-custom', '1');   /* 改過的分級名稱不再跟著介面語言換 */
           inp.setAttribute('data-saved', row.to);
@@ -954,39 +921,43 @@
       };
     });
 
-    /* ── F9 事件開關（D498、D508）：任何時候都能切（不必先按編輯），立即生效、當下記一列（開 → 關）；
-       列上顯示「已停止發分」；取消編輯不還原開關。開關狀態只在畫面上，重新整理會回到全開（UIA-325）。 ── */
+    /* ── F9 事件開關（D534，修訂 D508）：只在編輯模式能切，跟同分頁的其他參數一起儲存；儲存後立即生效（需求：關閉後立即停止發分）。
+       唯讀時開關格顯示狀態標籤（發分中／已停止發分），編輯時換成開關；取消會把開關還原成已儲存的狀態。
+       data-saved-on＝已儲存的狀態（"1"／"0"），開關的外觀＝編輯中的狀態。 ── */
     function setStopped(sw, on) {
       sw.classList.toggle('switch--on', on);
       sw.setAttribute('aria-checked', on ? 'true' : 'false');
-      var row = sw.closest('[data-ploy-ev]'), tag = row && row.querySelector('[data-ploy-stopped]');
-      if (tag) tag.hidden = on;
+    }
+    function swSaved(sw) { return sw.getAttribute('data-saved-on') !== '0'; }
+    function setSwSaved(sw, on) {
+      sw.setAttribute('data-saved-on', on ? '1' : '0');
+      setStopped(sw, on);
+      var b = document.querySelector('[data-ploy-sw-badge="' + sw.getAttribute('data-ploy-switch') + '"]');
+      if (b) {
+        b.className = 'badge ' + (on ? 'badge--success' : 'badge--neutral');
+        b.setAttribute('data-i18n', on ? 'ploy.ev.badge-on' : 'ploy.ev.stopped');
+        b.textContent = t(on ? 'ploy.ev.badge-on' : 'ploy.ev.stopped');
+      }
     }
     if (LS) {   /* 已儲存的開關狀態（預設全開） */
       var sws = LS.raw().switches;
       Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-switch]'), function (sw) {
-        if (sws[sw.getAttribute('data-ploy-switch')] === false) setStopped(sw, false);
+        setSwSaved(sw, sws[sw.getAttribute('data-ploy-switch')] !== false);
       });
     }
-    /* 原型專用「還原預設」：清掉本機儲存、整頁回到規格預設（不記修改紀錄：正式版沒有這個操作）。 */
-    var resetBtn = document.querySelector('[data-ploy-reset]');
-    if (resetBtn) resetBtn.addEventListener('click', function () {
-      if (LS) LS.reset();
-      inputs.forEach(function (inp) { inp.value = inp.defaultValue; inp.setAttribute('data-saved', inp.defaultValue); inp.removeAttribute('data-custom'); });
-      Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-switch]'), function (sw) { setStopped(sw, true); });
-      Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-card].is-editing'), function (c) { c._ploy.cancel(); });
-      if (window.applyI18n) window.applyI18n(); else { syncNames(); refreshReads(); }
-      toast(t('ploy.reset-done', 'Back to the defaults'), true);
-    });
+    /* 原型專用「還原預設」（2026-11-16 使用者：「做在 cheat code 中」）：從頁面移到作弊碼面板「開發 › 本頁示範動作」。
+       清掉本機儲存後重新載入，參數、開關與修改紀錄都回到規格預設（不記修改紀錄：正式版沒有這個操作）。
+       devtools.js 在本段之後載入，所以這裡設 window.ZTOR_DEV_PAGE_ACTIONS 來得及。 */
+    window.ZTOR_DEV_PAGE_ACTIONS = [{
+      key: 'ploy-reset', label: t('ploy.reset', 'Reset to defaults'),
+      desc: t('ploy.reset-hint', 'Prototype only: clears the settings saved in this browser so every page goes back to the defaults.'),
+      run: function () { if (LS) LS.reset(); location.reload(); }
+    }];
     Array.prototype.forEach.call(document.querySelectorAll('[data-ploy-switch]'), function (sw) {
+      if (!sw.hasAttribute('data-saved-on')) setSwSaved(sw, sw.classList.contains('switch--on'));
       function flip() {
-        var on = !sw.classList.contains('switch--on');
-        setStopped(sw, on);
-        log.unshift({ when: nowStamp(), cat: 'events', kind: 'param', label: sw.getAttribute('data-ploy-switch'), field: 'ploy.ev.col.on',
-                      from: { key: on ? 'ploy.ev.off' : 'ploy.ev.on' }, to: { key: on ? 'ploy.ev.on' : 'ploy.ev.off' }, status: 'now' });
-        persist();
-        renderLog();
-        toast(t(on ? 'ploy.ev.toast-on' : 'ploy.ev.toast-off'), on);
+        if (!sw.closest('.is-editing')) return;   /* 只在編輯模式能切（D534） */
+        setStopped(sw, !sw.classList.contains('switch--on'));
       }
       sw.addEventListener('click', flip);
       sw.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
