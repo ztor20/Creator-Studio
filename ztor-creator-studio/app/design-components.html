@@ -2262,7 +2262,19 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--
     </span>
   </div>
 </div>
-<details class="dg-more dsd-fold"><summary>更多示範（1）</summary><div class="dg-card__render">
+<details class="dg-more dsd-fold"><summary>更多示範（2）</summary><div class="dg-card__render">
+<div class="demo" style="min-height:120px;">
+    <div class="restock-table restock-table--adjust">
+      <div class="restock-table__head">
+        <span></span>
+        <span class="restock-table__col"><span class="tip tip--label" tabindex="0"><span>Current</span><span class="tip__bubble" role="tooltip">Units on hand right now.</span></span></span>
+        <span class="restock-table__col"><span class="tip tip--label" tabindex="0"><span>Reserved</span><span class="tip__bubble" role="tooltip">Held for fans who are checking out but haven't paid.</span></span></span>
+        <span class="restock-table__col"><span class="tip tip--label" tabindex="0"><span>Minimum</span><span class="tip__bubble" role="tooltip">The lowest you can set: locked units plus reserved units in the unlocked stock.</span></span></span>
+        <span class="restock-table__col"><span class="tip tip--label" tabindex="0"><span>New stock</span><span class="tip__bubble" role="tooltip">What you actually have after counting.</span></span></span>
+        <span class="restock-table__col"><span class="tip tip--label tip--end" tabindex="0"><span>Change</span><span class="tip__bubble" role="tooltip">New stock minus current.</span></span></span>
+      </div>
+    </div>
+  </div>
 <div class="demo" style="gap:40px" data-product-preview="stock-tip">
     <div>
       <p class="field-text"><span data-en>1-axis multi-option (e.g. tee sizes)</span><span data-zh>單軸多選項（如 tee 尺寸）</span></p>
@@ -2332,6 +2344,20 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--
   
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
   <table class="spec" data-product-spec="tooltip"><tbody><tr><td>Source</td><td><code>shared.css</code></td></tr><tr><td>Anatomy</td><td><code>.tip</code> wrapper (15px icon, <code>cursor: help</code>) + absolutely-positioned <code>.tip__bubble</code>.</td></tr><tr><td>States</td><td>hover / focus-visible = icon darkens to <code>--foreground</code>, bubble fades in and rises.</td></tr><tr><td>Token usage</td><td><code>--muted-foreground</code> → <code>--foreground</code> · bubble surface/border/shadow tokens.</td></tr><tr><td>Classes</td><td><code>.tip</code> · <code>.tip__bubble</code></td></tr><tr><td>Evidence / usage</td><td>Projects rows / cards「未完成提示」（spec 5.1.2 F1）.</td></tr></tbody></table>
+
+  <div class="ds-variant" id="tip-label">
+  <h4 class="ds-variant__title"><span data-en>Variant · Column label <code>.tip--label</code></span><span data-zh>變體 · 欄名說明 <code>.tip--label</code></span> <span class="ds-hist">（2026-11-16 使用者裁示）</span></h4>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Hover or focus a table column name to see what the column means. The label text itself is the trigger (looks unchanged — no underline — only the cursor turns to help) — no ⓘ icon, so a row of eight headers stays quiet. The bubble opens below and centred, because a header is the table's first row and a bubble above would be clipped. Add <code>.tip--end</code> on the right-most column so the bubble grows leftwards and doesn't push a scrollbar.</p>
+  <p class="sub__desc" data-zh>hover 或 focus 表格欄名，浮出這一欄是什麼的說明。觸發點就是欄名文字（外觀不變、不加底線，只有游標變成 help），不另加 ⓘ icon——一排八個欄名各掛一顆太吵。泡泡置中往下開：表頭是表格第一列，往上開會被裁掉。最右一欄加 <code>.tip--end</code>，泡泡靠右往左長，不會撐出橫向捲軸。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(hover a column name)</span></p><p class="field-label" data-zh>視覺展示 <span class="field-note">(hover 欄名)</span></p>
+  
+  <p class="field-label" data-en>Structure</p><p class="field-label" data-zh>結構</p>
+  <p class="field-note" data-en><code>&lt;span class="tip tip--label" tabindex="0"&gt;&lt;span&gt;Column&lt;/span&gt;&lt;span class="tip__bubble" role="tooltip"&gt;What it means&lt;/span&gt;&lt;/span&gt;</code> inside the header cell. Used in the product-detail stock table and the restock / adjust-stock table. The table must not clip overflow (<code>.restock-table</code> no longer uses <code>overflow:hidden</code>; its head carries the top radius instead).</p>
+  <p class="field-note" data-zh>放在表頭儲存格裡：<code>&lt;span class="tip tip--label" tabindex="0"&gt;&lt;span&gt;欄名&lt;/span&gt;&lt;span class="tip__bubble" role="tooltip"&gt;說明&lt;/span&gt;&lt;/span&gt;</code>。用在商品細節頁庫存管理表、補貨／修改庫存表。表格不能裁切溢出（<code>.restock-table</code> 不再用 <code>overflow:hidden</code>，改由表頭自己帶上圓角）。</p>
+  <p class="field-label" data-en>Do &amp; Don't</p><p class="field-label" data-zh>該做與別做</p>
+  <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Say what the number is and where it comes from, in one or two short sentences.</li><li data-zh>一兩句話講這個數字是什麼、從哪來。</li><li data-en>Put <code>.tip--end</code> on the last column.</li><li data-zh>最後一欄加 <code>.tip--end</code>。</li></ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Don't add an ⓘ icon next to every header.</li><li data-zh>別在每個欄名旁再加 ⓘ icon。</li><li data-en>Don't put actions or links in the bubble.</li><li data-zh>別在泡泡裡放動作或連結。</li></ul></div></div>
+  </div>
 
   <div class="ds-variant" id="stock-tip">
   <h4 class="ds-variant__title"><span data-en>Variant · Info card <code>.tip--card</code></span><span data-zh>變體 · 資訊卡型 <code>.tip--card</code></span> <span class="ds-hist">（原 4.89 Stock tip；2026-11-09 Q172 合併，<code>stock-tip.css</code> ✝ 退場）</span></h4>
@@ -8901,24 +8927,30 @@ Letterpress cover, uncoated stock.</textarea></div>
       <label class="field mt-16"><span class="field__label">Supplier</span><input class="input" placeholder="e.g., the print shop or factory"></label>
       <label class="field mt-16"><span class="field__label">Notes</span><input class="input" placeholder="e.g., batch number, carrier"></label>
       <!-- 2026-11-09 D525：修改庫存模式——同一張表，不顯示方式卡、供應商與預計到貨；欄名換成 目前｜新的在庫數（預填目前）｜差額；
-           名稱下一行「最低 N」（鎖定＋保留），低於下限那格 aria-invalid 紅框＋表下錯誤字 -->
+           2026-11-16 D529 後續：改五欄 目前｜保留中｜最低｜新的在庫數｜差額（.restock-table--adjust），名稱下不再寫小字；低於下限那格 aria-invalid 紅框＋表下錯誤字 -->
       <p class="field-label mt-16" data-en>Mode · Adjust stock</p><p class="field-label mt-16" data-zh>模式 · 修改庫存</p>
-      <div class="restock-table">
+      <div class="restock-table restock-table--adjust">
         <div class="restock-table__head">
           <span></span>
           <span class="restock-table__col" data-en>Current</span><span class="restock-table__col" data-zh>當前</span>
+          <span class="restock-table__col" data-en>Reserved</span><span class="restock-table__col" data-zh>保留中</span>
+          <span class="restock-table__col" data-en>Minimum</span><span class="restock-table__col" data-zh>最低</span>
           <span class="restock-table__col" data-en>New stock</span><span class="restock-table__col" data-zh>新的在庫數</span>
           <span class="restock-table__col" data-en>Change</span><span class="restock-table__col" data-zh>差額</span>
         </div>
         <div class="restock-table__row">
           <div class="restock-table__id"><span class="restock-table__img"><i data-lucide="package" class="ztor-icon"></i></span><span class="restock-table__name">Small / Black</span></div>
           <input class="input restock-table__ro" value="12" readonly tabindex="-1" aria-label="Current stock">
+          <input class="input restock-table__ro" value="—" readonly tabindex="-1" aria-label="Reserved">
+          <input class="input restock-table__ro" value="0" readonly tabindex="-1" aria-label="Minimum">
           <input class="input" value="15" inputmode="numeric" aria-label="New stock">
           <input class="input restock-table__ro" value="+3" readonly tabindex="-1" aria-label="Difference">
         </div>
         <div class="restock-table__row">
-          <div class="restock-table__id"><span class="restock-table__img"><i data-lucide="package" class="ztor-icon"></i></span><span class="restock-table__name">Small / White<br><small class="text-sub">Min 4 · 最低 4</small></span></div>
+          <div class="restock-table__id"><span class="restock-table__img"><i data-lucide="package" class="ztor-icon"></i></span><span class="restock-table__name">Small / White</span></div>
           <input class="input restock-table__ro" value="5" readonly tabindex="-1" aria-label="Current stock">
+          <input class="input restock-table__ro" value="2" readonly tabindex="-1" aria-label="Reserved">
+          <input class="input restock-table__ro" value="4" readonly tabindex="-1" aria-label="Minimum">
           <input class="input" value="2" inputmode="numeric" aria-invalid="true" aria-label="New stock">
           <input class="input restock-table__ro" value="−3" readonly tabindex="-1" aria-label="Difference">
         </div>
@@ -8926,6 +8958,11 @@ Letterpress cover, uncoated stock.</textarea></div>
       <p class="field__hint" data-en>Stock can't go below what's locked to sales channels or reserved by unpaid orders. To go lower, lower the lock first.</p>
       <p class="field__hint" data-zh>在庫不能低於鎖給販售管道的量加上下單未付款的保留量；要再低，先把鎖定調低。</p>
       <p class="field__error">Some items are below their minimum · 有品項低於最低在庫數</p>
+      <!-- 2026-11-11 D529：儲存時重新檢查——打開以後數字變了（期間有粉絲進入結帳）就不儲存、換成最新數字，表下出現這條 -->
+      <div class="alert alert--row alert--warning mt-16">
+        <span class="alert__icon"><i data-lucide="refresh-cw" class="ztor-icon"></i></span>
+        <span class="alert__body"><span class="alert__title" data-en>Stock changed while you were editing</span><span class="alert__title" data-zh>你編輯時庫存有變動</span><span class="alert__meta" data-en>Nothing was saved. The rows now show the latest numbers — check them and save again.</span><span class="alert__meta" data-zh>這次沒有儲存。表格已換成最新的數字，確認後再儲存一次。</span></span>
+      </div>
       <p class="field-note" style="margin-top:8px" data-en>Three number columns per row: <strong>Current</strong> and <strong>After</strong> are read-only (<code>.restock-table__ro</code>, muted, not typeable); only <strong>Restock</strong> takes input, and After recomputes live as current + restock.</p>
       <p class="field-note" style="margin-top:8px" data-zh>每列三欄數字：<strong>當前</strong>與<strong>補後</strong>唯讀（<code>.restock-table__ro</code>，靜音底、不可打字），只有<strong>補貨</strong>可填，補後隨補貨即時算成「當前＋補貨」。</p>
       <p class="field-note" style="margin-top:8px" data-en>Rows group by option-1 via <code>.restock-table__group</code> (Small / Medium). A bundle shows one member tab per product, each tab its own table; a single-variant product is one table with a single row and no group header.</p>
@@ -9911,9 +9948,9 @@ Letterpress cover, uncoated stock.</textarea></div>
 <div class="demo">
     <div class="variant-table-wrap">
       <div class="variant-table variant-table--stock">
-        <div class="variant-table__head"><span>Variant</span><span>On hand</span><span>Locked</span><span>Bundles</span><span>Unlocked</span><span>Restocking</span><span>Status</span><span></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-thumb variant-thumb--own variant-thumb--ro" title="Variant image · S" aria-hidden="true"><i data-lucide="image" class="ztor-icon"></i></span><span class="variant-cell__text">S<br><span class="text-sub">TEE-S</span></span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">OK</span></span><span></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-thumb variant-thumb--ro" title="Variant image · M" aria-hidden="true"><i data-lucide="image" class="ztor-icon"></i></span><span class="variant-cell__text">M<br><span class="text-sub">TEE-M</span></span></span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming is-on">+6</span><span><span class="badge badge--error"><span>Low stock</span></span></span><span></span></div>
+        <div class="variant-table__head"><span>Variant</span><span>On hand</span><span>Locked</span><span>Bundles</span><span>Unlocked</span><span>Reserved</span><span>Restocking</span><span>Status</span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-thumb variant-thumb--own variant-thumb--ro" title="Variant image · S" aria-hidden="true"><i data-lucide="image" class="ztor-icon"></i></span><span class="variant-cell__text">S<br><span class="text-sub">TEE-S</span></span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">10</span><span class="variant-cell--ro variant-cell--reserved is-on">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">OK</span></span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-thumb variant-thumb--ro" title="Variant image · M" aria-hidden="true"><i data-lucide="image" class="ztor-icon"></i></span><span class="variant-cell__text">M<br><span class="text-sub">TEE-M</span></span></span><span class="variant-cell--stock variant-cell--stock-low">2</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--reserved">—</span><span class="variant-cell--ro variant-cell--incoming is-on">+6</span><span><span class="badge badge--error"><span>Low stock</span></span></span><span></span></div>
       </div>
     </div>
   </div>
@@ -9931,19 +9968,19 @@ Letterpress cover, uncoated stock.</textarea></div>
 <div class="demo">
     <div class="variant-table-wrap variant-table-wrap--menu">
       <div class="variant-table variant-table--stock">
-        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>補貨中</span><span>狀態</span><span></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">M<br><span class="text-sub">26MS-HOODIE-M</span></span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro">6</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">L<br><span class="text-sub">26MS-HOODIE-L</span></span></span><span class="variant-cell--stock variant-cell--stock-warn">4</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--warning">到門檻</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">XL<br><span class="text-sub">26MS-HOODIE-XL</span></span></span><span class="variant-cell--stock variant-cell--stock-low">1</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">1</span><span class="variant-cell--ro variant-cell--incoming is-on">+20</span><span><span class="badge badge--error">低庫存</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>保留中</span><span>補貨中</span><span>狀態</span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">M<br><span class="text-sub">26MS-HOODIE-M</span></span></span><span class="variant-cell--stock">12</span><span class="variant-cell--ro">4</span><span class="variant-cell--ro">6</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--reserved is-on">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">L<br><span class="text-sub">26MS-HOODIE-L</span></span></span><span class="variant-cell--stock variant-cell--stock-warn">4</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro variant-cell--free">2</span><span class="variant-cell--ro variant-cell--reserved">—</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--warning">到門檻</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">XL<br><span class="text-sub">26MS-HOODIE-XL</span></span></span><span class="variant-cell--stock variant-cell--stock-low">1</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">1</span><span class="variant-cell--ro variant-cell--reserved">—</span><span class="variant-cell--ro variant-cell--incoming is-on">+20</span><span><span class="badge badge--error">低庫存</span></span><span><button class="btn btn--icon btn--xs" type="button" aria-label="More"><i data-lucide="more-vertical" class="ztor-icon"></i></button></span></div>
       </div>
     </div>
   </div>
 <div class="demo">
     <div class="variant-table-wrap variant-table-wrap--menu">
       <div class="variant-table variant-table--stock variant-table--limited">
-        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span class="variant-cell--total">上限</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>補貨中</span><span>狀態</span><span></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">Black / S<br><span class="text-sub">JKT-BK-S</span></span></span><span class="variant-cell--stock variant-cell--stock-low">0</span><span class="variant-cell--ro variant-cell--total">5</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">0</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--error">售罄</span></span><span></span></div>
-        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">Black / M<br><span class="text-sub">JKT-BK-M</span></span></span><span class="variant-cell--stock">6</span><span class="variant-cell--ro variant-cell--total">8</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">4</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span></span></div>
+        <div class="variant-table__head"><span>選項組合</span><span>在庫</span><span class="variant-cell--total">上限</span><span>鎖給單售</span><span>鎖給組合</span><span>未鎖定</span><span>保留中</span><span>補貨中</span><span>狀態</span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">Black / S<br><span class="text-sub">JKT-BK-S</span></span></span><span class="variant-cell--stock variant-cell--stock-low">0</span><span class="variant-cell--ro variant-cell--total">5</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">0</span><span class="variant-cell--ro variant-cell--reserved is-on">2</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="badge badge--error">售罄</span></span><span></span></div>
+        <div class="variant-table__row"><span class="variant-cell--variant"><span class="variant-cell__text">Black / M<br><span class="text-sub">JKT-BK-M</span></span></span><span class="variant-cell--stock">6</span><span class="variant-cell--ro variant-cell--total">8</span><span class="variant-cell--ro">2</span><span class="variant-cell--ro">—</span><span class="variant-cell--ro variant-cell--free">4</span><span class="variant-cell--ro variant-cell--reserved">—</span><span class="variant-cell--ro variant-cell--incoming">—</span><span><span class="text-sub">正常</span></span><span></span></div>
       </div>
     </div>
     <div class="variant-table-wrap" style="margin-top:var(--sp-16)">
@@ -10014,8 +10051,8 @@ Letterpress cover, uncoated stock.</textarea></div>
   <p class="field-label" data-en>Narrow-column table <span class="field-note">(<code>.variant-table--fluid</code> — 2026-09-09: for the read-only table on the product detail page, whose column is ~450px. The base table's six px columns add up past its 560px min-width, so in a narrow column it spilled straight out of the card — <code>--menu</code> lets overflow through so the kebab can float, which means there is no scrollbar to catch it. Min-width drops to 0 and the text columns become compressible fr; the number columns and gutters stay at the base values, 78px and 8px)</span></p>
   <p class="field-label" data-zh>窄欄版表格 <span class="field-note">(<code>.variant-table--fluid</code>——2026-09-09：給商品明細那張唯讀表用，它的欄只有 ~450px。基礎版六欄寫死 px、加總超過 560px 最小寬，窄欄裡整張戳出卡片外；<code>--menu</code> 為了讓 kebab 選單浮出已放行 overflow，連橫捲都接不住。改成最小寬 0、文字欄可壓縮的 fr；數字欄與欄距照基礎版的 78px 與 8px)</span></p>
   
-  <p class="field-label" data-en>Stock table <span class="field-note">(<code>.variant-table--stock</code> — 2026-09-11: the Stock tab's management table. Stock columns only — combination + SKU sub-line / on hand / locked for single / locked for bundles / unlocked / restocking / status / ⋯ (restock and lock both live in the ⋯ row menu, DS §4.58 pattern with a listed toggle on top); price, SKU and cost moved to Product settings. Do not combine with <code>--fluid</code>.)</span></p>
-  <p class="field-label" data-zh>庫存管理表 <span class="field-note">(<code>.variant-table--stock</code>——2026-09-11 商品庫存分頁：只留庫存欄位——組合＋SKU 小字／在庫／鎖給單售／鎖給組合／未鎖定／補貨中／狀態／⋯（補貨與鎖定都在 ⋯ 的列操作選單裡，照 §4.58：最上面一列「上架中」開關、底下動作項各帶 icon）；價格、SKU、成本搬去商品設定。狀態格用 badge、在庫格對應 <code>.variant-cell--stock-low</code>／<code>--stock-warn</code>、補貨中格 <code>.variant-cell--incoming</code>（有量 <code>.is-on</code>）。<strong>不與 <code>--fluid</code> 併用</strong>。)</span></p>
+  <p class="field-label" data-en>Stock table <span class="field-note">(<code>.variant-table--stock</code> — 2026-09-11: the Stock tab's management table. Stock columns only — combination + SKU sub-line / on hand / locked for single / locked for bundles / unlocked / reserved / restocking / status / ⋯ (2026-11-16 D529: reserved is its own column, <code>.variant-cell--reserved</code> — units held while fans are in checkout; <code>.is-on</code> when above 0) (restock and lock both live in the ⋯ row menu, DS §4.58 pattern with a listed toggle on top); price, SKU and cost moved to Product settings. Do not combine with <code>--fluid</code>.)</span></p>
+  <p class="field-label" data-zh>庫存管理表 <span class="field-note">(<code>.variant-table--stock</code>——2026-09-11 商品庫存分頁：只留庫存欄位——組合＋SKU 小字／在庫／鎖給單售／鎖給組合／未鎖定／保留中／補貨中／狀態／⋯（2026-11-16 D529：保留中獨立一欄 <code>.variant-cell--reserved</code>，粉絲結帳中還沒付款的量，大於 0 掛 <code>.is-on</code>）（補貨與鎖定都在 ⋯ 的列操作選單裡，照 §4.58：最上面一列「上架中」開關、底下動作項各帶 icon）；價格、SKU、成本搬去商品設定。狀態格用 badge、在庫格對應 <code>.variant-cell--stock-low</code>／<code>--stock-warn</code>、補貨中格 <code>.variant-cell--incoming</code>（有量 <code>.is-on</code>）。<strong>不與 <code>--fluid</code> 併用</strong>。)</span></p>
   
   <p class="field-label" data-en>Limited-edition cap column <span class="field-note">(<code>.variant-table--stock.variant-table--limited</code> and <code>.variant-table--preview.variant-table--limited</code> — 2026-09-21, spec 5.1.5.1 §2.8 / §2.10, §7.2: a Limited edition product gets one extra "Total" column, per row, in both product-detail tables — read-only (<code>.variant-cell--ro.variant-cell--total</code>) in the Stock tab, editable (<code>.variant-cell--input.variant-cell--total</code>) in the Product-settings pricing table. Same show/hide pair as create-product: <code>.variant-cell--total</code> is hidden until the table carries <code>--limited</code>; an Unlimited product never shows it. Editing rule (§2.10): a cap can't go below units sold — the cell gets <code>aria-invalid</code> and a <code>.field__error</code> under the table names the row.)</span></p>
   <p class="field-label" data-zh>限量的上限欄 <span class="field-note">(<code>.variant-table--stock.variant-table--limited</code> 與 <code>.variant-table--preview.variant-table--limited</code>——2026-09-21，規格 5.1.5.1 §2.8／§2.10、§7.2：限量商品在商品細節頁的兩張表各多一欄「上限」、逐列一格——庫存分頁是唯讀讀數（<code>.variant-cell--ro.variant-cell--total</code>）、商品設定的逐選項組合定價表是可改的輸入格（<code>.variant-cell--input.variant-cell--total</code>）。顯隱與建立商品同一組：<code>.variant-cell--total</code> 平常藏著、表掛 <code>--limited</code> 才出現；不限量商品永遠看不到。編輯規則（§2.10）：上限不得低於已售——該格 <code>aria-invalid</code>、表格底下一行 <code>.field__error</code> 點名哪一列。)</span></p>
