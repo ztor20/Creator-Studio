@@ -51,9 +51,12 @@ input[type="number"] {
 
 .zstep { position: relative; }
 
-/* Make room: button column (28px) + the suffix that now sits left of it. */
-.zstep .amount-field__unit { right: 28px; }
-.zstep.amount-field--suffix.amount-field--readonly .amount-field__input.input { padding-right: 68px; }
+/* Make room for the button column (28px).
+   Q175（2026-11-16）：後綴單位改成與輸入框並排（amount-field.css），輸入框不再替單位預留空間；
+   改由單位右側讓出按鈕欄寬度。墓碑：舊做法 `.zstep .amount-field__unit { right: 28px }`＋輸入框 padding-right 68px（單位疊在輸入框上），
+   與並排疊加後會把固定寬欄位撐爆（create-bundle 每組張數欄）。 */
+.zstep.amount-field--suffix.amount-field--readonly .amount-field__input.input { padding-right: var(--sp-8); }
+.zstep.amount-field--suffix.amount-field--readonly .amount-field__unit { padding-right: calc(28px + var(--sp-8)); }
 .zstep--nounit .amount-field__input.input,
 .zstep--nounit.amount-field--suffix.amount-field--readonly .amount-field__input.input { padding-right: 36px; }
 
@@ -100,11 +103,11 @@ input[type="number"] {
    (e.g. per-slot) must not look steppable. */
 .zstep:has(.zstep__input:disabled) .zstep__btns,
 .zstep:has(.zstep__input[readonly]) .zstep__btns { display: none; }
-.zstep:has(.zstep__input:disabled) .amount-field__input.input,
-.zstep:has(.zstep__input[readonly]) .amount-field__input.input { padding-right: 40px; }
-/* 2026-10-27：按鈕欄收掉之後，單位字跟著貼回右緣（原本仍停在 right:28px，右邊留一塊空白） */
+.zstep--nounit:has(.zstep__input:disabled) .amount-field__input.input,
+.zstep--nounit:has(.zstep__input[readonly]) .amount-field__input.input { padding-right: var(--sp-12); }
+/* 2026-10-27：按鈕欄收掉之後，單位字跟著貼回右緣。Q175 起單位並排，改成收回單位右側預留的按鈕欄寬度 */
 .zstep:has(.zstep__input:disabled) .amount-field__unit,
-.zstep:has(.zstep__input[readonly]) .amount-field__unit { right: 12px; }
+.zstep:has(.zstep__input[readonly]) .amount-field__unit { padding-right: var(--sp-12); }
 
 @media (prefers-reduced-motion: reduce) {
   .zstep__btn { transition: none; }

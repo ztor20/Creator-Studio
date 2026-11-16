@@ -898,11 +898,9 @@
     const adminScope = !isAdminPlatform && !!creator;
     /* Same three faces as topbar: roster marker / admin 代管 (back + managing) /
        plain creator (no chrome). */
+    /* 2026-11-16 使用者：Admin 介面的「Admin Creator Studio」標籤拿掉，改寫在品牌下方的小字（取代 Creator Studio）。 */
     const lead = adminView()
-      ? `<div class="app-sidebar__context app-sidebar__context--admin">
-           <i data-lucide="shield-check" class="ztor-icon"></i>
-           <span data-i18n="admin.studio">Admin Creator Studio</span>
-         </div>`
+      ? ""
       : (adminScope ? `<a class="app-sidebar__back" href="${creator.back}" data-i18n-aria-label="${creator.ariaKey}" aria-label="Back">
            <i data-lucide="arrow-left" class="ztor-icon"></i>
            <span class="app-sidebar__back-label" data-i18n="${creator.backKey}">Back</span>
@@ -913,7 +911,7 @@
          </div>` : "");
     return `
     <div class="app-sidebar__top">
-    <a href="${adminView() ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}${SYMBOL_SVG}<span class="app-sidebar__brand-name" data-i18n="nav.brand-sub">Creator Studio</span></a>
+    <a href="${adminView() ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}${SYMBOL_SVG}${adminView() ? '<span class="app-sidebar__brand-name" data-i18n="admin.studio">Admin Creator Studio</span>' : '<span class="app-sidebar__brand-name" data-i18n="nav.brand-sub">Creator Studio</span>'}</a>
       <button class="app-nav-rail-toggle" type="button" aria-expanded="true"
         aria-label="Collapse navigation" data-i18n-aria-label="nav.collapse" data-nav-rail>
         <i data-lucide="sidebar-collapse" class="ztor-icon"></i>

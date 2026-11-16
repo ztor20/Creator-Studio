@@ -25,6 +25,10 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-16 D537 原型同步（UI-CHANGES 五百四十三）**：5.1.0.8 F5 拿掉平台常數卡、基礎比率寫「每花 HK$1 得」（`js/currency.js` 的 `{basesym}`）→ `admin-platform-loyalty.html`。
+> **2026-11-16 D536 原型同步（UI-CHANGES 五百三十九）**：5.1.0.8 拿掉說明段落、修改紀錄篩選改下拉 → `admin-platform-loyalty.html`。
+> **2026-11-16 D535 原型同步（UI-CHANGES 五百三十七）**：5.1.0.8 共用參數改用設定列、基礎比率改寫 → `admin-platform-loyalty.html`。
+> **2026-11-16 D534 原型同步（UI-CHANGES 五百三十六）**：5.1.0.8 F9 事件開關跟著編輯流程、唯讀顯示狀態標籤 → `admin-platform-loyalty.html`。
 > **2026-11-16 Q173 設計系統（UI-CHANGES 五百三十二）**：唯讀／編輯兩面保留控制項高度與寬度 → `ds-components/benefit-matrix.css`，消費頁 `admin-platform-loyalty.html`、`fans-crm.html`；純呈現，不涉規格。
 > **2026-11-16 D533 原型同步（UI-CHANGES 五百三十一）**：5.1.0.8 儲存前確認、離開前提醒 → `admin-platform-loyalty.html` `#ploy-confirm`。
 > **2026-11-16 D532 原型同步（UI-CHANGES 五百三十）**：5.1.0.8 頁面佈局——分級共用參數獨立一區、其他設定每個主題一張卡 → `admin-platform-loyalty.html`。
