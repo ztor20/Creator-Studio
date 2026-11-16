@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2"><!-- D319：從預覽與在地化存完回本頁的提示 -->
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2"><!-- D471：共用「建立取貨場次」彈窗（.pks-step） -->
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2"><!-- D471：共用「建立場次」彈窗（.pks-step） -->
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
@@ -768,7 +768,7 @@
 <script src="js/discount-codes-store.js?v=r2.2"></script><!-- D458：優惠碼端資料 -->
 <script src="js/code-picker.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script><!-- 2026-09-18 D292 第 3 批：活動組合包（含票券成員）的資料源，products-store 查不到 id 時合流查這裡 -->
-<script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁組合包取貨場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
+<script src="js/orders-store.js?v=r2.2"></script><!-- D472：換綁組合包核銷場次前的確認彈窗要列「尚未核銷的件數」（ztorOrders.pendingPickupUnits） -->
 <script src="js/purchase-limits.js?v=r2.2"></script>
 <script src="js/purchase-conds.js?v=r2.2"></script><!-- D400：純商品組合包的購買條件（D524 起沒有限時購買） --><!-- D398：組合包限購（預設取成員交集、覆寫、擋存），與商品、建立組合、活動門票共用 -->
 <script src="js/ticket-bundle.js?v=r2.2"></script><!-- D342：票務商品的時間層級與購買條件（與建立活動第 6 步、建立組合共用） -->
@@ -788,7 +788,7 @@
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <script src="partials/film-picker.js?v=r2.2"></script>
-<script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的取貨場次（mountBundlePickup）與共用建立取貨場次彈窗 -->
+<script src="partials/pickup-session-modal.js?v=r2.2"></script><!-- D471：組合包的核銷場次（mountBundlePickup）與共用建立場次彈窗 -->
 <script src="partials/archived-gate.js?v=r2.2"></script><!-- 封存態唯讀的事件層閘門（D288） -->
 <script src="js/tix-tier-table.js?v=r2.2"></script><!-- D433：允許的門票勾選表（與 create-bundle 共用） -->
 <script src="partials/relist-restore.js?v=r2.2"></script><!-- D488：重新上架時檢查下架時保存的排程 -->
@@ -1155,9 +1155,9 @@
           const k = (window.ztorOrders && window.ztorOrders.pendingPickupUnits && bundle) ? window.ztorOrders.pendingPickupUnits({ bundleId: bundle.id }) : 0;
           const body = chg.to
             ? T('bd.pickup.rebind.to', '{k} unredeemed items across this bundle’s members will move to “{to}”. Redeemed items stay redeemed.').replace('{to}', chg.toName)
-            : T('bd.pickup.rebind.back', '{k} unredeemed items across this bundle’s members will go back to each member’s own pickup session. Redeemed items stay redeemed.');
+            : T('bd.pickup.rebind.back', '{k} unredeemed items across this bundle’s members will go back to each member’s own redemption session. Redeemed items stay redeemed.');
           ask({
-            title: T('pk.rebind.title', 'Change the pickup session for “{n}”?').replace('{n}', (bundle && bundle.name) || ''),
+            title: T('pk.rebind.title', 'Change the redemption session for “{n}”?').replace('{n}', (bundle && bundle.name) || ''),
             body: body.replace('{k}', String(k)),
             okKey: 'pk.rebind.ok', okFallback: 'Change session',
             onConfirm: proceed, onCancel: revert
@@ -3257,7 +3257,7 @@
 <!-- 下架／封存／重新上架確認彈窗（2026-09-18 · D284／D288／D289）：借 leave-dialog 的殼——下架＝確認；封存＝確認；
      重新上架＝有已下架成員時列出「會一起重新上架的成員」（.leave-dialog__list）＋主鈕「一併重新上架」；
      有已封存成員時擋下、列出、單一主鈕「知道了」（取消鈕收起）。 -->
-<!-- D471：共用「建立取貨場次」彈窗＋組合包的取貨場次區（mountBundlePickup） -->
+<!-- D471：共用「建立場次」彈窗＋組合包的核銷場次區（mountBundlePickup） -->
 <div data-pickup-modal-host></div>
 <script src="js/ztor-dialog.js?v=r2.2"></script>
 </body>

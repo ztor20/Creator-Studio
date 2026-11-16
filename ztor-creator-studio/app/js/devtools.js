@@ -185,7 +185,7 @@
     S96: 'release2.3',   // 2026-10-15 D417 決定五（bookyay 活動自設折扣與早鳥）；2026-10-20 D461 改 release2.3（release2.3 的 bookyay 門票也能自加折扣與限時折扣）
     S104: 'tbd',         // 2026-10-20 D461（門票的限時購買與限購，只在最終版；js/purchase-conds.js TIX_FEAT，組合包不掛）
     S105: 'tbd',         // 2026-10-21 D463（一般商品與組合包共用購買條件；D524 起六種、沒有限時購買、組合包不沿用成員、建立時可設；只在最終版，js/purchase-conds.js UNI_FEAT）
-    'S34.1': 'tbd',      // 2026-10-22 D471（組合包可改用自己的取貨場次；預設沿用各成員的場次。只在最終版，partials/pickup-session-modal.js mountBundlePickup）
+    'S34.1': 'tbd',      // 2026-10-22 D471（組合包可改用自己的核銷場次；預設沿用各成員的場次。只在最終版，partials/pickup-session-modal.js mountBundlePickup）
     S95: 'tbd',          // 2026-10-13 D410 決定四（非 bookyay 的示範活動，release2.3 隱藏；後備表先登記，避免載入表格前 release2.3 閃現）
     S94: 'release2.3',   // 2026-10-12 D398（組合包的購買條件與限購：D456 起限購不繼承成員、自己設；純商品組合包的購買條件）
     S93: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,   // 2026-10-09 媒體庫三分頁（內容摘要、存取權限的即時人數條；鑰匙使用與已發鑰匙清單拆到 S123、待補數字拆到 S124）
@@ -225,7 +225,7 @@
     E08: 'release2.3', E09: 'release2.3', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'release2.3', E20: 'release2.3', E22: 'release2.3' /* 2026-10-15 對齊功能表 🔵（原誤寫 tbd） */, E23: 'release2.3', E24: 'tbd', E25: 'tbd', E26: 'tbd',
     B07: 'tbd', B10: 'release2.3'   // 2026-10-15 對齊功能表（B07 ⚪ 貨到付款／B10 🔵 公開探索欄）；沒登記會在載入表格前被當成 release2.2
   };   // { S30:'release2.2', … } 由 md 功能表填
-  /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
+  /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——核銷與領點已列進
      feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
     /* ✝ 2026-09-24 D324：creators.html、settings.html 移出——Admin 平台層（除平台優惠設定）與帳戶設定列入 Phase 1。

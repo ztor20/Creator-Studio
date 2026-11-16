@@ -135,7 +135,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Preview column](../ds-specs/preview-column.md) | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄 | [preview-column.css](../ds-components/preview-column.css) |
 | [Preview panel](../ds-specs/4.22f-preview-panel.md) | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](../ds-components/preview-panel.css) |
 | [Fan store preview](../ds-specs/fan-store-preview.md) | 🟠 organism | ✓ App | 電子商店與商店設定預覽用的粉絲端創作者頁手機版鏡像 | [fan-store.css](../ds-components/fan-store.css) |
-| [Pickup management](../ds-specs/pickup-management.md) | 🟠 organism | SiteSpecific | 現場 QR 核銷工作區（spec 5.1.5.11 · D111），E-Shop 下與訂單管理並列 | [pickup.css](../ds-components/pickup.css) |
+| [Redemption & points](../ds-specs/pickup-management.md) | 🟠 organism | SiteSpecific | 現場 QR 核銷工作區（spec 5.1.5.11 · D111），E-Shop 下與訂單管理並列 | [pickup.css](../ds-components/pickup.css) |
 | [Mobile scanner](../ds-specs/mobile-scanner.md) | 🟠 organism | 📄 頁面專用：現場核銷與掃碼（event-detail.html、scanner.html） | 獨立手機 scanner（spec 5.1.5.14 · D111/D121/D122/D240）——獨立 URL、無主工作台導航 | [scanner.css](../ds-components/scanner.css) |
 | [Auth shell](../ds-specs/4.113-auth-shell.md) | 🟠 organism | 📄 頁面專用：其他單頁（login.html） | 未登入層的置中表單殼（spec 5.1.10 · D170）——站上第二個無工作台導航的整頁殼，無卡片 | [auth.css](../ds-components/auth.css) |
 | [Ticket preview](../ds-specs/4.116-ticket-preview.md) | 🟡 molecule | 📄 頁面專用：建立活動（create-event-legacy.html） | 粉絲收到的那張票的即時預覽（建立活動步驟 5 票券銷售 › 票券設計的右軌）：識別半張（時間／票名或 logo／票種）＋撕線＋QR 半張 | [ticket-preview.css](../ds-components/ticket-preview.css) |

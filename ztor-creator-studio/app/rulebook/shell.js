@@ -39,7 +39,7 @@
       {t:'補貨與新品貼文', pages:[{h:'eshop-restock.html', t:'補貨'},{h:'eshop-post.html', t:'新品貼文'}]},
       {t:'商店設定', pages:[{h:'eshop-settings.html', t:'商店設定'}]},
       {t:'訂單管理', pages:[{h:'orders.html', t:'訂單列表'},{h:'order-detail.html', t:'訂單詳情'}]},
-      {t:'取貨管理', pages:[{h:'pickup.html', t:'取貨管理'},{h:'pickup-create.html', t:'建立取貨場次'},{h:'pickup-detail.html', t:'取貨場次詳情'},{h:'pickup-scanner.html', t:'手機 Scanner'}]},
+      {t:'核銷與領點', pages:[{h:'pickup.html', t:'核銷與領點'},{h:'pickup-create.html', t:'建立場次'},{h:'pickup-detail.html', t:'場次詳情'},{h:'pickup-scanner.html', t:'手機 Scanner'}]},
       {t:'需求看板', pages:[{h:'demand-board.html', t:'需求看板'}]}
     ]},
     {n:'6', t:'活動', groups:[

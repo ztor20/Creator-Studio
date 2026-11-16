@@ -602,8 +602,8 @@
         /* 創作者自建、成員含 bookyay 匯入票券的組合包（2026-09-29 D331 決定六示範）：欄位照一般組合包
            可編輯，售價照一般組合包算（D517 決定六：港幣價公式退場）。基準價＝（NT$1,212 ＋ NT$400）× 0.9＝NT$1,450.8 → NT$1,451。disc＝組合折扣 %。 */
         { id: 'bd-nye-ga-band', name: 'GA + countdown wristband', tickets: { tierIds: ['tier-ga'], qty: 1 },
-          /* pickup（D401 決定四，原型示意欄位，ASSUMPTIONS UIA-248）：這個商品在哪個取貨場次領取——s＝pickup-detail.html 的示範狀態、
-             nameKey＝場次名稱（pickup.html 的示範列）。活動詳情「前往領取場次」依綁到的場次數分三種去處。 */
+          /* pickup（D401 決定四，原型示意欄位，ASSUMPTIONS UIA-248）：這個商品在哪個核銷場次領取——s＝pickup-detail.html 的示範狀態、
+             nameKey＝場次名稱（pickup.html 的示範列）。活動詳情「前往核銷場次」依綁到的場次數分三種去處。 */
           products: [{ name: 'Countdown night wristband', img: 'images/products/wristband.webp', price: 400, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 1451, sold: 0, lockSets: 300,
           /* 2026-10-16 示範資料補齊（note/release2.4 假資料覆蓋稽核 E6、E8；不是產品規則）：
@@ -767,7 +767,7 @@
         { id: 'bd-tc-floor-zine', name: 'Standing zone ＋ 巡演精裝寫真誌', desc: '站區票加一本巡演精裝寫真誌，演出當天現場領取。', tickets: { tierIds: ['tier-tc-floor'], qty: 1 },
           products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp', price: 1000, listed: false }],
           disc: 10, price: 3773, sold: 0, lockSets: 50, listed: false, stopped: true },
-        /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁取貨場次）；組合折扣 10%、限量 200 */
+        /* 創作者自建：單人票 ＋ 電子商店商品（官方 Tee，綁核銷場次）；組合折扣 10%、限量 200 */
         { id: 'bd-tc-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-tc-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 2430, sold: 25, lockSets: 175 }
@@ -1017,7 +1017,7 @@
       ],
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-pt-duo（取消前賣出 30 組）刪除，銷量改記在門票 tier-pt-duo。 */
-        /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁取貨場次），隨活動下架一併下架（D457：原「取消」連動改為下架） */
+        /* 創作者自建（D410 示範）：單人票＋電子商店商品（綁核銷場次），隨活動下架一併下架（D457：原「取消」連動改為下架） */
         { id: 'bd-pt-ga-tee', name: 'GA ＋ 巡演官方 Tee', tickets: { tierIds: ['tier-pt-ga'], qty: 1 },
           products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           disc: 10, price: 1994, sold: 12, lockSets: 88, listed: false }
@@ -2085,7 +2085,7 @@
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的組合包 bd-khh-duo（1 人票 × 2、鎖定 100 套、整組鎖定 fix、套票限購落在這一組）刪除。 */
         /* D340 示範：創作者自己建立、成員含本草稿活動票券的草稿組合包——草稿活動刪除時同樣一起刪除，確認彈窗列出（5.1.6 F1）。
-           D410 示範：商品成員綁取貨場次（前往領取場次）。D429：成員由「1 人票 × 2」改成「二人套票門票 × 1」；售價＝NT$2,221 ＋ NT$600＝NT$2,821（原 NT$2,822，差 1 是 1 人票換算取整的殘差）。 */
+           D410 示範：商品成員綁核銷場次（前往核銷場次）。D429：成員由「1 人票 × 2」改成「二人套票門票 × 1」；售價＝NT$2,221 ＋ NT$600＝NT$2,821（原 NT$2,822，差 1 是 1 人票換算取整的殘差）。 */
         { id: 'bd-khh-duo-tee', name: 'Duo pass ＋ 紀念 T 恤', tickets: { tierIds: ['tier-khh-duo'], qty: 1 },
           products: [{ name: '九龍夜行 紀念 T 恤', img: 'images/products/coastline-tee.webp', price: 600, pickup: { s: 'scheduled', nameKey: 'pk.row2.name' } }],
           price: 2821, sold: 0,

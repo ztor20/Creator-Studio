@@ -15,6 +15,22 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-16（五百四十四）· 「取貨管理」改名「核銷與領點」，場次用詞統一（A spec 導入 · D538）
+
+**標籤**：release2.4
+
+使用者裁決：原「取貨管理」頁現在有「現場核銷」與「掃碼領點」兩種場次，已不只是取貨，改名「核銷與領點」（英文 Redemption & points）；場次一詞照上下文分三種用法。
+
+- 模組名：「取貨管理」→「核銷與領點」。範圍：側欄（`nav.pickup`、`nav.pickup-sub`）、`pickup.html` 麵包屑與標題、訂單與訂單詳情的導引連結、「回到核銷與領點」、設計系統展示頁與目錄（4.82）。
+- 場次容器：「取貨場次」→「場次」。範圍：建立場次、編輯場次、搜尋場次、尚未建立場次、場次詳情、場次清單（`pickup.html`、`pickup-detail.html`、`scanner.html`、建立場次彈窗 `partials/pickup-session-modal.js`）。
+- 商品、訂單、組合包、活動那一側：「取貨場次」→「核銷場次」，「取貨場次待設定」→「核銷場次待設定」（`create-product.html`、`product-detail.html`、`order-detail.html`、`bundle-detail.html`、`create-bundle.html`、`event-detail.html`）。
+- 「領取場次」是同一個概念的另一種寫法，一併改「核銷場次」：活動詳情的「前往領取場次」→「前往核銷場次」（Go to redemption session）、商品詳情的場次欄（`event-detail.html`、`product-detail.html`、`pickup.html` 篩選說明、`js/events-store.js` 註解）。
+- 英文同步：Pickup management→Redemption & points、Create pickup session→Create session、Pickup session detail→Session details、Pickup session→Redemption session（商品側）。
+- 沿用不改：取貨商品、到店取貨、領取碼、核銷、取貨與入場名單、現場核銷、掃碼領點、scanner、檔名、i18n 鍵名、CSS class、示範場次名稱。
+- 同步更新現況文件：`BUILD-SPEC.md`、`feature-scope-map.md` 的 O24–O27／O43 列、`ds-pillars/4-component.md` 與 `ds-specs/pickup-management.md` 的元件名；`design-components.html` 已重新生成。規則手冊同步改名（不記在這裡，見 decisions.md D538）。
+
+---
+
 ## 2026-11-16（五百四十三）· 平台忠誠點數設定拿掉「平台常數」卡，基礎比率寫出平台幣別「每花 HK$1 得」（A spec 導入 · D537）
 
 使用者：「這個和我們系統的幣別是否重複了」「我覺得這裡的欄位和平台幣別應該就是一樣的東西」「好，照這樣改」。
@@ -1367,7 +1383,7 @@ D513 決定 3、5 與〔推導〕1～6：組合包的販售上限（限量、Tot
 
 **標籤**：release2.4
 
-上游 `documents/5.1.5.2-建立商品流程.md`（F16）、`5.1.5.1-商品細節頁.md`（§2.20）、`5.1.5-電子商店.md`、`5.1.5.11-取貨管理.md`、`5.1.5.12-建立取貨場次.md`、`5.1.5.14-手機Scanner.md`、`5.1.5.15-取貨場次詳情.md`（F6）、`5.1.0.8-平台忠誠點數設定.md`（F9 的 A6）、`5.1.7.7-粉絲詳情.md`、`decisions.md` D499、`backup_plan.md` Plan567、`requirement/05-線下QR積分需求.md`。這一輪只有 Admin 代管創作者時看得到（創作者本人看不到、不是看得到但不能點）。
+上游 `documents/5.1.5.2-建立商品流程.md`（F16）、`5.1.5.1-商品細節頁.md`（§2.20）、`5.1.5-電子商店.md`、`5.1.5.11-核銷與領點.md`、`5.1.5.12-建立場次.md`、`5.1.5.14-手機Scanner.md`、`5.1.5.15-場次詳情.md`（F6）、`5.1.0.8-平台忠誠點數設定.md`（F9 的 A6）、`5.1.7.7-粉絲詳情.md`、`decisions.md` D499、`backup_plan.md` Plan567、`requirement/05-線下QR積分需求.md`。這一輪只有 Admin 代管創作者時看得到（創作者本人看不到、不是看得到但不能點）。
 
 - **版本放行**：新增五個功能 ID，`feature-scope-map.md` 登記、`js/devtools.js` `FEAT_TIER` 後備補同一批。
   - S140 數位商品型別卡 🟣 release2.4

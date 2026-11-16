@@ -958,8 +958,8 @@
     'nav.store-settings':     { en: 'Store settings',        zh: '商店設定' },
     'nav.store-settings-sub': { en: 'Shop appearance, payment & shipping', zh: '商店外觀 · 付款 · 出貨' },
     'nav.orders-sub':         { en: 'Fulfilment · cancellations · disputes', zh: '出貨 · 取消 · 爭議' },
-    'nav.pickup':             { en: 'Pickup management',      zh: '取貨管理' },
-    'nav.pickup-sub':         { en: 'Sessions · scanner · redemption log', zh: '取貨場次 · scanner · 核銷紀錄' },
+    'nav.pickup':             { en: 'Redemption & points',      zh: '核銷與領點' },
+    'nav.pickup-sub':         { en: 'Sessions · scanner · redemption log', zh: '場次 · scanner · 核銷紀錄' },
     /* 2026-10-05 D360：E-Shop 下拉第四項（需求看板，5.1.5.16；S68）。 */
     'nav.demand':             { en: 'Demand board',           zh: '需求看板' },
     'nav.demand-sub':         { en: 'Size demand by market · suggested quantities', zh: '各市場尺寸需求 · 建議生產量' },
@@ -3825,7 +3825,7 @@
     'product-detail.delivery.card': { en: 'Delivery & pickup', zh: '交付與取貨' },
     'product-detail.ship.addr':     { en: 'Shipping address', zh: '發貨地址' },
     'product-detail.qr.pickup':     { en: 'QR pickup',     zh: 'QR 領取' },
-    'product-detail.qr.session':    { en: 'Pickup session', zh: '領取場次' },
+    'product-detail.qr.session':    { en: 'Redemption session', zh: '核銷場次' },
     /* 2026-07-20 選項收合列（Webflow 樣式） */
     'pd.var.opt.size':      { en: 'Size',            zh: '尺寸' },
     'cp.var.opt.edit':      { en: 'Edit',            zh: '編輯' },
@@ -3984,14 +3984,14 @@
     /* §2.6 取貨與核銷（5.1.5.9）：組合成員含現場 QR 領取商品時才顯示，本區只呈現、不重定義規則本體。 */
     'bd.pickup.title':      { en: 'Pickup & redemption',      zh: '取貨與核銷' },
     'bd.pickup.sub':        { en: 'Bundles have no delivery method of their own — each member follows its own settings.', zh: '組合包沒有自己的取貨方式，照各成員的設定。' },   /* D470（2026-10-22）改寫：原「下單後含現場 QR 領取的成員展開為各自的領取單位…場次沿用成員商品自己的設定」 */
-    /* D471（2026-10-22）：組合包可改用自己的取貨場次（預設繼承＝各成員沿用自己的場次）。建立組合包與組合詳情共用 */
-    'bd.pickup.own':        { en: 'Use the bundle’s own pickup session', zh: '改用組合包自己的場次' },
+    /* D471（2026-10-22）：組合包可改用自己的場次（預設繼承＝各成員沿用自己的場次）。建立組合包與組合詳情共用 */
+    'bd.pickup.own':        { en: 'Use the bundle’s own redemption session', zh: '改用組合包自己的場次' },
     'bd.pickup.own.sub':    { en: 'Every member’s pickup units go to this session.', zh: '這個組合包的成員領取單位都在這一場領。' },
-    'bd.pickup.own.label':  { en: 'Bundle pickup session', zh: '組合包的場次' },
-    /* D472（2026-10-22）：換綁取貨場次前的確認彈窗（商品細節與組合詳情共用標題）。{n}＝商品或組合包名稱，{k}＝尚未核銷的件數，{from}／{to}＝場次名稱 */
-    'pk.rebind.title':      { en: 'Change the pickup session for “{n}”?', zh: '變更「{n}」的取貨場次？' },
+    'bd.pickup.own.label':  { en: 'Bundle redemption session', zh: '組合包的場次' },
+    /* D472（2026-10-22）：換綁場次前的確認彈窗（商品細節與組合詳情共用標題）。{n}＝商品或組合包名稱，{k}＝尚未核銷的件數，{from}／{to}＝場次名稱 */
+    'pk.rebind.title':      { en: 'Change the redemption session for “{n}”?', zh: '變更「{n}」的核銷場次？' },
     'pk.rebind.body':       { en: '{k} unredeemed items of this product will move from “{from}” to “{to}”. Redeemed items stay redeemed.', zh: '這個商品尚未核銷的 {k} 件會從「{from}」改屬「{to}」；已核銷的件維持已核銷。' },
-    'pk.unbind.body':       { en: '{k} unredeemed items of this product will leave “{from}” and go back to “Pickup session not yet set”. Redeemed items stay redeemed.', zh: '這個商品尚未核銷的 {k} 件會離開「{from}」，回到「取貨場次待設定」；已核銷的件維持已核銷。' },
+    'pk.unbind.body':       { en: '{k} unredeemed items of this product will leave “{from}” and go back to “Redemption session not set”. Redeemed items stay redeemed.', zh: '這個商品尚未核銷的 {k} 件會離開「{from}」，回到「核銷場次待設定」；已核銷的件維持已核銷。' },
     'pk.rebind.ok':         { en: 'Change session', zh: '變更場次' },
     'pk.unbind.ok':         { en: 'Unlink session', zh: '取消綁定' },
     /* 點數 QR 卡（.points-qr · js/points-qr.js）：{n}＝每次領的點數、{a}／{b}＝已領／總名額 */
@@ -4000,7 +4000,7 @@
     'pqr.claimed':          { en: '{a} of {b} claimed', zh: '已領 {a}／{b}' },
     'pqr.full':             { en: 'Fully claimed', zh: '名額已滿' },
     'bd.pickup.rebind.to':  { en: '{k} unredeemed items across this bundle’s members will move to “{to}”. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會改屬「{to}」；已核銷的件維持已核銷。' },
-    'bd.pickup.rebind.back': { en: '{k} unredeemed items across this bundle’s members will go back to each member’s own pickup session. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會回到各成員自己的取貨場次；已核銷的件維持已核銷。' },
+    'bd.pickup.rebind.back': { en: '{k} unredeemed items across this bundle’s members will go back to each member’s own redemption session. Redeemed items stay redeemed.', zh: '這個組合包各成員尚未核銷的 {k} 件會回到各成員自己的核銷場次；已核銷的件維持已核銷。' },
     /* ✝ 墓碑 · 'bd.pickup.member-meta'（2026-10-22 D470 退役）：組合詳情成員列改寫成員勾的取貨方式（cp.delivery.shipping／cp.delivery.qr）與場次。 */
     'bd.kpi.sold':          { en: 'Bundles sold',            zh: '已售組數' },
     'bd.sales.empty':       { en: 'No sales yet. Revenue appears here once fans buy this bundle.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },
@@ -4703,20 +4703,20 @@
     /* D375 決定五 → D394：bookyay 匯入活動的門票入場由 bookyay 掃票、唯讀名單（'event-detail.live.scanner.off'「已停用」2026-10-12 退場，徽章改 scanner.bky.badge） */
     'event-detail.scanner.bky':           { en: 'Tickets are scanned at the door with the bookyay Organizer App. Products in ticket bundles are picked up the same way as E-Shop pickups.',
                                             zh: '門票入場由 bookyay Organizer App 掃票。票務商品裡的商品照電子商店的取貨流程領取。' },
-    /* D401 決定四：「前往取貨管理」改「前往領取場次」，連到這場組合包商品所在的取貨場次（一個／多個／沒有三種說明） */
-    'event-detail.scanner.bky.pickup':    { en: 'Go to pickup session',     zh: '前往領取場次' },
+    /* D401 決定四：「前往核銷與領點」改「前往核銷場次」，連到這場組合包商品所在的場次（一個／多個／沒有三種說明） */
+    'event-detail.scanner.bky.pickup':    { en: 'Go to redemption session',     zh: '前往核銷場次' },
     'event-detail.scanner.bky.pickup.one':  { en: 'Bundle products are picked up at “{name}”.', zh: '組合包裡的商品在「{name}」領取。' },
-    'event-detail.scanner.bky.pickup.many': { en: 'Bundle products are picked up across {n} pickup sessions. Pick one in Pickup.', zh: '組合包裡的商品分在 {n} 個取貨場次，到取貨管理挑一個。' },
-    'event-detail.scanner.bky.pickup.none': { en: 'No pickup session yet. Create one in Pickup so fans can collect bundle products.', zh: '還沒有取貨場次。先到取貨管理建立取貨場次，粉絲才能領取組合包裡的商品。' },
-    'event-detail.scanner.bky.pickup.go':   { en: 'Go to Pickup',           zh: '前往取貨管理' },
-    /* D394（2026-10-12）：bookyay 活動的報到台改成「bookyay 掃描器連結＋複製」與「前往取貨管理」兩格 */
+    'event-detail.scanner.bky.pickup.many': { en: 'Bundle products are picked up across {n} redemption sessions. Pick one in Redemption & points.', zh: '組合包裡的商品分在 {n} 個核銷場次，到核銷與領點挑一個。' },
+    'event-detail.scanner.bky.pickup.none': { en: 'No redemption session yet. Create one in Redemption & points so fans can collect bundle products.', zh: '還沒有核銷場次。先到核銷與領點建立場次，粉絲才能領取組合包裡的商品。' },
+    'event-detail.scanner.bky.pickup.go':   { en: 'Go to Redemption & points',           zh: '前往核銷與領點' },
+    /* D394（2026-10-12）：bookyay 活動的報到台改成「bookyay 掃描器連結＋複製」與「前往核銷與領點」兩格 */
     'event-detail.scanner.bky.badge':     { en: 'Via bookyay',              zh: '由 bookyay 掃票' },
     'event-detail.scanner.bky.app':       { en: 'Please scan tickets in the bookyay App.', zh: '請由 bookyay App 掃碼' },
     'event-detail.scanner.bky.app.open':  { en: 'Open bookyay App in the App Store', zh: '開啟 bookyay App（App Store）' },
     'event-detail.scanner.bky.pickup.label': { en: 'Bundle pickup',         zh: '組合包取貨' },
-    /* D453：組合包取貨掃碼器網址（取貨場次的 scanner 網址）的欄位標籤；沒有取貨場次時退回上面的「組合包取貨」 */
+    /* D453：組合包取貨掃碼器網址（場次的 scanner 網址）的欄位標籤；沒有場次時退回上面的「組合包取貨」 */
     'event-detail.scanner.bky.pickup.scan': { en: 'Bundle pickup scanner link', zh: '組合包取貨掃碼器連結' },
-    'event-detail.scanner.bky.pickup.hint':  { en: 'Products in ticket bundles are picked up through ztor pickup sessions, not bookyay’s scanner.', zh: '組合包裡的商品用 ztor 的取貨場次領取，不經過 bookyay 掃描器。' },
+    'event-detail.scanner.bky.pickup.hint':  { en: 'Products in ticket bundles are redeemed through ztor redemption sessions, not bookyay’s scanner.', zh: '組合包裡的商品用 ztor 的核銷場次領取，不經過 bookyay 掃描器。' },
     /* 墓碑 2026-10-12（D401 決定四）：event-detail.bkycard.title（D397 bookyay 現場掃碼卡標題）隨卡片撤除 */
     'event-detail.scanner.bky.short':     { en: 'Tickets are scanned with the bookyay Organizer App', zh: '門票由 bookyay Organizer App 掃票' },
     'event-detail.att.bky':               { en: 'Who’s in and who isn’t comes from bookyay’s door scans. This list is read-only.', zh: '已入場與未入場名單來自 bookyay 的入場掃票，這裡只能檢視。' },
@@ -6321,11 +6321,11 @@
     'cp.delivery.returns.hint': { en: 'Shown on the product page for both shipping and on-site pickup. Optional — leave blank to hide the section.', zh: '顯示在商品頁，物流配送與現場 QR 領取都會出現。選填，留空時商品頁不顯示這一段。' },
     'cp.delivery.returns.ph':   { en: 'e.g. Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.', zh: '例：3–5 個工作天內備妥。到貨 7 天內、未拆標籤可辦理退換。' },
     /* 2026-09-04 D244 退場（墓碑）：'cp.delivery.instr' / 'cp.delivery.instr.ph'——商品層的領取說明欄
-       撤除，說明改由取貨場次那一欄持有（5.1.5.12 F1）。要復活請先回上游改規格。 */
+       撤除，說明改由場次那一欄持有（5.1.5.12 F1）。要復活請先回上游改規格。 */
     /* 2026-09-03（D240 一物一碼）：QR 的粒度從「一筆訂單一組」改成「每一件商品一組」——
        買家的領取 QR 顯示在 ztor 前台的買家帳號，Creator Studio 不出示 QR（§7.2 裁決十）；
        工作人員在場次 scanner 逐件掃描核銷。 */
-    /* ✝ 墓碑 · 'cp.delivery.qr-note'（2026-09-11 退役）：原本是「現場 QR 領取」區塊頂端的 info-banner，使用者指示併進「取貨場次」欄位標籤底下的說明——見 cp.delivery.session.desc／pd.delivery.session.desc。 */
+    /* ✝ 墓碑 · 'cp.delivery.qr-note'（2026-09-11 退役）：原本是「現場 QR 領取」區塊頂端的 info-banner，使用者指示併進「場次」欄位標籤底下的說明——見 cp.delivery.session.desc／pd.delivery.session.desc。 */
     /* §4.5 共用設定：每人限購 + 標籤 (D064) */
     /* 2026-07-21 拆成兩個 section：cp.limits.title（購買限制）＋ cp.tags（商品標籤）。
        cp.shared.title 已無消費頁，保留定義避免其他 session 正在用的分支炸掉。 */
@@ -8079,7 +8079,7 @@
     'od.col.pickup':        { en: 'Pickup',                  zh: '取貨狀態' },
     'od.col.fulfil':        { en: 'Fulfilment',              zh: '出貨狀態' },
     'od.col.subtotal':      { en: 'Subtotal',                zh: '小計' },
-    /* ✝ 墓碑 · 'od.item.pickup.goto'（2026-10-22 D471 退役）：訂單詳情品項改寫出領取單位所屬的那一場（場次名稱連到場次詳情），待設定時連取貨管理（od.pk.goto）。 */
+    /* ✝ 墓碑 · 'od.item.pickup.goto'（2026-10-22 D471 退役）：訂單詳情品項改寫出領取單位所屬的那一場（場次名稱連到場次詳情），待設定時連核銷與領點（od.pk.goto）。 */
     /* ─── 領取單位彙總與展開列（D240，2026-09-03）───────────────
        品項層取貨狀態改「N 件中已核銷 M 件」彙總，可展開看每個領取單位（領取碼、
        狀態、最近核銷時間；不顯示 QR，見 §7.2 裁決十）。summary 帶 {done}/{total}
@@ -8089,7 +8089,7 @@
        被撤銷品項的領取單位轉 void，彙總要能分辨「還有幾件待領」與「幾件已因撤銷失效」
        （規格 5.1.5.3.1 §2.3.1）。 */
     'od.units.summary.void': { en: '{done} of {total} redeemed · {voided} cancelled', zh: '{total} 件中已核銷 {done} 件・{voided} 件已取消' },
-    'od.units.unset':       { en: 'Pickup session not yet set', zh: '取貨場次待設定' },
+    'od.units.unset':       { en: 'Redemption session not set', zh: '核銷場次待設定' },
     /* 2026-09-08 建、2026-09-09 隨 D253 收斂：領取單位與品項層彙總的終態統一叫
        「已取消（Cancelled）」。唯一觸發源是 Admin 撤銷——D242 原本的第二觸發源
        「退款成立」隨平台不再提供退款動作而退場，狀態名不再跟著觸發源走。 */
@@ -8214,7 +8214,7 @@
     'od.void.reason.p3':     { en: 'Duplicate order',            zh: '重複下單' },
     'od.void.reason.p4':     { en: 'Payment issue or suspected fraud', zh: '付款異常或疑似盜刷' },
     'od.void.reason.p5':     { en: 'Listing or price error',    zh: '商品資訊或價格有誤' },
-    'od.void.reason.p6':     { en: 'Pickup session cancelled or changed', zh: '取貨場次取消或變更' },
+    'od.void.reason.p6':     { en: 'Redemption session cancelled or changed', zh: '核銷場次取消或變更' },
     'od.void.reason.p7':     { en: 'Not collected by the pickup deadline', zh: '買家逾期未取貨' },
     'od.void.record':        { en: 'Voided {date} · {who}',     zh: '{date} 由 {who} 撤銷' },
     'od.void.record.admin':  { en: 'Admin',                     zh: 'Admin' },
@@ -8301,34 +8301,34 @@
     'od.dig.downloads':     { en: 'Downloads',                zh: '下載次數' },
     'od.dig.note':          { en: "No physical shipment — the buyer's download / access right is granted at purchase.", zh: '無實體物流，買家付款後即取得下載／存取權限。' },
     /* 純現場 QR 領取的訂單（§2.5 區塊狀態「純取貨訂單不顯示物流商／追蹤碼欄位，
-       改引導至取貨管理查看或處理核銷」）。2026-08-07 隨純取貨 demo 訂單新增。 */
+       改引導至核銷與領點查看或處理核銷」）。2026-08-07 隨純取貨 demo 訂單新增。 */
     'od.pk.title':          { en: 'On-site pickup',          zh: '現場取貨' },
     'od.pk.status':         { en: 'Item status',             zh: '品項狀態' },
-    'od.pk.note':           { en: 'Nothing ships for this order — every item is redeemed by scanning its QR at the pickup session. Sessions, rosters and redemption records live in Pickup management.', zh: '此訂單沒有任何物流出貨，全部品項在取貨場次掃 QR 核銷。場次、名單與核銷紀錄都在取貨管理。' },
-    'od.pk.goto':           { en: 'Open Pickup management →', zh: '前往取貨管理 →' },
+    'od.pk.note':           { en: 'Nothing ships for this order — every item is redeemed by scanning its QR at the session. Sessions, rosters and redemption records live in Redemption & points.', zh: '此訂單沒有任何物流出貨，全部品項在場次掃 QR 核銷。場次、名單與核銷紀錄都在核銷與領點。' },
+    'od.pk.goto':           { en: 'Open Redemption & points →', zh: '前往核銷與領點 →' },
     'od.notfound.title':    { en: 'Order not found',          zh: '查無此訂單' },
     'od.notfound.sub':      { en: 'This link may be out of date, or the order was removed. Go back to the list and pick one.', zh: '這個連結可能已失效，或這筆訂單已被移除。回到清單重新選一筆。' },
     'od.notfound.back':     { en: 'Back to orders',           zh: '回訂單管理' },
     'od.item.pickup.session': { en: 'On-site QR pickup · Taipei signing', zh: '現場 QR 領取 · 台北簽書會' },
     'od.item.pickup.log':   { en: 'Redemption log',          zh: '核銷紀錄' },
-    'orders.pickup.note':   { en: 'On-site QR pickup items aren’t shipped from here — an order with a pending pickup shows an “Awaiting pickup” badge in its Fulfilment column (alongside “To ship” for mixed orders), redeemed at a session scanner in <a class="card__link" href="pickup.html">Pickup management</a>. To-ship counts physical shipping only.', zh: '現場 QR 領取品項不在此出貨——有待取貨的訂單會在「出貨狀態」欄顯示「待取貨」徽章（混合訂單與「待出貨」並列），於<a class="card__link" href="pickup.html">取貨管理</a>的場次 scanner 核銷。待出貨只計物流出貨。' },
+    'orders.pickup.note':   { en: 'On-site QR pickup items aren’t shipped from here — an order with a pending pickup shows an “Awaiting pickup” badge in its Fulfilment column (alongside “To ship” for mixed orders), redeemed at a session scanner in <a class="card__link" href="pickup.html">Redemption & points</a>. To-ship counts physical shipping only.', zh: '現場 QR 領取品項不在此出貨——有待取貨的訂單會在「出貨狀態」欄顯示「待取貨」徽章（混合訂單與「待出貨」並列），於<a class="card__link" href="pickup.html">核銷與領點</a>的場次 scanner 核銷。待出貨只計物流出貨。' },
 
-    /* ── D111 · 建立商品／商品細節 取貨場次串接 ── */
-    'cp.delivery.session':      { en: 'Pickup session',      zh: '取貨場次' },
+    /* ── D111 · 建立商品／商品細節 場次串接 ── */
+    'cp.delivery.session':      { en: 'Redemption session', zh: '核銷場次' },
     /* 選單底下的場次資訊（2026-09-11）：地點／時間／狀態／入口 */
     'cp.delivery.session.loc':    { en: 'Location',           zh: '地點' },
     'cp.delivery.session.time':   { en: 'Time',               zh: '時間' },
     'cp.delivery.session.status': { en: 'Status',             zh: '狀態' },
-    'cp.delivery.session.manage': { en: 'Pickup management',  zh: '取貨管理' },
+    'cp.delivery.session.manage': { en: 'Redemption & points',  zh: '核銷與領點' },
     'cp.delivery.session.view':   { en: 'View session',       zh: '查看場次' },
     'cp.delivery.session.none': { en: 'Not linked yet',      zh: '尚未關聯' },
     'cp.delivery.session.tpe':  { en: 'Taipei signing — pickup (today)', zh: '台北簽書會取貨（今日）' },
     'cp.delivery.session.khh':  { en: 'Kaohsiung fan-meet — pickup (Jul 12)', zh: '高雄粉絲見面會取貨（7/12）' },
-    'cp.delivery.session.new':  { en: 'Create pickup session', zh: '建立取貨場次' },
+    'cp.delivery.session.new':  { en: 'Create session', zh: '建立場次' },
     /* ✝ 墓碑 · 'cp.delivery.session.hint'（2026-09-11 退役）：欄位下方那一行併進標籤底下的說明。 */
-    'cp.delivery.session.desc': { en: 'Pick an existing session or create one — this item joins that session’s pickup list. Each item gets its own pickup QR in the buyer’s ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Pickup management.', zh: '選既有場次或新建一個，本商品會加進那個場次的取貨清單。每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號；工作人員在場次逐件掃描核銷，場次、scanner 與核銷紀錄都在取貨管理。' },
+    'cp.delivery.session.desc': { en: 'Pick an existing session or create one — this item joins that session’s pickup list. Each item gets its own pickup QR in the buyer’s ztor account; staff scan items one at a time at the session, and sessions, the scanner and redemption records live in Redemption & points.', zh: '選既有場次或新建一個，本商品會加進那個場次的取貨清單。每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號；工作人員在場次逐件掃描核銷，場次、scanner 與核銷紀錄都在核銷與領點。' },
     /* ✝ 墓碑 · 'pd.delivery.session.hint'（2026-09-11 退役）：併進標籤底下的說明 pd.delivery.session.desc。 */
-    'pd.delivery.session.desc': { en: 'Redeemed at this session’s scanner. Each item has its own pickup QR in the buyer’s ztor account, scanned one at a time; the session’s URL, password, roster and redemption records live in Pickup management.', zh: '本商品在這個場次的 scanner 核銷。每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號，工作人員逐件掃描；場次的網址、密碼、名單與核銷紀錄都在取貨管理。' },
+    'pd.delivery.session.desc': { en: 'Redeemed at this session’s scanner. Each item has its own pickup QR in the buyer’s ztor account, scanned one at a time; the session’s URL, password, roster and redemption records live in Redemption & points.', zh: '本商品在這個場次的 scanner 核銷。每件商品各有一組領取 QR，顯示在買家的 ztor 前台帳號，工作人員逐件掃描；場次的網址、密碼、名單與核銷紀錄都在核銷與領點。' },
 
     /* ── D360 · 需求看板 demand-board.html（S68，規格 5.1.5.16）──────────────
        「需求指數」「成長係數」是使用者確認的正式名稱，照用。動態文字由 js/demand-board.js 以 i18nT 取用，
@@ -8395,12 +8395,12 @@
     'demand.channel.bundle':{ en: 'bundles',             zh: '組合包' },
     'demand.channel.sep':   { en: ', ',                  zh: '、' },
 
-    /* ── D111 · 取貨管理主頁 pickup.html ── */
+    /* ── D111 · 核銷與領點主頁 pickup.html ── */
     'pk.crumb.eshop':   { en: 'E-Shop',            zh: '電子商店' },
-    'pk.crumb.self':    { en: 'Pickup management', zh: '取貨管理' },
-    'pk.h1':            { en: 'Pickup management', zh: '取貨管理' },
+    'pk.crumb.self':    { en: 'Redemption & points', zh: '核銷與領點' },
+    'pk.h1':            { en: 'Redemption & points', zh: '核銷與領點' },
     'pk.sub':           { en: 'Every item carries its own pickup code — staff scan one code to hand over one item.', zh: '每一件商品各有一組領取碼，工作人員掃一碼、交出一件。' },
-    'pk.btn.create':    { en: 'Create pickup session', zh: '建立取貨場次' },
+    'pk.btn.create':    { en: 'Create session', zh: '建立場次' },
     'pk.kpi.today':     { en: 'To redeem today',   zh: '今日待核銷' },
     'pk.kpi.active':    { en: 'Active sessions',   zh: '進行中場次' },
     'pk.kpi.redeemed':  { en: 'Redeemed today',    zh: '今日已核銷' },
@@ -8410,8 +8410,8 @@
     'pk.status.active':    { en: 'Active',     zh: '進行中' },
     'pk.status.ended':     { en: 'Ended',      zh: '已結束' },
     'pk.status.archived':  { en: 'Archived',   zh: '已封存' },
-    'pk.search.ph':     { en: 'Search sessions', zh: '搜尋取貨場次' },
-    'pk.col.session':   { en: 'Session',        zh: '取貨場次' },
+    'pk.search.ph':     { en: 'Search sessions', zh: '搜尋場次' },
+    'pk.col.session':   { en: 'Session',        zh: '場次' },
     'pk.col.content':   { en: 'Contents',      zh: '內容' },
     'pk.col.pending':   { en: 'Pending units',  zh: '待核銷件數' },
     'pk.col.redeemed':  { en: 'Redeemed units', zh: '已核銷件數' },
@@ -8419,10 +8419,10 @@
     'pk.col.scanner':   { en: 'Scanner',        zh: 'Scanner' },
     'pk.a.more':        { en: 'More actions',   zh: '更多操作' },
     'pk.act.archive':   { en: 'Archive',        zh: '封存' },
-    'pk.btn.search':    { en: 'Search sessions', zh: '搜尋取貨場次' },
+    'pk.btn.search':    { en: 'Search sessions', zh: '搜尋場次' },
     'pk.search.close':  { en: 'Close search',   zh: '關閉搜尋' },
     'pk.footer.count':  { en: 'Showing {n} of {m} sessions', zh: '顯示 {m} 個中的 {n} 個場次' },
-    /* ── D499 取貨場次類型「掃碼領點」（O43，只在 Admin 代管態）：pickup.html／partials/pickup-session-modal.js／pickup-detail.html ── */
+    /* ── D499 場次類型「掃碼領點」（O43，只在 Admin 代管態）：pickup.html／partials/pickup-session-modal.js／pickup-detail.html ── */
     'pk.lp.type.onsite':     { en: 'On-site redemption', zh: '現場核銷' },
     'pk.lp.type.onsite.sub': { en: 'Staff scan each fan’s pickup code. For physical items and event tickets.', zh: '工作人員掃粉絲的領取碼，放實體商品與活動票券。' },
     'pk.lp.type.lp':         { en: 'Scan to earn points', zh: '掃碼領點' },
@@ -8495,7 +8495,7 @@
     'pk.lp.log.empty':       { en: 'No claims yet', zh: '尚無領取紀錄' },
     'pk.lp.log.note':        { en: 'Each claim is a ledger entry and can’t be edited. To correct points, adjust them on the fan’s page.', zh: '每筆都是帳本紀錄、不能修改；要校正點數，請到粉絲詳情調整。' },
     'pk.lp.na.title':        { en: 'Session not found', zh: '找不到這個場次' },
-    'pk.lp.na.back':         { en: 'Back to pickup management', zh: '回到取貨管理' },
+    'pk.lp.na.back':         { en: 'Back to Redemption & points', zh: '回到核銷與領點' },
     /* D503（2026-11-02）：點數 QR 只在掃碼領點場次裡產生——清單摘要、彈窗 QR 列、詳情頁 QR 新增／編輯／停用／刪除、依 QR 篩選紀錄 */
     'pk.lp.sum': { en: '{n} QR codes · {m} claimed', zh: '{n} 個 QR · 已領 {m} 次' },
     'pk.lp.qr.bagel1': { en: 'Buy 1 bagel', zh: '買 1 個貝果' },
@@ -8544,8 +8544,8 @@
     'pk.lp.log.noresult':    { en: 'No matching claims', zh: '沒有符合的領取紀錄' },
     'pk.scanner.on':    { en: 'Scanner on',    zh: 'Scanner 已啟用' },
     'pk.scanner.off':   { en: 'Scanner off',   zh: 'Scanner 未啟用' },
-    /* D401 決定四：從活動詳情「前往領取場次」（多個取貨場次）進來時的篩選說明 */
-    'pk.evfilter':       { en: "Showing pickup sessions for this event's bundles.", zh: '只顯示這場活動組合包的取貨場次。' },
+    /* D401 決定四：從活動詳情「前往核銷場次」（多個場次）進來時的篩選說明 */
+    'pk.evfilter':       { en: "Showing sessions for this event's bundles.", zh: '只顯示這場活動組合包的場次。' },
     'pk.evfilter.clear': { en: 'Show all', zh: '顯示全部' },
     'pk.row1.name':     { en: 'Taipei signing — pickup', zh: '台北簽書會取貨' },
     'pk.row1.meta':     { en: '2 items · 1 event ticket', zh: '2 商品 · 1 活動票券' },
@@ -8588,9 +8588,9 @@
     'pk.empty.noresult.title': { en: 'No matching sessions', zh: '查無符合的場次' },
     'pk.empty.noresult.text':  { en: 'No sessions match your search or status filter. Try a different keyword or clear the filters.', zh: '沒有符合搜尋或狀態篩選的場次。換個關鍵字或清除篩選。' },
     'pk.empty.noresult.clear': { en: 'Clear filters', zh: '清除篩選' },
-    'pk.empty.account.title':  { en: 'No pickup sessions yet', zh: '尚未建立取貨場次' },
+    'pk.empty.account.title':  { en: 'No sessions yet', zh: '尚未建立場次' },
     'pk.empty.account.text':   { en: 'Create a session to redeem on-site QR pickup items and event tickets from one phone scanner.', zh: '建立場次，就能用同一支手機 scanner 核銷現場 QR 領取商品與活動票券。' },
-    'pk.empty.account.cta':    { en: 'Create pickup session', zh: '建立取貨場次' },
+    'pk.empty.account.cta':    { en: 'Create session', zh: '建立場次' },
     'pk.detail.loc':    { en: 'Legacy Books, Xinyi Rd. Sec 4', zh: '典藏書店 · 信義路四段' },
     'pk.detail.time':   { en: 'Today 14:00 – 18:00', zh: '今日 14:00 – 18:00' },
     'pk.f6.url':        { en: 'Scanner URL',   zh: 'Scanner URL' },
@@ -8663,7 +8663,7 @@
     'pk.log.st.reversal':  { en: 'Reversal',  zh: '人工反轉' },
     'pk.log.note':      { en: 'The redemption log is the audit source; order-item and Events ticket status are the operational source. If they fall out of sync the row is flagged for retry.', zh: '核銷紀錄是稽核來源；訂單品項與 Events 票券狀態是營運來源。兩者不同步時，該列會標示待重試。' },
 
-    /* ── 2026-08-01 · 取貨場次詳情頁改版（行動卡＋名單表格＋核銷紀錄 popup）── */
+    /* ── 2026-08-01 · 場次詳情頁改版（行動卡＋名單表格＋核銷紀錄 popup）── */
     'pk.board.per':     { en: 'Per person',     zh: '每人領取' },
     'pk.board.progress':{ en: 'Redemption progress', zh: '核銷進度' },
     'pk.board.result':  { en: 'Session result', zh: '這場結果' },
@@ -8711,7 +8711,7 @@
     'pk.r2.item':       { en: 'Kowloon After Dark tee',  zh: '九龍夜行 紀念 T 恤' },
     'pk.r3.item':       { en: 'Signing GA entry', zh: '簽書會一般入場' },
     'pk.log.dialog.sub':{ en: 'One row per pickup unit — every scan result, including blocked duplicates and manual reversals.', zh: '一列一件：每一次掃碼的結果，包含被擋下的重複掃描與人工反轉。' },
-    /* 另外兩個場次（對應取貨管理列表的三列） */
+    /* 另外兩個場次（對應核銷與領點列表的三列） */
     'pk.s2.name':       { en: 'Kaohsiung fan-meet — pickup', zh: '高雄粉絲見面會取貨' },
     'pk.s2.loc':        { en: 'Pier-2 Hall B',  zh: '駁二 B 館' },
     'pk.s2.time':       { en: 'Jul 12, 13:00 – 17:00', zh: '7/12 13:00 – 17:00' },
@@ -8723,9 +8723,9 @@
     'pk.empty.scheduled.title': { en: 'Nobody on the list yet', zh: '還沒有人進到這份名單' },
     'pk.empty.scheduled.text':  { en: 'Buyers appear here once they buy this session\u2019s items or tickets.', zh: '買家買下這場的取貨商品或購票後，就會自動出現在這裡。' },
 
-    /* ── D111 · 建立／編輯取貨場次 popup（pks.*）── */
-    'pks.title':        { en: 'Create pickup session', zh: '建立取貨場次' },
-    'pks.title.edit':   { en: 'Edit pickup session', zh: '編輯取貨場次' },
+    /* ── D111 · 建立／編輯場次 popup（pks.*）── */
+    'pks.title':        { en: 'Create session', zh: '建立場次' },
+    'pks.title.edit':   { en: 'Edit session', zh: '編輯場次' },
     'pks.sub':          { en: 'Set where and when, add the items and event tickets this session can redeem, and protect the scanner with a password.', zh: '設定地點與時間、加入此場次可核銷的商品與活動票券，並用密碼保護 scanner。' },
     'pks.tab.basic':    { en: 'Basics',    zh: '基本資訊' },
     'pks.tab.items':    { en: 'Items',     zh: '取貨項目' },
@@ -8748,7 +8748,7 @@
     'pks.current.meta':    { en: 'This product',      zh: '這件商品' },
     'pks.search.empty': { en: 'No items match your search.', zh: '沒有符合搜尋的項目。' },
     'pks.items':        { en: 'Pickup items',  zh: '取貨商品' },
-    'pks.bound':        { en: 'Assigned', zh: '已綁定' },   /* D339：商品已綁在另一個取貨場次，下拉中停用 */
+    'pks.bound':        { en: 'Assigned', zh: '已綁定' },   /* D339：商品已綁在另一個場次，下拉中停用 */
     'pks.items.hint':   { en: '— physical items set to on-site QR pickup', zh: '— 取貨方式設為現場 QR 領取的實體商品' },
     'pks.tickets':      { en: 'Event tickets', zh: '活動票券' },
     'pks.tickets.hint': { en: '— redeem event tickets with the same scanner', zh: '— 用同一支 scanner 核銷活動票券' },
@@ -8785,7 +8785,7 @@
     'sc.nav.scan':      { en: 'Scan',           zh: '掃描' },
     'sc.nav.items':     { en: 'Items',          zh: '項目' },
     'sc.nav.roster':    { en: 'Roster',         zh: '名單' },
-    'sc.roster.hint':   { en: 'Read-only — reverse a redemption in Pickup session detail on the creator dashboard.', zh: '僅供查詢——反轉核銷只能在創作者後台的取貨場次詳情操作。' },
+    'sc.roster.hint':   { en: 'Read-only — reverse a redemption in Session details on the creator dashboard.', zh: '僅供查詢——反轉核銷只能在創作者後台的場次詳情操作。' },
     'sc.cam.hint':      { en: 'Point the camera at a pickup code', zh: '將相機對準領取碼' },
     'sc.scan.manual':   { en: 'Enter code manually', zh: '手動輸入領取碼' },
     'sc.scan.note':     { en: 'The scanner only redeems — it can’t see amounts, Earnings or fan data.', zh: 'scanner 只能核銷——看不到金額、Earnings 或粉絲資料。' },

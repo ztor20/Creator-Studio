@@ -43,7 +43,7 @@ design-system.html 內有 1 個 demo 用的 `.stickynote`（非真實頁面內�
 | 29 | index.html:205（透過 `js/components.js` insight-split 元件注入） | Dashboard →「Fan relations & audience trends」卡片，Fans 欄下方 | ⚐ | 5 位超級粉絲有流失風險，超過 14 天沒有互動了，要不要私訊關心一下？ | 動態狀態（流失風險提醒） | `5.1.1-儀表板.md` §F7（粉絲關係與受眾趨勢分析）＋來源定義在 `5.1.7-粉絲關係管理.md` §F4 流失風險提醒 | ○ 橘色 callout 合理 |
 | 30 | `partials/manual-entry-modal.js:60`（注入於 earnings.html 的「手動補登收入」彈窗） | 手動補登收入 popup，附件欄位下方 | ! | 這筆會標成「未驗證」：手動補登的收入永遠不計入可提領、提款或稅務文件，最多只會出現在展示性統計裡 | 警示/風險（避免誤以為手動收入可提領） | `5.1.8.2-手動補登收入流程.md`（F10 子流程；§7.3 使用限制） | ○ 橘色 callout 合理 |
 | 31 | `partials/restock-modal.js:65`（注入於 e-shop.html、product-detail.html 的「補貨」彈窗） | 補貨 popup，品項數量列下方 | ! | 「立即補貨」馬上加庫存；「計時補貨」會先標成「補貨中」，等你按「確認到貨」才真正入庫；每次補貨都會留紀錄；數位／不限量商品不能補貨 | 一般資訊提示（解釋補貨機制差異） | `5.1.5.6-補貨流程.md`（§7.2 立即／計時補貨轉換） | △ 可考慮改用一般 hint |
-| 32 | `partials/pickup-session-modal.js:77`（注入於 create-product.html、pickup.html、pickup-detail.html、product-detail.html 的「建立取貨場次」彈窗） | 建立取貨場次 popup，Scanner 密碼欄位下方 | ! | 建立場次前至少要加一個商品或票券，這樣才會同時啟用 scanner；建立成功會產生一組密碼保護的 scanner 網址，交給現場工作人員 | 一般資訊提示（必填規則＋機制說明） | `5.1.5.12-建立取貨場次.md`（必填齊全段；D111） | △ 可考慮改用一般 hint |
+| 32 | `partials/pickup-session-modal.js:77`（注入於 create-product.html、pickup.html、pickup-detail.html、product-detail.html 的「建立取貨場次」彈窗） | 建立取貨場次 popup，Scanner 密碼欄位下方 | ! | 建立場次前至少要加一個商品或票券，這樣才會同時啟用 scanner；建立成功會產生一組密碼保護的 scanner 網址，交給現場工作人員 | 一般資訊提示（必填規則＋機制說明） | `5.1.5.12-建立場次.md`（必填齊全段；D111） | △ 可考慮改用一般 hint |
 
 ---
 

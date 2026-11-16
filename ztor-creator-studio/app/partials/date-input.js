@@ -191,7 +191,7 @@
     mount();
   }
 
-  /* modal 這類執行期才注入的區塊（補貨、取貨場次、手動登錄、新品貼文）也要加工，
+  /* modal 這類執行期才注入的區塊（補貨、場次、手動登錄、新品貼文）也要加工，
      用 observer 接住就不必每支 partial 各自記得呼叫 mount。 */
   if (window.MutationObserver) {
     new MutationObserver(function (records) {

@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/staged-change.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
-<!-- 現場報到台的掃碼連結沿用取貨場次同一組元件：scanner.css＝.scanner-access、pickup.css＝.qr-box -->
+<!-- 現場報到台的掃碼連結沿用核銷場次同一組元件：scanner.css＝.scanner-access、pickup.css＝.qr-box -->
 <link rel="stylesheet" href="ds-components/scanner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <!-- 2026-08-18 撤除：sticky-actions（底部浮出的動作列）。頁面動作改由 .detail-topbar 自己黏在視窗頂端——
@@ -490,7 +490,7 @@
                  仍在用同一支 renderer（那個階段的頁首講的是別的事）。 -->
             <!-- ═══ 掃碼器提前顯示的落點（D401 決定四，5.1.6.3 v58 §2.4／§2.5；UI-CHANGES 一百八十七）═══
                  bookyay 匯入的活動在已排程與售票中，把現場報到台那張原本的「掃碼器」卡（#ed-scanner）整張搬來這裡顯示，
-                 不另做第二張卡：內容是 bookyay 票券掃描器連結＋複製、組合包取貨掃碼器網址＋複製、「前往領取場次」三部分（D453）（syncBkyCheckin 搬移與填值）。
+                 不另做第二張卡：內容是 bookyay 票券掃描器連結＋複製、組合包取貨掃碼器網址＋複製、「前往核銷場次」三部分（D453）（syncBkyCheckin 搬移與填值）。
                  進行中搬回現場報到台；已結束／已取消、ztor 自建活動、線上類型不提前顯示。落點＝右欄、開演前檢核之上
                  （規格寫「報到快照卡旁」，原型的報到快照卡 2026-08-17 已併進結案卡；位置非約束，ASSUMPTIONS UIA-244）。
                  墓碑 2026-10-12（D401 決定四）：D397 的 #ed-bky-scancard「bookyay 現場掃碼卡」（標題「現場掃碼」）整張撤除。 -->
@@ -696,29 +696,29 @@
                        ztor 自己的三格（連結／掃碼器密碼／開啟掃碼器，[data-ztor-scan]）收起，改成三格（D453）：
                        · bookyay 掃描器連結＋複製（值＝events-store 的 bkyScanUrl，原型示意網址，ASSUMPTIONS BKY-SCAN-001）；
                          沒有連結時顯示一句說明，不畫空框。
-                       · 前往取貨管理：票務商品（組合包）裡的商品用 ztor 的取貨場次領取，不走 bookyay 掃描器。
+                       · 前往核銷與領點：票務商品（組合包）裡的商品用 ztor 的核銷場次領取，不走 bookyay 掃描器。
                        不掛 data-feat：屬 bookyay 帶入活動的活動詳情（S73／S56 延伸，同 D385 做法），release2.3 與最終版都看得到。
                        syncBkyCheckin() 切換。 -->
                   <!-- D454（2026-10-19）：第一格改成「請由 bookyay App 掃碼」提示＋App Store 按鈕（另開分頁），不再顯示掃描器網址與複製鈕；
                        events-store 的 bkyScanUrl 欄位照舊保存（5.1.6.1 F21），只是這裡不顯示。目前只有 iOS 連結，Android 之後補〔推導〕。 -->
                   <!-- 2026-10-27（三百六十，使用者：「UI 重新排版」）：兩組同構——小標 → 內容 → 動作 → 說明；兩組之間一條貼邊淡線（--group）。
-                       原本「請由 bookyay App 掃碼」用說明字當小標、網址框與「前往領取場次」黏在一起、說明字貼著按鈕。 -->
+                       原本「請由 bookyay App 掃碼」用說明字當小標、網址框與「前往核銷場次」黏在一起、說明字貼著按鈕。 -->
                   <div class="scanner-access__field scanner-access__field--group" id="ed-bky-scan" hidden>
                     <div class="scanner-access__label" data-i18n="event-detail.scanner.bky.tix">Ticket scanning</div>
                     <p class="field__hint field__hint--fact" id="ed-bky-scan-hint" data-i18n="event-detail.scanner.bky.app">Please scan tickets in the bookyay App.</p>
                     <a class="btn btn--outline btn--block" id="ed-bky-scan-app" data-view-safe target="_blank" rel="noopener"
                        href="https://apps.apple.com/tw/app/bookyay%E5%95%86%E6%88%B6/id1566521986" data-i18n="event-detail.scanner.bky.app.open">Open bookyay App in the App Store</a>
                   </div>
-                  <!-- D401 決定四（取代 D394 決定二的「前往取貨管理」）：「前往領取場次」——連到這場組合包商品所在的取貨場次。
-                       一個場次＝直接進取貨場次詳情；多個＝進取貨管理並預先篩出這場相關的場次（pickup.html?ev=）；
-                       沒有＝按鈕停用、說明先到取貨管理建立取貨場次並附入口（三種分支皆〔推導〕）。syncBkyPickup() 決定分支。 -->
+                  <!-- D401 決定四（取代 D394 決定二的「前往核銷與領點」）：「前往核銷場次」——連到這場組合包商品所在的核銷場次。
+                       一個場次＝直接進場次詳情；多個＝進核銷與領點並預先篩出這場相關的場次（pickup.html?ev=）；
+                       沒有＝按鈕停用、說明先到核銷與領點建立場次並附入口（三種分支皆〔推導〕）。syncBkyPickup() 決定分支。 -->
                   <div class="scanner-access__field scanner-access__field--group" id="ed-scanner-bky" hidden>
                     <div class="scanner-access__label" id="ed-bky-pickup-label" data-i18n="event-detail.scanner.bky.pickup.scan">Bundle pickup scanner link</div>
-                    <!-- D453（2026-10-19）：組合包取貨掃碼器網址——取貨場次的 scanner 網址（用上面 bookyay 那一格同一套「網址＋複製」列，不新增樣式）。
-                         一個場次＝只列網址；多個＝逐場「場次名稱＋網址＋複製」；沒有場次＝不畫網址，下方說明先建立取貨場次。
-                         由 syncBkyPickup() 填；「前往領取場次」按鈕在網址之後。 -->
+                    <!-- D453（2026-10-19）：組合包取貨掃碼器網址——核銷場次的 scanner 網址（用上面 bookyay 那一格同一套「網址＋複製」列，不新增樣式）。
+                         一個場次＝只列網址；多個＝逐場「場次名稱＋網址＋複製」；沒有場次＝不畫網址，下方說明先建立場次。
+                         由 syncBkyPickup() 填；「前往核銷場次」按鈕在網址之後。 -->
                     <div id="ed-bky-pickup-urls" data-bky-pickup-urls></div>
-                    <a class="btn btn--outline btn--block" id="ed-bky-pickup" data-view-safe href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to pickup session</a>
+                    <a class="btn btn--outline btn--block" id="ed-bky-pickup" data-view-safe href="pickup.html" data-i18n="event-detail.scanner.bky.pickup">Go to redemption session</a>
                     <p class="field__hint field__hint--fact" id="ed-bky-pickup-hint">—</p>
                   </div>
                 </div>
@@ -2634,14 +2634,14 @@
   }
 
   /* 報到（2026-10-08 · D375 決定五）：bookyay 匯入活動的門票入場由 bookyay Organizer App 掃票——
-     現場報到台（掃碼器卡）保留但停用：狀態徽章改「已停用」、連結的複製／分享／開啟停用，下方說明＋取貨管理連結
+     現場報到台（掃碼器卡）保留但停用：狀態徽章改「已停用」、連結的複製／分享／開啟停用，下方說明＋核銷與領點連結
      （票務商品裡的商品照電子商店取貨流程）。名單分頁的已入場／未入場名單改唯讀說明來源，「開啟掃碼器」停用。 */
   /* D454：bookyay 掃描器連結的顯示格（網址＋複製）撤除，改提示由 bookyay App 掃碼（fillBkyScan 已移除）。 */
-  /* 「前往領取場次」（D401 決定四〔推導〕）：這場活動組合包裡的商品綁在哪些取貨場次（bundles[].products[].pickup，
+  /* 「前往核銷場次」（D401 決定四〔推導〕）：這場活動組合包裡的商品綁在哪些核銷場次（bundles[].products[].pickup，
      原型示意欄位 { s, nameKey }，ASSUMPTIONS UIA-248），依數量分三種：
-       · 一個 → 按鈕直接進那個取貨場次詳情（pickup-detail.html?s=）。
-       · 多個 → 進取貨管理並預先篩出與這場相關的場次（pickup.html?ev=；不用 ?event=——devtools.js 把它讀成活動日示範狀態）。
-       · 沒有（組合包沒有商品成員，或商品還沒綁取貨場次）→ 按鈕停用，說明先到取貨管理建立取貨場次並附入口。 */
+       · 一個 → 按鈕直接進那個場次詳情（pickup-detail.html?s=）。
+       · 多個 → 進核銷與領點並預先篩出與這場相關的場次（pickup.html?ev=；不用 ?event=——devtools.js 把它讀成活動日示範狀態）。
+       · 沒有（組合包沒有商品成員，或商品還沒綁核銷場次）→ 按鈕停用，說明先到核銷與領點建立場次並附入口。 */
   function bkyPickupSessions() {
     const seen = {}, out = [];
     (ev.bundles || []).forEach(b => (b.products || []).forEach(p => {
@@ -2652,7 +2652,7 @@
     }));
     return out;
   }
-  /* D453〔推導〕：取貨場次的 scanner 網址。示意網址對照 pickup.html 各列的 data-pk-url（active／scheduled），
+  /* D453〔推導〕：核銷場次的 scanner 網址。示意網址對照 pickup.html 各列的 data-pk-url（active／scheduled），
      沒登錄的場次代號用 ztor.app/scan/<場次代號>（ASSUMPTIONS UIA-271）。 */
   const PICKUP_SCAN_URL = { active: 'ztor.app/scan/tpe-signing-7f3a2', scheduled: 'ztor.app/scan/khh-fanmeet-9d1c4' };
   const pickupScanUrl = pk => (pk && PICKUP_SCAN_URL[pk.s || 'scheduled']) || ('ztor.app/scan/' + ((pk && pk.s) || 'scheduled'));
@@ -2718,10 +2718,10 @@
       hint.textContent = T('event-detail.scanner.bky.pickup.one', 'Bundle products are picked up at “{name}”.').replace('{name}', nameOf(list[0]));
     } else if (list.length > 1) {
       btn.href = 'pickup.html?ev=' + encodeURIComponent(ev.id);
-      hint.textContent = T('event-detail.scanner.bky.pickup.many', 'Bundle products are picked up across {n} pickup sessions. Pick one in Pickup.').replace('{n}', list.length);
+      hint.textContent = T('event-detail.scanner.bky.pickup.many', 'Bundle products are picked up across {n} sessions. Pick one in Pickup.').replace('{n}', list.length);
     } else {
       btn.removeAttribute('href'); btn.setAttribute('aria-disabled', 'true'); btn.tabIndex = -1;
-      hint.textContent = T('event-detail.scanner.bky.pickup.none', 'No pickup session yet. Create one in Pickup so fans can collect bundle products.') + ' ';
+      hint.textContent = T('event-detail.scanner.bky.pickup.none', 'No redemption session yet. Create one in Pickup so fans can collect bundle products.') + ' ';
       const go = document.createElement('a');
       go.className = 'card__link'; go.href = 'pickup.html';
       go.textContent = T('event-detail.scanner.bky.pickup.go', 'Go to Pickup');
