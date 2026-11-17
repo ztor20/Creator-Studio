@@ -981,7 +981,8 @@
   var amtHtml = amtRow('od.amt.goods', 'Goods', A.goods, false);
   if (A.shipping) amtHtml += amtRow('od.amt.shipping', 'Shipping', A.shipping, false);
   /* 跨幣別（§2.3.2／§7.3；D514、D517 決定一、二）＝拆解表裡的兩列，不是表外註腳：換匯手續費與買家實付。
-     粉絲端只看到一個價格；這裡給創作者與 Admin 看展開：換匯手續費列可展開成換算前金額、匯率、換算後金額（展開沿用 row-disclosure，同平台費列）。
+     粉絲端只看到一個價格；D539 起這兩列只給 Admin（含代管態）看，創作者模式整組隱藏（data-od-admin-only，見下方 syncAdminOnly），
+     創作者看到的金額一律是創作者幣別。換匯手續費列可展開成換算前金額、匯率、換算後金額（展開沿用 row-disclosure，同平台費列）。
      位置在「商品金額＋運費」之後、費用扣項之前：順著讀就是「買家付了多少 → 扣掉哪些費 → 你拿到多少」。
      換匯手續費歸平台，不進下面的平台費、支付費與淨額。金額是付款幣別，上面兩列是基準幣別；買家實付另附創作者幣別金額。
      同幣別訂單（order.fx 為 null）兩列都不產生。 */
@@ -991,11 +992,11 @@
       return '<div class="od-amt od-amt--line rowdis__child" data-rowdis-child="od-swap" hidden>' +
         '<span class="od-amt__stack">' + label + sub + '</span><span>' + esc(val) + '</span></div>';
     };
-    amtHtml += '<div class="rowdis__group rowdis__group--gutter" data-feat="O41">' +
+    amtHtml += '<div class="rowdis__group rowdis__group--gutter" data-feat="O41" data-od-admin-only>' +
       '<div class="od-amt rowdis__head" data-rowdis-row="od-swap">' +
         '<span class="od-amt__stack">' +
           '<span><span data-i18n="od.amt.swap">Currency swap fee</span> · ' + SW.pct + '%</span>' +
-          '<span class="od-amt__hint" data-i18n="od.amt.swap.note">Included in the one price the fan saw. It goes to the platform and isn’t part of your earnings.</span>' +
+          '<span class="od-amt__hint" data-i18n="od.amt.swap.note">Included in the one price the fan saw. It goes to the platform and isn’t part of the creator’s earnings.</span>' +
         '</span>' +
         '<span class="od-amt__amt">' +
           '<button class="btn btn--icon btn--xs rowdis__toggle" type="button" data-rowdis="od-swap" aria-expanded="false"' +
@@ -1007,7 +1008,7 @@
       swapLine('<span data-i18n="od.amt.swap.rate">Exchange rate</span>', '<span class="od-amt__hint" data-od-swap-at></span>', FX.rate) +
       swapLine('<span data-i18n="od.amt.swap.after">After conversion</span>', '', FX.after) +
     '</div>';
-    amtHtml += '<div class="od-amt">' +
+    amtHtml += '<div class="od-amt" data-od-admin-only>' +
       '<span class="od-amt__stack">' +
         '<span data-i18n="od.amt.fxpaid">Buyer paid</span>' +
         '<span class="od-amt__hint" data-od-paid-base></span>' +
@@ -1107,6 +1108,14 @@
   }
   paintFx();
   document.addEventListener('i18n:applied', paintFx);
+  /* 換匯手續費與粉絲付款幣別只給 Admin 看（D539 決定一）：創作者模式整組藏起來，Admin 身分（含代管態）才顯示。
+     身分由 orders-store 的 isAdminView() 讀當下值；cheat code 在頁內切身分（ztor:creator-changed）時跟著切。 */
+  function syncAdminOnly() {
+    var admin = !!(S.isAdminView && S.isAdminView());
+    amtHost.querySelectorAll('[data-od-admin-only]').forEach(function (el) { el.hidden = !admin; });
+  }
+  syncAdminOnly();
+  document.addEventListener('ztor:creator-changed', syncAdminOnly);
   /* 金額拆解只畫一次（不像品項表會因作廢重畫），init 一次即可；點擊走 document 級委派。 */
   window.rowDisclosure.init(amtHost);
 

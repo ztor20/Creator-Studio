@@ -15,6 +15,20 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-17（五百四十五）· 換匯手續費只給 Admin 看、幣別只剩四種、換算價無條件進位（A spec 導入 · D539）
+
+**標籤**：release2.4
+
+使用者裁決照業務提案 V2 改（修訂 D517）：換匯手續費收入歸 Ztor、只出現在 Admin 看得到的地方；幣別固定美元、新台幣、港幣、新加坡幣四種，日本註冊的粉絲歸「其他國家」付 USD；凡是顯示換算價的地方一律無條件進位，顯示價＝實收價。
+
+- 換匯手續費只給 Admin：`order-detail.html` 金額拆解的「換匯手續費」列（含展開的換算前後金額與匯率）與「買家實付（付款幣別）」列掛 `data-od-admin-only`，創作者模式隱藏，Admin 身分（含代管態）才顯示；在頁內用 cheat code 切身分會即時跟著切。身分判斷收在 `js/orders-store.js` 新增的 `isAdminView()`（讀 `ztor.role` 當下值）。換匯手續費列的說明句改以 Admin 視角寫（`od.amt.swap.note`：不計入創作者收入）。
+- 訂單匯出：`js/orders-store.js` 的 `exportTable()` 只在 Admin 匯出時加「付款幣別、換匯手續費、粉絲實付」三欄；創作者匯出只有創作者幣別的金額。
+- 四種幣別：`js/currency.js` 的值域改四種，`js/events-store.js` 的 `CURRENCIES`／`FX_PER_USD`／`SYMBOL`、`js/orders-store.js` 的付款幣別符號、`partials/work-fields.js` 的退路清單同步；`admin-platform-fees.html` 換匯手續費表拿掉第五列；`settings.html` 註解更新。
+- S135 新增幣別退場：`admin-platform-fees.html` 的「新增幣別」按鈕、新增幣別彈窗與整段腳本，`js/currency.js` 的 `addCustom()`／`customList()`／`setCustomRate()` 與 localStorage `ztor.currencies.custom`，`js/i18n.js` 的 `fees.swap.add*`、`fees.swap.added`、示範國家與第五種幣別的字，全部移除並留墓碑註解；`feature-scope-map.md` S135 改 ⚫ 退場、`js/devtools.js` 同步 `retired`。
+- 示範資料：訂單 ZT-10469 的付款幣別改 SGD（S$24.98，1 USD = 1.35 SGD）；`earnings.html`、`earnings-ztor.html` 授權收入那一列的原幣改 SGD 3,241.35。
+- 無條件進位：`js/events-store.js` 的 `fx()`（全站換算的唯一入口，`js/currency.js`、組合商品細節頁、門票訂單都走它）改 `Math.ceil`，先 `toFixed(6)` 收浮點誤差；`js/orders-store.js` 的 `roundPay()` 同樣改無條件進位，TWD 取整數、其他三種先留兩位〔產品待確認〕。買家實付＝品項與運費、換匯手續費各自進位後相加，浮層的加法對得起來。
+- 不在這次範圍：Admin 看手續費收入的報表頁（規格 §8.28 待確認，未新增頁面）、其他三種幣別的小數位。
+
 ## 2026-11-16（五百四十四）· 「取貨管理」改名「核銷與領點」，場次用詞統一（A spec 導入 · D538）
 
 **標籤**：release2.4

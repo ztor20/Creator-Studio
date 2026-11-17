@@ -39,10 +39,10 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
     });
   };
-  /* 作品定價幣種的選項：全站幣別清單，預設選創作者幣別（D522）。沒載 currency.js 時退回預設五種。 */
+  /* 作品定價幣種的選項：全站幣別清單，預設選創作者幣別（D522）。沒載 currency.js 時退回四種（D539）。 */
   function curOptions() {
     var C = window.ztorCurrency;
-    var codes = C ? C.CODES : ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
+    var codes = C ? C.CODES : ['USD', 'TWD', 'HKD', 'SGD'];
     var pick = C ? C.CREATOR : 'HKD';
     return codes.map(function (c) {
       return '<option value="' + c + '"' + (c === pick ? ' selected' : '') + '>' + esc(C ? C.label(c) : c) + '</option>';
