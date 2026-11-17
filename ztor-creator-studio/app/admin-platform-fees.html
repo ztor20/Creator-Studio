@@ -106,14 +106,12 @@
 
 <!-- 換匯手續費（D514 決定六，D517 決定一、三、四；spec 5.1.0.3）：依粉絲付款幣別各一個百分比，併進粉絲看到的售價、歸平台。
      版本與儲存跟平台費共用同一顆儲存鈕與版本歷史；D517 起沒有逐創作者覆寫，所以不進「例外設定」。
-     預設五列，Admin 新增的幣別由 js/currency.js 的 customList() 接在後面（新增後沒有刪除，〔推導〕2）。2.5% 是示意值（ASSUMPTIONS UIA-334）。 -->
+     固定四列（D539：幣別只有 USD／TWD／HKD／SGD；其他國家註冊的粉絲一律 USD）。2.5% 是示意值（ASSUMPTIONS UIA-334）。
+     D539 退場：「新增幣別」按鈕（S135）與第五種幣別那一列，Admin 不再能新增幣別。 -->
 <section class="form-section form-section--outlined" data-feat="S134">
-  <div class="form-section__head form-section__head--actions" style="flex-wrap:wrap;row-gap:var(--sp-8)">
+  <div class="form-section__head">
     <div class="form-section__head-titles">
       <h3 class="form-section__title" data-i18n="fees.swap.title">Currency swap fee</h3>
-    </div>
-    <div class="form-section__head-actions" style="display:flex;align-items:center;gap:var(--sp-12)">
-      <button class="btn btn--outline btn--sm" type="button" id="fee-swap-add" data-feat="S135"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="fees.swap.add">Add currency</span></button>
     </div>
   </div>
   <p class="text-sub" style="margin:0 0 var(--sp-8)" data-i18n="fees.swap.sub">Built into the one price the fan sees when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.</p>
@@ -125,7 +123,6 @@
       <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.TWD">TWD</td><td class="text-sub" data-i18n="fees.country.TW"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="TWD"><span class="amount-field__unit">%</span></span></td></tr>
       <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.HKD">HKD</td><td class="text-sub" data-i18n="fees.country.HK"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="HKD"><span class="amount-field__unit">%</span></span></td></tr>
       <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.SGD">SGD</td><td class="text-sub" data-i18n="fees.country.SG"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="SGD"><span class="amount-field__unit">%</span></span></td></tr>
-      <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.JPY">JPY</td><td class="text-sub" data-i18n="fees.country.JP"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="JPY"><span class="amount-field__unit">%</span></span></td></tr>
     </tbody>
   </table></div></div>
 </section>
@@ -298,43 +295,7 @@
   </section>
 </div>
 
-<!-- 新增幣別彈窗（D517 決定四；spec 5.1.0.3 F6）：代碼、名稱、費率、適用註冊國家，存進 js/currency.js 的 addCustom()。
-     殼同上方延遲生效彈窗；適用國家用 zselect 下拉複選，已對應到幣別的國家不列出（一個國家只對應一種幣別，§7.15）。 -->
-<div class="payout-modal" id="fee-cur-modal" data-feat="S135" hidden>
-  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="fee-cur-title">
-    <div class="payout-dialog__head">
-      <h2 class="payout-dialog__title" id="fee-cur-title" data-i18n="fees.swap.add">Add currency</h2>
-      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="fees.exc.cancel" data-fee-cur-close><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body" style="display:flex;flex-direction:column;gap:var(--sp-16)">
-      <p class="text-sub" style="margin:0" data-i18n="fees.swap.add.hint">Added currencies can’t be removed. Creators and manual income entries can use it right away.</p>
-      <label class="field">
-        <span class="field__label" data-i18n="fees.swap.add.code">Code</span>
-        <input class="input" id="fee-cur-code" type="text" maxlength="3" autocomplete="off" style="max-width:var(--w-220)" data-i18n-placeholder="fees.swap.add.code-ph" placeholder="e.g., MYR">
-        <span class="field__error" id="fee-cur-code-err" hidden></span>
-      </label>
-      <label class="field">
-        <span class="field__label" data-i18n="fees.swap.add.name">Name</span>
-        <input class="input" id="fee-cur-name" type="text" autocomplete="off" data-i18n-placeholder="fees.swap.add.name-ph" placeholder="e.g., Malaysian ringgit">
-        <span class="field__error" id="fee-cur-name-err" hidden data-i18n="fees.swap.add.name-err">Enter the currency name.</span>
-      </label>
-      <label class="field">
-        <span class="field__label" data-i18n="fees.swap.col.rate">Fee rate</span>
-        <span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" id="fee-cur-rate" type="number" inputmode="decimal" min="0" step="0.1"><span class="amount-field__unit">%</span></span>
-        <span class="field__error" id="fee-cur-rate-err" hidden data-i18n="fees.swap.add.rate-err">Enter a fee rate.</span>
-      </label>
-      <div class="field">
-        <label class="field__label" for="fee-cur-countries" data-i18n="fees.swap.col.countries">Registered countries</label>
-        <select class="select" id="fee-cur-countries" multiple data-zselect-multi data-zselect-max="24" data-zselect-placeholder-i18n="fees.swap.add.countries-ph" data-zselect-placeholder="Select countries"></select>
-        <span class="field__error" id="fee-cur-countries-err" hidden data-i18n="fees.swap.add.countries-err">Select at least one country.</span>
-      </div>
-    </div>
-    <div class="payout-dialog__foot" style="display:flex;gap:var(--sp-8);justify-content:flex-end;padding:var(--sp-16) var(--sp-24) var(--sp-24)">
-      <button class="btn btn--ghost" type="button" data-fee-cur-close data-i18n="fees.exc.cancel">Cancel</button>
-      <button class="btn btn--primary" type="button" id="fee-cur-save" data-i18n="fees.swap.add">Add currency</button>
-    </div>
-  </section>
-</div>
+<!-- D539 退場：新增幣別彈窗（D517 決定四、S135），幣別值域固定四種。 -->
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
@@ -689,84 +650,18 @@
     function swapInputs() { return swapTable ? Array.prototype.slice.call(swapTable.querySelectorAll('.fee-rate-input')) : []; }
     function swapLabel(code) { return t('fees.swap.title', 'Currency swap fee') + ' · ' + code; }
     function swapChange() {
-      var out = [], cur = window.ztorCurrency;
+      var out = [];
       swapInputs().forEach(function (inp) {
         var k = swapCode(inp);
         if (inp.value === swapSaved[k]) return;
         out.push(swapLabel(k) + ' ' + swapSaved[k] + '% → ' + inp.value + '%');
         swapSaved[k] = inp.value;
-        if (cur) cur.setCustomRate(k, inp.value);
       });
       return out.join('、') || '—';
     }
 
-    /* ── 新增幣別（D517 決定四；demo 存 localStorage，見 js/currency.js）──────────
-       預設五列在 HTML，Admin 新增的接在後面。費率預設帶第一列的值（D517 決定三：預設都填同一個值）。
-       新增當下就生效並寫版本歷史，其他頁的幣別選單下次打開就看得到。 */
-    var COUNTRIES = ['KR', 'MY', 'TH', 'VN', 'PH', 'ID', 'GB', 'AU', 'CA'],   // 示範清單（ASSUMPTIONS UIA-337）；TW／HK／SG／JP 已對應預設幣別
-        curModal = document.getElementById('fee-cur-modal'),
-        curApi = window.ztorCurrency;
-    function esc(v) { return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
-    function countryNames(list) {
-      return list.map(function (c) { return '<span data-i18n="fees.country.' + c + '">' + c + '</span>'; }).join('、');
-    }
-    function addSwapRow(c) {
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td class="ztor-table__feature">' + esc(c.code + ' · ' + c.name) + '</td>' +
-        '<td class="text-sub">' + countryNames(c.countries) + '</td>' +
-        '<td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="' + esc(c.rate) + '" aria-label="' + esc(c.code) + '"><span class="amount-field__unit">%</span></span></td>';
-      swapTable.querySelector('tbody').appendChild(tr);
-      i18n(tr);
-    }
-    if (curApi && swapTable) curApi.customList().forEach(addSwapRow);
+    /* D539 退場：新增幣別（D517 決定四、S135）——幣別值域固定四種，換匯手續費表就是 HTML 裡的四列。 */
     swapInputs().forEach(function (inp) { swapSaved[swapCode(inp)] = inp.value; });
-
-    if (curModal && curApi) (function () {
-      var codeEl = document.getElementById('fee-cur-code'), nameEl = document.getElementById('fee-cur-name'),
-          rateEl = document.getElementById('fee-cur-rate'), ctryEl = document.getElementById('fee-cur-countries'),
-          codeErr = document.getElementById('fee-cur-code-err'), nameErr = document.getElementById('fee-cur-name-err'),
-          rateErr = document.getElementById('fee-cur-rate-err'), ctryErr = document.getElementById('fee-cur-countries-err');
-      function closeCur() { curModal.hidden = true; }
-      function fillCountries() {
-        var used = curApi.customList().reduce(function (a, c) { return a.concat(c.countries); }, []);
-        ctryEl.innerHTML = COUNTRIES.filter(function (c) { return used.indexOf(c) < 0; }).map(function (c) {
-          return '<option value="' + c + '">' + esc(t('fees.country.' + c, c)) + '</option>';
-        }).join('');
-      }
-      function openCur() {
-        codeEl.value = ''; nameEl.value = '';
-        rateEl.value = swapInputs()[0] ? swapInputs()[0].value : '';
-        fillCountries();
-        [codeErr, nameErr, rateErr, ctryErr].forEach(function (e) { e.hidden = true; });
-        curModal.hidden = false;
-        codeEl.focus();
-      }
-      codeEl.addEventListener('input', function () { codeEl.value = codeEl.value.toUpperCase().replace(/[^A-Z]/g, ''); });
-      document.getElementById('fee-swap-add').addEventListener('click', openCur);
-      Array.prototype.forEach.call(document.querySelectorAll('[data-fee-cur-close]'), function (b) { b.addEventListener('click', closeCur); });
-      curModal.addEventListener('click', function (e) { if (e.target === curModal) closeCur(); });
-      /* capture：下拉開著時 Esc 只收下拉，不連彈窗一起關 */
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !curModal.hidden && !curModal.querySelector('.zselect__trigger[aria-expanded="true"]')) closeCur();
-      }, true);
-      document.getElementById('fee-cur-save').addEventListener('click', function () {
-        var code = codeEl.value, name = nameEl.value.trim(), rate = rateEl.value.trim(),
-            countries = Array.prototype.map.call(ctryEl.selectedOptions, function (o) { return o.value; }),
-            dup = curApi.CODES.indexOf(code) >= 0, badCode = !/^[A-Z]{3}$/.test(code);
-        codeErr.hidden = !(badCode || dup);
-        codeErr.textContent = dup ? t('fees.swap.add.code-dup') : t('fees.swap.add.code-err');
-        nameErr.hidden = !!name;
-        rateErr.hidden = rate !== '' && Number(rate) >= 0;
-        ctryErr.hidden = countries.length > 0;
-        if (!codeErr.hidden || !nameErr.hidden || !rateErr.hidden || !ctryErr.hidden) return;
-        var c = { code: code, name: name, rate: rate, countries: countries };
-        if (!curApi.addCustom(c)) return;
-        addSwapRow(c);
-        swapSaved[code] = rate;
-        addHistory(t('fees.scope.default', 'Default rates'), t('fees.swap.added', 'Added currency') + ' · ' + code + ' ' + rate + '%');
-        closeCur();
-      });
-    }());
 
     function closeDelay() { if (delayModal) delayModal.hidden = true; }
     function openDelay() { if (delayModal) delayModal.hidden = false; }

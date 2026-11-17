@@ -2702,22 +2702,27 @@
          即使活動本身是 bookyay 帶入（§7.15「含 bookyay 票券的組合包」）。
        · `priceOf(ev, tier)`／`bundlePriceOf(ev, b)` 收成一個 priceObj `{ base, amount, locked }`，
          `priceIn(priceObj, cur)` 取基準價或換算值。
-     匯率是**固定示範值**（ASSUMPTIONS PG-035：1 USD = 31.5 TWD／157 JPY；本輪補 7.8 HKD／1.35 SGD），
+     匯率是**固定示範值**（ASSUMPTIONS PG-035：1 USD = 31.5 TWD；本輪補 7.8 HKD／1.35 SGD），
      不隨時間變。D514 決定五定案的時點：平台每天更新一次、畫面用當日匯率、粉絲結帳時鎖定並記進訂單；
-     資料來源待工程確認（ASSUMPTIONS UIA-334）。取整：票價整數、四捨五入（§7.15）。
+     資料來源待工程確認（ASSUMPTIONS UIA-334）。取整：票價整數；換算價一律無條件進位（D539，§7.15），
+     TWD 沒有小數位；其他三種的小數位〔產品待確認〕，原型先一律取整數。
      墓碑 2026-11-05（D514）：逐幣別覆寫（`override`）、基準欄可覆寫（`baseOpen`）、基準價變更保留已改幣別（D415）
      與本機覆寫持久化全部退場；舊的本機覆寫不再讀取。 */
-  /* 這裡是有示範匯率與符號的五種；全站幣別值域（含 Admin 新增的，D517）在 js/currency.js 的 CODES。
-     Admin 新增的幣別沒有示範匯率：fx() 退回原數字、fmtMoney() 以代碼代替符號（ASSUMPTIONS UIA-337）。 */
-  var CURRENCIES = ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
-  var FX_PER_USD = { USD: 1, TWD: 31.5, HKD: 7.8, SGD: 1.35, JPY: 157 };
-  var SYMBOL = { USD: 'US$', TWD: 'NT$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
+  /* 這裡是有示範匯率與符號的四種，與 js/currency.js 的 CODES 同一組值域（D539：幣別只有四種）。
+     D539 退場：第五種幣別（日本改歸「其他國家」→ USD）與 Admin 新增幣別的退路說明（ASSUMPTIONS UIA-337）。 */
+  var CURRENCIES = ['USD', 'TWD', 'HKD', 'SGD'];
+  var FX_PER_USD = { USD: 1, TWD: 31.5, HKD: 7.8, SGD: 1.35 };
+  var SYMBOL = { USD: 'US$', TWD: 'NT$', HKD: 'HK$', SGD: 'S$' };
   var DEFAULT_CURRENCY = 'TWD';
+  /* 換算價無條件進位（D539 決定三：凡是顯示換算價的地方都一樣，顯示價＝實收價）。
+     先 toFixed(6) 收掉浮點尾巴，免得 31.5 × 2 這類剛好整除的值因 63.00000000001 被多進一位。
+     同幣別不是換算，照舊取整。 */
+  function ceilFx(v) { return Math.ceil(Number(v.toFixed(6))); }
   function fx(from, to, amount) {
     var a = Number(amount) || 0;
     if (!FX_PER_USD[from] || !FX_PER_USD[to]) return Math.round(a);
     if (from === to) return Math.round(a);
-    return Math.round(a / FX_PER_USD[from] * FX_PER_USD[to]);
+    return ceilFx(a / FX_PER_USD[from] * FX_PER_USD[to]);
   }
   /* 保留到分；整數維持整數。 */
   function round2(v) { return Math.round((Number(v) || 0) * 100) / 100; }

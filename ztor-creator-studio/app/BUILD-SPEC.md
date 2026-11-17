@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-11-17 · D539 換匯手續費只給 Admin、幣別四種、換算無條件進位（UI-CHANGES 五百四十五）**：沒有新元件。訂單詳情的換匯手續費與買家實付列掛 `data-od-admin-only`，依 `ztorOrders.isAdminView()` 切 `hidden`；訂單匯出的三個付款幣別欄同樣只在 Admin 加。`js/currency.js` 的 `CODES` 固定四種，下一條提到的新增幣別彈窗、`ztor.currencies.custom` 與 `addCustom()` 已退場。換算（`ztorEvents.fx()`、`orders-store` 的 `roundPay()`）改無條件進位，先 `toFixed(6)` 再 `Math.ceil`。
+
 > **2026-11-06 · D517 新增幣別、訂單價格展開、bookyay 港幣退場（UI-CHANGES 四百八十、ASSUMPTIONS UIA-337）**：沒有新元件；新增幣別彈窗重用 `.payout-dialog` 殼與 zselect 下拉複選，換匯手續費展開重用 row-disclosure。Admin 新增的幣別存 localStorage `ztor.currencies.custom`，由 `js/currency.js` 合併進 `CODES`。下方舊條目提到的 `hkd`、`pin`、`bkyBundleHkd` 已退場。
 
 > **2026-11-05 · D514 決定三 預覽與發布拿掉幣別段與幣別切換（C 撤除；UI-CHANGES 四百七十三、ASSUMPTIONS UIA-336）**：`js/publish-stage.js` 側欄只剩兩段（語言、發布前檢核或未儲存的變更），預覽價格固定用創作者幣別（宿主給的 `baseCurrency`），`currencies`／`prices` 選項、`.pstage-row__name--code`、`.pp-currency` 與相關 i18n 鍵退場。下方舊條目提到的側欄幣別段、預覽幣別切換與五幣別軸一律以本條為準。資料層換算不動。
