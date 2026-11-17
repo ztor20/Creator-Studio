@@ -22,11 +22,10 @@
      （名冊三位示範 creator）退回 DEFAULT 'TWD'——與 js/events-store.js 的
      DEFAULT_CURRENCY 同一個值（示範資料的價格就是用它寫的），兩邊不得各說各話。
      CREATOR 是 getter：每次讀都重新解析，宿主頁 script 的先後順序不影響結果。
-   · CODES＝幣別值域，全站唯一一份（主規格 §7.15：預設 USD／TWD／HKD／SGD／JPY，加上 Admin 新增的）。
+   · CODES＝幣別值域，全站唯一一份（主規格 §7.15；D539 起固定四種：USD／TWD／HKD／SGD）。
      建立 creator 與手動補登收入的下拉選單都從這裡長出來，頁面不自己寫一份清單。
-     Admin 新增的幣別（D517 決定四）：admin-platform-fees.html 用 addCustom() 寫進 localStorage
-     `ztor.currencies.custom`（＝[{ code, name, rate, countries }]），CODES 是 getter，讀的當下才合併。
-     新增後沒有刪除（D517〔推導〕2）。
+     D539 退場：Admin 新增幣別（D517 決定四、S135）——addCustom()／customList()／setCustomRate() 與
+     localStorage `ztor.currencies.custom` 一併移除；舊瀏覽器殘留的那把 key 不再讀取。
    · BASE＝平台基準幣別，平台自己的營運記帳幣別，預設 'HKD'，與任何一位創作者無關。
      站上**不存在「全站幣別」**這個概念（D316 裁決 B）。
 
@@ -40,32 +39,9 @@
   'use strict';
 
   var DEFAULT = 'TWD';
-  var DEFAULT_CODES = ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
-  var CUSTOM_KEY = 'ztor.currencies.custom';
-
-  function customList() {
-    try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]') || []; } catch (e) { return []; }
-  }
-  function writeCustom(list) { try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); } catch (e) {} }
-  function customOf(code) {
-    return customList().filter(function (c) { return c.code === code; })[0] || null;
-  }
-  function codes() {
-    return DEFAULT_CODES.concat(customList().map(function (c) { return c.code; }));
-  }
-  /* 新增幣別（D517 決定四）。代碼已在清單上回 false；欄位檢查由宿主頁做。 */
-  function addCustom(c) {
-    if (codes().indexOf(c.code) >= 0) return false;
-    writeCustom(customList().concat([c]));
-    return true;
-  }
-  /* 平台費率頁儲存時，把新增幣別的費率記回去。 */
-  function setCustomRate(code, rate) {
-    writeCustom(customList().map(function (c) {
-      if (c.code === code) c.rate = rate;
-      return c;
-    }));
-  }
+  var DEFAULT_CODES = ['USD', 'TWD', 'HKD', 'SGD'];   // D539：只有四種
+  /* D539 退場：customList()／addCustom()／setCustomRate()（Admin 新增幣別，D517 決定四、S135）。 */
+  function codes() { return DEFAULT_CODES.slice(); }
 
   /* 目前這位 creator 的幣別（D326）。先找 sidebar.js 的名冊（window.ztorCreator.list）；
      sidebar.js 還沒載入的頁面（currency.js 排在它前面的 settings／store-settings）
@@ -109,7 +85,7 @@
     return cur + ' ' + (Math.round(Number(amount) || 0)).toLocaleString('en-US');
   }
   /* 平台基準幣別的金額 → 這位創作者的幣別。小數的固定額（HK$2.40）保留兩位，
-     不然 2.40 會被 events-store 的 fx() 直接四捨五入成 2。 */
+     不然 2.40 會被 events-store 的 fx() 直接進位成整數（D539 起換算一律無條件進位）。 */
   function toCreator(amount) {
     var a = Number(amount) || 0;
     var cur = creatorCurrency();
@@ -119,8 +95,7 @@
   /* 「TWD · 新台幣」：代碼先讀，全名在後（代碼是站上到處都在用的那一串）。 */
   function label(cur) {
     var c = cur || creatorCurrency();
-    var custom = customOf(c);
-    return c + ' · ' + (custom ? custom.name : T('currency.name.' + c, c));
+    return c + ' · ' + T('currency.name.' + c, c);
   }
   /* 幣別符號：events-store 的 SYMBOL 是站上唯一那份，沒載到就退成代碼加空白。 */
   function symbol(cur) {
@@ -209,9 +184,6 @@
     /* CREATOR 見檔頭：getter，讀的當下才解析是哪一位 creator（D326）。 */
     get CREATOR() { return creatorCurrency(); },
     get CODES() { return codes(); },
-    customList: customList,
-    addCustom: addCustom,
-    setCustomRate: setCustomRate,
     forCreator: forCreator,
     BASE: BASE,
     AS_OF: AS_OF,
