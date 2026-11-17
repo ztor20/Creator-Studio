@@ -54,7 +54,7 @@
    訂單金額記在品項的基準幣別（＝創作者幣別，D514）。粉絲用別的幣別付款時 fx 帶付款幣別、
    結帳鎖定的匯率與時點，明細頁的金額拆解多出「換匯手續費」與「買家實付」兩列（§2.3.2）；
    同幣別訂單 fx 為 null，兩列都不產生。
-   粉絲端只看到一個價格；創作者與 Admin 在明細頁看得到展開（D517 決定一、二）：
+   粉絲端只看到一個價格；D539 起只有 Admin（含代管態）在明細頁看得到這兩列與展開，創作者模式不顯示（isAdminView()）：
    fx.before＝換算前金額（基準幣別）、fx.after＝換算後金額（付款幣別）、fx.paidBase＝買家實付的創作者幣別金額。
 
    ── 換匯手續費 fx.swap（2026-11-05 D514 決定六，D517 決定一修訂）──────────
@@ -174,7 +174,7 @@
      這批電子商店示範訂單的創作者幣別是 USD（與創作者預設 TWD 不同，只是示範資料沿用，ASSUMPTIONS UIA-334），
      買家在台灣、以 TWD 付款，所以跨幣別是常態。刻意留兩個對照：
        ZT-10470 買家在舊金山（USD）＝同幣別，fx 為 null，驗證「同幣別不產生換算列」（§2.3.2）
-       ZT-10469 純數位、無寄送地址的海外買家（JPY），讓幣別不只一種
+       ZT-10469 純數位、無寄送地址的海外買家（SGD；D539 前是第五種幣別，幣別只剩四種後改成新加坡幣），讓幣別不只一種
      下方資料裡的 fx.paid ＝（商品金額＋運費）× 匯率；applySwap() 再加上換匯手續費。 */
   var ORDERS = [
     {
@@ -938,7 +938,7 @@
       ],
       amounts: { goods: '$18.50', shipping: '', platform: '−$2.78', payment: '−$0.44', net: '$15.28' },
       total: '$18.50', totalAmt: 18.5,
-            fx: { currency: 'JPY', paid: '¥2,905', rate: '1 USD = 157 JPY' },
+            fx: { currency: 'SGD', paid: 'S$24.98', rate: '1 USD = 1.35 SGD' },
       delivery: { methodKey: 'od.dig.method.instant', on: '2026-06-04', downloads: '5' }
     },
     {
@@ -1193,13 +1193,20 @@
 
   /* 換匯手續費（D514）。示範費率與 admin-platform-fees.html 的示意值同一個；訂單上是成交當下凍結的值。 */
   var SWAP_PCT = 2.5;
-  var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
+  var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$' };   // D539：只有四種
   function numOf(str) { return Number(String(str || '').replace(/[^0-9.]/g, '')) || 0; }
+  /* 付款幣別的小數位（D539 決定三）：TWD 沒有小數位；其他三種的小數位〔產品待確認〕，原型先留兩位。 */
+  function payDec(cur) { return cur === 'TWD' ? 0 : 2; }
   function payMoney(cur, n) {
-    var dec = cur === 'JPY' ? 0 : 2;
+    var dec = payDec(cur);
     return PAY_SYMBOL[cur] + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
   }
-  function roundPay(cur, n) { return cur === 'JPY' ? Math.round(n) : Math.round(n * 100) / 100; }
+  /* 換算價無條件進位（D539 決定三，取代四捨五入）。先 toFixed(6) 收掉浮點尾巴再進位，
+     免得 24.975 × 100 算成 2497.5000000001 這類誤差多進一位。 */
+  function roundPay(cur, n) {
+    var k = Math.pow(10, payDec(cur));
+    return Math.ceil(Number((n * k).toFixed(6))) / k;
+  }
   function applySwap(o) {
     var f = o.fx;
     if (!f || f.swap !== undefined) return;
@@ -1211,10 +1218,12 @@
     function toBase(n) { return payIsLeft ? n * rate : n / rate; }
     var items = sum - toPay(numOf(o.amounts && o.amounts.shipping));   // 運費不計入基準
     var fee = roundPay(f.currency, items * SWAP_PCT / 100);
-    f.sum = f.paid;
+    /* D539：品項與運費、換匯手續費各自無條件進位，買家實付＝兩者相加，畫面上的加法對得起來（顯示價＝實收價）。 */
+    var sumR = roundPay(f.currency, sum);
+    f.sum = payMoney(f.currency, sumR);
     f.at = (o.payment && o.payment.paidAt) || o.date;
     f.swap = { pct: SWAP_PCT, amount: payMoney(f.currency, fee), n: fee };
-    f.paid = payMoney(f.currency, roundPay(f.currency, sum + fee));
+    f.paid = payMoney(f.currency, roundPay(f.currency, sumR + fee));
     /* 展開用（D517 決定二）：換算前後金額都是折後品項實付，與買家實付的創作者幣別金額，一律用訂單匯率換回。 */
     var sample = o.amounts && o.amounts.goods;
     f.before = likeMoney(sample, toBase(items));
@@ -1673,8 +1682,15 @@
     return o.cancelled ? badgeText(PAY_BADGE.cancelled)
       : (o.fulfil || []).map(function (v) { return badgeText(FULFIL_BADGE[v]); }).join(' / ');
   }
+  /* 換匯手續費只給 Admin 看（D539 決定一）：Admin 身分（含代管態）才算。讀 ztor.role 的當下值，
+     身分在頁內被 cheat code 切換也跟得上（theme.js 的 ztorRoleId() 是載入當下的快照，只當退路）。 */
+  function isAdminView() {
+    try { return localStorage.getItem('ztor.role') === 'admin'; }
+    catch (e) { return typeof window.ztorRoleId === 'function' && window.ztorRoleId() === 'admin'; }
+  }
   function exportTable(orders, opts) {
     opts = opts || {};
+    var admin = isAdminView();
     var T = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb; };
     var CUR = { '$': 'USD', 'NT$': 'TWD', 'HK$': 'HKD' };
     var H = function (k, fb) { return T('csv.h.' + k, fb); };
@@ -1682,12 +1698,15 @@
       H('orderid', 'Order #'), H('orderdate', 'Order date'), H('ordertype', 'Order type'), H('source', 'Order source'),
       H('paystatus', 'Payment status'), H('fulstatus', 'Fulfilment status'),
       H('cur', 'Currency'), H('subtotal', 'Items subtotal'), H('discount', 'Total discounts'), H('shipping', 'Shipping'),
-      H('paid', 'Buyer paid'), H('platform', 'Platform fee'), H('payfee', 'Payment fee'), H('net', 'Net to creator'),
-      H('paycur', 'Payment currency'), H('swap', 'Currency swap fee'), H('paidfx', 'Fan paid (payment currency)'),
+      H('paid', 'Buyer paid'), H('platform', 'Platform fee'), H('payfee', 'Payment fee'), H('net', 'Net to creator')
+    ];
+    /* D539：付款幣別、換匯手續費、粉絲實付三欄只在 Admin 匯出時出現；創作者匯出只有創作者幣別的金額。 */
+    if (admin) headers.push(H('paycur', 'Payment currency'), H('swap', 'Currency swap fee'), H('paidfx', 'Fan paid (payment currency)'));
+    headers.push(
       H('paidat', 'Paid at'), H('provider', 'Payment provider'), H('method', 'Payment method'), H('payid', 'Payment ID'),
       H('shippedat', 'Shipped at'), H('carrier', 'Carrier'), H('tracking', 'Tracking number'), H('summary', 'Items'), H('voidn', 'Voided items'),
       H('buyer', 'Buyer name'), H('email', 'Buyer email')
-    ];
+    );
     if (opts.ship) headers.push(H('rname', 'Recipient name'), H('rphone', 'Recipient phone'), H('raddr', 'Recipient address'));
     var rows = (orders || []).map(function (o) {
       var cur = o.cur ? (CUR[String(o.cur).trim()] || String(o.cur).trim()) : 'USD';
@@ -1714,12 +1733,14 @@
         o.id, orderAt, types, o.source === 'ztor' ? T('csv.source.ztor', 'ztor storefront') : (o.source || ''),
         payLabel(o), fulfil,
         cur, f(goodsC), f(discC), f(shipC), f(goodsC - discC + shipC),
-        f(toCents(A.platform)), f(toCents(A.payment)), f(toCents(A.net)),
-        FX ? FX.currency : '', FX && FX.swap ? num(FX.swap.amount) : '', FX ? num(FX.paid) : '',
+        f(toCents(A.platform)), f(toCents(A.payment)), f(toCents(A.net))
+      ];
+      if (admin) row.push(FX ? FX.currency : '', FX && FX.swap ? num(FX.swap.amount) : '', FX ? num(FX.paid) : '');
+      row.push(
         pm ? pm.paidAt : '', pm ? pm.provider : '', pm ? T(METHOD_KEY[pm.method] || '', METHOD_EN[pm.method] || pm.method) : '', pm ? pm.paymentId : '',
         o.shippedAt || '', sh.carrier || '', sh.tracking || '', summary, voidN,
         o.buyer ? o.buyer.name : '', o.buyer ? o.buyer.contact : ''
-      ];
+      );
       if (opts.ship) row.push(o.buyer && o.buyer.shipTo ? o.buyer.name : '', '', o.buyer ? (o.buyer.shipTo || '') : '');
       return row;
     });
@@ -1793,6 +1814,7 @@
     typesOf: typesOf,                                   /* D411：訂單類型（product／ticket／bundle） */
     payLabel: payLabel, fulfilLabel: fulfilLabel,        /* D416：匯出與交易明細共用的狀態字樣 */
     exportTable: exportTable,                           /* D416：匯出 CSV 的表頭與列 */
+    isAdminView: isAdminView,                           /* D539：換匯手續費、粉絲付款幣別只給 Admin 看 */
     methodKey: function (m) { return METHOD_KEY[m] || null; },
     methodText: function (m) { return METHOD_EN[m] || m || ''; }
   };
