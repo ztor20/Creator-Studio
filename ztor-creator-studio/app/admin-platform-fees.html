@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2"><link rel="stylesheet" href="ds-components/alert.css?v=r2.2"><!-- 匯率告警收件人名單（F7）：重用 tag-input（chip）＋ alert--row -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sortable.css?v=r2.2"><!-- 點欄名排序（js/table-sort.js）：版本歷史、費率例外；費率設定表是固定列的輸入表，不排序 -->
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -110,9 +111,13 @@
      3% 是示意值、最終數字待 Susan（ASSUMPTIONS UIA-334）；orders-store.js 的 SWAP_PAIR_PCT 是同一份示意值（兩邊要一起改）。
      D539 退場：「新增幣別」按鈕（S135）與第五種幣別那一列，Admin 不再能新增幣別。 -->
 <section class="form-section form-section--outlined" data-feat="S134">
-  <div class="form-section__head">
+  <!-- D543：標題列右上角「警告設定」開啟匯率告警彈窗（F7）；用 form-section 既有的 --actions 標題列（標題靠左、動作靠右）。 -->
+  <div class="form-section__head form-section__head--actions">
     <div class="form-section__head-titles">
       <h3 class="form-section__title" data-i18n="fees.swap.title">Currency swap fee</h3>
+    </div>
+    <div class="form-section__head-actions">
+      <button class="btn btn--outline btn--sm" type="button" id="fee-alert-open" data-feat="S146" aria-haspopup="dialog"><i data-lucide="bell" class="ztor-icon"></i><span data-i18n="fees.alert.open">Alert settings</span></button>
     </div>
   </div>
   <p class="text-sub" style="margin:0 0 var(--sp-8)" data-i18n="fees.swap.sub">Built into the one price the fan sees when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.</p>
@@ -298,6 +303,56 @@
   </section>
 </div>
 
+<!-- 匯率告警設定彈窗（D542、D543；spec 5.1.0.3 F7，7.15「匯率告警信」）：由換匯手續費標題列「警告設定」開啟。
+     彈窗類型＝5.1.8 第 1 類「填寫送出」（預設寬 620、取消＋儲存）；外殼 Modal shell（payout-modal）。
+     內容：收件人名單（tag-input chip）、逐配對告警門檻表（留空＝跟隨該配對手續費，placeholder 即時顯示目前手續費；填值＝自訂）、寄信頻率說明。
+     修改先存在草稿，按儲存才生效、取消放棄；有未儲存修改時關閉（×、Esc、遮罩、取消）先用 ztorDialog 確認。
+     不走費率版本、不綁頁面的儲存鈕；名單與門檻只放記憶體（ASSUMPTIONS UIA-344）。 -->
+<div class="payout-modal" id="fee-alert-modal" data-feat="S146" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="fee-alert-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="fee-alert-title" data-i18n="fees.alert.title">Exchange rate alert settings</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="dlg.close" data-fee-alert-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.alert.sub">When a pair’s exchange rate moves in one day by more than its alert threshold, an email goes to the recipients below. It’s a heads-up only — no price, fee or rate changes by itself.</p>
+      <div class="field" style="margin-bottom:var(--sp-24)">
+        <label class="field__label" for="fee-alert-entry" data-i18n="fees.alert.recipients.label">Recipients</label>
+        <div style="display:flex;align-items:flex-start;gap:var(--sp-8);flex-wrap:wrap">
+          <div class="tag-input" style="flex:1;min-width:240px">
+            <div class="tag-input__field" id="fee-alert-field">
+              <input class="tag-input__entry" id="fee-alert-entry" type="email" autocomplete="off" placeholder="name@company.com" data-i18n-placeholder="fees.alert.recipients.ph" aria-describedby="fee-alert-err">
+            </div>
+          </div>
+          <button class="btn btn--outline" type="button" id="fee-alert-add" data-i18n="fees.alert.add">Add</button>
+        </div>
+        <p class="field__error" id="fee-alert-err" role="alert" hidden></p>
+        <div class="alert alert--row alert--warning" id="fee-alert-empty" role="status" hidden>
+          <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
+          <div class="alert__body"><div class="alert__title" data-i18n="fees.alert.empty">No recipients right now, so alert emails won’t be sent.</div></div>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:var(--sp-24)">
+        <div class="field__label" data-i18n="fees.alert.threshold.label">Alert threshold</div>
+        <p class="field__hint field__hint--fact" style="margin:0 0 var(--sp-8)" data-i18n="fees.alert.threshold.hint">Leave a pair blank to follow its swap fee — change the fee and the threshold moves with it. Enter a number to set a custom threshold; clear it to follow the fee again. A move bigger than the threshold sends an email; equal or smaller does not.</p>
+        <div class="admin-table-wrap"><table class="ztor-table" id="fee-alert-table" style="min-width:320px">
+          <thead><tr><th data-i18n="fees.swap.col.cur">Currency pair</th><th data-i18n="fees.alert.col.threshold">Alert threshold</th><th data-i18n="fees.alert.col.source">Source</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+      <div class="field">
+        <div class="field__label" data-i18n="fees.alert.freq.label">Frequency</div>
+        <p class="field__hint field__hint--fact" data-i18n="fees.alert.freq.text">At most one email a day, listing every pair that moved more than its own threshold that day. No email on days when none did.</p>
+        <p class="field__hint field__hint--fact" data-i18n="fees.alert.note">Changes apply from the next daily check and the next email. They aren’t rate versions, so the page’s Save doesn’t touch them.</p>
+      </div>
+    </div>
+    <div class="payout-dialog__foot" style="display:flex;gap:var(--sp-8);justify-content:flex-end;padding:var(--sp-16) var(--sp-24) var(--sp-24)">
+      <button class="btn btn--ghost" type="button" data-fee-alert-close data-i18n="fees.exc.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="fee-alert-save" data-i18n="fees.alert.save">Save</button>
+    </div>
+  </section>
+</div>
+
 <!-- D539 退場：新增幣別彈窗（D517 決定四、S135），幣別值域固定四種。 -->
 
 <script src="js/icons.js?v=r2.2"></script>
@@ -308,6 +363,7 @@
 <script src="js/currency.js?v=r2.2"></script><!-- 平台基準幣別（D316）：固定額的符號與換算讀數 -->
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
 <script src="js/table-sort.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script><!-- 匯率告警彈窗：有未儲存修改時關閉前的確認（5.1.8） -->
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
      結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫平台費、逐葉粒度，D141）＋換匯手續費（依幣別配對，不逐 Creator，D517、D540）。
@@ -692,6 +748,163 @@
         closeDelay();
       });
     }
+
+    /* 匯率告警設定彈窗（D542、D543；F7）：收件人名單＋逐配對告警門檻，記憶體內示範、不走費率版本、不綁頁面的儲存鈕。
+       saved＝已生效的設定；開窗時複製成 draft，所有修改只動 draft，按儲存才寫回 saved，取消／關閉就丟掉 draft。
+       門檻：'' ＝跟隨該配對的換匯手續費（讀 F6 表格輸入欄的目前值，跟著即時變）；有值＝自訂，必須是大於 0 的數字（小數與上限待產品確認，UIA-344）。
+       起始：收件人營運、財務；SGD↔TWD 示範一筆自訂 3.5%（對應 emails/rate-alert-zh.html 的範例），其餘跟隨手續費。 */
+    (function () {
+      var modal = document.getElementById('fee-alert-modal'),
+          openBtn = document.getElementById('fee-alert-open'),
+          field = document.getElementById('fee-alert-field'),
+          entry = document.getElementById('fee-alert-entry'),
+          addBtn2 = document.getElementById('fee-alert-add'),
+          errEl = document.getElementById('fee-alert-err'),
+          emptyEl = document.getElementById('fee-alert-empty'),
+          tbody = modal ? modal.querySelector('#fee-alert-table tbody') : null,
+          saveBtn = document.getElementById('fee-alert-save');
+      if (!modal || !openBtn || !field || !entry || !tbody) return;
+      var PAIRS = swapInputs().map(swapCode);
+      var saved = { list: ['ops@example.com', 'finance@example.com'], th: {} };
+      PAIRS.forEach(function (k) { saved.th[k] = ''; });
+      saved.th['SGD-TWD'] = '3.5';
+      var draft = null;
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+      function feeOf(k) {
+        var inp = swapTable ? swapTable.querySelector('.fee-rate-input[data-pair="' + k + '"]') : null;
+        return inp ? inp.value : '';
+      }
+      function clone(o) { return { list: o.list.slice(), th: JSON.parse(JSON.stringify(o.th)) }; }
+
+      /* 收件人（沿用 D542 的 chip 編輯器）：格式不對或重複（不分大小寫）就不加並在欄位下說明；名單空了顯示提示 */
+      function showErr(key) {
+        if (!errEl) return;
+        errEl.hidden = !key;
+        errEl.textContent = key ? t(key) : '';
+        if (key) entry.setAttribute('aria-invalid', 'true'); else entry.removeAttribute('aria-invalid');
+      }
+      function paintList() {
+        Array.prototype.forEach.call(field.querySelectorAll('.chip'), function (c) { c.remove(); });
+        draft.list.forEach(function (em) {
+          var chip = document.createElement('span');
+          chip.className = 'chip chip--value chip--removable';
+          chip.innerHTML = '<span>' + esc(em) + '</span><button class="chip__remove" type="button" data-alert-remove="' + esc(em) + '" aria-label="' + esc(t('fees.alert.remove').replace('{email}', em)) + '"><i data-lucide="x" class="ztor-icon"></i></button>';
+          field.insertBefore(chip, entry);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(field);
+        if (emptyEl) emptyEl.hidden = draft.list.length > 0;
+      }
+      function addRecipient() {
+        var v = entry.value.trim();
+        if (!v) return;
+        if (!EMAIL_RE.test(v)) { showErr('fees.alert.err.invalid'); return; }
+        var low = v.toLowerCase();
+        if (draft.list.some(function (x) { return x.toLowerCase() === low; })) { showErr('fees.alert.err.dup'); return; }
+        draft.list.push(v); entry.value = ''; showErr(null); paintList();
+      }
+      entry.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addRecipient(); } });
+      entry.addEventListener('input', function () { showErr(null); });
+      if (addBtn2) addBtn2.addEventListener('click', addRecipient);
+      field.addEventListener('click', function (e) {
+        var rm = e.target.closest ? e.target.closest('[data-alert-remove]') : null;
+        if (!rm) return;
+        var em = rm.getAttribute('data-alert-remove');
+        draft.list = draft.list.filter(function (x) { return x !== em; });
+        paintList();
+      });
+
+      /* 逐配對門檻表：一列一個配對；輸入欄 placeholder＝目前手續費（跟隨值），來源欄用本頁費率例外同一組徽章語彙（中性＝跟隨、品牌＝自訂） */
+      function paintTable() {
+        tbody.innerHTML = PAIRS.map(function (k) {
+          var lbl = esc(t('fees.swap.pair.' + k, k.replace('-', '↔')));
+          return '<tr data-alert-pair="' + k + '"><td class="ztor-table__feature">' + lbl + '</td>' +
+            '<td><span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" type="number" inputmode="decimal" min="0" step="0.1" data-alert-th="' + k + '" aria-label="' + lbl + '" aria-describedby="fee-alert-th-err-' + k + '"><span class="amount-field__unit">%</span></span>' +
+            '<p class="field__error" id="fee-alert-th-err-' + k + '" role="alert" hidden></p></td>' +
+            '<td><span class="badge fee-alert-src"></span></td></tr>';
+        }).join('');
+        PAIRS.forEach(function (k) { tbody.querySelector('[data-alert-th="' + k + '"]').value = draft.th[k]; });
+        syncFollow();
+      }
+      /* 跟隨值即時更新：placeholder 與「跟隨手續費 N%」都讀 F6 輸入欄的目前值 */
+      function syncFollow() {
+        PAIRS.forEach(function (k) {
+          var tr = tbody.querySelector('[data-alert-pair="' + k + '"]');
+          if (!tr) return;
+          var inp = tr.querySelector('[data-alert-th]'), badge = tr.querySelector('.fee-alert-src'),
+              fee = feeOf(k), custom = inp.value !== '' || (inp.validity && inp.validity.badInput);
+          inp.placeholder = fee;
+          badge.className = custom ? 'badge badge--brand fee-alert-src' : 'badge badge--neutral fee-alert-src';
+          badge.textContent = custom ? t('fees.alert.src.custom', 'Custom') : t('fees.alert.src.follow', 'Follows fee {fee}%').replace('{fee}', fee);
+        });
+      }
+      function thInvalid(inp) {
+        if (inp.validity && inp.validity.badInput) return true;
+        if (inp.value === '') return false;
+        var n = Number(inp.value);
+        return !isFinite(n) || n <= 0;
+      }
+      function showThErr(inp) {
+        var k = inp.getAttribute('data-alert-th'), el = document.getElementById('fee-alert-th-err-' + k), bad = thInvalid(inp);
+        if (el) { el.hidden = !bad; el.textContent = bad ? t('fees.alert.err.threshold', 'Enter a number greater than 0, or leave it blank to follow the fee.') : ''; }
+        if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+        return bad;
+      }
+      tbody.addEventListener('input', function (e) {
+        var inp = e.target.closest ? e.target.closest('[data-alert-th]') : null;
+        if (!inp) return;
+        draft.th[inp.getAttribute('data-alert-th')] = (inp.validity && inp.validity.badInput) ? '?' : inp.value.trim();
+        showThErr(inp);
+        syncFollow();
+      });
+      swapInputs().forEach(function (inp) { inp.addEventListener('input', function () { if (!modal.hidden) syncFollow(); }); });
+
+      /* 開關與未儲存確認 */
+      function isDirty() {
+        if (!draft) return false;
+        if (entry.value.trim()) return true;
+        if (draft.list.join('\n') !== saved.list.join('\n')) return true;
+        return PAIRS.some(function (k) { return (draft.th[k] || '') !== (saved.th[k] || ''); });
+      }
+      function openAlert() {
+        draft = clone(saved);
+        entry.value = ''; showErr(null);
+        paintList(); paintTable();
+        modal.hidden = false;
+        document.body.classList.add('is-modal-open');
+        i18n(modal);
+        entry.focus();
+      }
+      function closeAlert() {
+        modal.hidden = true;
+        draft = null;
+        if (!document.querySelector('.payout-modal:not([hidden])')) document.body.classList.remove('is-modal-open');
+        openBtn.focus();
+      }
+      function requestClose() {
+        if (!isDirty() || !window.ztorDialog) { closeAlert(); return; }
+        window.ztorDialog.confirm({
+          title: t('fees.alert.discard.title', 'Discard changes?'),
+          body: t('fees.alert.discard.body', 'Your changes to recipients or alert thresholds haven’t been saved. They’ll be lost if you close.'),
+          okLabel: t('fees.alert.discard.ok', 'Discard'),
+          cancelLabel: t('fees.alert.discard.keep', 'Keep editing'),
+          danger: true
+        }).then(function (ok) { if (ok) closeAlert(); });
+      }
+      openBtn.addEventListener('click', openAlert);
+      Array.prototype.forEach.call(modal.querySelectorAll('[data-fee-alert-close]'), function (b) { b.addEventListener('click', requestClose); });
+      modal.addEventListener('click', function (e) { if (e.target === modal) requestClose(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) requestClose(); });
+      if (saveBtn) saveBtn.addEventListener('click', function () {
+        var firstBad = null;
+        Array.prototype.forEach.call(tbody.querySelectorAll('[data-alert-th]'), function (inp) { if (showThErr(inp) && !firstBad) firstBad = inp; });
+        if (firstBad) { firstBad.focus(); return; }   /* 有不合格的門檻：彈窗不關、保留輸入 */
+        PAIRS.forEach(function (k) { var v = draft.th[k]; draft.th[k] = v === '' ? '' : String(Number(v)); });
+        saved = clone(draft);
+        entry.value = '';
+        closeAlert();
+      });
+    }());
 
     /* 三分頁切換：沿用 tabs 元件（切 active 態＋顯示對應 panel），並切換工具列右側動作鈕
        （費率設定＝儲存、費率例外＝新增例外、版本歷史＝無）。 */
