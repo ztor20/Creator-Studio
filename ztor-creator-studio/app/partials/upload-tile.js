@@ -20,6 +20,7 @@
 //
 // 容器層行為（opt-in，見檔尾 initReveal）：
 //  · data-upload-reveal — 逐格顯示，一次只露出一個空格，填滿才長出下一格。
+//  · data-gallery-kv＋data-gallery-kv-locked — 相簿第一格是同步進來的主視覺、不能換位（D541，見 initGalleryKv）。
 (function () {
   function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb; }
   function el(tag, cls, html) { var n = document.createElement(tag); n.className = cls; if (html != null) n.innerHTML = html; return n; }
@@ -327,12 +328,15 @@
   function initGalleryKv(gal) {
     if (gal.__galleryKvReady) return; gal.__galleryKvReady = true;
     function label() { return T('ce.img.setkv', 'Set as key visual'); }
+    /* 主視覺鎖定（2026-11-19 D541）：容器加掛 data-gallery-kv-locked＝第一格是外部來源同步進來的主視覺（bookyay），
+       不能被換掉——其餘格子不長星形鈕、點擊也不換位。第一格本身由頁面畫成沒有 data-upload 的靜態已填格（沒有替換／刪除）。 */
+    function locked() { return gal.hasAttribute('data-gallery-kv-locked'); }
     function sync() {
       var tiles = [].slice.call(gal.querySelectorAll('[data-gallery-tile]'));
       tiles.forEach(function (t, i) {
         var b = t.querySelector('[data-gallery-setkv]');
         var acts = t.querySelector('.upload-tile__actions');
-        if (i === 0 || !t.classList.contains('is-filled') || !acts) { if (b) b.remove(); return; }
+        if (i === 0 || locked() || !t.classList.contains('is-filled') || !acts) { if (b) b.remove(); return; }
         if (!b) {
           b = document.createElement('button');
           b.type = 'button'; b.className = 'upload-tile__act'; b.setAttribute('data-gallery-setkv', '');
@@ -347,10 +351,10 @@
     new MutationObserver(function () {
       if (busy) return; busy = true;
       Promise.resolve().then(function () { busy = false; sync(); });
-    }).observe(gal, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    }).observe(gal, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-gallery-kv-locked'] });
     gal.addEventListener('click', function (e) {
       var b = e.target.closest('[data-gallery-setkv]');
-      if (!b) return;
+      if (!b || locked()) return;
       e.stopPropagation();
       var tile = b.closest('[data-gallery-tile]');
       var first = gal.querySelector('[data-gallery-tile]');
