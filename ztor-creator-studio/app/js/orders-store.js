@@ -61,7 +61,7 @@
    粉絲付款幣別與基準幣別不同時併進粉絲看到的售價、歸平台。基準＝品項折後實付換算成付款幣別（運費不計入，
    〔推導〕2；折扣先算完，〔推導〕6），乘成交當下凍結的費率。粉絲實付＝品項＋運費＋換匯手續費。
    淨額、平台費、支付費一律不看這筆（不是創作者收入；支付費基準不變，〔推導〕4），所以 amounts 不動。
-   bookyay 帶入的票照一般規則收（D517 決定六，港幣不收的特例退場）。費率 2.5% 是示意值（ASSUMPTIONS UIA-334）。
+   bookyay 帶入的票照一般規則收（D517 決定六，港幣不收的特例退場）。費率依幣別配對（D540），起始 3% 是示意值（ASSUMPTIONS UIA-334）。
    退款含不含換匯手續費改回〔產品待確認〕（D517 決定八）：撤銷隨品項退的算法 swapBack() 退場。
 
    ── 領取單位（Pickup unit）資料層（2026-09-03，使用者裁決 D240）─────────────
@@ -1191,8 +1191,16 @@
   }
   ORDERS.forEach(refreshDerived);
 
-  /* 換匯手續費（D514）。示範費率與 admin-platform-fees.html 的示意值同一個；訂單上是成交當下凍結的值。 */
-  var SWAP_PCT = 2.5;
+  /* 換匯手續費（D514、D540）：依幣別配對各一個費率，同配對兩個方向同費率；六個配對起始都是 3%，最終數字待 Susan（ASSUMPTIONS UIA-334）。
+     示範費率與 admin-platform-fees.html 換匯手續費表的示意值同一份（兩邊要一起改）；訂單上是成交當下凍結的值，之後調費率不改既有訂單。
+     原型把幣別配對與費率記在訂單層（o.fx.swap），規格是記在訂單品項層，這是呈現簡化（ASSUMPTIONS）。
+     這張表是唯一查表來源：swapPairKey(a, b) 不分方向。 */
+  var SWAP_PAIR_PCT = { 'HKD-USD': 3, 'HKD-TWD': 3, 'HKD-SGD': 3, 'USD-TWD': 3, 'USD-SGD': 3, 'SGD-TWD': 3 };
+  function swapPairKey(a, b) {
+    if (SWAP_PAIR_PCT[a + '-' + b] !== undefined) return a + '-' + b;
+    if (SWAP_PAIR_PCT[b + '-' + a] !== undefined) return b + '-' + a;
+    return null;
+  }
   var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$' };   // D539：只有四種
   function numOf(str) { return Number(String(str || '').replace(/[^0-9.]/g, '')) || 0; }
   /* 付款幣別的小數位（D539 決定三）：TWD 沒有小數位；其他三種的小數位〔產品待確認〕，原型先留兩位。 */
@@ -1217,12 +1225,17 @@
     function toPay(n) { return payIsLeft ? n / rate : n * rate; }
     function toBase(n) { return payIsLeft ? n * rate : n / rate; }
     var items = sum - toPay(numOf(o.amounts && o.amounts.shipping));   // 運費不計入基準
-    var fee = roundPay(f.currency, items * SWAP_PCT / 100);
+    /* 基準幣別＝匯率字串裡不是付款幣別的那一個（示範資料的匯率一律寫成 1 USD = x 其他幣別，兩邊都是四種幣別之一）。 */
+    var codes = String(f.rate).match(/[A-Z]{3}/g) || [];
+    var baseCur = codes.filter(function (c) { return c !== f.currency; })[0] || f.currency;
+    var pair = swapPairKey(f.currency, baseCur);
+    var pct = pair ? SWAP_PAIR_PCT[pair] : 0;
+    var fee = roundPay(f.currency, items * pct / 100);
     /* D539：品項與運費、換匯手續費各自無條件進位，買家實付＝兩者相加，畫面上的加法對得起來（顯示價＝實收價）。 */
     var sumR = roundPay(f.currency, sum);
     f.sum = payMoney(f.currency, sumR);
     f.at = (o.payment && o.payment.paidAt) || o.date;
-    f.swap = { pct: SWAP_PCT, amount: payMoney(f.currency, fee), n: fee };
+    f.swap = { pair: pair, pct: pct, amount: payMoney(f.currency, fee), n: fee };
     f.paid = payMoney(f.currency, roundPay(f.currency, sumR + fee));
     /* 展開用（D517 決定二）：換算前後金額都是折後品項實付，與買家實付的創作者幣別金額，一律用訂單匯率換回。 */
     var sample = o.amounts && o.amounts.goods;
