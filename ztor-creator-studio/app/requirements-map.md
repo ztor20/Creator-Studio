@@ -27,6 +27,8 @@
 
 > **2026-11-19 D541 原型同步（UI-CHANGES 五百四十八；release2.4）**：bookyay 帶入的活動持續同步——活動名稱、主視覺、顯示設定唯讀並掛來源標記（5.1.6.1 F21／F2／F4／F25、5.1.6.2 F2／F4／F14）→ `event-detail.html`、`create-event.html`、`partials/upload-tile.js`；封面照（5.1.6.1 F4「封面照」、5.1.6.2 F4，S147）→ 兩頁 `#ed-cover-field`／`#ce-cover-field`；bookyay 新增時段的待上架門票（5.1.6.1 F21「bookyay 新增的時段或票種」、5.1.6.3 §2.6，S148）→ `event-detail.html` 徽章與門票彈窗、`js/events-store.js` `tier-tc-encore`；儀表板待處理事項「bookyay 新時段／票種待上架」（5.1.1 F4，S148）→ `js/components.js` `bky-new-ticket`。門票名稱、票價、張數原本已唯讀。
 
+> **2026-11-19 修訂 D543／D544 原型同步（UI-CHANGES 五百五十、ASSUMPTIONS UIA-344；release2.3、release2.4）**：告警門檻移到換匯手續費表格——5.1.0.3 F6（三欄：幣別配對｜手續費｜告警門檻；門檻是一般數值，改手續費即重設）、F7（彈窗只留開頭一段說明＋收件人，拿掉寄信頻率區塊與其他說明行）→ `admin-platform-fees.html`（`#fee-swap-table` `.fee-th-input`、`#fee-alert-modal`）、`emails/rate-alert-zh.html`（門檻只寫數字）、`js/i18n.js`。
+
 > **2026-11-19 D543 原型同步（UI-CHANGES 五百四十九、ASSUMPTIONS UIA-344；release2.3）**：匯率告警改彈窗、門檻逐配對——5.1.0.3 F6「警告設定入口」、F7（收件人名單、逐配對告警門檻表、頻率說明、儲存與取消、未儲存確認）與 7.15「匯率告警信」七項 → `admin-platform-fees.html`（S146：`#fee-alert-open`＋`#fee-alert-modal`，常駐區塊拿掉）、`emails/rate-alert-zh.html`（加告警門檻一行）、`js/i18n.js`（`fees.alert.*`）。
 
 > **2026-11-19 D542 原型同步（UI-CHANGES 五百四十七、ASSUMPTIONS UIA-343；release2.3）**：匯率告警——5.1.0.3 F7（門檻說明、收件人名單、寄信頻率說明）與 7.15「匯率告警信」→ `admin-platform-fees.html`（S146）、`emails/rate-alert-zh.html`、`js/i18n.js`（`fees.alert.*`）、`js/devtools.js`；門檻等於各配對的換匯手續費、沒有獨立欄位，不做手續費自動調整；收件人名單只放記憶體，文案與多配對主旨為呈現假設。

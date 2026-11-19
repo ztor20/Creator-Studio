@@ -15,6 +15,22 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-19（五百五十）· 告警門檻移到換匯手續費表格第三欄，改成一般數值（B 反饋導入 · 修訂 D543／D544）
+
+**標籤**：release2.3、release2.4
+
+使用者看平台費率設定頁時要求：逐配對告警門檻直接放在「換匯手續費」主表格，不放在「警告設定」彈窗；門檻是一般數值（預設等於手續費、改手續費就重設），不再有「跟隨／自訂」狀態、不要來源欄或徽章；彈窗所有說明收成開頭一段 2–3 句，不另設區塊。
+
+- `admin-platform-fees.html` `#fee-swap-table` 改三欄：幣別配對｜手續費｜告警門檻。門檻欄沿用同一支 `amount-field`（% 後綴，class `fee-th-input`，刻意不用 `fee-rate-input`，所以不會被算進費率異動）。表格下方加一行 `field__hint--fact` 說明門檻規則。
+- 門檻是一般數值、直接顯示數字：起始 SGD↔TWD 3.5（對應告警信範例），其餘 3（與手續費相同）。改某列手續費時，同一列門檻立刻被設成新手續費（蓋掉原本的值），儲存前仍可另填。
+- 檢查：門檻必填、必須大於 0（留空也是錯），否則欄位下顯示 `field__error`；頁面儲存（主鈕、下拉「立即」、延遲生效的確認）一律擋下，焦點移到第一個錯的欄位。
+- 儲存〔推導〕：門檻跟頁面儲存鈕一起存，但不是費率版本。每個改過的配對在版本歷史表寫一行（版本欄「—」、範圍「告警門檻 · 港幣↔美元」、異動「0.5% → 3.5%」；因改手續費而重設的加註「（隨手續費重設）」）；只改門檻時不產生費率版本列；選延遲生效時門檻不延後（從下一次每日檢查起生效）。
+- 「警告設定」彈窗 `#fee-alert-modal`：拿掉門檻表與其程式（`paintTable`、`syncFollow`、來源徽章）；所有說明收成開頭一段（做什麼、每天檢查一次且一天最多一封、收件人修改從下一封信起生效），拿掉「寄信頻率」區塊、「門檻在表格設定」一行與「不屬於費率版本」一行；彈窗內只剩這段說明＋收件人編輯器，儲存／取消／未儲存確認保留。使用者截圖看到中文介面裡出現英文那一行（`fees.alert.th-where`），該行已整個拿掉；彈窗用到的每個鍵都確認有中英兩版。
+- `emails/rate-alert-zh.html`：拿掉「（跟隨換匯手續費）」「（跟隨手續費）」字樣，門檻只寫數字；註解改寫門檻規則。
+- `js/i18n.js`：`fees.swap.col.rate` 改「手續費」/Fee；`fees.alert.threshold.hint`、`fees.alert.err.threshold`、`fees.alert.sub`、`fees.alert.discard.body` 改寫；新增 `fees.alert.th.reset`；移除 `fees.alert.threshold.label`、`fees.alert.col.source`、`fees.alert.src.follow`、`fees.alert.src.custom`、`fees.alert.freq.label`、`fees.alert.freq.text`、`fees.alert.note`。
+- 例外設定不受影響：費率例外彈窗 clone 的是 `#fee-tree`，不是 `#fee-swap-table`；`partials/fee-exception-modal.js` 的換匯覆寫早已退場（D517），所以門檻欄不會出現在任何例外／覆寫畫面。
+- 不新增元件；彈窗仍是 5.1.8 第 1 類實例。
+
 ## 2026-11-19（五百四十九）· 匯率告警改彈窗、門檻逐配對可設定（A spec 導入 · D543）
 
 **標籤**：release2.3、release2.4
