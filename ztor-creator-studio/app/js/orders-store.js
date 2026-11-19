@@ -59,7 +59,7 @@
    粉絲付款幣別與基準幣別不同時由粉絲加付、歸平台。基準＝品項折後實付換算成付款幣別（運費不計入，
    〔推導〕2；折扣先算完，〔推導〕6），乘成交當下凍結的費率。粉絲實付＝品項＋運費＋換匯手續費。
    淨額、平台費、支付費一律不看這筆（不是創作者收入；支付費基準不變，〔推導〕4），所以 amounts 不動。
-   bookyay 活動以港幣付款不收（〔推導〕1）：fx.pinned 為真、fx.swap 為 null。費率 2.5% 是示意值（ASSUMPTIONS UIA-334）。
+   bookyay 活動以港幣付款不收（〔推導〕1）：fx.pinned 為真、fx.swap 為 null。費率依幣別配對（D540），起始 3% 是示意值（ASSUMPTIONS UIA-334）。
 
    ── 領取單位（Pickup unit）資料層（2026-09-03，使用者裁決 D240）─────────────
    定義權威在 documents/0-設計規格書.md §7.2「領取單位（Pickup unit）的正式定義」，
@@ -1188,8 +1188,17 @@
   }
   ORDERS.forEach(refreshDerived);
 
-  /* 換匯手續費（D514）。示範費率與 admin-platform-fees.html 的示意值同一個；訂單上是成交當下凍結的值。 */
-  var SWAP_PCT = 2.5;
+  /* 換匯手續費（D514、D540）：依幣別配對各一個費率，同配對兩個方向同費率；六個配對起始都是 3%，最終數字待 Susan（ASSUMPTIONS UIA-334）。
+     示範費率與 admin-platform-fees.html 換匯手續費表的示意值同一份（兩邊要一起改）；訂單上是成交當下凍結的值，之後調費率不改既有訂單。
+     原型把幣別配對與費率記在訂單層（o.fx.swap），規格是記在訂單品項層，這是呈現簡化。
+     release2.3 還留著 JPY 示範訂單（ZT-10469）：JPY 沒有配對費率，查不到配對就不收（pair 為 null、pct 為 0）。
+     這張表是唯一查表來源：swapPairKey(a, b) 不分方向。 */
+  var SWAP_PAIR_PCT = { 'HKD-USD': 3, 'HKD-TWD': 3, 'HKD-SGD': 3, 'USD-TWD': 3, 'USD-SGD': 3, 'SGD-TWD': 3 };
+  function swapPairKey(a, b) {
+    if (SWAP_PAIR_PCT[a + '-' + b] !== undefined) return a + '-' + b;
+    if (SWAP_PAIR_PCT[b + '-' + a] !== undefined) return b + '-' + a;
+    return null;
+  }
   var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
   function numOf(str) { return Number(String(str || '').replace(/[^0-9.]/g, '')) || 0; }
   function payMoney(cur, n) {
@@ -1203,10 +1212,15 @@
     var rate = Number((String(f.rate).match(/=\s*([\d.]+)/) || [])[1]) || 1;
     var sum = numOf(f.paid);                                   // 品項＋運費（付款幣別）
     var items = sum - numOf(o.amounts && o.amounts.shipping) * rate;   // 運費不計入基準
-    var fee = roundPay(f.currency, items * SWAP_PCT / 100);
+    /* 基準幣別＝匯率字串裡不是付款幣別的那一個（匯率寫成 1 USD = x 其他幣別或 1 HKD = x TWD，兩邊都是幣別代碼）。 */
+    var codes = String(f.rate).match(/[A-Z]{3}/g) || [];
+    var baseCur = codes.filter(function (c) { return c !== f.currency; })[0] || f.currency;
+    var pair = swapPairKey(f.currency, baseCur);
+    var pct = pair ? SWAP_PAIR_PCT[pair] : 0;
+    var fee = roundPay(f.currency, items * pct / 100);
     f.sum = f.paid;
     f.at = (o.payment && o.payment.paidAt) || o.date;
-    f.swap = { pct: SWAP_PCT, amount: payMoney(f.currency, fee), n: fee };
+    f.swap = { pair: pair, pct: pct, amount: payMoney(f.currency, fee), n: fee };
     f.paid = payMoney(f.currency, roundPay(f.currency, sum + fee));
   }
   ORDERS.forEach(applySwap);

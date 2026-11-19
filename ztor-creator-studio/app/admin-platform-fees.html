@@ -103,9 +103,10 @@
   </div>
 </section>
 
-<!-- 換匯手續費（D514 決定六、七；spec 5.1.0.3）：依粉絲付款幣別各一個百分比，由粉絲支付、歸平台。
+<!-- 換匯手續費（D514 決定六、七，D540；spec 5.1.0.3 F6）：依幣別配對各一個百分比，由粉絲支付、歸平台。
      版本與儲存跟平台費共用同一顆儲存鈕與版本歷史；逐創作者覆寫在「例外設定」的彈窗（下面的 #fee-swap-table 由頁面 clone 進去）。
-     2.5% 是示意值（ASSUMPTIONS UIA-334）。 -->
+     固定六列（USD／TWD／HKD／SGD 兩兩組成六個配對；D540：同配對雙向同費率，JPY 那一列退場）。
+     3% 是示意值、最終數字待 Susan（ASSUMPTIONS UIA-334）；orders-store.js 的 SWAP_PAIR_PCT 是同一份示意值（兩邊要一起改）。 -->
 <section class="form-section form-section--outlined" data-feat="S134">
   <div class="form-section__head form-section__head--actions">
     <div class="form-section__head-titles">
@@ -115,13 +116,14 @@
   </div>
   <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.swap.sub">Added to what the fan pays when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.</p>
   <div class="fee-tree__panel"><div class="admin-table-wrap"><table class="ztor-table" id="fee-swap-table">
-    <thead><tr><th data-i18n="fees.swap.col.cur">Fan pays in</th><th data-i18n="fees.swap.col.rate">Fee rate</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
+    <thead><tr><th data-i18n="fees.swap.col.cur">Currency pair</th><th data-i18n="fees.swap.col.rate">Fee rate</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
     <tbody>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.USD">USD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="USD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.TWD">TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.HKD">HKD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="HKD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.SGD">SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.JPY">JPY</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" data-general="2.5" aria-label="JPY"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-USD">HKD↔USD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-USD" data-i18n-aria-label="fees.swap.pair.HKD-USD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-TWD">HKD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-TWD" data-i18n-aria-label="fees.swap.pair.HKD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-SGD">HKD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-SGD" data-i18n-aria-label="fees.swap.pair.HKD-SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-TWD">USD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="USD-TWD" data-i18n-aria-label="fees.swap.pair.USD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-SGD">USD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="USD-SGD" data-i18n-aria-label="fees.swap.pair.USD-SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.SGD-TWD">SGD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="SGD-TWD" data-i18n-aria-label="fees.swap.pair.SGD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
     </tbody>
   </table></div></div>
 </section>
@@ -308,7 +310,7 @@
   (function () {
     'use strict';
     var tree = document.getElementById('fee-tree'),
-        swapTable = document.getElementById('fee-swap-table'),   // D514：換匯手續費（依粉絲付款幣別）
+        swapTable = document.getElementById('fee-swap-table'),   // D514、D540：換匯手續費（依幣別配對）
         excBody = document.getElementById('fee-exc-body');
     if (!tree || !excBody) return;
 
@@ -319,7 +321,7 @@
     function leafKeyOf(tr) {
       var cell = tr.querySelector('.ztor-table__feature'),
           k = (cell && cell.getAttribute('data-i18n')) || '';
-      return k.replace('fees.leaf.', '');
+      return k.replace('fees.leaf.', '').replace('fees.swap.pair.', 'swap.');   // D540：換匯手續費的列鍵是 swap.HKD-USD 這種配對碼
     }
     var LEAF = {};
     var leafRows = Array.prototype.slice.call(tree.querySelectorAll('tbody tr'))
@@ -330,15 +332,15 @@
       if (!inp || !cell) return;
       LEAF[leafKeyOf(tr)] = { i18nKey: cell.getAttribute('data-i18n'), def: inp.getAttribute('data-general') || inp.value || '' };
     });
-    /* 換匯手續費的葉節點（swap.USD…）名稱只有幣別，摘要要帶費用名才讀得懂 */
+    /* 換匯手續費的葉節點（swap.HKD-USD…）名稱只有幣別配對，摘要要帶費用名才讀得懂（D540） */
     function leafLabel(k) {
-      if (k.indexOf('swap.') === 0) return t('fees.swap.title', 'Currency swap fee') + ' · ' + k.slice(5);
+      if (k.indexOf('swap.') === 0) return t('fees.swap.title', 'Currency swap fee') + ' · ' + t('fees.swap.pair.' + k.slice(5), k.slice(5).replace('-', '↔'));
       return LEAF[k] ? t(LEAF[k].i18nKey, k) : k;
     }
 
     /* 種子例外資料（demo） */
     var state = [
-      { id: 'neon-harbor', name: 'Neon Harbor Studio', ov: { 'ip.licensing': '12', 'swap.TWD': '2' } },
+      { id: 'neon-harbor', name: 'Neon Harbor Studio', ov: { 'ip.licensing': '12', 'swap.USD-TWD': '2' } },
       { id: 'aria-chen', name: 'Aria Chen', ov: { 'eshop.auction': '8', 'projects.funding': '12' } }
     ];
     function findIdx(id) { for (var i = 0; i < state.length; i++) { if (state[i].id === id) return i; } return -1; }
@@ -489,7 +491,7 @@
       }
       container.appendChild(clone);
       i18n(container);
-      /* 換匯手續費（D514 決定七）：同一套「留空沿用、填值覆寫、翻來源徽章」，粒度是粉絲付款幣別，另多一顆清除覆寫 */
+      /* 換匯手續費（D514 決定七）：同一套「留空沿用、填值覆寫、翻來源徽章」，粒度是幣別配對（D540），另多一顆清除覆寫 */
       var swapClone = null;
       if (swapHost && swapTable) {
         swapHost.innerHTML = '';
@@ -693,7 +695,7 @@
     var saveNow = document.getElementById('fee-save-now'),
         saveDD = document.getElementById('fee-save-dd'),
         delayModal = document.getElementById('fee-delay-modal');
-    /* 換匯手續費的預設值改了哪些幣別（D514）：寫進版本歷史的「異動」欄，存完以新值為基準 */
+    /* 換匯手續費的預設值改了哪些幣別配對（D514、D540）：寫進版本歷史的「異動」欄，存完以新值為基準 */
     var swapSaved = {};
     function swapInputs() { return swapTable ? Array.prototype.slice.call(swapTable.querySelectorAll('.fee-rate-input')) : []; }
     swapInputs().forEach(function (inp) { swapSaved[leafKeyOf(inp.closest('tr'))] = inp.value; });
