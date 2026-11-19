@@ -4,6 +4,8 @@
 
 ## Changelog
 
+- **2026-11-19** — §4.7b Upload tile：相簿容器新增 `[data-gallery-kv-locked]`（D541，與 `[data-gallery-kv]` 並用）——主視覺由 bookyay 同步時，其餘格子不長「設為主視覺」星形鈕、不能換位；第一格由頁面畫成沒有 `data-upload` 的靜態已填格（沒有替換與刪除）。`partials/upload-tile.js` `initGalleryKv` 補 `locked()` 判斷；展示頁 `design-system-components-forms.html` 加第二個示範。消費：create-event `#ce-gallery`、event-detail `#ed-gallery`。
+
 - **2026-11-16** — Tooltip 新增變體 `.tip--label`（＋`.tip--end`）：表頭欄名 hover／focus 浮出說明，泡泡往下開；商品細節頁庫存管理表、補貨／修改庫存表套用。`.restock-table` 拿掉 `overflow:hidden`、表頭自帶上圓角，讓泡泡能浮出。展示頁 `design-system-components-flow.html#tip-label`、規格 `ds-specs/tooltip.md`。
 
 - **2026-11-16** — 保留中改成獨立欄位（D529 後續，使用者裁示）：§variant-builder `.variant-table--stock` 在未鎖定右邊多一欄 `.variant-cell--reserved`（56px），鎖定／未鎖定格不再寫「可賣/配額」；§4.29c 修改庫存模式加 `.restock-table--adjust`，五欄 目前／保留中／最低／新的在庫數／差額，名稱下不再寫小字。展示頁 `design-system-components-forms.html`、`design-system-components-flow.html` 同步。

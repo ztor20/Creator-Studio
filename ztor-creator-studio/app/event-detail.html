@@ -1025,10 +1025,21 @@
           </div>
 
           <!-- 圖片沿用建立流程 2026-08-06 改好的相簿：排第一的就是主視覺，末格是「＋ 新增圖片」。 -->
+          <!-- D541（2026-11-19）：bookyay 帶入的活動，主視覺跟著 bookyay 同步、唯讀——相簿第一格畫成靜態格（沒有替換／刪除）、
+               容器加掛 data-gallery-kv-locked（其餘格子不長「設為主視覺」），標籤掛 From bookyay、說明句換成 ce.img.note.bky（fillGallery）。 -->
           <div class="field">
-            <div class="field__label" data-i18n="ce.images.event">Event images</div>
+            <div class="field__label" id="ed-gallery-label"><span data-i18n="ce.images.event">Event images</span></div>
             <div class="upload-assets upload-assets--fill" id="ed-gallery" data-gallery-kv></div>
-            <p class="field__hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
+            <p class="field__hint" id="ed-gallery-hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
+          </div>
+          <!-- 封面照（Cover photo，D541；5.1.6.2 F4 → 5.1.6.1 F4「封面照」）：ztor 自己的素材，只有 bookyay 帶入的活動才有〔推導〕、選填、
+               規格比照主視覺（直式、限 1 格、可放圖片或影片）；可上傳、替換、移除，不跟 bookyay 同步。沿用相簿同一支 .upload-tile[data-upload]。
+               檢視模式沒有封面照時改顯示一句「沒有封面照」（同影片預告的 syncVideoNone）。 -->
+          <div class="field" id="ed-cover-field" data-feat="S147" hidden>
+            <div class="field__label"><span data-i18n="ce.cover">Cover photo</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></div>
+            <div class="upload-assets upload-assets--fill" id="ed-cover"></div>
+            <p class="field__hint" data-i18n="ce.cover.hint">Your own image on ztor — bookyay syncs won't change it. Portrait 750 × 1125, one photo or video.</p>
+            <p class="field__hint" id="ed-cover-none" data-i18n="ed.cover.none" hidden>No cover photo</p>
           </div>
           <!-- 2026-10-12 D404：主視覺裁切（#ed-kv-crop）退場——不提供調整裁切，只能換圖。 -->
           <!-- 影片預告（D390 決定十三；5.1.6.2 F5 → 5.1.6.1 F5）：選填，可上傳、替換或移除；同建立流程的影片格（.upload-tile--video）。
@@ -1291,8 +1302,8 @@
             <div class="control-group" style="margin-bottom:0">
               <div class="control-row">
                 <div>
-                  <div class="control-row__main" data-i18n="ed.pub.vis.shown">Show in shop</div>
-                  <div class="control-row__sub" data-i18n="ed.pub.vis.shown.sub">Off = hidden: only people with the event link or QR can get in.</div>
+                  <div class="control-row__main" id="ed-pub-shown-main"><span data-i18n="ed.pub.vis.shown">Show in shop</span></div>
+                  <div class="control-row__sub" id="ed-pub-shown-sub" data-i18n="ed.pub.vis.shown.sub">Off = hidden: only people with the event link or QR can get in.</div>
                 </div>
                 <button type="button" class="switch switch--on" id="ed-pub-shown" role="switch" aria-checked="true" data-view-safe
                         aria-label="Show in shop" data-i18n-aria-label="ed.pub.vis.shown"></button>
@@ -3113,6 +3124,10 @@
       const key = shownNow ? 'event-detail.hide.btn' : 'event-detail.show.btn';
       const lab = sh.querySelector('[data-ed-shown-label]');
       if (lab) { lab.setAttribute('data-i18n', key); lab.textContent = T(key, shownNow ? 'Hide from shop' : 'Show in shop'); }
+      /* D541：bookyay 帶入者的顯示設定跟著 bookyay 同步——這一項停用，原因放 title（不做沉默停用） */
+      sh.disabled = isBky();
+      if (isBky()) { sh.setAttribute('aria-disabled', 'true'); sh.title = T('event-detail.shown.bky', 'Visibility follows bookyay — change it there'); }
+      else { sh.removeAttribute('aria-disabled'); sh.removeAttribute('title'); }
       const ic = sh.querySelector('svg, i'); if (ic) ic.setAttribute('data-lucide', shownNow ? 'eye-off' : 'eye');
       if (window.ztorIcons) window.ztorIcons.applyIcons(sh);
     }
@@ -3263,6 +3278,7 @@
        隱藏時產生非公開連結（publish.linkKey）、切回顯示即撤銷（D340／D375 決定八）；編輯中還有沒儲存的變更時先不切，
        以免草稿與已生效的值打架（同重新上架的做法）。 */
     if (e.target.closest('[data-ed-shown]')) {
+      if (isBky()) return;   // D541：顯示設定跟著 bookyay 同步，ztor 不能切
       const pEd = document.querySelector('.tab-panel[data-editable]');
       if (pEd && pEd.getAttribute('data-mode') === 'edit' && isDirty()) {
         if (window.ztorToast) window.ztorToast.show(T('event-detail.shown.dirty', 'Save or discard your changes first, then change visibility.'));
@@ -3973,6 +3989,18 @@
       if (el && on) el.disabled = true;
     });
   }
+  /* 活動名稱（D541，2026-11-19；取代 D301 的可改）：bookyay 帶入者跟著 bookyay 同步——不分模式一律唯讀、標籤掛 From bookyay，
+     必填記號收起（改不了的欄位不標必填，同票名的做法）。bookyay 端改名 ztor 跟著換；唯讀本身另在 applyReadonly 的 bookyay 區塊重算。 */
+  function lockNameFromBky(on) {
+    const el = document.getElementById('ed-name');
+    const f = el && el.closest('.field');
+    if (!f) return;
+    const label = f.querySelector('.field__label');
+    markBkySource(label, on, f);
+    const req = label && label.querySelector('[data-i18n="ce.req"]');
+    if (req) req.hidden = on;
+    if (on) el.readOnly = true;
+  }
   /* 活動語言的讀寫（同建立活動 getLangs／setLangs）：原生 <select multiple> 是資料來源，值＝語言碼陣列、照選項順序 */
   const edLangBox = () => document.getElementById('ed-lang');
   function getEdLangs() {
@@ -4037,6 +4065,7 @@
     fillTerms(ev);
     lockVenueFromBky(isBky());
     lockLocaleFromBky(isBky());
+    lockNameFromBky(isBky());
     renderHighlightCount();
     /* 墓碑 2026-10-05（D354）：說明區塊預填（edInfo.set）隨說明區塊退場，內容已由 migrate() 併進描述 */
     /* 墓碑（2026-08-11）：容量欄與它的「下限＝已售出」規則隨「活動人數」撤除（ATT-002）。
@@ -4049,6 +4078,7 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(list);
     }
     fillGallery(ev);
+    fillCover(ev);
     fillVideo(ev);
     // 系列子場的鎖定說明：總覽與場次兩個分頁各一份，一起翻
     document.querySelectorAll('[data-series-lock]').forEach(el => { el.hidden = !isSeriesChild(); });
@@ -4056,12 +4086,17 @@
 
   /* 圖片相簿：排第一的就是主視覺（與建立流程 2026-08-06 同一套）。編輯頁要看見
      「現在上線中的圖」，所以已上傳的圖直接以 is-filled 的格子渲染，不是空上傳框。 */
+  /* D541（2026-11-19；取代 D404 的可換圖）：bookyay 帶入的活動，主視覺跟著 bookyay 同步、唯讀——第一格畫成沒有 data-upload 的
+     靜態已填格（不長替換／刪除），容器掛 data-gallery-kv-locked（其餘格子不長「設為主視覺」、不能換位，partials/upload-tile.js）；
+     標籤掛 From bookyay、說明句換成「主視覺由 bookyay 同步」。其餘圖庫照常可加、可換、可刪（圖庫不在鎖定範圍）。 */
   function fillGallery(ev) {
     const gal = document.getElementById('ed-gallery');
     if (!gal) return;
+    const bky = isBky();
+    gal.toggleAttribute('data-gallery-kv-locked', bky);
     const imgs = [ev.images && ev.images.keyvisual].concat((ev.images && ev.images.gallery) || []).filter(Boolean);
     gal.innerHTML = imgs.map((src, i) =>
-      '<div class="upload-tile upload-tile--portrait is-filled" data-gallery-tile data-upload>' +
+      '<div class="upload-tile upload-tile--portrait is-filled" data-gallery-tile' + (bky && i === 0 ? ' data-kv-locked' : ' data-upload') + '>' +
         (i === 0 ? '<span class="upload-tile__flag" data-i18n="ce.img.keyvisual">' + T('ce.img.keyvisual', 'Key visual') + '</span>' : '') +
         '<img class="upload-tile__thumb" src="' + src + '" alt="">' +
       '</div>').join('') +
@@ -4070,7 +4105,46 @@
         '<span class="upload-tile__title" data-i18n="ce.img.add">' + T('ce.img.add', 'Add image') + '</span>' +
       '</div>';
     if (window.ztorUploadTile) gal.querySelectorAll('[data-upload]').forEach(t => window.ztorUploadTile.enhance(t));
+    markBkySource(document.getElementById('ed-gallery-label'), bky);
+    const hint = document.getElementById('ed-gallery-hint');
+    if (hint) {
+      const k = bky ? 'ce.img.note.bky' : 'ce.img.note';
+      hint.setAttribute('data-i18n', k);
+      hint.textContent = T(k, bky ? 'The key visual comes from bookyay and stays in sync — change it there. Add your own images after it.' : 'Portrait 750 × 1125, up to 10 photos or videos. The first one is the key visual; hover one to replace or delete it.');
+    }
   }
+
+  /* 封面照（Cover photo，D541；5.1.6.2 F4）：ev.images.cover＝封面照網址（空＝沒有）。只有 bookyay 帶入的活動才有〔推導〕，
+     其他活動整格收起（主視覺本來就能在 ztor 換）。格子沿用相簿同一支 partials/upload-tile.js（替換、刪除），不跟 bookyay 同步。 */
+  function fillCover(ev) {
+    const field = document.getElementById('ed-cover-field'), box = document.getElementById('ed-cover');
+    if (!field || !box) return;
+    const on = isBky();
+    field.hidden = !on;
+    if (!on) { box.innerHTML = ''; return; }
+    const src = (ev.images && ev.images.cover) || '';
+    box.innerHTML = '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-upload-key="cover"' +
+        ' aria-label="' + tixEsc(T('ce.cover.add', 'Add cover photo')) + '" data-i18n-aria-label="ce.cover.add">' +
+        (src ? '<img class="upload-tile__thumb" src="' + tixEsc(src) + '" alt="">'
+             : '<span class="upload-tile__icon">＋</span><span class="upload-tile__title" data-i18n="ce.cover.add">' + tixEsc(T('ce.cover.add', 'Add cover photo')) + '</span>') +
+      '</div>';
+    const tile = box.querySelector('[data-upload]');
+    if (tile && window.ztorUploadTile) window.ztorUploadTile.enhance(tile);
+    syncCoverNone();
+  }
+  function edCoverSrc() {
+    const tile = document.querySelector('#ed-cover .upload-tile');
+    if (!tile || !(tile.classList.contains('is-filled') || tile.classList.contains('is-optimized'))) return '';
+    const im = tile.querySelector('.upload-tile__thumb'), v = tile.querySelector('video');
+    return (im && im.getAttribute('src')) || (v && v.getAttribute('src')) || 'cover';
+  }
+  function syncCoverNone() {
+    const none = document.getElementById('ed-cover-none');
+    /* 看封面照所在那一層的模式：上架中（D435）外層是編輯、活動內容那一段仍是檢視（data-ed-stocklock），空格同樣被收起 */
+    const host = none && none.closest('[data-mode]');
+    if (none) none.hidden = !(isBky() && host && host.getAttribute('data-mode') !== 'edit' && !edCoverSrc());
+  }
+  document.getElementById('ed-cover')?.addEventListener('upload:change', () => { syncCoverNone(); if (edBaseline) syncDirty(); });
 
   /* 墓碑 2026-10-12（D404）：主視覺裁切（edKvCrop／syncKvCrop／applyKvPos／#ed-kv-crop）退場——不提供調整裁切。 */
 
@@ -4132,6 +4206,8 @@
       });
       /* 場地名稱與完整地址（5.1.6.1 F21，D329；2026-10-07 補，原本編輯模式可改）：標記見 lockVenueFromBky */
       root.querySelectorAll('#ed-venue, #ed-address, #ed-meet, #ed-transit').forEach(el => { el.readOnly = true; });
+      /* 活動名稱（D541）：跟著 bookyay 同步、不分模式一律唯讀；標記見 lockNameFromBky */
+      root.querySelectorAll('#ed-name').forEach(el => { el.readOnly = true; });
       /* 活動國家、活動語言、集合地點、交通（D370）：同樣不分模式一律鎖；標記見 lockLocaleFromBky／lockVenueFromBky */
       root.querySelectorAll('#ed-country, #ed-lang').forEach(el => { el.disabled = true; });
     }
@@ -4671,6 +4747,7 @@
     renderPublish();
     syncPubErrs();
     syncVideoNone();
+    syncCoverNone();
     syncDirty();
     /* 2026-10-10：票務（預設購票規則、新增門票）與通知開關各自重畫，跟著整頁編輯模式開關入口 */
     document.dispatchEvent(new CustomEvent('ed:mode', { detail: { mode } }));
@@ -4690,7 +4767,7 @@
     ['venue',  s => s.venue + '' + s.address + '' + s.meet + '' + s.transit],   // D370：集合地點、交通併入場地這一項
     ['dates',  s => s.sessions],
     ['lineup', s => s.lineup],
-    ['images', s => s.gallery + '' + s.video],                   // D390 決定十三：影片預告與圖片同屬素材一列
+    ['images', s => s.gallery + '' + s.video + '' + s.cover],    // D390 決定十三：影片預告與圖片同屬素材一列；D541：封面照同列
     ['publish', s => s.pub],                                      // D390：發布設定改成跟著編輯模式，算一項
     /* D392（2026-10-10）：撤銷 D390 稽核第一節原型第 3 條的「門票各自存了就生效」——門票（含新增、刪除、圖片、購買條件、顯示開關）、
        通知開關都改成頁面草稿，各算一項，按「儲存」才寫入、捨棄還原。墓碑 2026-10-20（D460）：活動預設購票規則（'rules'）一項退場。 */
@@ -4712,6 +4789,7 @@
       lineup: arr('#ed-lineup [data-ed-lineup-row] input'),
       gallery: arr('#ed-gallery [data-gallery-tile] img'),
       video: edVideoSrc(),
+      cover: edCoverSrc(),   // D541：封面照（bookyay 帶入的活動才有）
       pub: JSON.stringify(pubDraft || null),
       tiers: tiersCanon(edTiers),
       notif: notifCanon(notifDraft || notifState())
@@ -4902,6 +4980,7 @@
     patch.lineup = ev.lineup;
     const imgs = Array.from(document.querySelectorAll('#ed-gallery [data-gallery-tile] .upload-tile__thumb')).map(i => i.getAttribute('src')).filter(Boolean);
     ev.images = Object.assign({}, ev.images, { keyvisual: imgs[0] || '', gallery: imgs.slice(1) });
+    if (isBky()) ev.images.cover = edCoverSrc();   // D541：封面照只有 bookyay 帶入的活動才有；主視覺是相簿第一格的靜態格，值不會變
     patch.images = ev.images;
     ev.video = edVideoSrc() || false; patch.video = ev.video;
     if (pubDraft) {
@@ -5224,6 +5303,13 @@
 
   /* bookyay 帶入的票（D517）：票種帶 bky，基準價鎖定。 */
   const isBkyTier = t => !!(t && t.bky);
+  /* bookyay 同步新增、還沒上架的門票（D541；5.1.6.3 §2.6「隱藏標示」）：資料 bkyPending＝bookyay 新增的時段同步進來的那張票，
+     以隱藏（未上架）加入；創作者按「顯示」上架後清掉（toggleTierVisNow）。標示＝「隱藏」旁多一枚「待上架」徽章（S148）。 */
+  const bkyNewTier = t => !!t && !!t.bkyPending && !!t.hidden && !!ev && ev.source === 'bookyay';
+  const bkyNewBadge = (t, inner) => bkyNewTier(t)
+    ? '<span class="badge badge--warning" data-feat="S148" title="' + tixEsc(T('ce.tier.bkynew.title', 'Synced in from a new bookyay date. Not on sale until you show it.')) + '">' +
+        (inner ? '<span>' : '') + tixEsc(T('ce.tier.bkynew', 'To list')) + (inner ? '</span>' : '') + '</span>'
+    : '';
   /* ── 獨立票（D380 決定五，2026-10-09）──────────────────────────────
      獨立票＝不掛任何票種、只屬於一場的門票（資料 `standalone: true`，多場活動另帶 `sess`＝所屬場次 id）。
      與票種門票排在同一張清單、不另分區，名稱後掛「獨立票」標籤；多場活動補一列「場次」寫出它屬於哪一場，
@@ -5284,7 +5370,8 @@
         /* 隱藏標示（D328，5.1.6.3 §2.6）：顯示開關關閉的票——活動頁不列、不能單張買，仍在組合包裡照常賣 */
         /* 2026-10-09（D390 稽核第一節原型第 17 條）：bookyay 活動的門票隱藏徽章掛 S92；創作者自建活動自己切成隱藏的票屬 S55
            （⚪，release2.3 收起開關），徽章跟著收，不然看得到「隱藏」卻找不到開關。墓碑 2026-10-16（D429）：1 人票（hideFix）條件退場。 */
-        (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '');
+        (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '">' + tixEsc(T('ce.tier.hidden', 'Hidden')) + '</span>' : '') +
+        bkyNewBadge(t);   // D541：bookyay 同步新增、待上架
       /* 摘要卡（2026-10-27，UI-CHANGES 三百五十九；lab-event-cards.html 第二版）：縮圖直式在上 → 名稱＋徽章 → 事實列 → 底部銷售區；
          動作收進右上「⋯」：編輯門票（開門票彈窗）、隱藏／顯示（D422，toggleTierVisNow）、庫存設為 0（D447）。
          張數與銷量兩列收成銷售區（數字＋量條）。墓碑 2026-11-05（D514）：票價左邊的「n 幣別另設」小標記隨逐幣別覆寫退場。 */
@@ -5417,9 +5504,11 @@
     if (tierVisBlock(t)) return 'blocked';
     const toHidden = !t.hidden;
     t.hidden = toHidden;
+    if (!toHidden) delete t.bkyPending;   // D541：bookyay 同步新增的門票按「顯示」＝上架，待上架標示與待處理事項跟著結束
     const saved = (ev.tiers || []).find(x => x.id === t.id);
     if (saved) {
       saved.hidden = toHidden;
+      if (!toHidden) delete saved.bkyPending;
       window.ztorEvents.saveEdits(ev.id, { tiers: ev.tiers });
       if (edBaseline) { edBaseline.tiers = tiersCanon(ev.tiers); syncDirty(); }
     }
@@ -5435,7 +5524,8 @@
     const setK = (el, k, fb) => { if (el) { el.setAttribute('data-i18n', k); el.textContent = T(k, fb); } };
     setK(st, tmShown ? 'ed.tm.show.state.on' : 'ed.tm.show.state.off', tmShown ? 'Shown on the event page' : 'Hidden from the event page');
     setK(lab, tmShown ? 'ed.tix.hide' : 'ed.tix.show', tmShown ? 'Hide' : 'Show');
-    setK(sub, tmNew ? 'ce.tier.show.hint' : 'ed.tm.show.sub.op',
+    if (!tmNew && !tmShown && bkyNewTier(tmTier)) setK(sub, 'ed.tm.show.sub.bkynew', 'New from bookyay and not on sale yet. Add a ticket image, a single-sale lock or bundles, then press Show to start selling.');   // D541
+    else setK(sub, tmNew ? 'ce.tier.show.hint' : 'ed.tm.show.sub.op',
       (tmNew ? "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it." : 'Takes effect right away, no need to save. Hidden tickets stay off the price list but can still sell inside bundles.'));
     b.setAttribute('aria-pressed', tmShown ? 'false' : 'true');
     b.disabled = !!why;
@@ -6153,7 +6243,7 @@
         '<td>' + esc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t))) + '</td>' +
         /* 狀態欄（D422）：顯示中／隱藏（原名稱格後的「隱藏」徽章併進這一欄，同一件事不寫兩次） */
         '<td><span class="badge ' + (t.hidden ? 'badge--neutral' : 'badge--success') + '">' +
-          esc(T(t.hidden ? 'ce.tier.hidden' : 'ed.tix.status.shown', t.hidden ? 'Hidden' : 'Shown')) + '</span></td>' +
+          esc(T(t.hidden ? 'ce.tier.hidden' : 'ed.tix.status.shown', t.hidden ? 'Hidden' : 'Shown')) + '</span>' + (bkyNewTier(t) ? ' ' + bkyNewBadge(t) : '') + '</td>' +   // D541
         (removed ? '<td class="staged-remove__keep"><span class="staged-remove__bar">' + stagedRemoveKeep(t) + '</span></td>' :
         '<td><div class="flex-row" style="gap:var(--sp-8);justify-content:flex-end">' + zeroBtn(t) + visBtn(t) + '</div></td>') +
       '</tr>';
@@ -6757,6 +6847,7 @@
           (thumbFn ? thumbFn(t) : '') +
           '<span class="meter-list__name"><span>' + esc(t.name || '') + '</span>' +
             (t.hidden ? '<span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '"><span>' + esc(T('ce.tier.hidden', 'Hidden')) + '</span></span>' : '') +
+            bkyNewBadge(t, true) +   // D541
           '</span>' +
           (thumbFn
             ? '<span class="meter-list__meter">' +
@@ -6981,6 +7072,7 @@
         '<div class="kv' + (i === 0 ? ' kv--lead' : '') + '">' +
           '<span class="kv__k">' + esc(t.name || '') +
             (t.hidden ? ' <span class="badge badge--neutral" data-feat="' + ((ev && ev.source === 'bookyay') ? 'S92' : 'S55') + '"><span>' + esc(T('ce.tier.hidden', 'Hidden')) + '</span></span>' : '') +
+            (bkyNewTier(t) ? ' ' + bkyNewBadge(t, true) : '') +   // D541
           '</span>' +
           '<span class="kv__v">' + esc(window.ztorEvents.moneyIn(window.ztorEvents.priceOf(ev, t))) + ' · ' + fmtNum(Number(t.qty) || 0) + ' ' + esc(T('event-detail.sales.tickets', 'tickets')) + '</span>' +
         '</div>').join('') : '';
@@ -7038,7 +7130,8 @@
       unlistOn: closed || (!pre && !hadUnlist), unlist: closed,
       saleFrom: bky || !pre, saleTo: bky || closed,
       pickup: bky || !pre, shipFee: bky || !pre, shipSpot: !pre,
-      shown: closed
+      shown: closed || bky,   // D541：bookyay 帶入者的顯示設定跟著 bookyay 同步、唯讀（取代 D341 的不鎖）
+      linkReset: closed       // 重置活動連結是 ztor 自己的連結，不在 bookyay 同步範圍，維持原本只在已結束時鎖
     };
   }
   function syncPubLock() {
@@ -7070,7 +7163,7 @@
     const uOn = !!pubOf().listing.unlistOn;
     lockSw(document.getElementById('ed-pub-unlist-on'), !editing || L.unlist || (!uOn && L.unlistOn));
     lockSw(document.getElementById('ed-pub-shown'), !editing || L.shown);
-    document.querySelectorAll('#ed-pub-hidden-link [data-linkf-reset]').forEach(b => { b.disabled = !editing || L.shown; });
+    document.querySelectorAll('#ed-pub-hidden-link [data-linkf-reset]').forEach(b => { b.disabled = !editing || L.linkReset; });
     syncPubBkyMarks();
   }
   /* 發布設定的「bookyay 帶入」標記（2026-10-07 補）：開賣、停售兩個欄位與運費各掛一枚（同建立活動 lockField 逐欄掛），
@@ -7080,6 +7173,14 @@
     document.querySelectorAll('#ed-pub-sale-times .field, #ed-pub-edit [data-pub-when="sf"]').forEach(f => markBkySource(f.querySelector('.field__label'), on, f));
     markBkySource(document.getElementById('ed-pub-pickup-title'), on);
     markBkySource(document.querySelector('#ed-pub-edit [data-pub-sec="sale"] .form-section__title'), on);   // D391：開賣方式照 bookyay 帶入並鎖定
+    /* 顯示設定（D541）：跟著 bookyay 的活動性質同步、唯讀——開關列標題掛來源標記，說明句換成「要改回 bookyay 改」 */
+    markBkySource(document.getElementById('ed-pub-shown-main'), on);
+    const vsub = document.getElementById('ed-pub-shown-sub');
+    if (vsub) {
+      const k = on ? 'ed.pub.vis.shown.sub.bky' : 'ed.pub.vis.shown.sub';
+      vsub.setAttribute('data-i18n', k);
+      vsub.textContent = T(k, on ? "Follows the event's privacy setting on bookyay. Change it there." : 'Off = hidden: only people with the event link or QR can get in.');
+    }
   }
   /* bookyay 帶入的活動：取票方式唯讀的判準（D308 決定一，經 D327 修訂） */
   function isBky() { return !!ev && ev.source === 'bookyay'; }

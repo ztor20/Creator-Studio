@@ -15,6 +15,50 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-19（五百四十九）· 匯率告警改彈窗、門檻逐配對可設定（A spec 導入 · D543）
+
+**標籤**：release2.3、release2.4
+
+使用者裁決（D543，修訂 D542 決定三、決定四）：告警門檻改為逐配對可設定（預設跟隨該配對的換匯手續費），告警設定從頁面常駐區塊改進「警告設定」彈窗；告警信由六項加為七項（多列告警門檻）。
+
+- `admin-platform-fees.html`：拿掉換匯手續費下方的常駐「匯率告警」區塊（原 `section#fee-alert`）；「換匯手續費」標題列改用 `form-section__head--actions`，右上角放「警告設定」按鈕（`btn--outline btn--sm`＋鈴鐺圖示，`data-feat="S146"`）。
+- 新增匯率告警設定彈窗 `#fee-alert-modal`（`data-feat="S146"`）：5.1.8 第 1 類「填寫送出」，Modal shell 預設寬、取消＋儲存。內容依序是收件人名單（原 chip 編輯器搬進來，檢查規則與空名單提示不變）、逐配對告警門檻表（六列：配對、門檻輸入欄（% 後綴，與手續費表同一支 amount-field）、來源徽章）、寄信頻率與生效說明。
+- 門檻留空＝跟隨手續費：輸入欄 placeholder 與來源徽章「跟隨手續費 N%」即時讀 F6 表格的目前值；填值＝自訂（徽章換「自訂」，沿用本頁費率例外「繼承／覆寫」的中性／品牌徽章語彙）；清空回到跟隨。自訂值必須大於 0，否則欄位下顯示錯誤、儲存不關窗。
+- 修改先放草稿，按儲存才生效、取消放棄；有未儲存修改時按 ×、Esc、點遮罩或取消，先用 `ztorDialog.confirm` 問「放棄未儲存的變更？」。不走費率版本、不綁頁面的儲存鈕。
+- `emails/rate-alert-zh.html`：小表格加「告警門檻」一行（昨天匯率、今天匯率、告警門檻、目前換匯手續費）；內文改「今天波動 X%，大於這個配對的告警門檻 Y%」；範例改成港幣↔新台幣跟隨手續費 3%（+3.88%）、新加坡幣↔新台幣自訂門檻 3.5%（−3.73%）；主旨與預覽文字改說「告警門檻」。
+- `js/i18n.js`：`fees.alert.*` 新增按鈕、彈窗標題、門檻欄、來源徽章、門檻錯誤、儲存與放棄確認文案（中英），移除不再使用的 `fees.alert.threshold.text`、`fees.alert.recipients.note`。
+- 不新增元件：重用 Modal shell（`payout-modal.css`）、`ztor-dialog.js`、`tag-input`、`chip`、`alert`、`amount-field`、`table`、`badge`、`field-system`；5.1.8 彈窗類型卡第 1 類實例補「匯率告警設定」。
+
+## 2026-11-19（五百四十八）· bookyay 帶入的活動持續同步：帶入欄位唯讀、新增封面照、新門票待上架（A spec · D541）
+
+**標籤**：release2.4
+
+使用者裁決（D541）：bookyay 是帶入欄位的正本，ztor 持續同步；活動名稱、主視覺、顯示設定改為跟 bookyay 同步並唯讀，ztor 另設自己的封面照；bookyay 新增的時段同步進來先不賣、以待處理事項通知創作者。
+
+- 活動名稱：`event-detail.html`（`lockNameFromBky`＋`applyReadonly`）與 `create-event.html`（`bkyApply` 的 `lockField` 不再放過 name）改為唯讀、掛 From bookyay；活動詳情收起「· 必填」；bookyay 草稿續填不再把草稿裡的名稱疊回。
+- 主視覺：兩頁相簿第一格畫成沒有 `data-upload` 的靜態格（沒有替換、刪除），容器加 `data-gallery-kv-locked`，其餘圖片不長「設為主視覺」、不能換位；說明句改成「主視覺由 bookyay 同步」。建立流程的 1:1 提示改成「可以另傳 2:3 的封面照」，傳了就收。
+- 封面照（S147，🟣）：兩頁圖片段下新增「封面照（選填）」上傳格，只有 bookyay 帶入的活動才出現；資料存 `images.cover`，活動詳情算進「素材」那一項變更，檢視模式沒有圖時寫「沒有封面照」。
+- 顯示設定：活動詳情發布設定的「顯示於商店」開關鎖定、掛 From bookyay、說明句換成「跟著 bookyay 的活動性質同步」，頁首選單「從商店隱藏／顯示」停用並說明原因；建立流程第 7 步同樣鎖定。重置活動連結不受影響。
+- 門票名稱、票價、張數：活動詳情門票彈窗與建立流程原本已唯讀並掛來源標記，這一輪實測確認，沒有改動。
+- 待上架門票（S148，🟣）：示範資料 `nick-live-taichung-bky` 新增一張 bookyay 同步進來的「Encore night pass」（隱藏、`bkyPending`）；活動詳情卡片、列表、總覽票種清單在「隱藏」旁加「待上架」徽章，門票彈窗的顯示列說明改成請創作者補完設定後按「顯示」；按「顯示」後徽章消失。
+- 儀表板待處理事項新增一筆「bookyay 新時段／票種待上架」（Warning，CTA 到該活動票種分頁）；`issueCard` 支援 `feat` 掛 `data-feat`，`rerender` 後重新套版本閘。
+- 元件：`partials/upload-tile.js` `initGalleryKv` 補 `[data-gallery-kv-locked]`；`ds-specs/4.7b-upload-tile.md`、`design-system-components-forms.html`（加示範）、`design-system-changelog.md` 同步，重產 `design-components.html`。
+- 文案：`js/i18n.js` 新增 `ce.cover*`、`ce.img.note.bky`、`ce.img.ratio.bky`、`ed.cover.none`、`ce.tier.bkynew*`、`ed.tm.show.sub.bkynew`、`ed.pub.vis.shown.sub.bky`、`event-detail.shown.bky`、`alert.bky-new.*`（中英）；建立流程本地字典的 `d.img.ratio` 退場。`feature-scope-map.md`、`js/devtools.js` 登記 S147、S148（🟣 release2.4）。
+- 不在這次範圍：Creator Studio 預覽與門票圖片預設用主視覺還是封面照（5.1.6.1 F4〔產品待確認〕，原型維持用主視覺）；同步機制、張數低於已售、同步失敗標示等 D541 待確認題；規則手冊另輪同步。
+
+## 2026-11-19（五百四十七）· 匯率告警設定與告警信（A spec 導入 · D542）
+
+**標籤**：release2.3、release2.4
+
+使用者裁決（D542，修訂 D517 決定五、D540 決定四的告警部分）：先照 Asana 工單「Currency: rate-move alert email」的建議值實作匯率告警，業務尚未核准那四點，所以門檻、收件人、頻率、信件文案仍是〔產品待確認〕；不做手續費自動調整。
+
+- `admin-platform-fees.html` 換匯手續費下方新增「匯率告警」區塊（F7，`data-feat="S146"`，General 專用，同在費率設定分頁）：一段唯讀說明（單日波動大於該配對的換匯手續費才寄信，門檻就是各配對的費率、沒有獨立欄位）；收件人名單（重用 tag-input 加 chip，輸入 email 按 Enter 或「新增」，× 移除；格式錯誤或重複不加入並在欄位下說明；名單空了顯示「目前沒有收件人，告警信不會寄出」提示）；一段唯讀頻率說明（每天最多一封、列出當天超過門檻的所有配對、當天沒有就不寄）。
+- 名單增刪即時生效、從下一封信起算，不走費率版本也不綁頁面的儲存鈕，版本歷史不記名單變更；名單只放記憶體，起始兩筆示範收件人 `ops@example.com`、`finance@example.com`。
+- 新增 `emails/rate-alert-zh.html`：告警信範本（沿用既有活動通知信的骨架與素材），一封信列兩個示範配對（港幣↔新台幣 +3.88%、新加坡幣↔新台幣 −3.73%，費率各 3%），每個配對寫出配對、波動、昨天匯率、今天匯率、目前換匯手續費（三行小表格），結尾一顆連到換匯手續費設定的按鈕；信內不寫任何自動調整。這份是靜態示範檔，不掛頁面入口。
+- `js/i18n.js`：新增 `fees.alert.*` 一組（中英）。`js/devtools.js` 與 `feature-scope-map.md` 登記 S146（🔵 release2.3）。
+- 不新增元件：重用 `tag-input.css`、`chip.css`、`alert.css`、`field-system.css`。
+- 不在這次範圍：手續費自動調整、站內通知、慢速累積波動偵測。規則手冊已同步（admin-fees、common-currency）。
+
 ## 2026-11-19（五百四十六）· 換匯手續費改依幣別配對各設一個費率（A spec 導入 · D540）
 
 **標籤**：release2.3、release2.4

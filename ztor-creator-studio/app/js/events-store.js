@@ -747,7 +747,14 @@
            描述的「輪椅席」段落說每位輪椅使用者可有 1 位陪同者。金額 0 的交易就是訂單管理的免費門票訂單（D414）；
            排在最後，既有門票的訂單編號不位移。收入不變。 */
         { id: 'tier-tc-companion', name: 'Wheelchair companion', price: 0, bky: true, qty: 20, sold: 6, img: 'images/projects/nick-lwh.jpg',
-          rules: { conds: { cap: { person: '1', bky: true } } }, rulesFix: true }
+          rules: { conds: { cap: { person: '1', bky: true } } }, rulesFix: true },
+        /* 2026-11-19 D541 示範（原型示範資料、不是產品規則）：bookyay 在已帶入之後新增了一個時段（11/22 安可加場），
+           同步進 ztor 時併進同一場、帶入該時段排第一的那一種門票（D440）；張數＝該時段人數上限 300（D441〔推導〕）。
+           這種票在既有時段沒出現過，所以票名不補「· 時段 N」。加入時未上架：顯示開關為關（hidden）、bkyPending＝待上架標示，
+           不販售、不觸發自動下架；名稱、票價、張數、本門票限購照 bookyay 帶入並唯讀（D541 決定四）。門票圖片留空＝跟著主視覺，
+           等創作者補。創作者在活動詳情按「顯示」上架後 bkyPending 清掉（event-detail toggleTierVisNow）；儀表板待處理事項 bky-new-ticket 指向這一張。 */
+        { id: 'tier-tc-encore', name: 'Encore night pass', price: 2800, bky: true, qty: 300, sold: 0, hidden: true, bkyPending: true,
+          rules: { conds: { cap: { person: '4', bky: true } } }, rulesFix: true }
       ],
       bundles: [
         /* 墓碑 2026-10-16（D429）：自動建立的套票組合包 bd-tc-duo（賣出 60 組）刪除，銷量改記在門票 tier-tc-duo。 */

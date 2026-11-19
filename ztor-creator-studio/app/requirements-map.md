@@ -25,6 +25,12 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-19 D541 原型同步（UI-CHANGES 五百四十八；release2.4）**：bookyay 帶入的活動持續同步——活動名稱、主視覺、顯示設定唯讀並掛來源標記（5.1.6.1 F21／F2／F4／F25、5.1.6.2 F2／F4／F14）→ `event-detail.html`、`create-event.html`、`partials/upload-tile.js`；封面照（5.1.6.1 F4「封面照」、5.1.6.2 F4，S147）→ 兩頁 `#ed-cover-field`／`#ce-cover-field`；bookyay 新增時段的待上架門票（5.1.6.1 F21「bookyay 新增的時段或票種」、5.1.6.3 §2.6，S148）→ `event-detail.html` 徽章與門票彈窗、`js/events-store.js` `tier-tc-encore`；儀表板待處理事項「bookyay 新時段／票種待上架」（5.1.1 F4，S148）→ `js/components.js` `bky-new-ticket`。門票名稱、票價、張數原本已唯讀。
+
+> **2026-11-19 D543 原型同步（UI-CHANGES 五百四十九、ASSUMPTIONS UIA-344；release2.3）**：匯率告警改彈窗、門檻逐配對——5.1.0.3 F6「警告設定入口」、F7（收件人名單、逐配對告警門檻表、頻率說明、儲存與取消、未儲存確認）與 7.15「匯率告警信」七項 → `admin-platform-fees.html`（S146：`#fee-alert-open`＋`#fee-alert-modal`，常駐區塊拿掉）、`emails/rate-alert-zh.html`（加告警門檻一行）、`js/i18n.js`（`fees.alert.*`）。
+
+> **2026-11-19 D542 原型同步（UI-CHANGES 五百四十七、ASSUMPTIONS UIA-343；release2.3）**：匯率告警——5.1.0.3 F7（門檻說明、收件人名單、寄信頻率說明）與 7.15「匯率告警信」→ `admin-platform-fees.html`（S146）、`emails/rate-alert-zh.html`、`js/i18n.js`（`fees.alert.*`）、`js/devtools.js`；門檻等於各配對的換匯手續費、沒有獨立欄位，不做手續費自動調整；收件人名單只放記憶體，文案與多配對主旨為呈現假設。
+
 > **2026-11-19 D540 原型同步（UI-CHANGES 五百四十六、ASSUMPTIONS UIA-334；release2.3）**：換匯手續費改依幣別配對各一個費率（六個配對、同配對雙向同費率、起始 3%、註冊國家欄退場）→ `admin-platform-fees.html`、`js/orders-store.js`（`SWAP_PAIR_PCT`）、`order-detail.html`（Admin 才看得到的手續費列帶配對）、`js/i18n.js`；原型仍把配對與費率記在訂單層（呈現簡化）。
 
 > **2026-11-17 D539 原型同步（UI-CHANGES 五百四十五）**：換匯手續費只給 Admin 看（創作者模式隱藏）、幣別只剩 USD／TWD／HKD／SGD、換算價無條件進位、S135 新增幣別退場 → `order-detail.html`、`admin-platform-fees.html`、`earnings.html`、`earnings-ztor.html`、`settings.html`、`js/currency.js`、`js/events-store.js`、`js/orders-store.js`、`partials/work-fields.js`、`js/i18n.js`、`js/devtools.js`。
