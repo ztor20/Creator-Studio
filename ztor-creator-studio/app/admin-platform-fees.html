@@ -104,9 +104,10 @@
   </div>
 </section>
 
-<!-- 換匯手續費（D514 決定六，D517 決定一、三、四；spec 5.1.0.3）：依粉絲付款幣別各一個百分比，併進粉絲看到的售價、歸平台。
+<!-- 換匯手續費（D514 決定六，D517 決定一、三、四，D540；spec 5.1.0.3 F6）：依幣別配對各一個百分比，併進粉絲看到的售價、歸平台。
      版本與儲存跟平台費共用同一顆儲存鈕與版本歷史；D517 起沒有逐創作者覆寫，所以不進「例外設定」。
-     固定四列（D539：幣別只有 USD／TWD／HKD／SGD；其他國家註冊的粉絲一律 USD）。2.5% 是示意值（ASSUMPTIONS UIA-334）。
+     固定六列（D539：幣別只有 USD／TWD／HKD／SGD，兩兩組成六個配對；D540：同配對雙向同費率，「註冊國家」欄退場）。
+     3% 是示意值、最終數字待 Susan（ASSUMPTIONS UIA-334）；orders-store.js 的 SWAP_PAIR_PCT 是同一份示意值（兩邊要一起改）。
      D539 退場：「新增幣別」按鈕（S135）與第五種幣別那一列，Admin 不再能新增幣別。 -->
 <section class="form-section form-section--outlined" data-feat="S134">
   <div class="form-section__head">
@@ -116,13 +117,15 @@
   </div>
   <p class="text-sub" style="margin:0 0 var(--sp-8)" data-i18n="fees.swap.sub">Built into the one price the fan sees when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.</p>
   <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.swap.fx-note">Exchange rates update automatically every day and can’t be edited. Only the fee is set here.</p>
-  <div class="fee-tree__panel"><div class="admin-table-wrap"><table class="ztor-table" id="fee-swap-table" style="min-width:440px">
-    <thead><tr><th data-i18n="fees.swap.col.cur">Fan pays in</th><th data-i18n="fees.swap.col.countries">Registered countries</th><th data-i18n="fees.swap.col.rate">Fee rate</th></tr></thead>
+  <div class="fee-tree__panel"><div class="admin-table-wrap"><table class="ztor-table" id="fee-swap-table" style="min-width:320px">
+    <thead><tr><th data-i18n="fees.swap.col.cur">Currency pair</th><th data-i18n="fees.swap.col.rate">Fee rate</th></tr></thead>
     <tbody>
-      <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.USD">USD</td><td class="text-sub" data-i18n="fees.country.other"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="USD"><span class="amount-field__unit">%</span></span></td></tr>
-      <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.TWD">TWD</td><td class="text-sub" data-i18n="fees.country.TW"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="TWD"><span class="amount-field__unit">%</span></span></td></tr>
-      <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.HKD">HKD</td><td class="text-sub" data-i18n="fees.country.HK"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="HKD"><span class="amount-field__unit">%</span></span></td></tr>
-      <tr><td class="ztor-table__feature" data-i18n="fees.leaf.swap.SGD">SGD</td><td class="text-sub" data-i18n="fees.country.SG"></td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="2.5" aria-label="SGD"><span class="amount-field__unit">%</span></span></td></tr>
+      <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-USD">HKD↔USD</td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-pair="HKD-USD" aria-label="HKD-USD" data-i18n-aria-label="fees.swap.pair.HKD-USD"><span class="amount-field__unit">%</span></span></td></tr>
+      <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-TWD">HKD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-pair="HKD-TWD" aria-label="HKD-TWD" data-i18n-aria-label="fees.swap.pair.HKD-TWD"><span class="amount-field__unit">%</span></span></td></tr>
+      <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-SGD">HKD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-pair="HKD-SGD" aria-label="HKD-SGD" data-i18n-aria-label="fees.swap.pair.HKD-SGD"><span class="amount-field__unit">%</span></span></td></tr>
+      <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-TWD">USD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-pair="USD-TWD" aria-label="USD-TWD" data-i18n-aria-label="fees.swap.pair.USD-TWD"><span class="amount-field__unit">%</span></span></td></tr>
+      <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-SGD">USD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-pair="USD-SGD" aria-label="USD-SGD" data-i18n-aria-label="fees.swap.pair.USD-SGD"><span class="amount-field__unit">%</span></span></td></tr>
+      <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.SGD-TWD">SGD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:110px;margin-left:auto"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-pair="SGD-TWD" aria-label="SGD-TWD" data-i18n-aria-label="fees.swap.pair.SGD-TWD"><span class="amount-field__unit">%</span></span></td></tr>
     </tbody>
   </table></div></div>
 </section>
@@ -307,12 +310,12 @@
 <script src="js/table-sort.js?v=r2.2"></script>
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
-     結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫平台費、逐葉粒度，D141）＋換匯手續費（依付款幣別，不逐 Creator，D517）。
+     結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫平台費、逐葉粒度，D141）＋換匯手續費（依幣別配對，不逐 Creator，D517、D540）。
      例外編輯器＝clone 預設樹→輸入清空、placeholder 顯示繼承的預設值、填值即覆寫並翻「繼承/覆寫」badge。 */
   (function () {
     'use strict';
     var tree = document.getElementById('fee-tree'),
-        swapTable = document.getElementById('fee-swap-table'),   // D514：換匯手續費（依粉絲付款幣別）
+        swapTable = document.getElementById('fee-swap-table'),   // D514、D540：換匯手續費（依幣別配對）
         excBody = document.getElementById('fee-exc-body');
     if (!tree || !excBody) return;
 
@@ -644,11 +647,11 @@
     var saveNow = document.getElementById('fee-save-now'),
         saveDD = document.getElementById('fee-save-dd'),
         delayModal = document.getElementById('fee-delay-modal');
-    /* 換匯手續費改了哪些幣別（D514）：寫進版本歷史的「異動」欄，存完以新值為基準 */
+    /* 換匯手續費改了哪些幣別配對（D514、D540）：寫進版本歷史的「異動」欄，存完以新值為基準 */
     var swapSaved = {};
-    function swapCode(inp) { return inp.getAttribute('aria-label'); }
+    function swapCode(inp) { return inp.getAttribute('data-pair'); }
     function swapInputs() { return swapTable ? Array.prototype.slice.call(swapTable.querySelectorAll('.fee-rate-input')) : []; }
-    function swapLabel(code) { return t('fees.swap.title', 'Currency swap fee') + ' · ' + code; }
+    function swapLabel(code) { return t('fees.swap.title', 'Currency swap fee') + ' · ' + t('fees.swap.pair.' + code, code.replace('-', '↔')); }   // D540：版本歷史的異動寫幣別配對（鍵是 HKD-USD 這種配對碼）
     function swapChange() {
       var out = [];
       swapInputs().forEach(function (inp) {
@@ -660,7 +663,7 @@
       return out.join('、') || '—';
     }
 
-    /* D539 退場：新增幣別（D517 決定四、S135）——幣別值域固定四種，換匯手續費表就是 HTML 裡的四列。 */
+    /* D539 退場：新增幣別（D517 決定四、S135）——幣別值域固定四種，換匯手續費表就是 HTML 裡的六個配對列（D540）。 */
     swapInputs().forEach(function (inp) { swapSaved[swapCode(inp)] = inp.value; });
 
     function closeDelay() { if (delayModal) delayModal.hidden = true; }

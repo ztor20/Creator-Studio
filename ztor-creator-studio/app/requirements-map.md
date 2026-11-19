@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-19 D540 原型同步（UI-CHANGES 五百四十六、ASSUMPTIONS UIA-334；release2.3）**：換匯手續費改依幣別配對各一個費率（六個配對、同配對雙向同費率、起始 3%、註冊國家欄退場）→ `admin-platform-fees.html`、`js/orders-store.js`（`SWAP_PAIR_PCT`）、`order-detail.html`（Admin 才看得到的手續費列帶配對）、`js/i18n.js`；原型仍把配對與費率記在訂單層（呈現簡化）。
+
 > **2026-11-17 D539 原型同步（UI-CHANGES 五百四十五）**：換匯手續費只給 Admin 看（創作者模式隱藏）、幣別只剩 USD／TWD／HKD／SGD、換算價無條件進位、S135 新增幣別退場 → `order-detail.html`、`admin-platform-fees.html`、`earnings.html`、`earnings-ztor.html`、`settings.html`、`js/currency.js`、`js/events-store.js`、`js/orders-store.js`、`partials/work-fields.js`、`js/i18n.js`、`js/devtools.js`。
 > **2026-11-16 D538 原型同步（UI-CHANGES 五百四十四）**：「取貨管理」改名「核銷與領點」、場次用詞統一（場次／核銷場次）→ `pickup.html`、`pickup-detail.html`、`scanner.html`、`partials/pickup-session-modal.js`、商品／訂單／組合包／活動各頁與 `js/i18n.js`。
 > **2026-11-16 D537 原型同步（UI-CHANGES 五百四十三）**：5.1.0.8 F5 拿掉平台常數卡、基礎比率寫「每花 HK$1 得」（`js/currency.js` 的 `{basesym}`）→ `admin-platform-loyalty.html`。
