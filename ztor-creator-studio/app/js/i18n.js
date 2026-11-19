@@ -809,6 +809,32 @@
     'fees.swap.pair.USD-TWD': { en: 'USD↔TWD', zh: '美元↔新台幣' },
     'fees.swap.pair.USD-SGD': { en: 'USD↔SGD', zh: '美元↔新加坡幣' },
     'fees.swap.pair.SGD-TWD': { en: 'SGD↔TWD', zh: '新加坡幣↔新台幣' },
+    /* D542、5.1.0.3 F7：匯率告警（呈現假設的中文文案；門檻＝該配對的換匯手續費，沒有獨立欄位；收件人名單不走費率版本）。 */
+    'fees.alert.open':      { en: 'Alert settings', zh: '警告設定' },
+    'fees.alert.title':     { en: 'Exchange rate alert settings', zh: '匯率告警設定' },
+    'fees.alert.sub':       { en: 'When a pair’s exchange rate moves in one day by more than its alert threshold, an email goes to the recipients below. It’s a heads-up only — no price, fee or rate changes by itself.', zh: '某個幣別配對的單日匯率波動大於它的告警門檻時，寄信提醒下方的收件人。這只是提醒，不會改動任何價格、手續費或匯率。' },
+    'fees.alert.threshold.label': { en: 'Alert threshold', zh: '告警門檻' },
+    'fees.alert.threshold.hint':  { en: 'Leave a pair blank to follow its swap fee — change the fee and the threshold moves with it. Enter a number to set a custom threshold; clear it to follow the fee again. A move bigger than the threshold sends an email; equal or smaller does not.', zh: '留空就跟隨該配對的換匯手續費，調整手續費，門檻跟著變；填入數字就改用自訂門檻，清空即回到跟隨手續費。波動大於門檻才寄信，等於或小於不寄。' },
+    'fees.alert.col.threshold': { en: 'Alert threshold', zh: '告警門檻' },
+    'fees.alert.col.source':    { en: 'Source', zh: '來源' },
+    'fees.alert.src.follow':    { en: 'Follows fee {fee}%', zh: '跟隨手續費 {fee}%' },
+    'fees.alert.src.custom':    { en: 'Custom', zh: '自訂' },
+    'fees.alert.err.threshold': { en: 'Enter a number greater than 0, or leave it blank to follow the fee.', zh: '請輸入大於 0 的數字，或留空跟隨手續費。' },
+    'fees.alert.recipients.label': { en: 'Recipients', zh: '收件人' },
+    'fees.alert.recipients.ph':    { en: 'name@company.com', zh: 'name@company.com' },
+    'fees.alert.add':       { en: 'Add', zh: '新增' },
+    'fees.alert.remove':    { en: 'Remove {email}', zh: '移除 {email}' },
+    'fees.alert.empty':     { en: 'No recipients right now, so alert emails won’t be sent.', zh: '目前沒有收件人，告警信不會寄出。' },
+    'fees.alert.err.invalid': { en: 'Enter a valid email address.', zh: '請輸入有效的 email 地址。' },
+    'fees.alert.err.dup':   { en: 'This address is already on the list.', zh: '這個地址已經在名單內。' },
+    'fees.alert.freq.label': { en: 'Frequency', zh: '寄信頻率' },
+    'fees.alert.freq.text': { en: 'At most one email a day, listing every pair that moved more than its own threshold that day. No email on days when none did.', zh: '每天最多一封，一封列出當天超過各自門檻的所有配對；當天沒有就不寄。' },
+    'fees.alert.note':      { en: 'Changes apply from the next daily check and the next email. They aren’t rate versions, so the page’s Save doesn’t touch them.', zh: '修改從下一次每日檢查與下一封告警信起生效；不屬於費率版本，頁面上的儲存不影響它們。' },
+    'fees.alert.save':      { en: 'Save', zh: '儲存' },
+    'fees.alert.discard.title': { en: 'Discard changes?', zh: '放棄未儲存的變更？' },
+    'fees.alert.discard.body':  { en: 'Your changes to recipients or alert thresholds haven’t been saved. They’ll be lost if you close.', zh: '收件人或告警門檻的修改還沒儲存，關閉後會遺失。' },
+    'fees.alert.discard.ok':    { en: 'Discard', zh: '放棄變更' },
+    'fees.alert.discard.keep':  { en: 'Keep editing', zh: '繼續編輯' },
     'fees.version.title': { en: 'Rate version & effective scope', zh: '費率版本與生效範圍' },
     'fees.version.current': { en: 'Current version', zh: '目前版本' },
     'fees.version.effective': { en: 'Effective from', zh: '生效時間' },
@@ -1172,6 +1198,7 @@
     'alert.ip-rental.meta':   { en: 'Warning · IP Assets · In progress', zh: '警告 · IP 資產 · 處理中' },
     'alert.stock.meta':       { en: 'Critical · E-Shop · Open',      zh: '緊急 · 電子商店 · 待處理' },
     'alert.event.meta':       { en: 'Warning · Events · Open',       zh: '警告 · 活動 · 待處理' },
+    'alert.bky-new.meta':     { en: 'Warning · Events · Open',       zh: '警告 · 活動 · 待處理' },   // D541
     'alert.payout-block.meta':{ en: 'Critical · Settings · Open · Blocking', zh: '緊急 · 設定 · 待處理 · 阻斷' },
     'alert.spotify.meta':     { en: 'Info · Fan analytics · Snoozed', zh: '資訊 · 粉絲分析 · 已暫緩' },
 
@@ -1224,6 +1251,10 @@
     'alert.event.desc':       { en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs cancellation &amp; void policy and on-site staffing confirmed.', zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認取消與撤銷政策與現場人力配置。' },
     'alert.event.src':        { en: 'From · Events',          zh: '來自 · 活動' },
     'alert.event.cta':        { en: 'Complete checklist',     zh: '完成檢核' },
+    /* D541（2026-11-19；5.1.1 F4 事項類型「bookyay 新時段／票種待上架」）：bookyay 新增的時段同步進來、以未上架加入的新門票，一張一筆 */
+    'alert.bky-new.title':    { en: 'New bookyay date to list',      zh: 'bookyay 新時段／票種待上架' },
+    'alert.bky-new.desc':     { en: 'bookyay added a date to <em>NICKTHEREAL LIVE 2026 — Taichung</em>. Its ticket <em>Encore night pass</em> came in hidden and isn\u2019t on sale. Add a ticket image, a single-sale lock or bundles, then show it.', zh: 'bookyay 為「<em>NICKTHEREAL LIVE 2026 — Taichung</em>」新增了一個時段，它的門票「<em>Encore night pass</em>」以隱藏同步進來、目前不販售。補完門票圖片、鎖給單售或組合包後，按「顯示」上架。' },
+    'alert.bky-new.cta':      { en: 'List the new bookyay ticket',   zh: '上架 bookyay 新門票' },
     'alert.payout-block.title':{ en: 'Payouts on hold — tax form required', zh: '提款已暫停 — 需補稅務表單' },
     'alert.payout-block.desc': { en: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.', zh: '在釋出任何提款前需先補交 W-8/W-9 稅務表單。請於設定中處理。' },
     'alert.payout-block.cta':  { en: 'Add tax form',           zh: '補交稅務表單' },
@@ -1316,6 +1347,7 @@
     'issue.blocking':             { en: 'Can\u2019t be dismissed until resolved', zh: '處理完才會消失，無法暫緩' },
     'issue.sub.below-threshold':  { en: 'Below restock threshold',   zh: '低於補貨門檻' },
     'issue.sub.not-confirmed':    { en: 'Not confirmed yet',         zh: '尚未確認' },
+    'alert.bky-new.d1.sub':       { en: 'Hidden · not on sale yet',  zh: '隱藏 · 尚未販售' },   // D541
     'issue.ago.2h':               { en: '2 hours ago',               zh: '2 小時前' },
     'issue.ago.3h':               { en: '3 hours ago',               zh: '3 小時前' },
     'issue.ago.5h':               { en: '5 hours ago',               zh: '5 小時前' },
@@ -5675,6 +5707,13 @@
     'ce.img.add':           { en: 'Add image or video',               zh: '新增圖片或影片' },
     'ce.img.note':          { en: 'Portrait 750 × 1125, up to 10 photos or videos. The first one is the key visual; hover one to replace or delete it.', zh: '直式 750 × 1125，圖片或影片最多 10 個。排第一的是主視覺；游標移上去可替換或刪除。' },
     'ce.img.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
+    /* D541（2026-11-19）：bookyay 帶入的活動，主視覺跟著 bookyay 同步、唯讀；ztor 另有自己的封面照（只有 bookyay 帶入的活動才有、選填） */
+    'ce.img.note.bky':      { en: 'The key visual comes from bookyay and stays in sync — change it there. Add your own images after it.', zh: '主視覺由 bookyay 帶入並持續同步，要換回 bookyay 改；後面可以再放自己的圖。' },
+    'ce.img.ratio.bky':     { en: 'The bookyay key visual is 1:1. Add a 2:3 cover photo below if you want one on ztor.', zh: 'bookyay 的主視覺是 1:1，想在 ztor 放 2:3 的圖，可以在下方另傳封面照。' },
+    'ce.cover':             { en: 'Cover photo',                      zh: '封面照' },
+    'ce.cover.add':         { en: 'Add cover photo',                  zh: '新增封面照' },
+    'ce.cover.hint':        { en: "Your own image on ztor — bookyay syncs won't change it. Portrait 750 × 1125, one photo or video.", zh: 'ztor 自己的圖，bookyay 同步不會改到它。直式 750 × 1125，放一張圖片或影片。' },
+    'ed.cover.none':        { en: 'No cover photo',                   zh: '沒有封面照' },
     /* 2026-08-06：說明裡的「手機主視覺」把標籤（主視覺）又講了一次，砍掉；剩下的才是這一格真正的新資訊。
        本 key 僅剩 edit-event.html 消費，該頁待撤除。 */
     'ce.img.keyvisual-hint':{ en: '750 × 1125 · portrait · search, browse, share', zh: '750 × 1125 · 直式 · 搜尋、瀏覽、分享' },
@@ -9049,6 +9088,10 @@
     'ce.tier.show.hint': { en: "Off hides it from the price list — fans can't buy it on its own, but bundles can still include it.",
                            zh: '關閉後不在活動頁票價清單列出、粉絲不能單張購買；仍可放進組合包販售。' },
     'ce.tier.hidden':    { en: 'Hidden',                           zh: '隱藏' },
+    /* D541：bookyay 新增的時段同步進來、還沒上架的門票（隱藏＋待上架） */
+    'ce.tier.bkynew':       { en: 'To list',                           zh: '待上架' },
+    'ce.tier.bkynew.title': { en: 'Synced in from a new bookyay date. Not on sale until you show it.', zh: 'bookyay 新增時段同步進來的門票，按「顯示」才開賣。' },
+    'ed.tm.show.sub.bkynew':{ en: 'New from bookyay and not on sale yet. Add a ticket image, a single-sale lock or bundles, then press Show to start selling.', zh: 'bookyay 新增的時段同步進來，還沒上架。補完門票圖片、鎖給單售或組合包後，按「顯示」開賣。' },
     /* bookyay 帶入（D328，5.1.6.1 F21）：略過提示。墓碑 2026-10-16（D429）：ce.bky.single（套票轉出的 1 人票票名）刪除。 */
     /* D440（2026-10-16）恢復 ce.bky.skipped／ce.bky.skipped.close（D439 曾隨「所有門票種類都帶入」退場）。 */
     'ce.bky.skipped':    { en: 'Only the first ticket type per date is imported. Skipped: {name}', zh: '每個場次只帶入第一種票。未帶入：{name}' },
@@ -11101,6 +11144,8 @@
     'ed.pub.vis':         { en: 'Display settings',       zh: '顯示設定' },
     'ed.pub.vis.shown':   { en: 'Show in shop', zh: '顯示於商店' },
     'ed.pub.vis.shown.sub': { en: 'Off = hidden: only people with the event link or QR can get in.', zh: '關掉＝隱藏，只有拿到活動連結或 QR 的人進得來。' },
+    'ed.pub.vis.shown.sub.bky': { en: "Follows the event's privacy setting on bookyay. Change it there.", zh: '跟著 bookyay 的活動性質同步，要改回 bookyay 改。' },   // D541
+    'event-detail.shown.bky':   { en: 'Visibility follows bookyay — change it there', zh: '顯示設定跟著 bookyay 同步，要改回 bookyay 改' },   // D541
     'ed.pub.vis.shown.val': { en: 'Shown',                zh: '顯示' },
     'ed.pub.vis.hidden.val': { en: 'Hidden · link only',  zh: '隱藏・只能經活動連結進入' },
     'ed.pub.link.hidden': { en: 'Event link',             zh: '活動連結' },

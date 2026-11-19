@@ -599,7 +599,7 @@
        完整版（儀表板）維持狀況標題：那裡是工作台，一次列五則以上，讀者要先判斷
        「發生了什麼」再決定要不要動手。 */
     var title = where && a.cta ? { k: a.ctaKey, t: a.cta } : { k: a.titleKey, t: a.title };
-    return '<div class="issue-card' + (a.snoozed ? ' issue-card--snoozed' : '') + '">'
+    return '<div class="issue-card' + (a.snoozed ? ' issue-card--snoozed' : '') + '"' + (a.feat ? ' data-feat="' + s(a.feat) + '"' : '') + '>'   // D541：新功能的待處理事項掛版本閘
       + '<div class="issue-card__head">'
       /* compact 點開的是彈窗、不是就地展開，所以掛的是 `data-todo` 與
          `aria-haspopup`，不是 `aria-expanded`／`aria-controls`——這一格只有三則的
@@ -1768,6 +1768,14 @@
         details: [
           { nameKey: 'alert.event.d1.name', name: 'Cancellation & void policy', subKey: 'issue.sub.not-confirmed', sub: 'Not confirmed yet' },
           { nameKey: 'alert.event.d2.name', name: 'On-site staffing', subKey: 'issue.sub.not-confirmed', sub: 'Not confirmed yet' }
+        ] },
+      /* D541（2026-11-19；5.1.1 F4 事項類型「bookyay 新時段／票種待上架」）：bookyay 新增的時段同步進來、以未上架（隱藏）加入的新門票，
+         一張一筆、Warning〔推導〕；CTA 到活動詳情的票種分頁按「顯示」上架。指向 events-store 的 nick-live-taichung-bky／tier-tc-encore。
+         feat＝S148：issueCard 掛成 data-feat，版本閘照 feature-scope-map 收起。消失條件（上架、bookyay 刪除、活動結束）屬來源模組，原型不連動。 */
+      { variant: 'warning', icon: 'alert-triangle-fill', feat: 'S148', titleKey: 'alert.bky-new.title', title: 'New bookyay date to list', descKey: 'alert.bky-new.desc', desc: 'bookyay added a date to <em>NICKTHEREAL LIVE 2026 — Taichung</em>. Its ticket <em>Encore night pass</em> came in hidden and isn\u2019t on sale. Add a ticket image, a single-sale lock or bundles, then show it.', metaKey: 'alert.bky-new.meta', meta: 'Warning · Events · Open', ctaKey: 'alert.bky-new.cta', cta: 'List the new bookyay ticket', ctaHref: 'event-detail.html?id=nick-live-taichung-bky#tiers', id: 'bky-new-ticket', kind: 'review', src: 'events', srcKey: 'nav.events',
+        agoKey: 'issue.ago.2h', ago: '2 hours ago',
+        details: [
+          { name: 'Encore night pass', subKey: 'alert.bky-new.d1.sub', sub: 'Hidden · not on sale yet' }
         ] },
       // Blocking (compliance) — resolvable only in its source module; close control is disabled (spec §F4).
       { variant: 'error',   icon: 'lock',                blocking: true, titleKey: 'alert.payout-block.title', title: 'Payouts on hold — tax form required', descKey: 'alert.payout-block.desc', desc: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.',  metaKey: 'alert.payout-block.meta', meta: 'Critical · Settings · Open · Blocking', ctaKey: 'alert.payout-block.cta', cta: 'Add tax form',  ctaHref: 'settings.html#tax', id: 'payout-tax', kind: 'blocking', src: 'settings', srcKey: 'nav.settings',
@@ -3073,6 +3081,7 @@
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
       if (window.applyI18n) window.applyI18n(el);
     });
+    if (window.ztorDevState && window.ztorDevState.regate) window.ztorDevState.regate();   // 重畫出來的節點（含 data-feat 的待處理事項）重新套版本閘
   }
   document.addEventListener('click', function (e) {
     var btn = e.target.closest && e.target.closest('[data-snooze]');

@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-11-19 · D541 bookyay 帶入的活動持續同步（UI-CHANGES 五百四十八）**：沒有新元件。主視覺鎖定沿用相簿：第一格畫成沒有 `data-upload` 的靜態已填格（不增強＝沒有替換／刪除），容器掛 `data-gallery-kv-locked` 讓 `initGalleryKv` 不長星形鈕（Upload tile §4.7b 的新容器屬性）；來源標記一律用既有 `.field-source`＋`markBkySource`／`lockField`，欄位外框 `.is-source-locked`。封面照沿用 `.upload-assets--fill`＋`.upload-tile--portrait[data-upload]`，單格。顯示設定鎖定沿用 `.switch--locked`＋`aria-disabled`（同條款及細則），標題字包進 span 讓切語言不洗掉標記。「待上架」用既有 `.badge.badge--warning`，排在「隱藏」徽章後面；門票彈窗只換顯示列的說明句，不另加區塊。儀表板待處理事項沿用 issue-panel，`issueCard` 多讀 `feat` 掛 `data-feat`。
+
 > **2026-11-17 · D539 換匯手續費只給 Admin、幣別四種、換算無條件進位（UI-CHANGES 五百四十五）**：沒有新元件。訂單詳情的換匯手續費與買家實付列掛 `data-od-admin-only`，依 `ztorOrders.isAdminView()` 切 `hidden`；訂單匯出的三個付款幣別欄同樣只在 Admin 加。`js/currency.js` 的 `CODES` 固定四種，下一條提到的新增幣別彈窗、`ztor.currencies.custom` 與 `addCustom()` 已退場。換算（`ztorEvents.fx()`、`orders-store` 的 `roundPay()`）改無條件進位，先 `toFixed(6)` 再 `Math.ceil`。
 
 > **2026-11-06 · D517 新增幣別、訂單價格展開、bookyay 港幣退場（UI-CHANGES 四百八十、ASSUMPTIONS UIA-337）**：沒有新元件；新增幣別彈窗重用 `.payout-dialog` 殼與 zselect 下拉複選，換匯手續費展開重用 row-disclosure。Admin 新增的幣別存 localStorage `ztor.currencies.custom`，由 `js/currency.js` 合併進 `CODES`。下方舊條目提到的 `hkd`、`pin`、`bkyBundleHkd` 已退場。
