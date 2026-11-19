@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2"><link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2"><link rel="stylesheet" href="ds-components/alert.css?v=r2.2"><!-- 匯率告警收件人名單（F7）：重用 tag-input（chip）＋ alert--row -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
@@ -126,6 +127,44 @@
             <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.SGD-TWD">SGD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="SGD-TWD" data-i18n-aria-label="fees.swap.pair.SGD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
     </tbody>
   </table></div></div>
+</section>
+
+<!-- 匯率告警（D542；spec 5.1.0.3 F7，7.15「匯率告警信」）：緊接換匯手續費，General 專用。
+     門檻＝上方各配對的換匯手續費，所以只放唯讀說明、沒有門檻欄位；收件人名單是 Admin 可編輯的 email 名單（重用 tag-input），
+     增刪即時生效、從下一封信起算，不走費率版本也不綁頁面的儲存鈕（F7「生效」）。寄信頻率是唯讀說明。信件示範見 emails/rate-alert-zh.html。
+     名單只放記憶體（沒有持久化），兩筆示範收件人是呈現假設（見 RELEASE2.3-CHANGES）。 -->
+<section class="form-section form-section--outlined" data-feat="S146" id="fee-alert">
+  <div class="form-section__head">
+    <div class="form-section__head-titles">
+      <h3 class="form-section__title" data-i18n="fees.alert.title">Exchange rate alert</h3>
+    </div>
+  </div>
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.alert.sub">When a currency pair’s exchange rate moves in one day by more than its swap fee, an email goes to the people below. It is a heads-up only — no price, fee or rate changes by itself.</p>
+  <div class="field" style="margin-bottom:var(--sp-16)">
+    <div class="field__label" data-i18n="fees.alert.threshold.label">Alert threshold</div>
+    <p class="field__hint field__hint--fact" data-i18n="fees.alert.threshold.text">Each pair’s threshold is its own swap fee in the table above. There is no separate threshold to set — change the fee and the threshold moves with it. A move bigger than the fee sends an email; equal or smaller does not.</p>
+  </div>
+  <div class="field" style="margin-bottom:var(--sp-16)">
+    <label class="field__label" for="fee-alert-entry" data-i18n="fees.alert.recipients.label">Recipients</label>
+    <div style="display:flex;align-items:flex-start;gap:var(--sp-8);flex-wrap:wrap">
+      <div class="tag-input" style="flex:1;min-width:240px">
+        <div class="tag-input__field" id="fee-alert-field">
+          <input class="tag-input__entry" id="fee-alert-entry" type="email" autocomplete="off" placeholder="name@company.com" data-i18n-placeholder="fees.alert.recipients.ph" aria-describedby="fee-alert-err">
+        </div>
+      </div>
+      <button class="btn btn--outline" type="button" id="fee-alert-add" data-i18n="fees.alert.add">Add</button>
+    </div>
+    <p class="field__error" id="fee-alert-err" role="alert" hidden></p>
+    <div class="alert alert--row alert--warning" id="fee-alert-empty" role="status" hidden>
+      <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
+      <div class="alert__body"><div class="alert__title" data-i18n="fees.alert.empty">No recipients right now, so alert emails won’t be sent.</div></div>
+    </div>
+    <p class="field__hint field__hint--fact" data-i18n="fees.alert.recipients.note">Changes apply from the next email. The list is not part of the rate versions, so Save above doesn’t touch it.</p>
+  </div>
+  <div class="field">
+    <div class="field__label" data-i18n="fees.alert.freq.label">Frequency</div>
+    <p class="field__hint field__hint--fact" data-i18n="fees.alert.freq.text">At most one email a day, listing every pair that crossed its threshold that day. No email on days when none did.</p>
+  </div>
 </section>
 
 <!-- F2 預設費率樹（全平台通用）＋F3 費率例外（逐 Creator 覆寫）（spec 5.1.0.3 F2–F3）-->
@@ -737,6 +776,56 @@
         closeDelay();
       });
     }
+
+    /* 匯率告警收件人名單（D542、F7）：記憶體內的 email 名單，增刪即時生效、不走費率版本、不綁儲存鈕。
+       兩筆起始收件人（營運、財務）是示範值。格式不對或重複就不加並在欄位下說明；名單空了顯示提示。 */
+    (function () {
+      var field = document.getElementById('fee-alert-field'),
+          entry = document.getElementById('fee-alert-entry'),
+          addBtn2 = document.getElementById('fee-alert-add'),
+          errEl = document.getElementById('fee-alert-err'),
+          emptyEl = document.getElementById('fee-alert-empty');
+      if (!field || !entry) return;
+      var list = ['ops@example.com', 'finance@example.com'];
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+      function showErr(key) {
+        if (!errEl) return;
+        errEl.hidden = !key;
+        errEl.textContent = key ? t(key) : '';
+        if (key) entry.setAttribute('aria-invalid', 'true'); else entry.removeAttribute('aria-invalid');
+      }
+      function paint() {
+        Array.prototype.forEach.call(field.querySelectorAll('.chip'), function (c) { c.remove(); });
+        list.forEach(function (em) {
+          var chip = document.createElement('span');
+          chip.className = 'chip chip--active chip--removable';
+          chip.innerHTML = '<span>' + esc(em) + '</span><button class="chip__remove" type="button" data-alert-remove="' + esc(em) + '" aria-label="' + esc(t('fees.alert.remove').replace('{email}', em)) + '"><i data-lucide="x" class="ztor-icon"></i></button>';
+          field.insertBefore(chip, entry);
+        });
+        if (window.ztorIcons) window.ztorIcons.applyIcons(field);
+        if (emptyEl) emptyEl.hidden = list.length > 0;
+      }
+      function add() {
+        var v = entry.value.trim();
+        if (!v) return;
+        if (!EMAIL_RE.test(v)) { showErr('fees.alert.err.invalid'); return; }
+        var low = v.toLowerCase();
+        if (list.some(function (x) { return x.toLowerCase() === low; })) { showErr('fees.alert.err.dup'); return; }
+        list.push(v); entry.value = ''; showErr(null); paint();
+      }
+      entry.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); add(); } });
+      entry.addEventListener('input', function () { showErr(null); });
+      if (addBtn2) addBtn2.addEventListener('click', add);
+      field.addEventListener('click', function (e) {
+        var rm = e.target.closest ? e.target.closest('[data-alert-remove]') : null;
+        if (!rm) return;
+        var em = rm.getAttribute('data-alert-remove');
+        list = list.filter(function (x) { return x !== em; });
+        paint();
+      });
+      paint();
+    }());
 
     /* 三分頁切換：沿用 tabs 元件（切 active 態＋顯示對應 panel），並切換工具列右側動作鈕
        （費率設定＝儲存、費率例外＝新增例外、版本歷史＝無）。 */
