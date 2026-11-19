@@ -732,7 +732,7 @@
     'pprom.records.pc.col.total': { en: 'Discount absorbed (period)', zh: '期間累計折抵' },
     'pprom.records.pc.col.orders': { en: 'Orders', zh: '訂單數' },
 
-    'fees.lede':          { en: 'Three fees here: the payment fee (one rate site-wide), the currency swap fee (set per payment currency) and the platform fee (set per transaction type). Saving creates a new version that applies to future sales only — existing sales keep their frozen rate.', zh: '這頁設三種費率：支付手續費（全站共用一個）、換匯手續費（依粉絲付款幣別分別設）與平台費（依交易類型分別設）。儲存即產生新版本、只對之後的交易生效；既有交易沿用凍結費率。' },
+    'fees.lede':          { en: 'Three fees here: the payment fee (one rate site-wide), the currency swap fee (set per currency pair) and the platform fee (set per transaction type). Saving creates a new version that applies to future sales only — existing sales keep their frozen rate.', zh: '這頁設三種費率：支付手續費（全站共用一個）、換匯手續費（依幣別配對分別設）與平台費（依交易類型分別設）。儲存即產生新版本、只對之後的交易生效；既有交易沿用凍結費率。' },
     'fees.tab.settings':  { en: 'Basic settings', zh: '基本設定' },
     'fees.tab.history':   { en: 'Activity log', zh: '操作紀錄' },
     'fees.tab.exceptions': { en: 'Exceptions', zh: '例外設定' },
@@ -798,19 +798,17 @@
     'fees.swap.title':      { en: 'Currency swap fee', zh: '換匯手續費' },
     'fees.swap.sub':        { en: 'Built into the one price the fan sees when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.', zh: '粉絲付款幣別與品項基準幣別不同時，併進粉絲看到的單一價格；相同時不收。歸平台，不計入創作者收入。' },
     'fees.swap.fx-note':    { en: 'Exchange rates update automatically every day and can’t be edited. Only the fee is set here.', zh: '匯率每日自動更新，不能手改；這裡只調手續費。' },
-    'fees.swap.col.cur':    { en: 'Fan pays in', zh: '粉絲付款幣別' },
+    'fees.swap.col.cur':    { en: 'Currency pair', zh: '幣別配對' },
     'fees.swap.col.rate':   { en: 'Fee rate', zh: '費率' },
-    'fees.swap.col.countries': { en: 'Registered countries', zh: '適用註冊國家' },
     /* D539 退場（2026-11-17）：新增幣別彈窗的字（fees.swap.add*、fees.swap.added、示範國家清單 fees.country.KR…CA）、
-       第五種幣別的名稱（fees.leaf.swap 與 currency.name 那兩條）與 fees.country.JP——幣別只剩四種，日本歸「其他國家」。 */
-    'fees.country.other':   { en: 'All other countries', zh: '其他國家' },
-    'fees.country.TW':      { en: 'Taiwan', zh: '台灣' },
-    'fees.country.HK':      { en: 'Hong Kong', zh: '香港' },
-    'fees.country.SG':      { en: 'Singapore', zh: '新加坡' },
-    'fees.leaf.swap.USD':   { en: 'USD · US dollar', zh: 'USD · 美元' },
-    'fees.leaf.swap.TWD':   { en: 'TWD · New Taiwan dollar', zh: 'TWD · 新台幣' },
-    'fees.leaf.swap.HKD':   { en: 'HKD · Hong Kong dollar', zh: 'HKD · 港幣' },
-    'fees.leaf.swap.SGD':   { en: 'SGD · Singapore dollar', zh: 'SGD · 新加坡幣' },
+       第五種幣別的名稱（currency.name 那一條）——幣別只剩四種，日本歸「其他國家」。 */
+    /* D540：換匯手續費改依幣別配對（四種幣別兩兩組成六個配對，同配對雙向同費率）；「註冊國家」欄退場，fees.country.* 與 fees.leaf.swap.* 四條一併移除。 */
+    'fees.swap.pair.HKD-USD': { en: 'HKD↔USD', zh: '港幣↔美元' },
+    'fees.swap.pair.HKD-TWD': { en: 'HKD↔TWD', zh: '港幣↔新台幣' },
+    'fees.swap.pair.HKD-SGD': { en: 'HKD↔SGD', zh: '港幣↔新加坡幣' },
+    'fees.swap.pair.USD-TWD': { en: 'USD↔TWD', zh: '美元↔新台幣' },
+    'fees.swap.pair.USD-SGD': { en: 'USD↔SGD', zh: '美元↔新加坡幣' },
+    'fees.swap.pair.SGD-TWD': { en: 'SGD↔TWD', zh: '新加坡幣↔新台幣' },
     'fees.version.title': { en: 'Rate version & effective scope', zh: '費率版本與生效範圍' },
     'fees.version.current': { en: 'Current version', zh: '目前版本' },
     'fees.version.effective': { en: 'Effective from', zh: '生效時間' },
