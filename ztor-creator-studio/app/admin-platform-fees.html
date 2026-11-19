@@ -107,64 +107,33 @@
 <!-- 換匯手續費（D514 決定六、七，D540；spec 5.1.0.3 F6）：依幣別配對各一個百分比，由粉絲支付、歸平台。
      版本與儲存跟平台費共用同一顆儲存鈕與版本歷史；逐創作者覆寫在「例外設定」的彈窗（下面的 #fee-swap-table 由頁面 clone 進去）。
      固定六列（USD／TWD／HKD／SGD 兩兩組成六個配對；D540：同配對雙向同費率，JPY 那一列退場）。
-     3% 是示意值、最終數字待 Susan（ASSUMPTIONS UIA-334）；orders-store.js 的 SWAP_PAIR_PCT 是同一份示意值（兩邊要一起改）。 -->
+     3% 是示意值、最終數字待 Susan（ASSUMPTIONS UIA-334）；orders-store.js 的 SWAP_PAIR_PCT 是同一份示意值（兩邊要一起改）。
+     第三欄＝告警門檻（D544、D545）：預設等於該配對手續費（SGD↔TWD 示範 3.5），改手續費即重設同列門檻；必填、大於 0；
+     跟頁面儲存一起存但不是費率版本（只在版本歷史寫一行異動）。例外彈窗 clone 這張表時會拿掉這一欄（告警只有全平台一套）。 -->
 <section class="form-section form-section--outlined" data-feat="S134">
+  <!-- D543：標題列右側「警告設定」開啟匯率告警彈窗（F7），與「示意值」徽章同在 __head-actions 槽。 -->
   <div class="form-section__head form-section__head--actions">
     <div class="form-section__head-titles">
       <h3 class="form-section__title" data-i18n="fees.swap.title">Currency swap fee</h3>
     </div>
-    <span class="badge badge--neutral" data-i18n="fees.swap.sample">Sample rates</span>
+    <div class="form-section__head-actions">
+      <span class="badge badge--neutral" data-i18n="fees.swap.sample">Sample rates</span>
+      <button class="btn btn--outline btn--sm" type="button" id="fee-alert-open" data-feat="S146" aria-haspopup="dialog"><i data-lucide="bell" class="ztor-icon"></i><span data-i18n="fees.alert.open">Alert settings</span></button>
+    </div>
   </div>
   <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.swap.sub">Added to what the fan pays when their payment currency differs from the item’s base currency. No fee when the two match. It goes to the platform and never counts toward creator earnings.</p>
   <div class="fee-tree__panel"><div class="admin-table-wrap"><table class="ztor-table" id="fee-swap-table">
-    <thead><tr><th data-i18n="fees.swap.col.cur">Currency pair</th><th data-i18n="fees.swap.col.rate">Fee rate</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
+    <thead><tr><th data-i18n="fees.swap.col.cur">Currency pair</th><th data-i18n="fees.swap.col.rate">Fee</th><th data-i18n="fees.alert.col.threshold">Alert threshold</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
     <tbody>
-            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-USD">HKD↔USD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-USD" data-i18n-aria-label="fees.swap.pair.HKD-USD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-TWD">HKD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-TWD" data-i18n-aria-label="fees.swap.pair.HKD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-SGD">HKD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-SGD" data-i18n-aria-label="fees.swap.pair.HKD-SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-TWD">USD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="USD-TWD" data-i18n-aria-label="fees.swap.pair.USD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-SGD">USD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="USD-SGD" data-i18n-aria-label="fees.swap.pair.USD-SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.SGD-TWD">SGD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="SGD-TWD" data-i18n-aria-label="fees.swap.pair.SGD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-USD">HKD↔USD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-USD" data-i18n-aria-label="fees.swap.pair.HKD-USD"><span class="amount-field__unit">%</span></span></td><td class="fee-th-cell"><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-th-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" required data-th-pair="HKD-USD" aria-label="HKD-USD" aria-describedby="fee-th-err-HKD-USD"><span class="amount-field__unit">%</span></span><p class="field__error" id="fee-th-err-HKD-USD" role="alert" hidden></p></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-TWD">HKD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-TWD" data-i18n-aria-label="fees.swap.pair.HKD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-th-cell"><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-th-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" required data-th-pair="HKD-TWD" aria-label="HKD-TWD" aria-describedby="fee-th-err-HKD-TWD"><span class="amount-field__unit">%</span></span><p class="field__error" id="fee-th-err-HKD-TWD" role="alert" hidden></p></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.HKD-SGD">HKD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="HKD-SGD" data-i18n-aria-label="fees.swap.pair.HKD-SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-th-cell"><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-th-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" required data-th-pair="HKD-SGD" aria-label="HKD-SGD" aria-describedby="fee-th-err-HKD-SGD"><span class="amount-field__unit">%</span></span><p class="field__error" id="fee-th-err-HKD-SGD" role="alert" hidden></p></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-TWD">USD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="USD-TWD" data-i18n-aria-label="fees.swap.pair.USD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-th-cell"><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-th-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" required data-th-pair="USD-TWD" aria-label="USD-TWD" aria-describedby="fee-th-err-USD-TWD"><span class="amount-field__unit">%</span></span><p class="field__error" id="fee-th-err-USD-TWD" role="alert" hidden></p></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.USD-SGD">USD↔SGD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="USD-SGD" data-i18n-aria-label="fees.swap.pair.USD-SGD"><span class="amount-field__unit">%</span></span></td><td class="fee-th-cell"><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-th-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" required data-th-pair="USD-SGD" aria-label="USD-SGD" aria-describedby="fee-th-err-USD-SGD"><span class="amount-field__unit">%</span></span><p class="field__error" id="fee-th-err-USD-SGD" role="alert" hidden></p></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.swap.pair.SGD-TWD">SGD↔TWD</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" min="0" step="0.1" value="3" data-general="3" aria-label="SGD-TWD" data-i18n-aria-label="fees.swap.pair.SGD-TWD"><span class="amount-field__unit">%</span></span></td><td class="fee-th-cell"><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-th-input" type="number" inputmode="decimal" min="0" step="0.1" value="3.5" required data-th-pair="SGD-TWD" aria-label="SGD-TWD" aria-describedby="fee-th-err-SGD-TWD"><span class="amount-field__unit">%</span></span><p class="field__error" id="fee-th-err-SGD-TWD" role="alert" hidden></p></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
     </tbody>
   </table></div></div>
-</section>
-
-<!-- 匯率告警（D542；spec 5.1.0.3 F7，7.15「匯率告警信」）：緊接換匯手續費，General 專用。
-     門檻＝上方各配對的換匯手續費，所以只放唯讀說明、沒有門檻欄位；收件人名單是 Admin 可編輯的 email 名單（重用 tag-input），
-     增刪即時生效、從下一封信起算，不走費率版本也不綁頁面的儲存鈕（F7「生效」）。寄信頻率是唯讀說明。信件示範見 emails/rate-alert-zh.html。
-     名單只放記憶體（沒有持久化），兩筆示範收件人是呈現假設（見 RELEASE2.3-CHANGES）。 -->
-<section class="form-section form-section--outlined" data-feat="S146" id="fee-alert">
-  <div class="form-section__head">
-    <div class="form-section__head-titles">
-      <h3 class="form-section__title" data-i18n="fees.alert.title">Exchange rate alert</h3>
-    </div>
-  </div>
-  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.alert.sub">When a currency pair’s exchange rate moves in one day by more than its swap fee, an email goes to the people below. It is a heads-up only — no price, fee or rate changes by itself.</p>
-  <div class="field" style="margin-bottom:var(--sp-16)">
-    <div class="field__label" data-i18n="fees.alert.threshold.label">Alert threshold</div>
-    <p class="field__hint field__hint--fact" data-i18n="fees.alert.threshold.text">Each pair’s threshold is its own swap fee in the table above. There is no separate threshold to set — change the fee and the threshold moves with it. A move bigger than the fee sends an email; equal or smaller does not.</p>
-  </div>
-  <div class="field" style="margin-bottom:var(--sp-16)">
-    <label class="field__label" for="fee-alert-entry" data-i18n="fees.alert.recipients.label">Recipients</label>
-    <div style="display:flex;align-items:flex-start;gap:var(--sp-8);flex-wrap:wrap">
-      <div class="tag-input" style="flex:1;min-width:240px">
-        <div class="tag-input__field" id="fee-alert-field">
-          <input class="tag-input__entry" id="fee-alert-entry" type="email" autocomplete="off" placeholder="name@company.com" data-i18n-placeholder="fees.alert.recipients.ph" aria-describedby="fee-alert-err">
-        </div>
-      </div>
-      <button class="btn btn--outline" type="button" id="fee-alert-add" data-i18n="fees.alert.add">Add</button>
-    </div>
-    <p class="field__error" id="fee-alert-err" role="alert" hidden></p>
-    <div class="alert alert--row alert--warning" id="fee-alert-empty" role="status" hidden>
-      <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
-      <div class="alert__body"><div class="alert__title" data-i18n="fees.alert.empty">No recipients right now, so alert emails won’t be sent.</div></div>
-    </div>
-    <p class="field__hint field__hint--fact" data-i18n="fees.alert.recipients.note">Changes apply from the next email. The list is not part of the rate versions, so Save above doesn’t touch it.</p>
-  </div>
-  <div class="field">
-    <div class="field__label" data-i18n="fees.alert.freq.label">Frequency</div>
-    <p class="field__hint field__hint--fact" data-i18n="fees.alert.freq.text">At most one email a day, listing every pair that crossed its threshold that day. No email on days when none did.</p>
-  </div>
+  <p class="field__hint field__hint--fact" style="margin:var(--sp-8) 0 0" data-i18n="fees.alert.threshold.hint">Alert threshold: each pair starts at its fee. Changing a fee resets that pair’s threshold to the new fee; you can still enter a different number before saving. A one-day rate move bigger than the threshold sends an alert email. Thresholds are saved with the page’s Save but aren’t a fee version — they apply from the next daily check.</p>
 </section>
 
 <!-- F2 預設費率樹（全平台通用）＋F3 費率例外（逐 Creator 覆寫）（spec 5.1.0.3 F2–F3）-->
@@ -335,6 +304,43 @@
   </section>
 </div>
 
+<!-- 匯率告警設定彈窗（D542、D543，D545 修訂；spec 5.1.0.3 F7，7.15「匯率告警信」）：由換匯手續費標題列「警告設定」開啟。
+     彈窗類型＝5.1.8 第 1 類「填寫送出」（取消＋儲存）；外殼 Modal shell（payout-modal）。
+     內容只有開頭一段說明（做什麼、多久檢查一次、修改何時生效）＋收件人名單（tag-input chip）；逐配對門檻在 #fee-swap-table 第三欄。
+     修改先存在草稿，按儲存才生效、取消放棄；有未儲存修改時關閉（×、Esc、遮罩、取消）先用 ztorDialog 確認。
+     名單不走費率版本、不綁頁面的儲存鈕，只放記憶體（呈現假設，見 RELEASE2.3-CHANGES）。 -->
+<div class="payout-modal" id="fee-alert-modal" data-feat="S146" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="fee-alert-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="fee-alert-title" data-i18n="fees.alert.title">Exchange rate alert settings</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="dlg.close" data-fee-alert-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.alert.sub">Sends the recipients below an email when a currency pair’s exchange rate moves in one day by more than the alert threshold set in the Currency swap fee table. It’s a heads-up only — no price, fee or rate changes. Rates are checked once a day after they update, with at most one email a day; recipient changes apply from the next email.</p>
+      <div class="field">
+        <label class="field__label" for="fee-alert-entry" data-i18n="fees.alert.recipients.label">Recipients</label>
+        <div style="display:flex;align-items:flex-start;gap:var(--sp-8);flex-wrap:wrap">
+          <div class="tag-input" style="flex:1;min-width:240px">
+            <div class="tag-input__field" id="fee-alert-field">
+              <input class="tag-input__entry" id="fee-alert-entry" type="email" autocomplete="off" placeholder="name@company.com" data-i18n-placeholder="fees.alert.recipients.ph" aria-describedby="fee-alert-err">
+            </div>
+          </div>
+          <button class="btn btn--outline" type="button" id="fee-alert-add" data-i18n="fees.alert.add">Add</button>
+        </div>
+        <p class="field__error" id="fee-alert-err" role="alert" hidden></p>
+        <div class="alert alert--row alert--warning" id="fee-alert-empty" role="status" hidden>
+          <span class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></span>
+          <div class="alert__body"><div class="alert__title" data-i18n="fees.alert.empty">No recipients right now, so alert emails won’t be sent.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="payout-dialog__foot" style="display:flex;gap:var(--sp-8);justify-content:flex-end;padding:var(--sp-16) var(--sp-24) var(--sp-24)">
+      <button class="btn btn--ghost" type="button" data-fee-alert-close data-i18n="fees.exc.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="fee-alert-save" data-i18n="fees.alert.save">Save</button>
+    </div>
+  </section>
+</div>
+
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
@@ -342,6 +348,7 @@
 <script src="js/events-store.js?v=r2.2"></script><!-- 幣別換算的匯率表（D316：js/currency.js 委派 ztorEvents.fx） -->
 <script src="js/currency.js?v=r2.2"></script><!-- 平台基準幣別（D316）：固定額的符號與換算讀數 -->
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
+<script src="js/ztor-dialog.js?v=r2.2"></script><!-- 匯率告警彈窗：有未儲存修改時關閉前的確認（5.1.8） -->
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
      結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫、逐葉粒度，D141）。
@@ -536,6 +543,8 @@
         swapHost.innerHTML = '';
         swapClone = swapTable.cloneNode(true);
         swapClone.removeAttribute('id');
+        /* 告警門檻欄（D544）只屬於全平台設定，例外彈窗不放：拿掉欄名與每列的門檻格（連同錯誤訊息的 id，避免重複 id） */
+        Array.prototype.forEach.call(swapClone.querySelectorAll('th[data-i18n="fees.alert.col.threshold"], td.fee-th-cell'), function (c) { c.parentNode.removeChild(c); });
         Array.prototype.forEach.call(swapClone.querySelectorAll('.fee-src'), function (c) { c.hidden = false; });
         Array.prototype.forEach.call(swapClone.querySelectorAll('tbody tr'), function (tr) {
           /* 清除覆寫＝來源徽章旁一顆小圖示鈕：彈窗窄，多開一欄會撐出橫向捲軸 */
@@ -750,19 +759,110 @@
       });
       return out.join('、') || '—';
     }
+    /* 告警門檻（D543 修訂、D544、D545；F6 表格第三欄）：一般數值、必填、必須大於 0；預設＝該配對手續費。
+       改某列手續費時，同一列門檻立刻被設成新手續費（蓋掉自訂值），之後仍可在儲存前另填。
+       跟著頁面儲存鈕一起存，但不是費率版本：
+       只改門檻時不產生版本列，改在版本歷史表寫一行「告警門檻 · 配對：舊 → 新」（版本欄留 —）；
+       延遲生效不延後門檻，門檻從下一次每日檢查起生效（推導，呈現假設）。
+       起始：SGD↔TWD 3.5%（對應 emails/rate-alert-zh.html 範例），其餘 3%（與手續費相同）。 */
+    function thInputs() { return swapTable ? Array.prototype.slice.call(swapTable.querySelectorAll('.fee-th-input')) : []; }
+    function thCode(inp) { return inp.getAttribute('data-th-pair'); }
+    function pairLabel(k) { return t('fees.swap.pair.' + k, k.replace('-', '↔')); }
+    var thSaved = {};
+    thInputs().forEach(function (inp) { thSaved[thCode(inp)] = inp.value; });
+    var thReset = {};   // 這一輪因手續費改動而被重設的配對（寫異動行時加註「隨手續費重設」）
+    function thLabel() {
+      thInputs().forEach(function (inp) { inp.setAttribute('aria-label', t('fees.alert.col.threshold', 'Alert threshold') + ' · ' + pairLabel(thCode(inp))); });
+    }
+    function thInvalid(inp) {
+      if (inp.validity && inp.validity.badInput) return true;
+      if (inp.value === '') return true;
+      var n = Number(inp.value);
+      return !isFinite(n) || n <= 0;
+    }
+    function showThErr(inp) {
+      var el = document.getElementById('fee-th-err-' + thCode(inp)), bad = thInvalid(inp);
+      if (el) { el.hidden = !bad; el.textContent = bad ? t('fees.alert.err.threshold', 'Enter a number greater than 0.') : ''; }
+      if (bad) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+      return bad;
+    }
+    /* 儲存前檢查：有不合格的門檻就擋下整個儲存、焦點移到第一個錯的欄位 */
+    function thBlocked() {
+      var firstBad = null;
+      thInputs().forEach(function (inp) { if (showThErr(inp) && !firstBad) firstBad = inp; });
+      if (firstBad) { firstBad.focus(); return true; }
+      return false;
+    }
+    function thText(v) { return v + '%'; }
+    /* 門檻異動：每個改過的配對在版本歷史寫一行（不是版本），存完以新值為基準 */
+    function thLog() {
+      var n = 0;
+      thInputs().forEach(function (inp) {
+        var k = thCode(inp), v = String(Number(inp.value)), wasReset = thReset[k];
+        delete thReset[k];
+        if (v === thSaved[k]) return;
+        addLog(t('fees.alert.col.threshold', 'Alert threshold') + ' · ' + pairLabel(k), thText(thSaved[k]) + ' → ' + thText(v) + (wasReset ? t('fees.alert.th.reset', ' (reset with fee)') : ''));
+        thSaved[k] = v; inp.value = v; n++;
+      });
+      return n;
+    }
+    function addLog(scope, change) {
+      var hist = document.getElementById('fee-history-body');
+      if (!hist) return;
+      var tr = document.createElement('tr');
+      [['ztor-table__feature', '—'], ['', todayISO()], ['', scope], ['text-sub', change]].forEach(function (c) {
+        var td = document.createElement('td');
+        if (c[0]) td.className = c[0];
+        td.textContent = c[1];
+        tr.appendChild(td);
+      });
+      hist.insertBefore(tr, hist.firstChild);
+    }
+    /* 其他費率欄（平台費樹、支付手續費、換匯手續費）有沒有改：只改門檻時不該產生費率版本 */
+    function rateInputs() {
+      var panel = document.querySelector('.tab-panel[data-panel="settings"]');
+      return panel ? Array.prototype.slice.call(panel.querySelectorAll('input')).filter(function (i) { return !i.classList.contains('fee-th-input'); }) : [];
+    }
+    var rateSaved = rateInputs().map(function (i) { return i.value; });
+    function ratesDirty() { return rateInputs().some(function (i, n) { return i.value !== rateSaved[n]; }); }
+    /* 一次儲存：門檻先寫異動行；費率沒改且有門檻異動 → 不產生版本；其餘照舊寫一筆版本 */
+    function doSave(eff) {
+      var feeDirty = ratesDirty(), thCount = thLog();
+      if (!feeDirty && thCount) return;
+      addHistory(t('fees.scope.default', 'Default rates'), swapChange(), eff);
+      rateSaved = rateInputs().map(function (i) { return i.value; });
+    }
+    if (swapTable) {
+      swapTable.addEventListener('input', function (e) {
+        var inp = e.target;
+        if (inp.classList.contains('fee-th-input')) { delete thReset[thCode(inp)]; showThErr(inp); }   // 使用者自己改門檻：不再算「隨手續費重設」
+        else if (inp.classList.contains('fee-rate-input')) {
+          var th = inp.closest('tr').querySelector('.fee-th-input');
+          if (th) { th.value = inp.value; thReset[thCode(th)] = true; if (!thInvalid(th)) showThErr(th); }   // 改手續費 → 同列門檻立刻重設成新手續費（打字途中不跳錯，只清掉舊錯誤；儲存時再檢查）
+        }
+      });
+    }
+    thLabel();
+    document.addEventListener('ztor:lang-changed', function () {
+      thLabel();
+      thInputs().forEach(function (inp) { if (inp.getAttribute('aria-invalid')) showThErr(inp); });
+    });
+
     function closeDelay() { if (delayModal) delayModal.hidden = true; }
     function openDelay() { if (delayModal) delayModal.hidden = false; }
     if (saveNow) saveNow.addEventListener('click', function () {
-      addHistory(t('fees.scope.default', 'Default rates'), swapChange(), todayISO());   // 主鈕＝立即生效
+      if (thBlocked()) return;
+      doSave(todayISO());   // 主鈕＝立即生效
     });
     if (saveDD) saveDD.addEventListener('click', function (e) {
       var it = e.target.closest ? e.target.closest('[data-save]') : null;
       if (!it) return;
       saveDD.open = false;   // 選完收下拉
+      if (thBlocked()) return;
       if (it.getAttribute('data-save') === 'now') {
-        addHistory(t('fees.scope.default', 'Default rates'), swapChange(), todayISO());   // 立即：今天生效
+        doSave(todayISO());   // 立即：今天生效
       } else {
-        openDelay();   // 延遲：開生效日彈窗
+        openDelay();   // 延遲：開生效日彈窗（門檻不延後，按確認時一起寫異動行）
       }
     });
     if (delayModal) {
@@ -772,59 +872,109 @@
       var delayConfirm = document.getElementById('fee-delay-confirm');
       if (delayConfirm) delayConfirm.addEventListener('click', function () {
         var effEl = document.getElementById('fee-effective'), eff = effEl ? effEl.value : '';
-        addHistory(t('fees.scope.default', 'Default rates'), swapChange(), eff || todayISO());
+        if (thBlocked()) { closeDelay(); return; }
+        doSave(eff || todayISO());
         closeDelay();
       });
     }
 
-    /* 匯率告警收件人名單（D542、F7）：記憶體內的 email 名單，增刪即時生效、不走費率版本、不綁儲存鈕。
-       兩筆起始收件人（營運、財務）是示範值。格式不對或重複就不加並在欄位下說明；名單空了顯示提示。 */
+    /* 匯率告警設定彈窗（D542、D543，D545 修訂；F7）：收件人名單，記憶體內示範、不走費率版本、不綁頁面的儲存鈕。
+       逐配對門檻在 F6 表格第三欄（見上方「告警門檻」段），彈窗只留一段說明＋收件人。
+       saved＝已生效的名單；開窗時複製成 draft，所有修改只動 draft，按儲存才寫回 saved，取消／關閉就丟掉 draft。
+       起始收件人（營運、財務）是示範值。 */
     (function () {
-      var field = document.getElementById('fee-alert-field'),
+      var modal = document.getElementById('fee-alert-modal'),
+          openBtn = document.getElementById('fee-alert-open'),
+          field = document.getElementById('fee-alert-field'),
           entry = document.getElementById('fee-alert-entry'),
           addBtn2 = document.getElementById('fee-alert-add'),
           errEl = document.getElementById('fee-alert-err'),
-          emptyEl = document.getElementById('fee-alert-empty');
-      if (!field || !entry) return;
-      var list = ['ops@example.com', 'finance@example.com'];
+          emptyEl = document.getElementById('fee-alert-empty'),
+          saveBtn = document.getElementById('fee-alert-save');
+      if (!modal || !openBtn || !field || !entry) return;
+      var saved = { list: ['ops@example.com', 'finance@example.com'] };
+      var draft = null;
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+      function clone(o) { return { list: o.list.slice() }; }
+
+      /* 收件人 chip 編輯器（沿用 D542）：格式不對或重複（不分大小寫）就不加並在欄位下說明；名單空了顯示提示 */
       function showErr(key) {
         if (!errEl) return;
         errEl.hidden = !key;
         errEl.textContent = key ? t(key) : '';
         if (key) entry.setAttribute('aria-invalid', 'true'); else entry.removeAttribute('aria-invalid');
       }
-      function paint() {
+      function paintList() {
         Array.prototype.forEach.call(field.querySelectorAll('.chip'), function (c) { c.remove(); });
-        list.forEach(function (em) {
+        draft.list.forEach(function (em) {
           var chip = document.createElement('span');
           chip.className = 'chip chip--active chip--removable';
           chip.innerHTML = '<span>' + esc(em) + '</span><button class="chip__remove" type="button" data-alert-remove="' + esc(em) + '" aria-label="' + esc(t('fees.alert.remove').replace('{email}', em)) + '"><i data-lucide="x" class="ztor-icon"></i></button>';
           field.insertBefore(chip, entry);
         });
         if (window.ztorIcons) window.ztorIcons.applyIcons(field);
-        if (emptyEl) emptyEl.hidden = list.length > 0;
+        if (emptyEl) emptyEl.hidden = draft.list.length > 0;
       }
-      function add() {
+      function addRecipient() {
         var v = entry.value.trim();
         if (!v) return;
         if (!EMAIL_RE.test(v)) { showErr('fees.alert.err.invalid'); return; }
         var low = v.toLowerCase();
-        if (list.some(function (x) { return x.toLowerCase() === low; })) { showErr('fees.alert.err.dup'); return; }
-        list.push(v); entry.value = ''; showErr(null); paint();
+        if (draft.list.some(function (x) { return x.toLowerCase() === low; })) { showErr('fees.alert.err.dup'); return; }
+        draft.list.push(v); entry.value = ''; showErr(null); paintList();
       }
-      entry.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); add(); } });
+      entry.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addRecipient(); } });
       entry.addEventListener('input', function () { showErr(null); });
-      if (addBtn2) addBtn2.addEventListener('click', add);
+      if (addBtn2) addBtn2.addEventListener('click', addRecipient);
       field.addEventListener('click', function (e) {
         var rm = e.target.closest ? e.target.closest('[data-alert-remove]') : null;
         if (!rm) return;
         var em = rm.getAttribute('data-alert-remove');
-        list = list.filter(function (x) { return x !== em; });
-        paint();
+        draft.list = draft.list.filter(function (x) { return x !== em; });
+        paintList();
       });
-      paint();
+
+      /* 開關與未儲存確認 */
+      function isDirty() {
+        if (!draft) return false;
+        if (entry.value.trim()) return true;
+        return draft.list.join('\n') !== saved.list.join('\n');
+      }
+      function openAlert() {
+        draft = clone(saved);
+        entry.value = ''; showErr(null);
+        paintList();
+        modal.hidden = false;
+        document.body.classList.add('is-modal-open');
+        i18n(modal);
+        entry.focus();
+      }
+      function closeAlert() {
+        modal.hidden = true;
+        draft = null;
+        if (!document.querySelector('.payout-modal:not([hidden])')) document.body.classList.remove('is-modal-open');
+        openBtn.focus();
+      }
+      function requestClose() {
+        if (!isDirty() || !window.ztorDialog) { closeAlert(); return; }
+        window.ztorDialog.confirm({
+          title: t('fees.alert.discard.title', 'Discard changes?'),
+          body: t('fees.alert.discard.body', 'Your changes to recipients haven’t been saved. They’ll be lost if you close.'),
+          okLabel: t('fees.alert.discard.ok', 'Discard'),
+          cancelLabel: t('fees.alert.discard.keep', 'Keep editing'),
+          danger: true
+        }).then(function (ok) { if (ok) closeAlert(); });
+      }
+      openBtn.addEventListener('click', openAlert);
+      Array.prototype.forEach.call(modal.querySelectorAll('[data-fee-alert-close]'), function (b) { b.addEventListener('click', requestClose); });
+      modal.addEventListener('click', function (e) { if (e.target === modal) requestClose(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) requestClose(); });
+      if (saveBtn) saveBtn.addEventListener('click', function () {
+        saved = clone(draft);
+        entry.value = '';
+        closeAlert();
+      });
     }());
 
     /* 三分頁切換：沿用 tabs 元件（切 active 態＋顯示對應 panel），並切換工具列右側動作鈕
