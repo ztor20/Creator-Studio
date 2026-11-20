@@ -1083,7 +1083,6 @@
     'currency.name.TWD':      { en: 'New Taiwan Dollar',     zh: '新台幣' },
     'currency.name.HKD':      { en: 'Hong Kong Dollar',      zh: '港幣' },
     'currency.name.SGD':      { en: 'Singapore Dollar',      zh: '新加坡幣' },
-    'currency.name.JPY':      { en: 'Japanese Yen',          zh: '日圓' },
     /* 墓碑 2026-09-24（D326）：'currency.contact-support'（欲更改幣別請聯繫客服）——
        暗示客服改得掉，但 D316 定案創作者與 Admin 都不能改（使用者 2026-09-24 重申「無法更改」）。
        換成只陳述事實的 'currency.fixed'，消費頁同樣是 settings／store-settings 那一格。 */
