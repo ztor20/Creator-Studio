@@ -22,7 +22,7 @@
      （名冊三位示範 creator）退回 DEFAULT 'TWD'——與 js/events-store.js 的
      DEFAULT_CURRENCY 同一個值（示範資料的價格就是用它寫的），兩邊不得各說各話。
      CREATOR 是 getter：每次讀都重新解析，宿主頁 script 的先後順序不影響結果。
-   · CODES＝幣別值域，全站唯一一份（主規格 §7.15：USD／TWD／HKD／SGD／JPY）。
+   · CODES＝幣別值域，全站唯一一份（V2 固定四種：USD／TWD／HKD／SGD；release2.3 v1.8 依產品方確認拿掉第五種）。
      建立 creator 的下拉選單就是從這裡長出來的，頁面不自己寫一份清單。
    · BASE＝平台基準幣別，平台自己的營運記帳幣別，預設 'HKD'，與任何一位創作者無關。
      站上**不存在「全站幣別」**這個概念（D316 裁決 B）。
@@ -37,7 +37,7 @@
   'use strict';
 
   var DEFAULT = 'TWD';
-  var CODES   = ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
+  var CODES   = ['USD', 'TWD', 'HKD', 'SGD'];
 
   /* 目前這位 creator 的幣別（D326）。先找 sidebar.js 的名冊（window.ztorCreator.list）；
      sidebar.js 還沒載入的頁面（currency.js 排在它前面的 settings／store-settings）

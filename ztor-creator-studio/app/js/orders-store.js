@@ -171,7 +171,7 @@
      這批電子商店示範訂單的創作者幣別是 USD（與創作者預設 TWD 不同，只是示範資料沿用，ASSUMPTIONS UIA-334），
      買家在台灣、以 TWD 付款，所以跨幣別是常態。刻意留兩個對照：
        ZT-10470 買家在舊金山（USD）＝同幣別，fx 為 null，驗證「同幣別不產生換算列」（§2.3.2）
-       ZT-10469 純數位、無寄送地址的海外買家（JPY），讓幣別不只一種
+       ZT-10469 純數位、無寄送地址的海外買家（HKD；release2.3 v1.8 依產品方確認 V2 只有四種幣別，改成港幣），讓幣別不只一種
      下方資料裡的 fx.paid ＝（商品金額＋運費）× 匯率；applySwap() 再加上換匯手續費。 */
   var ORDERS = [
     {
@@ -935,7 +935,7 @@
       ],
       amounts: { goods: '$18.50', shipping: '', platform: '−$2.78', payment: '−$0.44', net: '$15.28' },
       total: '$18.50', totalAmt: 18.5,
-            fx: { currency: 'JPY', paid: '¥2,905', rate: '1 USD = 157 JPY' },
+            fx: { currency: 'HKD', paid: 'HK$144.30', rate: '1 USD = 7.8 HKD' },
       delivery: { methodKey: 'od.dig.method.instant', on: '2026-06-04', downloads: '5' }
     },
     {
@@ -1191,7 +1191,7 @@
   /* 換匯手續費（D514、D540）：依幣別配對各一個費率，同配對兩個方向同費率；六個配對起始都是 3%，最終數字待 Susan（ASSUMPTIONS UIA-334）。
      示範費率與 admin-platform-fees.html 換匯手續費表的示意值同一份（兩邊要一起改）；訂單上是成交當下凍結的值，之後調費率不改既有訂單。
      原型把幣別配對與費率記在訂單層（o.fx.swap），規格是記在訂單品項層，這是呈現簡化。
-     release2.3 還留著 JPY 示範訂單（ZT-10469）：JPY 沒有配對費率，查不到配對就不收（pair 為 null、pct 為 0）。
+     查不到配對就不收（pair 為 null、pct 為 0）；release2.3 v1.8 起幣別只剩四種、六個配對涵蓋全部組合，示範資料不會走到這條退路。
      這張表是唯一查表來源：swapPairKey(a, b) 不分方向。 */
   var SWAP_PAIR_PCT = { 'HKD-USD': 3, 'HKD-TWD': 3, 'HKD-SGD': 3, 'USD-TWD': 3, 'USD-SGD': 3, 'SGD-TWD': 3 };
   function swapPairKey(a, b) {
@@ -1199,13 +1199,12 @@
     if (SWAP_PAIR_PCT[b + '-' + a] !== undefined) return b + '-' + a;
     return null;
   }
-  var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
+  var PAY_SYMBOL = { TWD: 'NT$', USD: 'US$', HKD: 'HK$', SGD: 'S$' };   // V2 只有四種幣別（release2.3 v1.8）
   function numOf(str) { return Number(String(str || '').replace(/[^0-9.]/g, '')) || 0; }
   function payMoney(cur, n) {
-    var dec = cur === 'JPY' ? 0 : 2;
-    return PAY_SYMBOL[cur] + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    return PAY_SYMBOL[cur] + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
-  function roundPay(cur, n) { return cur === 'JPY' ? Math.round(n) : Math.round(n * 100) / 100; }
+  function roundPay(cur, n) { return Math.round(n * 100) / 100; }
   function applySwap(o) {
     var f = o.fx;
     if (!f || f.swap !== undefined) return;

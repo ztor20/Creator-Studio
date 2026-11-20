@@ -2708,14 +2708,14 @@
          即使活動本身是 bookyay 帶入（§7.15「含 bookyay 票券的組合包」）。
        · `priceOf(ev, tier)`／`bundlePriceOf(ev, b)` 收成一個 priceObj `{ base, amount, locked, pin }`，
          `priceIn(priceObj, cur)` 依「鎖定價優先、否則換算」取價。
-     匯率是**固定示範值**（ASSUMPTIONS PG-035：1 USD = 31.5 TWD／157 JPY；本輪補 7.8 HKD／1.35 SGD），
+     匯率是**固定示範值**（ASSUMPTIONS PG-035：1 USD = 31.5 TWD；本輪補 7.8 HKD／1.35 SGD；release2.3 v1.8 起只有這四種），
      不隨時間變。D514 決定五定案的時點：平台每天更新一次、畫面用當日匯率、粉絲結帳時鎖定並記進訂單；
      資料來源待工程確認（ASSUMPTIONS UIA-334）。取整：票價整數、四捨五入（§7.15）。
      墓碑 2026-11-05（D514）：逐幣別覆寫（`override`）、基準欄可覆寫（`baseOpen`）、基準價變更保留已改幣別（D415）
      與本機覆寫持久化全部退場；舊的本機覆寫不再讀取。 */
-  var CURRENCIES = ['USD', 'TWD', 'HKD', 'SGD', 'JPY'];
-  var FX_PER_USD = { USD: 1, TWD: 31.5, HKD: 7.8, SGD: 1.35, JPY: 157 };
-  var SYMBOL = { USD: 'US$', TWD: 'NT$', HKD: 'HK$', SGD: 'S$', JPY: '¥' };
+  var CURRENCIES = ['USD', 'TWD', 'HKD', 'SGD'];   // V2 只有四種幣別（release2.3 v1.8）
+  var FX_PER_USD = { USD: 1, TWD: 31.5, HKD: 7.8, SGD: 1.35 };
+  var SYMBOL = { USD: 'US$', TWD: 'NT$', HKD: 'HK$', SGD: 'S$' };
   var DEFAULT_CURRENCY = 'TWD';
   function fx(from, to, amount) {
     var a = Number(amount) || 0;
