@@ -2230,7 +2230,7 @@
             '<span class="form-tally__v"><span data-bd-sets>' + esc(setsNumText(b)) + '</span><small>' + esc(T('cpp.bd.sp.unit.group')) + '</small></span></span></div>' +
         '</div>' +
         '<div class="field__hint" data-bd-sets-why>' + esc(setsWhyText(b)) + '</div>' +
-        /* D513（2026-11-05，同建立組合包三個開關，D496）：不限量（賣完轉預購）與限量標籤互斥；鎖定庫存開著時可售＝鎖定組數（可以是 0）。
+        /* D513（2026-11-05，同建立組合包三個開關，D496）：不限量（D547：原本的不限量、預購暫不做；欄位名沿用 preorder）與限量標籤互斥；鎖定庫存開著時可售＝鎖定組數（可以是 0）。
            墓碑：form-ask「要另設販售上限嗎？」二選一與販售上限列、「要鎖定庫存嗎」二選一。成員沒有限量時不能鎖（lockHintText 說原因）。 */
         '<div class="control-group">' +
           stockSwHTML('preorder', 'cp.unl.title', 'cb.unl.sub', !!b.preorder, !!b.limitedTag) + rule +
