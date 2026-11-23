@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* lab-stock-settings — 「設定庫存量」區段 demo（2026-10-29）。不改原型，只用既有元件，自有樣式 lab- 前綴＋token。
-     一個庫存量欄位＋三個互相獨立的開關：不限量（賣完轉預購）／限量標籤（前台標記）／鎖定庫存（暫時保留一部分不賣）。 */
+     一個庫存量欄位＋三個互相獨立的開關：不限量（不扣庫存、不會售罄；D547 起預購這一版不做）／限量標籤（前台標記）／鎖定庫存（暫時保留一部分不賣）。 */
   /* 不要背景與側欄：只留表單與預覽。星空裝飾（html／body 的偽元素）一併關掉 */
   html::before, html::after, body::before, body::after { display: none; }
   html body { background: var(--background) !important; }
@@ -102,7 +102,7 @@
             <div class="control-row">
               <div>
                 <div class="control-row__main">開啟不限量</div>
-                <div class="control-row__sub">庫存賣完後，可轉為預購，前台可持續以預購下單。</div>
+                <div class="control-row__sub">不扣庫存，商品不會售罄。</div>
               </div>
               <div class="switch" id="lab-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
             </div>
@@ -168,7 +168,7 @@
     el.addEventListener('click', tog);
     el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); tog(); } });
   }
-  bind('lab-sw-unl', 'unl', on => { S.sold = on ? 1e9 : 0; });   /* 開啟不限量：預覽先切到現貨 0，讓人看到預購狀態 */ bind('lab-sw-tag', 'tag'); bind('lab-sw-lock', 'lock');
+  bind('lab-sw-unl', 'unl', () => { S.sold = 0; });   /* 開啟不限量：不扣庫存、不會售罄（D547），預覽回到初始 */ bind('lab-sw-tag', 'tag'); bind('lab-sw-lock', 'lock');
   $('lab-var').querySelectorAll('.segmented__btn').forEach(b => b.addEventListener('click', () => {
     $('lab-var').querySelectorAll('.segmented__btn').forEach(x => x.classList.remove('segmented__btn--active'));
     b.classList.add('segmented__btn--active'); S.multi = b.dataset.v === 'multiple'; S.sold = 0; render();
@@ -224,8 +224,8 @@
     const left = Math.max(0, sellable - S.sold);
     $('lab-pv-tag').hidden = !S.tag;
     const st = $('lab-pv-state'), btn = $('lab-pv-btn');
-    if (left > 0) { st.innerHTML = `尚有 <b>${left}</b> 件`; btn.textContent = '加入購物車'; btn.disabled = false; }
-    else if (S.unl) { st.innerHTML = '尚有 <b>0</b> 件'; btn.textContent = '預購'; btn.disabled = false; }
+    if (S.unl) { st.innerHTML = '不限量'; btn.textContent = '加入購物車'; btn.disabled = false; }   /* D547：不限量不扣庫存、不會售罄；預購這一版不做 */
+    else if (left > 0) { st.innerHTML = `尚有 <b>${left}</b> 件`; btn.textContent = '加入購物車'; btn.disabled = false; }
     else { st.innerHTML = '<b>已售完</b>'; btn.textContent = '已售完'; btn.disabled = true; }
   }
   render();

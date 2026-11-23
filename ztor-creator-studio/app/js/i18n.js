@@ -3793,8 +3793,8 @@
     'product-detail.field.price':   { en: 'Price',         zh: '價格' },
     'product-detail.field.stock':   { en: 'Stock',         zh: '庫存' },
     'product-detail.field.threshold':{ en: 'Low-stock threshold', zh: '低庫存門檻' },
-    'product-detail.threshold.hint':{ en: 'Auto · 10% of your stock cap. Per-product adjustment is coming in a later version.', zh: '自動 · 庫存上限的 10%。逐商品自訂為後續版本功能。' },
-    'product-detail.threshold.custom.hint':{ en: 'Percentage of your stock cap — overrides the 10% default.', zh: '佔庫存上限的百分比，覆寫預設的 10%。' },
+    'product-detail.threshold.hint':{ en: 'Auto · 10% of your stock. Per-product adjustment is coming in a later version.', zh: '自動 · 庫存量的 10%。逐商品自訂為後續版本功能。' },   // D547：以庫存量為基準
+    'product-detail.threshold.custom.hint':{ en: 'Percentage of your stock — overrides the 10% default.', zh: '佔庫存量的百分比，覆寫預設的 10%。' },
     'product-detail.cat.physical':  { en: 'Physical Merchandise', zh: '實體周邊' },
     'product-detail.cat.digital':   { en: 'Digital Merchandise',  zh: '數位商品' },
     'product-detail.cat.special':   { en: 'Special / Premium',    zh: '特別 / 限量' },
@@ -3939,7 +3939,7 @@
     'product-detail.setov.st-sale':   { en: 'On sale',         zh: '開賣' },
     'product-detail.health.title':    { en: 'Stock health',    zh: '庫存健康' },
     'product-detail.health.sub':      { en: 'Read-only snapshot · edit under Pricing &amp; stock', zh: '唯讀快照 · 編輯在「定價與庫存」' },
-    'product-detail.health.thr-meta': { en: 'Auto · 10% of stock cap', zh: '自動 · 庫存上限的 10%' },
+    'product-detail.health.thr-meta': { en: 'Auto · 10% of stock', zh: '自動 · 庫存量的 10%' },
     'product-detail.health.cta':      { en: 'Adjust stock →',  zh: '調整庫存 →' },
     /* 資料驅動：狀態 badge（generic）＋數位內容檔依次分類的上傳格標題／提示＋IP 素材槽 placeholder */
     'product-detail.badge.low2':      { en: 'Needs restock',   zh: '急需補貨' },
@@ -6213,10 +6213,10 @@
     'cp.stock.pool-hint':   { en: 'Locking stock for single sale or a bundle happens on the product page and in the bundle flow.', zh: '鎖定給單售或組合包的量在商品細節頁與建立組合流程設定。' },
     'cp.stock.digital':     { en: 'Copies remaining',                 zh: '剩餘份數' },
     'cp.lowstock':          { en: 'Alert me when running low',        zh: '庫存快不夠時提醒我' },
-    'cp.lowstock.hint':     { en: 'Alerts you at 10% of your stock cap — the default low-stock threshold.', zh: '在庫存降到庫存上限的 10%（預設低庫存門檻）時提醒你。' },
+    'cp.lowstock.hint':     { en: 'Alerts you when 10% of your stock is left — the default low-stock threshold.', zh: '庫存剩 10% 時提醒你（預設低庫存門檻）。' },   // D547：以庫存量為基準，不再寫「庫存上限」
     'cp.lowstock.custom':   { en: 'Custom low-stock threshold', zh: '自訂低庫存門檻' },
-    'cp.lowstock.custom.ph':{ en: '10% of cap', zh: '庫存上限的 10%' },
-    'cp.lowstock.custom.hint':{ en: 'Percentage of your stock cap — overrides the 10% default.', zh: '佔庫存上限的百分比，覆寫預設的 10%。' },
+    'cp.lowstock.custom.ph':{ en: '10% of stock', zh: '庫存量的 10%' },
+    'cp.lowstock.custom.hint':{ en: 'Percentage of your stock — overrides the 10% default.', zh: '佔庫存量的百分比，覆寫預設的 10%。' },
     /* §4.1④ 多規格 Variations (D063) */
     'cp.var.title':         { en: 'Product options',                       zh: '商品選項' },
     'cp.var.sub':           { en: 'Same item in different sizes or colors — each with its own price and stock.', zh: '同款商品的不同尺寸或顏色——各有自己的價格與庫存。' },
@@ -6260,7 +6260,7 @@
     /* §4.1③ 拆塊後的區塊標題（價格／庫存／逐規格表）*/
     'cp.price.title':       { en: 'Pricing',                          zh: '定價' },
     'fpp.badge.limited':    { en: 'Limited',                          zh: '限量' },   // 前台商品頁 .pdp-buy__badge（限量標籤）
-    'cb.unl.sub':           { en: 'After the bundle sells out, switch to pre-order so fans can keep ordering.', zh: '組合包賣完後，可轉為預購，前台可持續以預購下單。' },   // 2026-10-30 組合包庫存設定三開關
+    'cb.unl.sub':           { en: 'No quantity limit on the bundle itself — it sells as long as its items are in stock.', zh: '組合包本身不設數量限制，成員有貨就能賣。' },   // 2026-10-30 組合包庫存設定三開關；D547 不限量＝原本的不限量、預購暫不做
     'cb.tag.sub':           { en: 'Mark this bundle as limited on the storefront.', zh: '在前台標記為限量組合包。' },
     'cb.lock.sub':          { en: 'Lock some member stock for this bundle only; adjust any time.', zh: '暫時把部分成員庫存留給這個組合包，可隨時調整。' },
     'product-detail.lock.multi-hint': { en: 'Per-variation stock on sale isn’t editable here yet.', zh: '多選項逐組合的鎖定庫存量，這一頁還不能改。' },   // D496 商品細節頁
@@ -6268,8 +6268,8 @@
     'cp.sku.sub':           { en: 'Give this item a stock-keeping unit code.', zh: '為這件商品設定庫存單位編號。' },
     'cp.stock.title.set':   { en: 'Set stock quantity',               zh: '設定庫存量' },   // 2026-10-30 實體庫存設定（lab-stock-settings 定案）
     'cp.stock.title.cfg':   { en: 'Stock settings',                   zh: '庫存設定' },
-    'cp.unl.title':         { en: 'Allow pre-orders after sell-out',  zh: '開啟不限量' },
-    'cp.unl.sub':           { en: 'After stock runs out, switch to pre-order so fans can keep ordering.', zh: '庫存賣完後，可轉為預購，前台可持續以預購下單。' },
+    'cp.unl.title':         { en: 'Unlimited stock',                  zh: '開啟不限量' },   // D547：不限量＝不扣庫存、不會售罄；預購這一版不做
+    'cp.unl.sub':           { en: "Stock isn't counted and this item never sells out.", zh: '不扣庫存，商品不會售罄。' },
     'cp.tag.title':         { en: 'Limited-edition tag',              zh: '開啟限量標籤' },
     'cp.tag.sub':           { en: 'Mark this item as limited on the storefront.', zh: '在前台標記為限量商品。' },
     'cp.lock.title':        { en: 'Hold back stock',                  zh: '鎖定庫存' },
