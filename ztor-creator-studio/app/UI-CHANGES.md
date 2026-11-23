@@ -15,6 +15,22 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-23（五百五十一）· 不限量改回不會售罄、預購暫不做；低庫存提醒改以庫存量為基準（A spec · D547）
+
+**標籤**：release2.3
+
+使用者裁決（D547，修訂 D496 決定 2 與 D513 推導 6）：「開啟不限量」回到原本的不限量——實體商品不扣庫存、不會售罄，組合包自己不設數量限制；預購這一版不做。限量標籤只在前台標示。低庫存提醒以庫存量為基準，不再提「庫存上限」。
+
+- `js/i18n.js`：`cp.unl.title` 英文改 Unlimited stock（中文維持「開啟不限量」）；`cp.unl.sub` 改「Stock isn't counted and this item never sells out.／不扣庫存，商品不會售罄。」；`cb.unl.sub` 改「No quantity limit on the bundle itself — it sells as long as its items are in stock.／組合包本身不設數量限制，成員有貨就能賣。」；`cp.lowstock.hint`、`cp.lowstock.custom.ph`、`cp.lowstock.custom.hint`、`product-detail.threshold.hint`、`product-detail.threshold.custom.hint`、`product-detail.health.thr-meta` 拿掉「庫存上限／stock cap」，改以庫存量為基準。
+- `create-product.html`、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`：開關的英文預設字與 aria-label 同步；註解改寫成 D547 的意思。
+- `product-detail.html`：低庫存門檻旁的「≈ N 件」換算，實體改用庫存量當基準（數位限量仍用上限）。
+- `e-shop.html`：庫存欄只有數位限量寫「剩餘 / 上限」，實體商品與組合包只寫可售量（原本寫成「3 / ∞」）；低庫存示範資料的註解改寫。
+- `lab-stock-settings.html`：開啟不限量時預覽不再出現「預購」按鈕，改顯示「不限量」、照常加入購物車。
+- 示範資料：組合包「冬季預購組」改名「冬季保暖組」，說明拿掉「開放預購」（`js/products-store.js`、`e-shop.html`、`design-system-components-flow.html`）；內部 id 不動。
+- `design-system-components-forms.html` 的 control-group 示範句同步；重跑 `gen_design_gallery.py`。
+- 資料欄位名仍叫 `preorder`（意思已是「開啟不限量」），見 ASSUMPTIONS UIA-321 第 8 項。
+- 不新增元件。
+
 ## 2026-11-19（五百五十）· 告警門檻移到換匯手續費表格第三欄，改成一般數值（B 反饋導入 · 修訂 D543／D544）
 
 **標籤**：release2.3、release2.4

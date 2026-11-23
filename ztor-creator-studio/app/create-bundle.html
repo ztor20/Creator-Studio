@@ -290,15 +290,15 @@
       </div>
       <div class="stack">
         <!-- 2026-10-30（使用者：「組合包也要照這個方向改」，同建立商品的 lab-stock-settings）：數量區改成三個開關——
-             開啟不限量（賣完轉預購）／開啟限量標籤（前台標記）／鎖定庫存（沿用既有鎖定機制：鎖定組數＋逐成員分配，D266／D268）。
+             開啟不限量（原本的不限量、預購暫不做，D547）／開啟限量標籤（前台標記）／鎖定庫存（沿用既有鎖定機制：鎖定組數＋逐成員分配，D266／D268）。
              不限量與限量標籤互斥。
              墓碑 2026-11-05（D513）：「販售上限」（限量二選一＋上限組數，D292／D480）與鎖定的二選一 markup 移除，鎖定只由第三個開關控制；
              開著時可售＝鎖定套數（可以是 0），關閉才是不鎖定。 -->
         <div class="control-group" data-cb-stock-sw>
           <div class="control-row">
             <div>
-              <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
-              <div class="control-row__sub" data-i18n="cb.unl.sub">After the bundle sells out, switch to pre-order so fans can keep ordering.</div>
+              <div class="control-row__main" data-i18n="cp.unl.title">Unlimited stock</div>
+              <div class="control-row__sub" data-i18n="cb.unl.sub">No quantity limit on the bundle itself — it sells as long as its items are in stock.</div>
             </div>
             <div class="switch" id="cb-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
           </div>
@@ -1380,7 +1380,7 @@
     discToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   }
 
-  /* ── 三個開關（2026-10-30，同建立商品）：不限量（賣完轉預購）與限量標籤互斥；鎖定庫存開關見 setLockOn（D513） ── */
+  /* ── 三個開關（2026-10-30，同建立商品）：不限量（D547：原本的不限量，預購暫不做；欄位名沿用 preorder）與限量標籤互斥；鎖定庫存開關見 setLockOn（D513） ── */
   const swUnl = document.getElementById('cb-sw-unl'), swTag = document.getElementById('cb-sw-tag'), swLock = document.getElementById('cb-sw-lock');
   function syncBundleSw() {
     const lockYes = !!lockBody && !lockBody.hidden;
@@ -2167,7 +2167,7 @@
       /* D471：組合包自己的核銷場次（選填；null＝繼承，各成員沿用自己商品的場次） */
       pickupSession: cbPickupApi ? cbPickupApi.get() : null,
       lockSets: bundleDraft.lockSets,
-      preorder: !!bundleDraft.preorder, limitedTag: !!bundleDraft.limitedTag,   /* 2026-10-30 呈現假設（UIA-321）：賣完轉預購／前台限量標籤 */
+      preorder: !!bundleDraft.preorder, limitedTag: !!bundleDraft.limitedTag,   /* 2026-10-30 呈現假設（UIA-321）：開啟不限量（D547 起＝原本的不限量，欄位名沿用 preorder）／前台限量標籤 */
       alloc: bundleDraft.alloc || {},
       /* 含票券成員（D293；D342 改寫）：四個時間逐格跟隨活動或另設——sched 記另設的格子（null＝跟隨），
          listAt／unlistAt／saleStart／saleEnd 存生效值（跟隨＝活動的值）；購買條件 rules:null＝跟隨所含門票、物件＝建立時另設（2026-10-22）。

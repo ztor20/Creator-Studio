@@ -742,14 +742,14 @@
           <p class="form-section__sub" data-i18n="product-detail.edition.sub2" data-pd-cat="digital">Fixed after creation — the cap can still change, but never below what's sold, locked or reserved.</p>
           <h3 class="form-section__title" data-i18n="cp.stock.title.cfg" data-pd-cat="physical">Stock settings</h3>
         </div>
-        <!-- 實體（2026-10-30，D496）：三個開關，與建立商品同一套：開啟不限量（賣完轉預購）與開啟限量標籤互斥；鎖定庫存＝鎖定庫存量（開放販售件數）。
+        <!-- 實體（2026-10-30，D496）：三個開關，與建立商品同一套：開啟不限量（不扣庫存、不會售罄，D547）與開啟限量標籤互斥；鎖定庫存＝鎖定庫存量（開放販售件數）。
              檢視態唯讀（shared.css 的 [data-mode="view"] .switch），編輯態可切；取消還原、儲存寫回 product.preorder／limitedTag／lockQty。
              多選項的逐組合鎖定庫存量尚未在本頁開放（UIA-321）。數位維持下方庫存版本與上限。 -->
         <div class="control-group" data-pd-cat="physical" data-pd-stock-sw>
           <div class="control-row">
             <div>
-              <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
-              <div class="control-row__sub" data-i18n="cp.unl.sub">After stock runs out, switch to pre-order so fans can keep ordering.</div>
+              <div class="control-row__main" data-i18n="cp.unl.title">Unlimited stock</div>
+              <div class="control-row__sub" data-i18n="cp.unl.sub">Stock isn't counted and this item never sells out.</div>
             </div>
             <div class="switch" id="pd-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
           </div>
@@ -937,13 +937,13 @@
           <div class="control-row">
             <div>
               <div class="control-row__main" data-i18n="cp.lowstock">Alert me when running low</div>
-              <div class="control-row__sub" data-i18n="cp.lowstock.hint">Alerts you at 10% of your stock cap — the default low-stock threshold.</div>
+              <div class="control-row__sub" data-i18n="cp.lowstock.hint">Alerts you when 10% of your stock is left — the default low-stock threshold.</div>
             </div>
             <div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" id="pd-lowstock-toggle"></div>
           </div>
         <div class="field control-group__body" style="margin-bottom:0" data-pd-lowstock-body>
           <div class="field__label" data-i18n="product-detail.field.threshold">Low-stock threshold</div>
-          <!-- 2026-07-21（使用者裁決「存 %」）：門檻由件數改為百分比——以庫存上限為基準的比例，
+          <!-- 2026-07-21（使用者裁決「存 %」）：門檻由件數改為百分比——以庫存量為基準的比例（D547 前寫庫存上限），
                不再存算好的件數。ASSUMPTIONS UIA-069：屬資料模型變更，待上游確認。
                Phase 1（S31.1 未納入版本）＝固定 10%、唯讀 -->
           <div data-feat-off="S31.1">
@@ -951,7 +951,7 @@
               <input class="input amount-field__input" value="10" readonly>
               <span class="amount-field__unit">%</span>
             </span>
-            <div class="field__hint" data-i18n="product-detail.threshold.hint">Auto · 10% of your stock cap. Per-product adjustment is coming in a later version.</div>
+            <div class="field__hint" data-i18n="product-detail.threshold.hint">Auto · 10% of your stock. Per-product adjustment is coming in a later version.</div>
           </div>
           <!-- S31.1（Next+／最終版）：可自訂百分比、覆寫預設 10%。cheat code「版本」控制切換 -->
           <div data-feat="S31.1">
@@ -1925,7 +1925,7 @@
       return isMultiVar() ? L.variantsFree(product.variants) : L.freeQty(product);
     }
     /* ── 實體庫存三開關（D496，2026-10-30；同建立商品）──
-       草稿在這裡、儲存才寫回 product：preorder（開啟不限量＝賣完轉預購）、limitedTag（限量標籤）、lockQty（鎖定庫存量，單一規格）。
+       草稿在這裡、儲存才寫回 product：preorder（欄位名沿用舊稱；開啟不限量＝不扣庫存、不會售罄，D547）、limitedTag（限量標籤）、lockQty（鎖定庫存量，單一規格）。
        不限量與限量標籤互斥；檢視態由 shared.css 鎖住開關，這裡只在編輯態接受點擊。 */
     window.pdStockSw = (function () {
       const panel = document.querySelector('[data-panel="settings"]');
@@ -1981,7 +1981,7 @@
           if (product.variant !== 'multiple') product.sku = d.sku && skuInp ? skuInp.value.trim() : '';   /* D504 */
           product.lockQty = d.lock && product.variant !== 'multiple' && String(d.qty).trim() !== '' ? Number(d.qty) : (d.lock ? (product.lockQty != null ? product.lockQty : null) : null);
         },
-        text: () => [d.unl ? T('cp.unl.title', 'Allow pre-orders after sell-out') : '', d.tag ? T('cp.tag.title', 'Limited-edition tag') : '',
+        text: () => [d.unl ? T('cp.unl.title', 'Unlimited stock') : '', d.tag ? T('cp.tag.title', 'Limited-edition tag') : '',
           d.lock ? T('cp.lock.title', 'Hold back stock') + (String(d.qty).trim() !== '' ? ' ' + d.qty : '') : ''].filter(Boolean).join(' · ') || T('product-detail.setov.off', 'Off')
       };
     })();
@@ -2745,13 +2745,14 @@
          所以重跑一次數字（徽章自己帶 data-i18n，由 applyI18n 處理）。 */
       document.addEventListener('i18n:applied', refreshStockStats);
     })();
-    /* 低庫存門檻＝百分比，旁邊即時換算成件數，讓使用者知道 10% 實際是幾件（demo 基準＝上限 50） */
+    /* 低庫存門檻＝百分比，旁邊即時換算成件數，讓使用者知道 10% 實際是幾件（D547：基準＝庫存量；demo 沒有庫存量時用 50） */
     (function () {
       const pct = document.getElementById('pd-threshold-pct');
       const eq = document.getElementById('pd-threshold-eq');
       if (!pct || !eq) return;
       const sync = () => {
-        const cap = Number(window.ztorGetProduct && window.ztorGetProduct(new URLSearchParams(location.search).get('id'))?.cap) || 50;
+        const pr = window.ztorGetProduct && window.ztorGetProduct(new URLSearchParams(location.search).get('id'));
+        const cap = Number(pr && (pr.cat === 'digital' ? pr.cap : (pr.pool && pr.pool.total))) || 50;   /* 實體＝庫存量（D547）；數位限量仍以上限為基準 */
         const n = Number(pct.value);
         /* 本 IIFE 沒有補貨區那支 T()，自己取一次 i18n（跨 IIFE 引用會 ReferenceError） */
         const unit = (window.i18nT && window.i18nT('product-detail.stock.unit')) || 'units';

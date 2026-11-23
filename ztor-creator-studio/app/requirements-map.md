@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-23 D547 原型同步（UI-CHANGES 五百五十一、ASSUMPTIONS UIA-321 第 8 項；release2.3）**：開啟不限量＝不扣庫存、不會售罄（組合包自己不設數量限制），預購這一版不做；低庫存提醒以庫存量為基準——5.1.5.2 F3.3、5.1.5.1 §2.10、5.1.5.4 F4、5.1.5 F4 庫存欄、§7.2、§7.14 → `create-product.html`、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`、`e-shop.html`、`lab-stock-settings.html`、`js/i18n.js`。
+
 > **2026-11-19 D541 原型同步（UI-CHANGES 五百四十八；release2.4）**：bookyay 帶入的活動持續同步——活動名稱、主視覺、顯示設定唯讀並掛來源標記（5.1.6.1 F21／F2／F4／F25、5.1.6.2 F2／F4／F14）→ `event-detail.html`、`create-event.html`、`partials/upload-tile.js`；封面照（5.1.6.1 F4「封面照」、5.1.6.2 F4，S147）→ 兩頁 `#ed-cover-field`／`#ce-cover-field`；bookyay 新增時段的待上架門票（5.1.6.1 F21「bookyay 新增的時段或票種」、5.1.6.3 §2.6，S148）→ `event-detail.html` 徽章與門票彈窗、`js/events-store.js` `tier-tc-encore`；儀表板待處理事項「bookyay 新時段／票種待上架」（5.1.1 F4，S148）→ `js/components.js` `bky-new-ticket`。門票名稱、票價、張數原本已唯讀。
 
 > **2026-11-19 修訂 D543／D544 原型同步（UI-CHANGES 五百五十、ASSUMPTIONS UIA-344；release2.3、release2.4）**：告警門檻移到換匯手續費表格——5.1.0.3 F6（三欄：幣別配對｜手續費｜告警門檻；門檻是一般數值，改手續費即重設）、F7（彈窗只留開頭一段說明＋收件人，拿掉寄信頻率區塊與其他說明行）→ `admin-platform-fees.html`（`#fee-swap-table` `.fee-th-input`、`#fee-alert-modal`）、`emails/rate-alert-zh.html`（門檻只寫數字）、`js/i18n.js`。
