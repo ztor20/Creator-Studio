@@ -533,8 +533,8 @@
       <div class="control-group" id="cp-stock-sw" data-cp-show="physical" style="margin-top:var(--sp-16)">
         <div class="control-row">
           <div>
-            <div class="control-row__main" data-i18n="cp.unl.title">Allow pre-orders after sell-out</div>
-            <div class="control-row__sub" data-i18n="cp.unl.sub">After stock runs out, switch to pre-order so fans can keep ordering.</div>
+            <div class="control-row__main" data-i18n="cp.unl.title">Unlimited stock</div>
+            <div class="control-row__sub" data-i18n="cp.unl.sub">Stock isn't counted and this item never sells out.</div>
           </div>
           <div class="switch" id="cp-sw-unl" role="switch" aria-checked="false" tabindex="0"></div>
         </div>
@@ -595,13 +595,13 @@
       </div>
       <p class="field__hint" style="margin:var(--sp-12) 0 0" data-cp-show="digital" data-when-edition="unlimited" data-i18n="cp.limited.digital-off">Fans can buy and download without a cap — no stock to enter.</p>
 
-      <!-- 低庫存提醒（實體；單一與多規格皆適用）。門檻預設＝庫存上限的 10%（spec §7.2 / D105）。
+      <!-- 低庫存提醒（實體；單一與多規格皆適用）。門檻預設＝庫存量的 10%（spec §7.2 / D105；D547 改以庫存量為基準）。
            逐商品自訂（S31.1）由下方輸入格提供、cheat code「版本」控制其呈現 -->
       <div class="control-group" style="margin-top:var(--sp-16)">
         <div class="control-row" data-cp-show="physical">
         <div>
           <div class="control-row__main" data-i18n="cp.lowstock">Alert me when running low</div>
-          <div class="control-row__sub" data-i18n="cp.lowstock.hint">Alerts you at 10% of your stock cap — the default low-stock threshold.</div>
+          <div class="control-row__sub" data-i18n="cp.lowstock.hint">Alerts you when 10% of your stock is left — the default low-stock threshold.</div>
         </div>
         <div class="switch switch--on" id="cp-lowstock-toggle" role="switch" aria-checked="true"></div>
       </div>
@@ -613,7 +613,7 @@
           <input class="input amount-field__input" type="number" min="0" max="100" id="cp-lowstock-thr" value="10">
           <span class="amount-field__unit">%</span>
         </span>
-        <div class="field__hint"><span data-i18n="cp.lowstock.custom.hint">Percentage of your stock cap — edit to override the 10% default.</span> <span id="cp-lowstock-eq"></span></div>
+        <div class="field__hint"><span data-i18n="cp.lowstock.custom.hint">Percentage of your stock — overrides the 10% default.</span> <span id="cp-lowstock-eq"></span></div>
       </div>
       </div>
     </section>
@@ -1682,7 +1682,7 @@
       type: state.type, name: nm, price: pr, cat, edition: state.edition, stock, variants,
       ...(state.type === 'physical' && window.cpSizeGuide ? { sizeGuide: window.cpSizeGuide.get() } : {}),   /* D512 */
       ...(state.type === 'physical' && state.varMode === 'single' ? { sku: state.sku ? ((document.getElementById('cp-sku') || {}).value || '').trim() : '' } : {}),   /* D497：單一選項的 SKU（選填） */
-      /* 2026-10-30 實體庫存設定（呈現假設，見 ASSUMPTIONS）：賣完轉預購／前台限量標籤／鎖定庫存量（null＝沒鎖） */
+      /* 2026-10-30 實體庫存設定（呈現假設，見 ASSUMPTIONS）：開啟不限量（欄位名沿用舊稱 preorder；D547 起＝不扣庫存、不會售罄，預購這一版不做）／前台限量標籤／鎖定庫存量（null＝沒鎖） */
       ...(state.type === 'physical' ? { preorder: !!state.unl, limitedTag: !!state.tag, lockQty: state.lock && state.varMode === 'single' && fLock && fLock.value.trim() !== '' ? Number(fLock.value.trim()) : null } : {}),
       ...(ap || {}),
       options: state.type === 'physical' && state.varMode === 'multiple' ? optionRecords() : [],
@@ -2520,7 +2520,7 @@
       el.textContent = String(Math.max(0, st - lk));
     });
   }
-  /* 三個開關：不限量（賣完轉預購）與限量標籤互斥，一個開著另一個停用；鎖定庫存獨立 */
+  /* 三個開關：不限量（不扣庫存、不會售罄，D547）與限量標籤互斥，一個開著另一個停用；鎖定庫存獨立 */
   var SW = { unl: 'cp-sw-unl', tag: 'cp-sw-tag', lock: 'cp-sw-lock', sku: 'cp-sw-sku' };
   function syncStockSwitches() {
     Object.keys(SW).forEach(k => {

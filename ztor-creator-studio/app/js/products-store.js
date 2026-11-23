@@ -1228,7 +1228,7 @@
     /* pin＝售罄：有銷售、沒有歷史、沒有補貨中 */
     pin: { sales: { units: 120, gross: '$1,440', net: '$1,160' } },
     /* ── 2026-09-11 既有商品補值（只補缺的示範）── */
-    cap:   { limit: { person: '3' }, lowAlert: false },   /* 2026-09-22：低庫存提醒關著的示範（門檻欄停用）；D398：每人總限購 3 件——冬季預購組每組含 2 件 → 跟隨成員＝每人 1 組 */
+    cap:   { limit: { person: '3' }, lowAlert: false },   /* 2026-09-22：低庫存提醒關著的示範（門檻欄停用）；D398：每人總限購 3 件——冬季保暖組每組含 2 件 → 跟隨成員＝每人 1 組 */
     shoes: { films: ['film-fist-of-fury', 'film-last-typhoon'] },
     song:  { sales: null },
     album: { tags: ['OST', 'Digital'] },
@@ -1397,8 +1397,8 @@
     },
     /* 即將開賣（saleStart 在未來）、限量 100；常態折扣 15%；尚無銷售 */
     'winter-preorder-set': {
-      id: 'winter-preorder-set', persona: 'default', name: '冬季預購組', img: 'coastline-hoodie.webp',
-      description: '連帽外套＋六片帽，加送主題單曲數位下載，開放預購。',
+      id: 'winter-preorder-set', persona: 'default', name: '冬季保暖組', img: 'coastline-hoodie.webp',
+      description: '連帽外套＋六片帽，加送主題單曲數位下載。',
       /* D398 示範：每組含 2 頂帽（qty 2）。帽子每人總限購 3 件 ÷ 2 ＝ 每人 1 組；外套不限購（D427 前的「每次 4 件、限 2 次」已退場）→ 改版前跟隨成員＝每人 1 組。D456 起組合包不繼承成員，這筆示範把當時的推導值寫成自己的上限（每人 1 組）〔推導：既有組合包轉換〕 */
       /* D480 示範（2026-10-23）：限量 40、還沒賣 → 自動鎖定 40 套（外套 40 件、帽 80 頂；外套 48 件是成員上限）；
          加一個數位成員（主題單曲）示範「數位商品沒有在庫、不鎖」——原限量 100 超過成員能鎖的量，改 40 */
@@ -1418,7 +1418,7 @@
     /* 即將開賣（成員 tour-socks 限量實體＋tee）：組合包自己的開賣與停售獨立於成員（D332）；落在成員 tour-socks 的區間裡（開賣 6~60 天後、下架 90 天後） */
     'tour-socks-early-set': {
       id: 'tour-socks-early-set', persona: 'default', name: '巡演襪子早鳥組', img: 'socks.webp',
-      description: '巡演限定襪組搭配紀念 T 恤，早鳥價開放預購。',
+      description: '巡演限定襪組搭配紀念 T 恤，早鳥價開賣。',
       members: [{ productId: 'tour-socks' }, { productId: 'tee' }],
       lockSets: null, alloc: {},
       listed: true, listAt: daysFromNow(-6, 10), unlistAt: daysFromNow(75, 23),
@@ -1606,8 +1606,8 @@
     },
     /* 對照 winter-preorder-set：即將開賣、限量 3（D480，2026-10-23：原限量 100，連帽外套只夠鎖 3 套；限量＝已售 0＋可鎖 3，自動鎖定 3 套）、常態折扣 15%；尚無銷售 */
     'nick-preorder-set': {
-      id: 'nick-preorder-set', persona: 'nick', name: '冬季預購組', img: '26ms-hoodie-01.jpeg',
-      description: '26MS Hoodie＋刺繡 Logo 老帽，開放預購。',
+      id: 'nick-preorder-set', persona: 'nick', name: '冬季保暖組', img: '26ms-hoodie-01.jpeg',
+      description: '26MS Hoodie＋刺繡 Logo 老帽。',
       members: [{ productId: 'wy-26ms-hoodie' }, { productId: 'wy-bundle-cap' }],
       /* 2026-10-29：四個時間全填、相對今天（原本 listAt 10/25、saleStart 11/01 寫死，listAt 一過就變成沒有示範）：上架 10 天前、開賣 5 天後、停售 50 天後、定時下架 75 天後 */
       lockSets: 3, alloc: {},
@@ -1619,7 +1619,7 @@
     /* ── 2026-10-29 示範資料補齊（對照預設 persona）：一筆即將開賣（數位限量＋襪子，兩個成員都是即將開賣的單售）、兩筆重新上架測試 ── */
     'nick-fanbook-set': {
       id: 'nick-fanbook-set', persona: 'nick', name: 'REALIVE 攝影集＋襪子早鳥組', img: 'wyagl-sock-01.jpg',
-      description: '巡演攝影集電子版搭配 WYAGL 襪子，早鳥價開放預購。',
+      description: '巡演攝影集電子版搭配 WYAGL 襪子，早鳥價開賣。',
       members: [{ productId: 'nick-fanbook' }, { productId: 'wy-24ce-sock' }],
       lockSets: null, alloc: {},
       listed: true, listAt: daysFromNow(-5, 10), unlistAt: daysFromNow(70, 23),
