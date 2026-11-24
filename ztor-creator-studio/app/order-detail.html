@@ -214,7 +214,7 @@
 
           <!-- §2.3.4 門票資料（D411）：訂單含門票（直接買票，或組合包裡的門票成員）才出現。一張票一列：
                票券編號／活動與場次／票種（獨立票加標籤）／來源（直接購買或組合包名稱）／狀態。不顯示票券 QR。
-               撤銷門票在活動詳情（bookyay 匯入的活動在 bookyay 後台），本區只給入口。列由 renderTickets() 產生。 -->
+               撤銷門票在活動詳情（bookyay 匯入的活動也是，撤銷會同步到 bookyay；D548），本區只給入口。列由 renderTickets() 產生。 -->
           <section class="form-section form-section--outlined" id="od-tickets" data-feat="O36" hidden>
             <div class="form-section__head form-section__head--actions">
               <div class="form-section__head-titles">
@@ -1185,13 +1185,14 @@
     var go = $('[data-od-tk-goto]'), note = $('[data-od-tk-note]');
     var bky = order.event && order.event.bky;
     if (evId) go.setAttribute('href', 'event-detail.html?id=' + encodeURIComponent(evId) + '&sec=tx#sales');
-    /* 撤銷門票：直接買票的在活動詳情；組合包裡的門票照 §2.8 在本頁撤銷整個組合包品項；bookyay 匯入的活動在 bookyay 後台（D375） */
+    /* 撤銷門票：直接買票的在活動詳情；組合包裡的門票照 §2.8 在本頁撤銷整個組合包品項。
+       D548（2026-11-24，修訂 D375 決定一）：bookyay 匯入的活動同樣導去活動詳情撤銷，說明句多一句會同步到 bookyay。 */
     var onlyBundle = order.items.every(function (it) { return it.mode !== 'ticket'; });
-    go.hidden = onlyBundle || bky || !evId;
+    go.hidden = onlyBundle || !evId;
     var nk = onlyBundle ? 'od.tk.note.bundle' : bky ? 'od.tk.note.bky' : 'od.tk.note.event';
     note.setAttribute('data-i18n', nk);
     note.textContent = T(nk, onlyBundle ? 'These tickets came in a bundle — void the bundle item above.'
-      : bky ? 'This event was imported from bookyay — void tickets in the bookyay back office.' : 'Ticket voiding happens in the event.');
+      : bky ? 'Ticket voiding happens in the event, and syncs to bookyay.' : 'Ticket voiding happens in the event.');
   })();
 
   /* ── §2.4 買家 ────────────────────────────────────────────── */

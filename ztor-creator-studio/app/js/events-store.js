@@ -2424,11 +2424,13 @@
           buyer: GIVEN[(k * 11) % GIVEN.length] + ' ' + FAMILY[(k * 9) % FAMILY.length],
           tier: t0.name, tierId: t0.id, solo: !!t0.solo, qty: 1, gross: g, fee: Math.round(g * 0.10), net: g - Math.round(g * 0.10),
           method: 'Card', status: 'voided', at: day, atMin: 9 * 60 + k * 25,
-          voidedAt: day + ' ' + (14 + k) + ':00', voidedBy: 'Admin'
+          /* D548（2026-11-24，修訂 D375 決定一）：bookyay 匯入活動兩邊都能撤——示範第一筆在 ztor 撤（Admin）、
+             第二筆在 bookyay 後台撤後同步回來（voidedBy:'bookyay'，撤銷紀錄寫「bookyay（同步）」）。自建活動兩筆都是 Admin。 */
+          voidedAt: day + ' ' + (14 + k) + ':00', voidedBy: (ev.source === 'bookyay' && k === 1) ? 'bookyay' : 'Admin'
         }, payFields(ev, 9000 + k, 9 * 60 + k * 25)));
         /* 撤銷原因（2026-10-16 示範資料補齊，D431：選填、只記在撤銷紀錄給 Admin 查）：每場第一筆有原因、第二筆沒填（畫面「—」）。
-           bookyay 活動的直接購票由 bookyay 撤銷、同步回來（D375、D434），ztor 收不到原因，不編造。 */
-        if (k === 0 && ev.source !== 'bookyay') out[out.length - 1].voidReason = '買家來信申請取消';
+           bookyay 匯入活動第一筆是 ztor 撤的（D548），一樣有原因；第二筆由 bookyay 同步回來，ztor 收不到原因，不編造。 */
+        if (k === 0) out[out.length - 1].voidReason = '買家來信申請取消';
       }
     }
     return out;
