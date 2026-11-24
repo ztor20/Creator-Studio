@@ -8163,7 +8163,8 @@
     'od.tk.goto':           { en: 'Void tickets in the event →', zh: '到活動撤銷門票 →' },
     'od.tk.note.event':     { en: 'Ticket voiding happens in the event.', zh: '門票在活動詳情撤銷。' },
     'od.tk.note.bundle':    { en: 'These tickets came in a bundle — void the bundle item above.', zh: '這些門票來自組合包，請在上方撤銷組合包品項。' },
-    'od.tk.note.bky':       { en: 'This event was imported from bookyay — void tickets in the bookyay back office.', zh: '這場活動從 bookyay 匯入，門票請到 bookyay 後台撤銷。' },
+    /* D548（2026-11-24，修訂 D375 決定一）：bookyay 匯入活動的直接購票也在活動詳情撤銷，會同步到 bookyay */
+    'od.tk.note.bky':       { en: 'Ticket voiding happens in the event, and syncs to bookyay.', zh: '門票在活動詳情撤銷，撤銷會同步到 bookyay。' },
     'od.resend.btn':        { en: 'Resend order email',      zh: '重寄訂單信' },
     'od.resend.why.admin':  { en: 'Only an Admin can resend order emails. Contact an Admin.', zh: '只有 Admin 能重寄訂單信，請聯繫 Admin。' },
     'od.resend.title':      { en: 'Resend order email',      zh: '重寄訂單信' },
@@ -10906,11 +10907,12 @@
     /* 撤銷只有 Admin 代管態能按（D361 決定二）；創作者視角的停用說明指向平台外聯繫 Admin（D371 決定二）。
        活動票券專用，不動 order-detail 共用的 od.void.why.admin（E-Shop 已交付 release2.2）。 */
     'event-detail.void.why.admin': { en: 'Only an Admin can void. Contact an Admin.', zh: '只有 Admin 能撤銷，請聯繫 Admin' },
-    /* D375 決定一：bookyay 匯入活動的撤銷在 bookyay 後台執行，結果同步回來（唯讀） */
-    'event-detail.void.why.bky':   { en: 'Voiding is handled in the bookyay back office', zh: '撤銷在 bookyay 後台處理' },
-    'event-detail.void.bky':       { en: 'Voiding is handled in the bookyay back office. Voided tickets sync back here as read-only.', zh: '撤銷在 bookyay 後台處理，已撤銷的票會同步到這裡，只能檢視。' },
+    /* D548（2026-11-24，修訂 D375 決定一）：bookyay 匯入活動的直接購票兩邊都能撤——ztor 撤的同步到 bookyay，bookyay 撤的同步回來。
+       墓碑：event-detail.void.why.bky（停用撤銷鈕的原因）與 event-detail.void.bky（「撤銷在 bookyay 後台處理」說明句）退場。 */
     'event-detail.void.by.bky':    { en: 'bookyay (synced)', zh: 'bookyay（同步）' },
-    'event-detail.void.empty.sub.bky': { en: 'Tickets voided in bookyay show up here.', zh: '在 bookyay 撤銷的票會顯示在這裡。' },
+    'event-detail.void.empty.sub.bky': { en: 'Void a ticket from the Sales record below, or void every remaining ticket at once. Tickets voided in bookyay show up here too.', zh: '可從下方「銷售紀錄」逐張撤銷，或一次撤銷所有尚未撤銷的票券。在 bookyay 撤銷的票也會顯示在這裡。' },
+    'event-detail.void.confirm.bky':     { en: 'Voiding syncs to bookyay — this ticket stops working there too.', zh: '撤銷後會同步到 bookyay，這張票在 bookyay 也會失效。' },
+    'event-detail.void.confirm.bky-all': { en: 'Voiding syncs to bookyay — these tickets stop working there too.', zh: '撤銷後會同步到 bookyay，這些票在 bookyay 也會失效。' },
     /* 已報到的票不能撤銷（D361 決定四） */
     'event-detail.void.why.redeemed': { en: "Already checked in — can't be voided", zh: '已報到，不能撤銷' },
     'event-detail.badge.ended':  { en: 'Ended',         zh: '已結束' },
