@@ -1881,8 +1881,8 @@
           <div class="flex-row mt-16" style="gap:8px">
             <button class="btn btn--soft btn--destructive btn--sm" type="button" data-view-safe data-ed-void-all data-i18n="event-detail.void.all">Void all remaining tickets</button>
           </div>
-          <!-- D375 決定一：bookyay 匯入活動的撤銷在 bookyay 後台執行、結果同步回來（唯讀）；逐張與整場撤銷鈕保留但停用 -->
-          <p class="field__hint field__hint--fact mt-8" id="ed-void-bky" hidden data-i18n="event-detail.void.bky">Voiding is handled in the bookyay back office. Voided tickets sync back here as read-only.</p>
+          <!-- 墓碑 2026-11-24（D548，修訂 D375 決定一）：bookyay 匯入活動的直接購票改為 ztor 也能撤銷（兩邊都能撤），
+               原本「撤銷在 bookyay 後台處理」的說明句 #ed-void-bky（event-detail.void.bky）與停用撤銷鈕一起退場。 -->
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
             <span data-i18n="event-detail.void.absorb"><strong>Void write-off absorption order (§7.3, financial treatment proposed — pending approval):</strong> Void reserve → current distributable profit → carry-forward deficit (no clawback). Voiding a ticket writes off its revenue and immediately invalidates the ticket QR. Any refund owed to the buyer is made by Admin in Stripe and is not tracked here. v1 void scope is in §8.6.</span>
@@ -3056,12 +3056,10 @@
     const s = ev.status;
     const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
     syncGoLive();
-    const voidBky = document.getElementById('ed-void-bky');
-    if (voidBky) voidBky.hidden = !isBky();   // D375 決定一：沒有成交時也要看得到「撤銷在 bookyay 後台處理」
     const voidEmptySub = document.querySelector('#ed-void-empty .empty-card__text');
-    if (voidEmptySub && isBky()) {   // 空狀態原本叫人「從下方逐張撤銷」，匯入活動改說撤銷會從 bookyay 同步過來
+    if (voidEmptySub && isBky()) {   // D548：匯入活動兩邊都能撤——空狀態照樣叫人從下方撤銷，再補一句 bookyay 撤銷的票也會出現在這裡
       voidEmptySub.setAttribute('data-i18n', 'event-detail.void.empty.sub.bky');
-      voidEmptySub.textContent = T('event-detail.void.empty.sub.bky', 'Tickets voided in bookyay show up here.');
+      voidEmptySub.textContent = T('event-detail.void.empty.sub.bky', 'Void a ticket from the Sales record below, or void every remaining ticket at once. Tickets voided in bookyay show up here too.');
     }
     syncBkyCheckin();
     syncHeaderActions();
@@ -3566,11 +3564,9 @@
       const canVoid = vstate === 'ok' || vstate === 'redeemed';
       /* 2026-10-05（D352 稽核 B15，D282、主規格 §4.1 第 5 項／§4.4）：撤銷票券是 Admin 專屬操作——創作者本人視角
          按鈕留著但停用，title 說明需要 Admin（同 order-detail 撤銷品項的做法與同一句文案）。 */
-      /* D375 決定一（2026-10-08）：bookyay 匯入活動的撤銷在 bookyay 後台執行——逐張撤銷鈕保留但停用，這個原因優先；
-         ztor 自建活動照舊（已報到不可撤銷 → 創作者本人停用需 Admin），使用者 2026-10-08 更正範圍只限匯入活動。 */
-      const voidAttrs = isBky()
-        ? ' disabled aria-disabled="true" title="' + T('event-detail.void.why.bky', 'Voiding is handled in the bookyay back office') + '"'
-        : vstate === 'redeemed'
+      /* D548（2026-11-24，修訂 D375 決定一）：bookyay 匯入活動的直接購票跟自建活動一樣可以在這裡撤銷
+         （已報到不可撤銷 → 創作者本人停用需 Admin），撤銷會同步到 bookyay；原本「撤銷在 bookyay 後台處理」的停用分支退場。 */
+      const voidAttrs = vstate === 'redeemed'
         ? ' disabled aria-disabled="true" title="' + T('event-detail.void.why.redeemed', "Already checked in — can't be voided") + '"'
         : edAdminScope() ? '' :
         ' disabled aria-disabled="true" title="' + T('event-detail.void.why.admin', 'Only an Admin can void. Contact an Admin.') + '"';   /* D371 決定二：創作者在平台外聯繫 Admin */
@@ -3753,8 +3749,8 @@
     body.innerHTML = voidedRows.map(t =>
       '<tr class="ztor-table__row"><td><code>' + esc(t.id) + '</code></td><td>' + esc(t.buyer) + '</td><td>' +
       esc(t.tier) + '</td><td>' + esc(t.voidedAt || '—') + '</td><td>' +
-      /* D375 決定一：匯入活動的撤銷由 bookyay 同步回來，作廢者欄標來源（唯讀） */
-      esc(isBky() ? T('event-detail.void.by.bky', 'bookyay (synced)') : (t.voidedBy || '—')) + '</td>' +
+      /* D548：匯入活動兩邊都能撤——在 ztor 撤的寫執行者（Admin），在 bookyay 後台撤、同步回來的寫「bookyay（同步）」 */
+      esc(t.voidedBy === 'bookyay' ? T('event-detail.void.by.bky', 'bookyay (synced)') : (t.voidedBy || '—')) + '</td>' +
       /* 撤銷原因（2026-10-16，D431 補充）：選填，沒填寫「—」；只記在這裡給 Admin 查，不寄信 */
       '<td>' + esc(t.voidReason || '—') + '</td></tr>'
     ).join('');
@@ -3766,12 +3762,10 @@
     if (!btn) return;
     const remaining = txAll.filter(t => window.ztorEvents.ticketVoidState(t) === 'ok').length;
     const admin = edAdminScope();   /* D282：整場撤銷同樣只有 Admin 代管態能按（2026-10-05，D352 稽核 B15） */
-    btn.disabled = remaining === 0 || !admin || isBky();
-    btn.title = isBky() ? T('event-detail.void.why.bky', 'Voiding is handled in the bookyay back office')   /* D375 決定一：匯入活動優先 */
-      : remaining === 0 ? T('event-detail.void.all-disabled', 'No remaining tickets to void')
+    /* D548（修訂 D375 決定一）：匯入活動的整場撤銷同樣開放，條件跟自建活動相同 */
+    btn.disabled = remaining === 0 || !admin;
+    btn.title = remaining === 0 ? T('event-detail.void.all-disabled', 'No remaining tickets to void')
       : (!admin ? T('event-detail.void.why.admin', 'Only an Admin can void. Contact an Admin.') : '');   /* D371 決定二 */
-    const note = document.getElementById('ed-void-bky');
-    if (note) note.hidden = !isBky();
   }
   /* Admin 代管態（主規格 §4.1 第 1、2、5 項；D086）：正式訊號是 sidebar.js 的 window.ztorCreator.adminScope()，
      沒有它時讀同一把 `ztor.role`（同 order-detail.html adminScope()）。 */
@@ -3820,6 +3814,10 @@
       '<div class="field__hint mt-16">' + T('event-detail.void.confirm.stripe', 'Refund the buyer in Stripe first, if any refund is owed — voiding moves no money and never calls Stripe.') + '</div>' +
       '<div class="field__label mt-16">' + T('event-detail.void.confirm.effects', 'What voiding does') + '</div>' +
       '<div class="field__hint">' + T('event-detail.void.confirm.effect.qr', 'This ticket’s QR stops working immediately — it can’t be scanned at the door.') + '</div>' +
+      /* D548：bookyay 匯入活動的撤銷會同步到 bookyay（bookyay 一定接受，不做失敗分支） */
+      (isBky() ? '<div class="field__hint mt-16">' + T(target === 'all' ? 'event-detail.void.confirm.bky-all' : 'event-detail.void.confirm.bky',
+        target === 'all' ? 'Voiding syncs to bookyay — these tickets stop working there too.'
+          : 'Voiding syncs to bookyay — this ticket stops working there too.') + '</div>' : '') +
       '<div class="field__hint mt-16">' + T('event-detail.void.confirm.irreversible', 'There’s no undo — a voided ticket can’t be reinstated.') + '</div>' +
       /* 撤銷原因（2026-10-16，D431 補充，比照訂單撤銷 D271）：選填、只記在撤銷紀錄給 Admin 查；整場撤銷時套用到每一筆 */
       '<div class="field mt-16"><label class="field__label" for="ed-void-reason">' + T('od.void.reason.label', 'Reason') + '</label>' +

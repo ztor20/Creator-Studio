@@ -15,6 +15,33 @@
 > `collab.sh` 開 PR 時會讀這次新增條目的標籤，貼成 GitHub PR 標籤，並把新條目標題列進 PR 內文。2026-10-07 以前的條目沒有標籤，不回補。
 
 
+## 2026-11-24（五百五十三）· 匯率告警設定改未排定，交付版整個收起（A spec · D549）
+
+**標籤**：release2.3、release2.4
+
+使用者裁決（D549）：換匯手續費的「告警設定」（S146）不進 release2.3、release2.4，改未排定，只留在最終版。
+
+- `feature-scope-map.md`：S146 Tier 從 🔵 release2.3 改 ⚪ TBD，備註補 D549；「本期統計」與 S 模組小計同步（🔵 −1、⚪ +1）。`js/devtools.js` 後備表 S146 改 `tbd`。
+- `admin-platform-fees.html`：「警告設定」按鈕與彈窗原本就掛 S146；這次把換匯手續費表格第三欄「告警門檻」的 th、六列 td 與表格下方的門檻說明句也掛 `data-feat="S146"`。交付版整欄收起，表格只剩「幣別配對｜手續費」兩欄，不跑版。
+- 儲存檢查：被版本閘收起的門檻欄（`.ztd-ver-hidden`）不參與必填檢查、也不寫「告警門檻」異動行（新增 `thActive()`），避免看不到的欄位擋住儲存，或版本歷史冒出門檻異動。最終版行為不變。
+- 告警信範本 `emails/rate-alert-zh.html` 是靜態示範檔、沒有頁面入口；全站沒有其他連到 S146 的入口。
+- 不新增元件。
+
+## 2026-11-24（五百五十二）· bookyay 匯入活動的直接購票也能在 ztor 撤銷（A spec · D548）
+
+**標籤**：release2.3、release2.4
+
+使用者裁決（D548，修訂 D375 決定一、D434 決定一）：bookyay 匯入活動的直接購票，ztor 和 bookyay 兩邊都能撤銷；ztor 撤的會同步到 bookyay（bookyay 一定接受），bookyay 撤的照舊同步回來。組合包裡的 bookyay 門票照 D446 不變。
+
+- `event-detail.html`：匯入活動的逐張撤銷鈕與「撤銷所有剩餘門票」改成和自建活動同一套條件（只有 Admin 代管態能按、已報到的票不能撤）；拿掉「撤銷在 bookyay 後台處理」的停用分支與說明句 `#ed-void-bky`。
+- 撤銷確認彈窗：匯入活動在「撤銷會造成什麼」多一句「撤銷後會同步到 bookyay，這張票在 bookyay 也會失效。」（整場撤銷用複數版）。不做 bookyay 失敗的錯誤分支。
+- 撤銷紀錄「撤銷者」欄改看每一筆的來源：在 ztor 撤的寫 Admin，從 bookyay 同步來的寫「bookyay（同步）」。空狀態副標改成通用說法，再補一句「在 bookyay 撤銷的票也會顯示在這裡」。
+- `js/events-store.js` 示範資料：匯入活動的兩筆撤銷示範，第一筆改成 ztor 撤的（Admin、有原因），第二筆維持 bookyay 同步（`voidedBy:'bookyay'`、沒有原因）。訂單詳情的撤銷紀錄跟著顯示正確來源。
+- `order-detail.html`：門票區說明句與「到活動撤銷門票」按鈕，匯入活動也照自建活動導去活動詳情；說明句改「門票在活動詳情撤銷，撤銷會同步到 bookyay。」。
+- `js/i18n.js`：改寫 `od.tk.note.bky`、`event-detail.void.empty.sub.bky`；新增 `event-detail.void.confirm.bky`、`event-detail.void.confirm.bky-all`（中英）；移除 `event-detail.void.why.bky`、`event-detail.void.bky`。
+- 全站搜尋過「bookyay 後台撤銷」類文案，只有這兩頁；`od.void.effect.bky`（組合包，D446）保留不動。
+- 不新增元件。
+
 ## 2026-11-23（五百五十一）· 不限量改回不會售罄、預購暫不做；低庫存提醒改以庫存量為基準（A spec · D547）
 
 **標籤**：release2.3
