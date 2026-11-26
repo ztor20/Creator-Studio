@@ -1274,6 +1274,12 @@
               <i data-lucide="lock" class="ztor-icon info-banner__icon"></i>
               <span data-i18n="ed.pub.bky-locked">Ticket delivery comes from bookyay. Change it there.</span>
             </div>
+            <!-- 2026-11-26（D550，5.1.6.2 F14；S149 🟣 release2.4）：電子門票唯一的附屬設定「購買時索取收貨地址」（publish.collectAddr，預設不勾）。
+                 鎖法同取票方式（syncPubLock 的 L.pickup：進入售票中後、bookyay 帶入者不能改）；值由 renderPublish 寫、change 事件寫進草稿。 -->
+            <div class="field" data-pub-when="eticket" data-feat="S149" style="margin-bottom:0" hidden>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ed-pub-addr"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ed.pub.addr">Ask fans for a shipping address at checkout</span></label>
+              <p class="field__hint" data-i18n="ed.pub.addr.hint">Fans enter an address when they buy, so you can mail anything they don't collect at the event.</p>
+            </div>
             <!-- 墓碑 2026-09-29（D327，5.1.6.2 F14）：電子門票底下的三組附屬設定（外部平台發票＋取票說明、QR 更新間隔、
                  持票人移轉＋次數／期限）整組刪除——電子門票＝ztor 發票、一票一碼的靜態 QR，底下沒有第二層設定。 -->
             <div class="field" data-pub-when="sf" style="margin-bottom:0" hidden>
@@ -2091,8 +2097,9 @@
             <span class="kv__v"><input class="input" id="ed-tm-qty" type="number" min="0" step="1"></span>
           </div>
           <!-- 鎖給單售（D465 決定 4，5.1.6.3 §2.6、5.1.6.2 F9）：屬庫存，上架中也能改（比照張數，D435）；空白或 0＝不鎖定。
-               防呆：鎖給單售＋各組合包鎖定 ≤ 張數 − 已售 − 未鎖定格的保留；調低不得低於它正被保留的量。說明與紅字由 syncTmStock() 寫。 -->
-          <div class="kv">
+               防呆：鎖給單售＋各組合包鎖定 ≤ 張數 − 已售 − 未鎖定格的保留；調低不得低於它正被保留的量。說明與紅字由 syncTmStock() 寫。
+               D551（2026-11-26）：掛 S150，release2.3、release2.4 收起（鎖定庫存未排定）。 -->
+          <div class="kv" data-feat="S150">
             <span class="kv__k"><label for="ed-tm-lock"><span data-i18n="ed.tix.col.lock">Locked for single sale</span></label>
               <span class="calc-list__how field__hint" id="ed-tm-lock-hint"></span></span>
             <span class="kv__v"><input class="input" id="ed-tm-lock" type="number" min="0" step="1" data-i18n-placeholder="ed.tix.lock.none" placeholder="Not locked"></span>
@@ -3122,10 +3129,9 @@
       const key = shownNow ? 'event-detail.hide.btn' : 'event-detail.show.btn';
       const lab = sh.querySelector('[data-ed-shown-label]');
       if (lab) { lab.setAttribute('data-i18n', key); lab.textContent = T(key, shownNow ? 'Hide from shop' : 'Show in shop'); }
-      /* D541：bookyay 帶入者的顯示設定跟著 bookyay 同步——這一項停用，原因放 title（不做沉默停用） */
-      sh.disabled = isBky();
-      if (isBky()) { sh.setAttribute('aria-disabled', 'true'); sh.title = T('event-detail.shown.bky', 'Visibility follows bookyay — change it there'); }
-      else { sh.removeAttribute('aria-disabled'); sh.removeAttribute('title'); }
+      /* 墓碑 2026-11-26（D552，修訂 D541 決定六）：bookyay 帶入者的停用與「要改回 bookyay 改」title 退場——bookyay 活動也能在 ztor 隱藏／顯示 */
+      sh.disabled = false;
+      sh.removeAttribute('aria-disabled'); sh.removeAttribute('title');
       const ic = sh.querySelector('svg, i'); if (ic) ic.setAttribute('data-lucide', shownNow ? 'eye-off' : 'eye');
       if (window.ztorIcons) window.ztorIcons.applyIcons(sh);
     }
@@ -3247,16 +3253,25 @@
     }
     /* 下架（D371 決定一）：已有成交時說明已售出的票照常有效；列出會一同下架的上架中組合包（主規格 §7.14，
        unlistBundlesOf()；D457：取消活動退場，原「要結束這場活動請用取消」一句拿掉）。 */
+    /* 2026-11-26 使用者指示：下架／重新上架／隱藏／顯示的確認框裡，跟著變的組合包除了名稱也要有圖——
+       用 Data list 的商品縮圖列（.data-list__thumb--lg，與 __icon 同 52px 佔位）；圖取組合包封面、沒有就取第一件商品圖，都沒有退回通用圖示晶片。 */
+    const bundleListHtml = list => {
+      const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      return '<div class="data-list mt-8">' + list.map(b => {
+        const src = (typeof b.cover === 'string' && b.cover) || (b.products && b.products[0] && b.products[0].img) || (b.items && b.items[0] && b.items[0].img) || '';
+        const pic = src ? '<img class="data-list__thumb data-list__thumb--lg" src="' + esc(src) + '" alt="" loading="lazy">'
+                        : '<div class="data-list__icon"><i data-lucide="boxes" class="ztor-icon"></i></div>';
+        return '<div class="data-list__row"><div class="data-list__row-main">' + pic + '<div class="data-list__body"><div class="data-list__title">' + esc(b.name) + '</div></div></div></div>';
+      }).join('') + '</div>';
+    };
     if (e.target.closest('[data-ed-unlist]')) {
-      const escU = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       const sold = ev.sold || 0;
       const lines = [T('event-detail.unlist.confirm.body', 'Fans see the event page as unlisted and can’t buy; anything in their carts shows as unavailable. The event stays in its current stage.')];   // D415 決定七、八
       if (sold) lines.push(T('event-detail.unlist.confirm.sold', 'The {n} tickets already sold stay valid.').replace('{n}', fmtNum(sold)));
       const goingDown = window.ztorEvents.unlistBundlesOf ? window.ztorEvents.unlistBundlesOf(ev.id) : [];
       const bundlesHtml = goingDown.length
         ? '<p class="text-sub mt-16">' + T('event-detail.unlist.bundles', 'These listed bundles include its tickets and are unlisted with it:') + '</p>' +
-          '<div class="data-list mt-8">' + goingDown.map(b =>
-            '<div class="data-list__row"><div class="data-list__row-main"><span>' + escU(b.name) + '</span></div></div>').join('') + '</div>'
+          bundleListHtml(goingDown)
         : '';
       openConfirm({
         title: T('event-detail.unlist.confirm.title', 'Unlist this event?'),
@@ -3276,7 +3291,7 @@
        隱藏時產生非公開連結（publish.linkKey）、切回顯示即撤銷（D340／D375 決定八）；編輯中還有沒儲存的變更時先不切，
        以免草稿與已生效的值打架（同重新上架的做法）。 */
     if (e.target.closest('[data-ed-shown]')) {
-      if (isBky()) return;   // D541：顯示設定跟著 bookyay 同步，ztor 不能切
+      /* 墓碑 2026-11-26（D552）：bookyay 帶入者不能切的早退出移除 */
       const pEd = document.querySelector('.tab-panel[data-editable]');
       if (pEd && pEd.getAttribute('data-mode') === 'edit' && isDirty()) {
         if (window.ztorToast) window.ztorToast.show(T('event-detail.shown.dirty', 'Save or discard your changes first, then change visibility.'));
@@ -3284,15 +3299,34 @@
       }
       const p0 = ev.publish || {};
       const toHidden = p0.shown !== false;
-      const next = Object.assign({}, p0, { shown: !toHidden, linkKey: toHidden ? (p0.linkKey || pubLinkKey()) : '' });
-      ev.publish = next;
-      window.ztorEvents.saveEdits(ev.id, { publish: next });
-      if (pubDraft) pubDraft.publish = Object.assign({}, next);
-      try { renderPublish(); } catch (err) {}
-      syncMoreMenu();
-      if (window.ztorToast) window.ztorToast.show(toHidden
-        ? T('event-detail.hide.toast', 'Hidden from the shop — only people with the event link or QR can get in')
-        : T('event-detail.show.toast', 'Shown in the shop; the old event link stops working'));
+      /* D553（2026-11-26 使用者指示）：隱藏／顯示比照下架，先跳確認框，列出跟著變的組合包——
+         含本活動門票、上架中（未下架、未封存）且自己的顯示開關是開的組合包（D363 決定二：活動隱藏＝顯示的上限）。 */
+      const affected = (ev.bundles || []).filter(b => b && b.listed !== false && !b.archived && b.shown !== false);
+      const bLines = affected.length
+        ? '<p class="text-sub mt-16">' + T(toHidden ? 'event-detail.hide.bundles' : 'event-detail.show.bundles',
+            toHidden ? 'These bundles include its tickets and are hidden from the shop with it:' : 'These bundles include its tickets and show in the shop again with it:') + '</p>' +
+          bundleListHtml(affected)
+        : '';
+      const body = toHidden
+        ? T('event-detail.hide.confirm.body', 'The event leaves the shop listings and search. Only people with the event link or QR can get in, and they can still buy. Ticket visibility settings stay as they are.')
+        : T('event-detail.show.confirm.body', 'The event shows in the shop listings and search again. The current event link stops working.');
+      openConfirm({
+        title: T(toHidden ? 'event-detail.hide.confirm.title' : 'event-detail.show.confirm.title', toHidden ? 'Hide this event from the shop?' : 'Show this event in the shop?'),
+        body: '<p>' + body + '</p>' + bLines,
+        okLabel: T(toHidden ? 'event-detail.hide.confirm.ok' : 'event-detail.show.confirm.ok', toHidden ? 'Hide' : 'Show'),
+        danger: false,
+        onOk: () => {
+          const next = Object.assign({}, p0, { shown: !toHidden, linkKey: toHidden ? (p0.linkKey || pubLinkKey()) : '' });
+          ev.publish = next;
+          window.ztorEvents.saveEdits(ev.id, { publish: next });
+          if (pubDraft) pubDraft.publish = Object.assign({}, next);
+          try { renderPublish(); } catch (err) {}
+          syncMoreMenu();
+          if (window.ztorToast) window.ztorToast.show(toHidden
+            ? T('event-detail.hide.toast', 'Hidden from the shop — only people with the event link or QR can get in')
+            : T('event-detail.show.toast', 'Shown in the shop; the old event link stops working'));
+        }
+      });
       return;
     }
     /* 重新上架（D371 決定一；D457：已取消退場）：已結束先提示「粉絲找得到活動頁但不能購買」，確認才上架；
@@ -3334,7 +3368,6 @@
           : { bundles: window.ztorEvents.relistBundlesOf ? window.ztorEvents.relistBundlesOf(ev.id) : [], memberBlocked: [] };
         const cand = rplan.bundles, memberBlocked = rplan.memberBlocked || [];
         if (!cand.length && !memberBlocked.length) { relist(); return; }
-        const escR = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const LSx = window.ListingState, RR = window.ZtorRelistRestore, TBx = window.ZtorTicketBundle;
         const proxyOf = b => ({ id: b.id, name: b.name, listed: false, paused: b.paused ? JSON.parse(JSON.stringify(b.paused)) : null, sched: Object.assign({}, b.sched || {}), onSale: !b.stopped });
         const checkFor = px => (key, at) => {
@@ -3348,8 +3381,7 @@
         const rp = (LSx && RR) ? RR.plan(proxies.map(px => ({ entity: px, name: px.name, check: checkFor(px) }))) : { any: false, groups: [] };
         const timeBlockedIds = rp.groups.map(g => g.entity.id);
         const back = cand.filter(b => timeBlockedIds.indexOf(b.id) < 0);   /* 這次會一起上架的 */
-        const listHtml = list => '<div class="data-list mt-8">' + list.map(b =>
-          '<div class="data-list__row"><div class="data-list__row-main"><span>' + escR(b.name) + '</span></div></div>').join('') + '</div>';
+        const listHtml = bundleListHtml;
         const hintHtml =
           (rp.any ? '<p class="text-sub mt-16">' + T('event-detail.relist.bundles.time-note', 'These bundles won’t be listed this time — a saved time has passed or can’t be used. Change it on each bundle’s page, then list it there:') + '</p>' +
             RR.blockHTML(rp, { T, named: true }) : '') +
@@ -6195,6 +6227,8 @@
     const kv = (ev.images && ev.images.keyvisual) || '';
     /* 點欄名排序（js/table-sort.js）：名稱、狀態是文字欄，其餘是數字欄 */
     const th = k => '<th data-sort="' + (k === 'name' || k === 'status' ? 'text' : 'num') + '">' + esc(T('ed.tix.col.' + k, k)) + '</th>';
+    /* D551（2026-11-26）：鎖定庫存（S150）不在版本內時不畫鎖定相關欄 */
+    const edLockOn = () => !(window.ztorEvents && window.ztorEvents.lockFeatOn && !window.ztorEvents.lockFeatOn());
     const visFeat = () => (ev && ev.source === 'bookyay') ? 'S92' : 'S55';
     const visBtn = t => {
       const why = tierVisBlock(t);
@@ -6232,8 +6266,9 @@
           '</span></td>' +
         '<td>' + fmtNum(stock) + '</td>' +
         /* 「50/60」整串不能當數字比：排序值給可賣張數（配額 − 保留） */
-        '<td data-sort-value="' + (lk === null ? '' : Math.max(0, lk - (Number(S.tierHoldSingle(t)) || 0))) + '">' + lockCell + '</td>' +
-        '<td data-sort-value="' + Math.max(0, unl - (Number(uh) || 0)) + '">' + unlCell + '</td>' +
+        /* D551：鎖定庫存不在版本內時，「鎖給單售」「未鎖定」兩欄不畫 */
+        (!edLockOn() ? '' : '<td data-sort-value="' + (lk === null ? '' : Math.max(0, lk - (Number(S.tierHoldSingle(t)) || 0))) + '">' + lockCell + '</td>' +
+        '<td data-sort-value="' + Math.max(0, unl - (Number(uh) || 0)) + '">' + unlCell + '</td>') +
         '<td>' + (resv ? fmtNum(resv) : '0') + '</td>' +
         '<td>' + fmtNum(sold) + '</td>' +
         /* 基準幣別符號（D306）：票價以該票種的基準幣別顯示。
@@ -6250,7 +6285,7 @@
     const rows = (tixOrdered().map(t => rowHTML(t, false)).join('') + stagedRemoved().map(t => rowHTML(t, true)).join('')) ||
       '<tr><td colspan="9" class="text-sub">' + esc(T('ed.tix.empty.title', 'No ticket tiers yet')) + '</td></tr>';
     box.innerHTML = '<table class="ztor-table"><thead><tr>' +
-      th('name') + th('stock') + th('lock') + th('unlocked') + th('reserved') + th('sold') + th('price') + th('status') +
+      th('name') + th('stock') + (edLockOn() ? th('lock') + th('unlocked') : '') + th('reserved') + th('sold') + th('price') + th('status') +   /* D551 */
       '<th></th></tr></thead><tbody>' + rows + '</tbody></table>';
     if (window.ztorTableSort) window.ztorTableSort.scan(box);   // 每次重畫都是新表格，重新掛排序
     regateFeat();
@@ -7128,7 +7163,7 @@
       unlistOn: closed || (!pre && !hadUnlist), unlist: closed,
       saleFrom: bky || !pre, saleTo: bky || closed,
       pickup: bky || !pre, shipFee: bky || !pre, shipSpot: !pre,
-      shown: closed || bky,   // D541：bookyay 帶入者的顯示設定跟著 bookyay 同步、唯讀（取代 D341 的不鎖）
+      shown: closed,   // D552（修訂 D541 決定六）：bookyay 帶入者的顯示設定也可在 ztor 切換
       linkReset: closed       // 重置活動連結是 ztor 自己的連結，不在 bookyay 同步範圍，維持原本只在已結束時鎖
     };
   }
@@ -7152,6 +7187,7 @@
     ro(['sale-to-d', 'sale-to-t'], !editing || L.saleTo);
     ro(['ship-fee'], !editing || L.shipFee);
     ro(['ship-spot'], !editing || L.shipSpot);
+    { const a = document.getElementById('ed-pub-addr'); if (a) a.disabled = !editing || L.pickup; }   // D550：同取票方式的鎖
     const lockSw = (el, lock) => {
       if (!el) return;
       el.classList.toggle('switch--locked', lock);
@@ -7171,13 +7207,12 @@
     document.querySelectorAll('#ed-pub-sale-times .field, #ed-pub-edit [data-pub-when="sf"]').forEach(f => markBkySource(f.querySelector('.field__label'), on, f));
     markBkySource(document.getElementById('ed-pub-pickup-title'), on);
     markBkySource(document.querySelector('#ed-pub-edit [data-pub-sec="sale"] .form-section__title'), on);   // D391：開賣方式照 bookyay 帶入並鎖定
-    /* 顯示設定（D541）：跟著 bookyay 的活動性質同步、唯讀——開關列標題掛來源標記，說明句換成「要改回 bookyay 改」 */
-    markBkySource(document.getElementById('ed-pub-shown-main'), on);
+    /* 顯示設定（D552，修訂 D541 決定六）：bookyay 帶入者也可在 ztor 切換——不掛來源標記，說明句同一般活動 */
+    markBkySource(document.getElementById('ed-pub-shown-main'), false);
     const vsub = document.getElementById('ed-pub-shown-sub');
     if (vsub) {
-      const k = on ? 'ed.pub.vis.shown.sub.bky' : 'ed.pub.vis.shown.sub';
-      vsub.setAttribute('data-i18n', k);
-      vsub.textContent = T(k, on ? "Follows the event's privacy setting on bookyay. Change it there." : 'Off = hidden: only people with the event link or QR can get in.');
+      vsub.setAttribute('data-i18n', 'ed.pub.vis.shown.sub');
+      vsub.textContent = T('ed.pub.vis.shown.sub', 'Off = hidden: only people with the event link or QR can get in.');
     }
   }
   /* bookyay 帶入的活動：取票方式唯讀的判準（D308 決定一，經 D327 修訂） */
@@ -7233,6 +7268,12 @@
     } else if (key === 'ship-fee') pubDraft.publish = Object.assign({}, pubDraft.publish, { shipFee: g('ship-fee') });
     else if (key === 'ship-spot') pubDraft.publish = Object.assign({}, pubDraft.publish, { shipSpot: g('ship-spot') });
     syncPubErrs();
+  });
+  /* D550：「購買時索取收貨地址」勾選寫進草稿（checkbox 用 change，不走上面以 readOnly 判斷的 input 處理） */
+  document.getElementById('ed-pub-addr')?.addEventListener('change', e => {
+    if (!pubDraft || e.target.disabled) return;
+    pubDraft.publish = Object.assign({}, pubDraft.publish, { collectAddr: e.target.checked });
+    if (edBaseline) syncDirty();
   });
   /* 開賣設定的一句話（總覽販售時間卡同一口徑）：開賣時間沒填＝上架即開賣；停售沒填＝賣到活動開始 */
   function saleSummary() {
@@ -7350,6 +7391,7 @@
       putPub('ship-fee', pub.shipFee != null ? String(pub.shipFee) : '');
       { const sc = document.getElementById('ed-pub-ship-cur'); if (sc) sc.textContent = evCur(); }   // Q147：運費前綴＝活動幣別代碼
       putPub('ship-spot', pub.shipSpot || '');
+      { const a = document.getElementById('ed-pub-addr'); if (a) a.checked = !!pub.collectAddr; }   // D550
       edit.querySelectorAll('[data-pub-when]').forEach(el => { el.hidden = el.dataset.pubWhen !== cur.pickup; });
       const sw = document.getElementById('ed-pub-shown');
       if (sw) { sw.setAttribute('aria-checked', pubShown() ? 'true' : 'false'); sw.classList.toggle('switch--on', pubShown()); }
@@ -7589,7 +7631,7 @@
   function setBundleSetsZeroNow(id) {
     const b = (ev.bundles || []).find(x => x.id === id);
     if (!b || bdZeroBlock(b)) return;
-    b.lockSets = window.ztorEvents.bundleZeroLock(b);   /* D513：鎖定收到被保留的套數（可以是 0），其餘退回門票的共用庫存 */
+    b.lockSets = window.ztorEvents.bundleZeroLock(b);   b.zeroLock = true;   /* D551：鎖定庫存不在版本內時，設 0 照舊生效 */   /* D513：鎖定收到被保留的套數（可以是 0），其餘退回門票的共用庫存 */
     window.ztorEvents.saveEdits(ev.id, { bundles: ev.bundles });
     if (window.ztorToast) window.ztorToast.show(T('ed.bd.zero.toast', 'Stock of {name} set to 0 — raise the locked sets in the bundle page, or turn the lock off, to sell again').replace('{name}', b.name || ''));
     renderBundles();
