@@ -10859,6 +10859,14 @@
     'event-detail.unlist.sub':     { en: 'Fans see it as unlisted and can’t buy; anything in their carts shows as unavailable. It stays in its current stage, and tickets already sold stay valid.', zh: '粉絲會看到已下架、不能購買，購物車裡的會顯示已失效。活動留在目前的階段，已售出的票照樣有效。' },   /* D415 決定七、八：下架後粉絲端顯示已下架頁、購物車顯示已失效 */
     'event-detail.hide.btn':       { en: 'Hide from shop', zh: '從商店隱藏' },   // 2026-10-27 「⋯」下拉：隱藏／顯示於商店（publish.shown）
     'event-detail.show.btn':       { en: 'Show in shop', zh: '顯示於商店' },
+    'event-detail.hide.confirm.title': { en: 'Hide this event from the shop?', zh: '確定從商店隱藏這場活動？' },
+    'event-detail.hide.confirm.body':  { en: 'The event leaves the shop listings and search. Only people with the event link or QR can get in, and they can still buy. Ticket visibility settings stay as they are.', zh: '活動不會出現在商店列表與搜尋，只有拿到活動連結或 QR 的人進得來，進來後照常能買。各門票自己的顯示設定不變。' },
+    'event-detail.hide.confirm.ok':    { en: 'Hide', zh: '隱藏' },
+    'event-detail.hide.bundles':       { en: 'These bundles include its tickets and are hidden from the shop with it:', zh: '以下含有這場活動門票的組合包，會一起從商店隱藏：' },
+    'event-detail.show.confirm.title': { en: 'Show this event in the shop?', zh: '確定在商店顯示這場活動？' },
+    'event-detail.show.confirm.body':  { en: 'The event shows in the shop listings and search again. The current event link stops working.', zh: '活動回到商店列表與搜尋，目前的活動連結會失效。' },
+    'event-detail.show.confirm.ok':    { en: 'Show', zh: '顯示' },
+    'event-detail.show.bundles':       { en: 'These bundles include its tickets and show in the shop again with it:', zh: '以下含有這場活動門票的組合包，會一起回到商店顯示：' },
     'event-detail.hide.toast':     { en: 'Hidden from the shop — only people with the event link or QR can get in', zh: '已從商店隱藏，只有拿到活動連結或 QR 的人進得來' },
     'event-detail.show.toast':     { en: 'Shown in the shop; the old event link stops working', zh: '已顯示於商店，原本的活動連結失效' },
     'event-detail.shown.dirty':    { en: 'Save or discard your changes first, then change visibility.', zh: '請先儲存或捨棄變更，再切換隱藏／顯示。' },
@@ -11306,6 +11314,8 @@
     'ed.pub.ship.fee.bky': { en: 'Converted from bookyay {v}', zh: '由 bookyay {v} 換算' },   // D368 決定四
     'ed.pub.ship.spot':   { en: 'Pickup location',         zh: '取貨地點' },
     'ed.pub.ship.spot.hint': { en: 'Fans bring ID here to collect the ticket.', zh: '粉絲帶證件到這裡領票。' },
+    'ed.pub.addr': { en: 'Ask fans for a shipping address at checkout', zh: '購買時索取粉絲收貨地址' },   // D550
+    'ed.pub.addr.hint': { en: "Fans enter an address when they buy, so you can mail anything they don't collect at the event.", zh: '粉絲購買時要填地址，沒到場領的物品可以改用寄的。' },
     /* 墓碑 2026-09-29（D327）：詳情頁發布設定裡電子門票三組附屬設定的字串（ed.pub.tp／ed.pub.dq／ed.pub.tf 系列、
        ed.unit.min／times／days）隨設定刪除退場。 */
     /* D308 決定一經 D327 修訂：bookyay 帶入者只鎖取票方式本身，說明 banner 同步改寫 */

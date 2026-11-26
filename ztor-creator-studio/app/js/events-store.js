@@ -2566,7 +2566,40 @@
        鎖給單售上限  ＝張數 − 已售 − 各組合包鎖定 − 未鎖定格的保留（防呆：各鎖定總和 ≤ 張數 − 已售 − 未鎖定格保留）；
                      下限＝它正被保留的量（調低不得低於保留，D465 補充二）
        庫存設為 0    鎖給單售縮成只剩它的保留；張數＝已售＋各組合包鎖定＋單售剩下的保留＋未鎖定格的保留（applyTierZero） */
+  /* D551（2026-11-26）：鎖定庫存（門票的鎖給單售、組合包的鎖定庫存，功能 S150）不在版本內時，一律當作不鎖定。
+     devtools.js 排在頁面最後才載入，store 先讀資料時還不知道版本——此時改讀 devtools 上次寫下的 localStorage `ztor.feat-off`
+     （devtools 載入後比對，值變了會重新整理一次），完整版永遠是開。 */
+  function lockFeatOn() {
+    var d = window.ztorDevState;
+    if (d && d.featOn) return d.featOn('S150');
+    try { return (localStorage.getItem('ztor.feat-off') || '').split(',').indexOf('S150') < 0; } catch (e) { return true; }
+  }
+  /* 讀出來時把鎖定拿掉（D551）：門票鎖給單售的保留改記到未鎖定格；組合包鎖定格的保留改記到那張門票的未鎖定格。
+     例外：組合包「庫存設為 0」（b.zeroLock，D513〔推導〕2 靠開啟鎖定做）照舊生效。 */
+  function stripLocks(ev) {
+    if (!ev || lockFeatOn()) return ev;
+    var byId = {};
+    (ev.tiers || []).forEach(function (t) {
+      byId[t.id] = t;
+      if (t.lockSingle === undefined || t.lockSingle === null || t.lockSingle === '') return;
+      t.holdFree = tierHoldFree(t) + (Number(t.holdSingle) || 0);
+      t.holdSingle = 0;
+      delete t.lockSingle;
+    });
+    (ev.bundles || []).forEach(function (b) {
+      if (!b || b.zeroLock || b.lockSets === undefined || b.lockSets === null || b.lockSets === '') return;
+      var h = Number(b.holdSets) || 0;
+      if (h > 0) {
+        var tk = bundleTickets(b), at = byId[b.holdTier || tk.tierIds[0]];
+        if (at) at.holdFree = tierHoldFree(at) + h * (tk.qty || 1);
+      }
+      b.holdSets = 0;
+      b.lockSets = null;
+    });
+    return ev;
+  }
   function tierSingleLock(t) {
+    if (!lockFeatOn()) return null;   // D551
     var v = t && t.lockSingle;
     if (v === undefined || v === null || v === '') return null;
     var n = Number(v);
@@ -2581,7 +2614,7 @@
   function tierBundleHold(ev, t) {
     var sum = 0;
     ((ev && ev.bundles) || []).forEach(function (b) {
-      if (!(Number(b && b.lockSets) > 0) || !(Number(b.holdSets) > 0)) return;
+      if (!(bundleLockOf(b) > 0) || !(Number(b.holdSets) > 0)) return;   // D551：經 bundleLockOf，版本不含 S150 時不算
       var tk = bundleTickets(b);
       var at = b.holdTier || tk.tierIds[0];
       if (t && at === t.id) sum += Math.floor(Number(b.holdSets)) * (tk.qty || 1);
@@ -2593,7 +2626,7 @@
     if (!ev || !t) return 0;
     var tiers = ev.tiers || [], taken = 0;
     (ev.bundles || []).forEach(function (o) {
-      var n = Number(o && o.lockSets);
+      var n = bundleLockOf(o);   // D551：經 bundleLockOf，版本不含 S150 時不算
       if (!(n > 0)) return;
       var tk = bundleTickets(o);
       if (tk.tierIds.indexOf(t.id) < 0) return;
@@ -2642,6 +2675,7 @@
   function bundleHoldSets(b) { return Number(b && b.holdSets) || 0; }
   /* 鎖定套數：數字（含 0）＝鎖定庫存開著；null＝不鎖定（D513 決定〔推導〕1） */
   function bundleLockOf(b) {
+    if (!lockFeatOn() && !(b && b.zeroLock)) return null;   // D551：鎖定庫存不在版本內＝不鎖定；庫存設為 0 例外
     var v = b && b.lockSets;
     if (v === null || v === undefined || v === '') return null;
     var n = Number(v);
@@ -2899,6 +2933,7 @@
     var p = editMap()[ev.id];
     if (p) Object.keys(p).forEach(function (k) { ev[k] = clone(p[k]); });
     (ev.bundles || []).forEach(bundleCapRetire);
+    stripLocks(ev);   // D551
     return ev;
   }
 
@@ -3182,6 +3217,7 @@
     bundleLeft: bundleLeft,
     bundleLockOf: bundleLockOf,
     bundleZeroLock: bundleZeroLock,
+    lockFeatOn: lockFeatOn,   // D551：頁面決定要不要畫鎖定欄位
     /* D465：門票庫存池、單售鎖定與保留 */
     tierSingleLock: tierSingleLock,
     tierHoldSingle: tierHoldSingle,

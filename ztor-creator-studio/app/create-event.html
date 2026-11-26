@@ -985,6 +985,13 @@
         <!-- 墓碑 2026-09-29（D327）：電子門票底下原有的三組附屬設定（外部平台發票＋取票說明、QR 更新間隔、
              持票人移轉＋次數／期限）整組刪除——電子門票＝ztor 發票、一票一碼的靜態 QR，底下沒有第二層設定
              （5.1.6.1 F24）。原本的附屬設定堆疊、三組開關的 apply 函式與 bookyay 預填段一併退場。 -->
+        <!-- 2026-11-26（D550，5.1.6.1 F24；S149 🟣 release2.4）：電子門票唯一的附屬設定「購買時索取收貨地址」，預設不勾。
+             只在選電子門票時出現（applyShipMode 依 data-ship-when 開關）；bookyay 帶入時跟著取票方式鎖定、不勾（lockShipAddr）。
+             不掛 data-ce：applyShipMode 會把 data-ce 欄位標成必填，這一格是選填勾選。 -->
+        <div class="field" data-ship-when="eticket" data-feat="S149">
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="ce-ship-addr"><span class="zcheck__box"></span></span><span class="zcheck__label" data-di="d.ship.addr">購買時索取粉絲收貨地址</span></label>
+          <p class="field__hint" data-di="d.ship.addr.hint">粉絲購買時要填地址，沒到場領的物品可以改用寄的。</p>
+        </div>
         <!-- 選了才問的欄位（2026-08-10 使用者指示）：寄送要知道運費怎麼算，自取要知道去哪裡拿。
              兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
         <div class="field" data-ship-when="sf" hidden>
@@ -1555,10 +1562,14 @@
     const sessions = seriesSummary();
     /* 取票方式（F24）。電子門票底下的三組附屬設定值隨 D327（2026-09-29）退場。 */
     const ship = document.querySelector('[data-seg="ship"]')?.dataset.value || "eticket";
+    /* D550：電子門票的「購買時索取收貨地址」；S149 不在版本內或不是電子門票時一律 false */
+    const addrEl = document.getElementById("ce-ship-addr");
+    const featAddr = !window.ztorDevState || !window.ztorDevState.featInVersion || window.ztorDevState.featInVersion("S149");
+    const collectAddr = ship === "eticket" && featAddr && !!(addrEl && addrEl.checked);
     /* 跨日活動（D328）：第 1 場開了跨日才有結束日期，預覽卡的日期寫成區間。 */
     const s0 = series.list[0] || {};
     const endDate = s0.multiDay ? (s0.endDate || "").trim() : "";
-    return { typeName, name, highlight, date, endDate, venue, city, start, tiers, posterFilled, sessions, ship };
+    return { typeName, name, highlight, date, endDate, venue, city, start, tiers, posterFilled, sessions, ship, collectAddr };
   }
 
   /* ── 活動語言（D328／D340，5.1.6.1 §4.2 末段）──────────────────────────────
@@ -2838,7 +2849,7 @@
     if (!isInt(d.qty) || Number(d.qty) < 1) e.qty = T("ce.tier.err.qty", "Quantity must be a whole number, 1 or more.");
     /* D465 決定 4（5.1.6.1 F22「鎖給單售」）：選填整數，空白或 0＝不鎖定；鎖給單售加各組合包鎖定不得大於張數
        （建立時已售與保留都是 0）。組合包鎖定讀第 5 步的組合包（events-store tierLocked，同一套吸收算法）。 */
-    const lk = String(d.lock == null ? "" : d.lock).trim();
+    const lk = ceLockOn() ? String(d.lock == null ? "" : d.lock).trim() : "";   // D551：不在版本內不檢查
     if (lk !== "") {
       if (!isInt(lk)) e.lock = T("ce.tier.err.lock", "Enter a whole number, or leave blank to not lock.");
       else if (isInt(d.qty) && Number(lk) + bundleLockedOn(t) > Number(d.qty)) {
@@ -2858,6 +2869,8 @@
     const me = evLike.tiers.find(x => x.id === t.id);
     return me ? S.tierLocked(evLike, me) : 0;
   }
+  /* D551（2026-11-26）：鎖定庫存（S150）不在版本內時，門票不畫「鎖給單售」、一律存成不鎖定 */
+  const ceLockOn = () => !(window.ztorEvents && window.ztorEvents.lockFeatOn && !window.ztorEvents.lockFeatOn());
   const lockHintText = () => T("ce.tier.lock.hint", "Blank = not locked — single sales and ticket bundles share this ticket's quantity.");
   /* 欄位一多就不再逐個列名（2026-09-22 D311 起）：有任何一格有訊息就是不過。 */
   const tierErrCount = t => { const e = tierErrors(t); return Object.keys(e).filter(k => e[k]).length; };
@@ -2867,7 +2880,7 @@
     const d = drafts[t.id];
     t.price = String(Number(d.price)); t.qty = String(Number(d.qty));
     /* D465：鎖給單售——空白或 0＝不鎖定（存空字串），正整數＝鎖定這麼多張只給單售 */
-    t.lockSingle = (Number(d.lock) > 0) ? String(Math.floor(Number(d.lock))) : "";
+    t.lockSingle = (ceLockOn() && Number(d.lock) > 0) ? String(Math.floor(Number(d.lock))) : "";   // D551
     t.tag = d.tag || ""; t.addons = (d.addons || []).slice();
     /* 墓碑 2026-09-23（D316）：票不再帶 `fee`（加在票價之上、由粉絲負擔的手續費）。 */
     t.tname = (d.tname || "").trim();
@@ -3523,11 +3536,11 @@
                    (bky ? "" : '<button type="button" class="tier-card__clear" data-tier-clear="qty" aria-label="' + esc(T("ce.tier.clear", "Clear")) + '"><i data-lucide="x" class="ztor-icon"></i></button>') +
                  '</span>' }) +
       /* D465 決定 4（5.1.6.1 F22「鎖給單售」）：選填，空白或 0＝不鎖定；bookyay 帶入的門票也能設（ztor 內部分配，不在整組唯讀範圍，決定 7） */
-      calcRowHTML({ k: T("ce.tier.lock", "Locked for single sale"), how: lockHintText(), hintFor: "lock",
+      (!ceLockOn() ? "" : calcRowHTML({ k: T("ce.tier.lock", "Locked for single sale"), how: lockHintText(), hintFor: "lock",
         v: '<span class="tier-card__control" data-tier-wrap="lock" data-empty="' + (String(d.lock == null ? "" : d.lock).length ? "false" : "true") + '">' +
                    '<input class="input" type="number" min="0" step="1" data-tier-f="lock" value="' + esc(d.lock == null ? "" : d.lock) + '" placeholder="' + esc(T("ce.tier.lock.ph", "Not locked")) + '">' +
                    '<button type="button" class="tier-card__clear" data-tier-clear="lock" aria-label="' + esc(T("ce.tier.clear", "Clear")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
-                 '</span>' }) +
+                 '</span>' })) +
       '</div>';
     return tierSecHTML("d.tm.sec.price",
       '<div class="calc-list calc-list--framed' + " calc-list--form" + '">' + rows + '</div>' + qty,
@@ -4810,7 +4823,7 @@
           name: tierLabelWithSession(t),
           price: t.price,
           /* D465 決定 4：組合包從這張門票「還沒鎖走的量」取——步驟 4 鎖給單售的部分組合包拿不到 */
-          qty: Math.max(0, (Number(val(t).qty) || 0) - (Number(val(t).lock != null ? val(t).lock : t.lockSingle) || 0)),
+          qty: Math.max(0, (Number(val(t).qty) || 0) - (ceLockOn() ? (Number(val(t).lock != null ? val(t).lock : t.lockSingle) || 0) : 0)),   // D551
           group: { id: t.sess || "", name: (multi() && ss) ? sessionLabel(ss, i) : "" },
           kind: ty ? { id: ty.id, name: ty.name || ticketNames(t)[0] } : null,
           /* D342：門票自己的購買條件與限購（D460 起沒有活動層預設）——票務商品預設取最嚴；bookyay 鎖定的早鳥不能被組合包改 */
@@ -5186,6 +5199,8 @@
     "d.ship.spot":      { en: "Pickup point",   zh: "取貨地點" },
     "d.ship.spot.ph":   { en: "e.g., ztor store, Xinyi Taipei", zh: "例如：ztor 門市 台北信義店" },
     "d.ship.spot.hint": { en: "Fans collect here with ID.", zh: "粉絲帶證件到這裡領票。" },
+    "d.ship.addr": { en: "Ask fans for a shipping address at checkout", zh: "購買時索取粉絲收貨地址" },   // D550
+    "d.ship.addr.hint": { en: "Fans enter an address when they buy, so you can mail anything they don't collect at the event.", zh: "粉絲購買時要填地址，沒到場領的物品可以改用寄的。" },
     "d.ship.pick.sub":{ en: "Collected at a named store or at the venue, with ID.", zh: "粉絲到指定門市或活動現場憑證件領票。" },
     /* 顯示設定（D340，5.1.6.1 F25）：取代「發布狀態（公開／私人）」二選一（d.vis.pub／d.vis.priv 退場）。 */
     "d.vis":          { en: "Display settings",  zh: "顯示設定" },
@@ -6431,6 +6446,8 @@
     /* 取票方式本身鎖住（D308 決定一經 D327 修訂：只剩取票方式本身，含順豐寄送的運費）。 */
     lockSeg("ship", rec.ship);
     syncShipFeeSrc(rec);
+    /* D550〔推導〕：bookyay 帶入的活動，「購買時索取收貨地址」跟著取票方式鎖定、不勾 */
+    { const a = document.getElementById("ce-ship-addr"); if (a) { a.checked = false; a.disabled = true; } }
     applyShipMode();
     /* 墓碑 2026-09-30（D340）：「活動形式鎖在定點」隨活動形式刪除——一律只做定點，沒有這個欄位可鎖。 */
     const m = bkyMap(rec);
@@ -6940,7 +6957,7 @@
         tickets: { tierIds: ((db.tickets && db.tickets.tierIds) || []).map(id => tierMap[id]).filter(Boolean), qty: (db.tickets && db.tickets.qty) || 1 },
         items: (db.products || []).map((it, k) => ({ id: (db.id || "bd") + "-p" + k, name: it.name, img: it.img || "", meta: it.price ? "$" + it.price : "", price: it.price || "" })),
         discountOn: !!db.discount, discount: db.discount || "",
-        lockSets: (db.lockSets === 0 || db.lockSets) ? String(db.lockSets) : "", preorder: !!db.preorder, limitedTag: !!db.limitedTag, scope: db.scope || "shared", collapsed: true, pickOpen: false,
+        lockSets: (ceLockOn() && (db.lockSets === 0 || db.lockSets)) ? String(db.lockSets) : "",   // D551 preorder: !!db.preorder, limitedTag: !!db.limitedTag, scope: db.scope || "shared", collapsed: true, pickOpen: false,
         /* 2026-10-16（示範資料補齊 E5／E7）：草稿存過的電影關聯與另設的上架／開賣時間同屬不鎖的欄位，照 D386 決定二一併保留——
            原本只疊回名稱、成員與折扣，草稿裡的 films／sched 在續填時被丟掉。 */
         films: Array.isArray(db.films) ? db.films.slice() : [],
