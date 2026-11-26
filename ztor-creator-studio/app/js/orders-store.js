@@ -1549,7 +1549,9 @@
     { ev: 'nick-live-taichung-bky', tickets: 2, bundles: ['bd-tc-ga-tee'], free: 3 },
     { ev: 'nick-live-taoyuan-bky', tickets: 2, bundles: ['bd-ty-ga-tee'] },
     { ev: 'nick-live-kaohsiung-bky', tickets: 2, bundles: ['bd-kh-ga-tee'] },
-    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-ga-tee'] }
+    { ev: 'nick-summer-pingtung-bky', tickets: 1, bundles: ['bd-pt-ga-tee'] },
+    /* D550（2026-11-26）：勾了「購買時索取收貨地址」的電子門票活動（非 bookyay，交付版沒有 S95 時 get() 回查不到、自動略過） */
+    { ev: 'album-signing-taipei', tickets: 2 }
     /* 墓碑 2026-10-16：{ ev: 'nantou-lantern-opening', tickets: 0, free: 3 }（D414 免費門票訂單，「Kids under 6 · free」）改接上面台中場的免費陪同票 */
   ];
   var TX_METHOD = { 'Card': 'card', 'Apple Pay': 'applepay', 'LINE Pay': 'linepay' };
@@ -1620,6 +1622,18 @@
     }
     var payFee = ticketPayFee(tx.gross);
     var first = String(tx.buyer || '').split(' ');
+    /* D550（5.1.5.3.1 §2「收件」）：活動取票方式是電子門票、勾了「購買時索取收貨地址」，訂單帶粉絲填的收件資料（示範地址依編號決定）；
+       S149 不在版本內時不帶 */
+    var addr = { shipTo: '', country: '', city: '' };
+    var pubE = (ev && ev.publish) || {}, DS = window.ztorDevState;
+    if (pubE.collectAddr && (pubE.pickup || 'eticket') === 'eticket' && !(DS && DS.featOn && !DS.featOn('S149'))) {
+      var ADDRS = [
+        { shipTo: '7F, No. 32, Sec. 4, Ren\'ai Rd, Da\'an Dist., Taipei 106, TW', country: 'TW', city: 'Taipei' },
+        { shipTo: 'No. 18, Ln 56, Wenxin Rd, Xitun Dist., Taichung 407, TW', country: 'TW', city: 'Taichung' },
+        { shipTo: 'Flat B, 12/F, 88 Nathan Rd, Tsim Sha Tsui, Kowloon, HK', country: 'HK', city: 'Hong Kong' }
+      ];
+      addr = ADDRS[nth % ADDRS.length];
+    }
     /* 跨幣別示範（D514）：每三筆一筆用別的幣別付款，換算後併進換匯手續費；bookyay 帶入的票同樣收（D517 決定六）。 */
     var fxOf = function () {
       var E = window.ztorEvents;
@@ -1634,7 +1648,7 @@
     var o = {
       id: tx.orderId, date: tx.orderDate, kind: kind, pay: 'paid', fulfil: fulfil,
       text: (tx.orderId + ' ' + tx.buyer + ' ' + ev.name + ' ' + tx.tier + ' ticket 門票' + (tx.kind === 'bundle' ? ' bundle 組合包' : '')).toLowerCase(),
-      buyer: { name: tx.buyer, shipTo: '', country: '', city: '',
+      buyer: { name: tx.buyer, shipTo: addr.shipTo, country: addr.country, city: addr.city,
                contact: (first[0] || 'fan').toLowerCase() + '.' + ((first[1] || 'x').charAt(0)).toLowerCase() + '@example.com' },
       items: items, tickets: tickets,
       amounts: { goods: fmt(tx.gross), shipping: '', platform: '\u2212' + fmt(tx.fee), payment: '\u2212' + fmt(payFee), net: fmt(tx.gross - tx.fee - payFee) },

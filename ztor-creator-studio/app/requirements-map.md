@@ -25,6 +25,8 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-26 D550 訂單詳情補同步（UI-CHANGES 五百五十九；release2.4）**：5.1.5.3.1 §2「收件」→ `js/orders-store.js` `ticketOrder` 依活動 `publish.collectAddr` 帶收件資料、`order-detail.html` 沿用既有收件三列；示範 `album-signing-taipei`。
+
 > **2026-11-26 D550／D551 原型同步（UI-CHANGES 五百五十七、五百五十八；ASSUMPTIONS UIA-346）**：D550 電子門票「購買時索取收貨地址」——5.1.6.1 F24 → `create-event.html` `#ce-ship-addr`；5.1.6.2 F14 → `event-detail.html` `#ed-pub-addr`（`publish.collectAddr`）；S149 🟣 release2.4。D551 鎖定庫存未排定——S150 ⚪，`js/events-store.js` `stripLocks`／`lockFeatOn`，event-detail、create-event、`js/bundle-editor.js`、create-bundle、bundle-detail 的鎖定欄位依版本收起（release2.3、release2.4）。
 
 > **2026-11-24 D549 原型同步（UI-CHANGES 五百五十三；release2.3、release2.4）**：匯率告警設定（S146）改未排定——5.1.0.3 F6 告警門檻欄、F7 警告設定 → `admin-platform-fees.html` 門檻欄 th／td 與說明句掛 `data-feat="S146"`，交付版整欄收起、收起時不參與儲存檢查；`feature-scope-map.md`、`js/devtools.js` S146 改 ⚪。
