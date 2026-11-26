@@ -2223,6 +2223,8 @@
     function secQtySplitHTML(b) {
       var lockable = memberCapWho(b).n !== Infinity, lockOn = lockAskOn(b);
       var rule = '<div class="lctl__rule lctl__rule--flush"></div>';
+      /* D551（2026-11-26）：鎖定庫存（S150）不在版本內時不畫「鎖定庫存」開關與鎖定組數；資料端 events-store 也當作不鎖定 */
+      var EVs = window.ztorEvents, lockGateOff = !!(EVs && EVs.lockFeatOn && !EVs.lockFeatOn());
       return '<section class="bd-sec bd-sec--stack" data-bd-sec="qty">' +
         '<div class="bd-sec__head form-section__head--actions">' +
           '<h3 class="bd-sec__title">' + esc(T('cp.stock.title.cfg')) + '</h3>' +
@@ -2234,7 +2236,7 @@
            墓碑：form-ask「要另設販售上限嗎？」二選一與販售上限列、「要鎖定庫存嗎」二選一。成員沒有限量時不能鎖（lockHintText 說原因）。 */
         '<div class="control-group">' +
           stockSwHTML('preorder', 'cp.unl.title', 'cb.unl.sub', !!b.preorder, !!b.limitedTag) + rule +
-          stockSwHTML('limitedTag', 'cp.tag.title', 'cb.tag.sub', !!b.limitedTag, !!b.preorder) + rule +
+          stockSwHTML('limitedTag', 'cp.tag.title', 'cb.tag.sub', !!b.limitedTag, !!b.preorder) + (lockGateOff ? '' : rule +
           stockSwHTML('lock', 'cp.lock.title', 'cb.lock.sub', lockOn, !lockable && !lockOn) +
           (!lockable && !lockOn ? '<div class="field__hint">' + esc(T('cpp.bd.sp.lock.none')) + '</div>' : '') +
           '<div class="form-ask__body control-group__body"' + (lockOn ? '' : ' hidden') + '>' +
@@ -2245,7 +2247,7 @@
             '</div>' +
             '<div data-bd-alloc-box>' + allocHTML(b) + '</div>' +
             '<div data-bd-valloc-box data-key=""></div>' +
-          '</div>' +
+          '</div>') +
         '</div>' +
       '</section>';
     }

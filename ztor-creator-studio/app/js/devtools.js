@@ -170,6 +170,7 @@
   var FEAT_TIER = {
     full: 'full', S05: 'release2.3', S06: 'release2.3', S11: 'tbd', S24: 'tbd', 'S31.1': 'release2.3' /* S45 組合限量 2026-11-05 D513 退場 */,
     S52: 'release2.3', S53: 'release2.3', S54: 'retired', S55: 'tbd', S56: 'release2.3',   // 2026-09-29 D328 補登（活動：語言複選／跨日／門票簡介／顯示／bookyay 帶入）
+    S149: 'release2.4', S150: 'tbd',   // 2026-11-26 D550（電子門票索取收貨地址）、D551（鎖定庫存未排定）
     S57: 'retired',   // 2026-09-29 D334（活動：說明區塊）；2026-10-05 D354 退場（功能表 ⚫）
     S86: 'release2.4' /* 2026-10-23 使用者裁決 release2.4 媒體庫範圍＝需求網址 MVP */,   // 2026-10-08 D377（媒體庫第二層：每件內容的任務、每件可看人數；大彩蛋拆到 S121、其餘六種行動任務拆到 S122）
     O34: 'release2.3', O35: 'release2.3', O36: 'release2.3', O37: 'release2.3',   // 2026-10-13 D411（訂單：付款資訊／日期區間與類型篩選／門票訂單／重寄訂單信）
@@ -1168,6 +1169,16 @@
     /* 2026-10-23：給 sidebar.js 的依功能放行路由用——只看版本規則、不看 showFuture（預覽不能把被擋的頁打開）。 */
     featInVersion: function (id) { var a = tiersForRule(curVersionRule()); return !a || a.indexOf(featTier(String(id))) >= 0; },
   };
+  /* 2026-11-26（D551）：events-store 比 devtools 早讀資料、當下不知道版本——把 store 需要提早知道的功能開關寫進
+     localStorage `ztor.feat-off`，store 同步讀；值跟上次不同就重新整理一次（同一個值不會再重整，不會循環）。 */
+  (function () {
+    try {
+      var off = ['S150'].filter(function (id) { return !window.ztorDevState.featOn(id); }).join(',');
+      if ((localStorage.getItem('ztor.feat-off') || '') === off) return;
+      localStorage.setItem('ztor.feat-off', off);
+      if (localStorage.getItem('ztor.feat-off') === off && window.ztorEvents) location.reload();
+    } catch (e) { /* 存取不到就不重整 */ }
+  })();
   emit();
   loadVersions();
   /* partials/i18n 會在初次 applyVersion 後注入連結；新節點也必須遵守 full-only route gate。 */

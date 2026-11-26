@@ -1342,7 +1342,20 @@
     });
   }
 
+  /* D551（2026-11-26）：鎖定庫存（S150）不在版本內時，含票券的組合包（活動組合包）不畫「鎖定庫存」開關列、一律不鎖定；
+     電子商店自己的組合包不受影響（鎖定已在 release2.2 交付）。成員會增減，所以每次 recompute 先判斷一次。 */
+  function syncEvLockGate() {
+    const sw = document.getElementById('cb-sw-lock');
+    const row = sw && sw.closest('.control-row');
+    if (!row) return;
+    const off = !!ticketMember() && !!(window.ztorEvents && window.ztorEvents.lockFeatOn && !window.ztorEvents.lockFeatOn());
+    row.hidden = off;
+    const rule = row.previousElementSibling;
+    if (rule && rule.classList.contains('lctl__rule')) rule.hidden = off;
+    if (off && lockBody && !lockBody.hidden) { setLockOn(false); if (typeof syncBundleSw === 'function') syncBundleSw(); }
+  }
   function recompute() {
+    syncEvLockGate();   // D551
     /* 可售套數＝ListingState.bundleQty() */
     refreshAlloc();
     /* 相容性提示（顯示層）：限量成員、多選項成員、含票券 */
