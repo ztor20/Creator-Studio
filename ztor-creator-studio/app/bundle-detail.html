@@ -1082,6 +1082,19 @@
     const store = window.ProductsStore;
     const kpiQty = document.querySelector('[data-bd-kpi-qty]');
     const seed = (store && bundle && store.getBundle && store.getBundle(bundle.id)) || (bundle && bundle.evSeed) || null;
+    /* D551（2026-11-26）：鎖定庫存（S150）不在版本內時，活動組合包不畫鎖定——組合庫存分頁的「鎖定套數」磚與「商品庫存鎖定」區塊、
+       組合設定的「鎖定庫存」開關列。電子商店自己的組合包不受影響（鎖定已在 release2.2 交付）。 */
+    const bdLockOff = !!(seed && seed.isEventBundle && window.ztorEvents && window.ztorEvents.lockFeatOn && !window.ztorEvents.lockFeatOn());
+    if (bdLockOff) {
+      const setsTile = document.querySelector('[data-bd-kpi-sets]')?.closest('.kpi');
+      if (setsTile) setsTile.hidden = true;
+      const qtyTile = document.querySelector('[data-bd-kpi-qty]')?.closest('.kpi');
+      if (qtyTile) { qtyTile.classList.remove('bento--span-6'); qtyTile.classList.add('bento--span-12'); }
+      const lockSec = document.getElementById('bd-lock-sw')?.closest('section');
+      if (lockSec) lockSec.hidden = true;
+      const swRow = document.getElementById('bd-sw-lock')?.closest('.control-row');
+      if (swRow) { swRow.hidden = true; const rule = swRow.previousElementSibling; if (rule && rule.classList.contains('lctl__rule')) rule.hidden = true; }
+    }
     /* 成員記錄逐筆帶型別與每套用量（D292）：讀成員列的 data-bd-kind／data-bd-per，清單與庫存表講的是同一批成員 */
     const memberOfRow = r => {
       const m = { productId: r.getAttribute('data-bd-pid'), kind: r.getAttribute('data-bd-kind') || 'product', qty: Math.max(1, Math.floor(Number(r.getAttribute('data-bd-per'))) || 1) };
@@ -1397,7 +1410,7 @@
       paintStockSw(lockSwEl, lockYes);
       paintStockSw(document.getElementById('bd-sw-lock'), lockYes);
       if (lockBody) lockBody.hidden = !lockYes;
-      const swBody = document.querySelector('[data-bd-sw-lock-body]'); if (swBody) swBody.hidden = !lockYes;
+      const swBody = document.querySelector('[data-bd-sw-lock-body]'); if (swBody) swBody.hidden = !lockYes || bdLockOff;   /* D551 */
       paintStockSw(document.getElementById('bd-sw-unl'), !!bundleModel.preorder, !!bundleModel.limitedTag);   /* 不限量與限量標籤互斥，同建立組合包 */
       paintStockSw(document.getElementById('bd-sw-tag'), !!bundleModel.limitedTag, !!bundleModel.preorder);
     }

@@ -25,11 +25,17 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
+> **2026-11-26 D550／D551 原型同步（UI-CHANGES 五百五十七、五百五十八；ASSUMPTIONS UIA-346）**：D550 電子門票「購買時索取收貨地址」——5.1.6.1 F24 → `create-event.html` `#ce-ship-addr`；5.1.6.2 F14 → `event-detail.html` `#ed-pub-addr`（`publish.collectAddr`）；S149 🟣 release2.4。D551 鎖定庫存未排定——S150 ⚪，`js/events-store.js` `stripLocks`／`lockFeatOn`，event-detail、create-event、`js/bundle-editor.js`、create-bundle、bundle-detail 的鎖定欄位依版本收起（release2.3、release2.4）。
+
 > **2026-11-24 D549 原型同步（UI-CHANGES 五百五十三；release2.3、release2.4）**：匯率告警設定（S146）改未排定——5.1.0.3 F6 告警門檻欄、F7 警告設定 → `admin-platform-fees.html` 門檻欄 th／td 與說明句掛 `data-feat="S146"`，交付版整欄收起、收起時不參與儲存檢查；`feature-scope-map.md`、`js/devtools.js` S146 改 ⚪。
 
 > **2026-11-24 D548 原型同步（UI-CHANGES 五百五十二；release2.3、release2.4）**：bookyay 匯入活動的直接購票兩邊都能撤銷（修訂 D375 決定一、D434 決定一）——5.1.6.3 撤銷 → `event-detail.html` 逐張與整場撤銷鈕、確認彈窗「同步到 bookyay」一句、撤銷紀錄撤銷者分 Admin／bookyay（同步）；5.1.5.3.1 門票區 → `order-detail.html` 導去活動詳情撤銷；示範資料 `js/events-store.js`；文案 `js/i18n.js`。
 
 > **2026-11-23 D547 原型同步（UI-CHANGES 五百五十一、ASSUMPTIONS UIA-321 第 8 項；release2.3）**：開啟不限量＝不扣庫存、不會售罄（組合包自己不設數量限制），預購這一版不做；低庫存提醒以庫存量為基準——5.1.5.2 F3.3、5.1.5.1 §2.10、5.1.5.4 F4、5.1.5 F4 庫存欄、§7.2、§7.14 → `create-product.html`、`product-detail.html`、`create-bundle.html`、`bundle-detail.html`、`e-shop.html`、`lab-stock-settings.html`、`js/i18n.js`。
+
+> **2026-11-26 D553 原型同步（UI-CHANGES 五百五十六；release2.3）**：活動隱藏／顯示確認與組合包縮圖列（5.1.6.3 §2.1「隱藏與顯示確認」）→ `event-detail.html` `[data-ed-shown]` 點擊處理、`bundleListHtml()`。
+
+> **2026-11-26 D552 原型同步（UI-CHANGES 五百五十五；release2.3）**：bookyay 帶入的活動顯示設定改為帶入當預設、ztor 可切換（5.1.6.1 F21「活動性質」、F25；5.1.6.2 F12）→ `event-detail.html`（`[data-ed-shown]`、`#ed-pub-shown`）、`create-event.html`（不再呼叫 `lockShownFromBky()`）。
 
 > **2026-11-19 D541 原型同步（UI-CHANGES 五百四十八；release2.4）**：bookyay 帶入的活動持續同步——活動名稱、主視覺、顯示設定唯讀並掛來源標記（5.1.6.1 F21／F2／F4／F25、5.1.6.2 F2／F4／F14）→ `event-detail.html`、`create-event.html`、`partials/upload-tile.js`；封面照（5.1.6.1 F4「封面照」、5.1.6.2 F4，S147）→ 兩頁 `#ed-cover-field`／`#ce-cover-field`；bookyay 新增時段的待上架門票（5.1.6.1 F21「bookyay 新增的時段或票種」、5.1.6.3 §2.6，S148）→ `event-detail.html` 徽章與門票彈窗、`js/events-store.js` `tier-tc-encore`；儀表板待處理事項「bookyay 新時段／票種待上架」（5.1.1 F4，S148）→ `js/components.js` `bky-new-ticket`。門票名稱、票價、張數原本已唯讀。
 
