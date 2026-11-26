@@ -8,6 +8,11 @@
 
 ## 版本
 
+### v1.11 · 2026-11-26
+
+- Admin 創作者活動管理按「繼續設定」進建立活動：先停在選擇活動類型，選完才帶入 bookyay 活動資料並跳到票務商品步驟。原本直接用示範資料的類型、跳過選類型那一步；bookyay 沒有對應 ztor 活動類型的欄位，類型要由人選。選 Watch Party 時不帶入 bookyay 資料。
+- 來源 main commit 0c697574（#554），patch 乾淨套上；紀錄檔（ASSUMPTIONS、UI-CHANGES、requirements-map）不搬。
+
 ### v1.10 · 2026-11-24
 
 - bookyay 匯入活動直接購買的門票改成在 ztor 也能撤銷（D548）：活動詳情的撤銷按鈕對 bookyay 匯入的活動一樣開放（只有 Admin），確認彈窗說明撤銷會同步到 bookyay；在 bookyay 後台撤銷的票照舊同步回 ztor。撤銷紀錄的「撤銷者」依每筆紀錄顯示 Admin 或「bookyay（同步）」。原本停用按鈕與「撤銷在 bookyay 後台處理」的說明句退場。

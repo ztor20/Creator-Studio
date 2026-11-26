@@ -1748,6 +1748,7 @@
        ② 用標題列的切換鈕叫回來的閘門——正在填到一半，✕＝取消重選、回到原本那一步。
      用 enteredWizard 記住有沒有進過流程，兩種情境才不會共用一個錯的出口。 */
   let enteredWizard = false;
+  let pendingImport = null;   // Admin「繼續設定」深連結帶來、等選完活動類型才套用的 bookyay 活動
   function enterWizard() {
     enteredWizard = true;
     gate?.classList.add("hidden");
@@ -1779,6 +1780,13 @@
   document.querySelectorAll("[data-gate-type]").forEach(b =>
     b.addEventListener("click", () => {
       chooseType(b.dataset.gateType);
+      /* Admin「繼續設定」帶來的 bookyay 活動：bookyay 沒有對應 ztor 活動類型的欄位（活動類別 category 不帶入，
+         對照表「ztor 有、bookyay 沒有」），類型要在這一關自己選；選完才套用帶入、落在票務商品。
+         共看派對不經 bookyay，選它就放掉這場帶入、走原本流程。 */
+      if (pendingImport) {
+        const rec = pendingImport; pendingImport = null;
+        if (!isWP()) { bkyApply(rec); enterWizard(); step = 6; render(); return; }
+      }
       // 回來重選類型：不再問帶入。共看派對也不問——它走原本的流程，跟 bookyay 售票無關。
       if (enteredWizard || isWP()) { enterWizard(); render(); return; }
       showBkyGate();
@@ -5742,8 +5750,8 @@
        活動性質 `isPrivate`（2026-10-01 D341，5.1.6.1 F21「活動性質」）：公開活動（false）→ 顯示設定＝顯示、
        私人活動（true）→ 隱藏（揭示區長出活動連結＋QR）；不鎖、不掛 From bookyay，帶入後照常可切。
        bky-4 是私人活動（驗收用），其餘四筆公開。
-     每筆帶 type（2026-09-01）：admin 從創作者活動管理頁的「繼續設定」深連結（?import=）直接進來時沒有類型閘門，
-     bookyay 自己知道活動是哪一種，跟著資料走。
+     每筆的 type 只是示範資料的標記（2026-09-01 起曾用來略過類型閘門，2026-11-25 撤除）：真實 bookyay 沒有對應 ztor
+     活動類型的欄位，admin「繼續設定」進來時類型要在閘門自己選。
      過早入場（D365，5.1.6.1 F21「過早入場 → 開放入場」）：每個時段帶 `earlyEntryInMin`（bookyay「過早入場提示」，
      開演前幾分鐘可入場）（bookyay「過早入場的處理」二選一欄位已於 D521 取消，示範資料不再帶）。
      帶入成該場的開放入場（doorsMin＝分鐘、doors＝開始時間往前推算）與早於開放時間入場（s.early），鎖定。
@@ -6968,21 +6976,18 @@
     }
     /* Admin 從創作者活動管理頁的「繼續設定」進來（2026-09-01；2026-09-02 起入口在
        admin-creator-events.html，?import=<bky id>）：
-       這一趟是「幫這位 creator 把匯入的活動設完」，類型與帶入兩關都由資料決定，
-       不再問人——直接套用該場、落在票務商品（帶入後第一件真的要人決定的事，
-       與帶入閘門那顆「帶入」按鈕同一個落點）。找不到或已帶過就退回正常閘門，
-       不硬闖：網址是可以被亂打的。 */
+       這一趟是「幫這位 creator 把匯入的活動設完」。帶入那一關由資料決定、不再問；
+       活動類型 bookyay 沒有對應欄位（活動類別 category 不帶入），所以仍停在活動類型閘門讓人選，
+       選完才套用該場、落在票務商品（帶入後第一件真的要人決定的事）。（2026-11-25 改：原本略過類型閘門、
+       直接用示範資料的 type，規格 5.1.6.1 §2 第 4 點只免掉 F21 的詢問、沒有免 F1。）
+       找不到或已帶過就退回正常閘門，不硬闖：網址是可以被亂打的。 */
     const imp = qs.get("import");
     /* 2026-10-09 D383：到店自取要不要擋看版本（featOn），而版本開關 devtools.js 排在本段之後才載入——
        等整頁的 script 都跑完（DOMContentLoaded）再判斷，release2.3 從 Admin「繼續設定」直連才擋得下（多時段／重覆 D440 起不擋）。 */
     const runImport = () => {
       const rec = BKY.find(r => r.id === imp);
       if (rec && !bkyBlocked(rec)) {       // 不設門票（D369）、release2.3 的到店自取（D384）同樣不能從深連結硬帶
-        chooseType(rec.type || "concert");
-        bkyApply(rec);
-        enterWizard();
-        step = 6;
-        render();
+        pendingImport = rec;   // 停在活動類型閘門，選完類型再帶入（見 [data-gate-type] 的 click）
       }
     };
     if (imp) {
