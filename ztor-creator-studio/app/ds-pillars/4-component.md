@@ -96,6 +96,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | [Switch](../ds-specs/4.6-switch.md) | 🟢 atom | ✓ App | 設定頁通知、商店顯示、自動撥款等二選一開關的切換控件 | [switch.css](../ds-components/switch.css) |
 | [Info banner](../ds-specs/4.7-info-banner.md) | 🟢 atom | ✓ App | Contextual explanations (timing, region note, legal hint) | [info-banner.css](../ds-components/info-banner.css) |
 | [Upload tile](../ds-specs/4.7b-upload-tile.md) | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item） | [upload-tile.css](../ds-components/upload-tile.css) |
+| [Image crop](../ds-specs/image-crop.md) | 🟠 molecule | ✓ App | 上傳圖片時的裁切彈窗，創作者拖動與縮放、框出直式 2:3 的範圍 | [image-crop.css](../ds-components/image-crop.css) |
 | [Bundle editor](../ds-specs/bundle-editor.md) | 🟠 molecule | ✓ Project | 建立組合包時的編輯區，含商品挑選、庫存開關與販售設定 | [bundle-editor.css](../ds-components/bundle-editor.css) |
 | [Album tracks](../ds-specs/album-tracks.md) | 🟠 organism | ✓ App | 數位音樂專輯的多曲目管理，可上傳、拖曳排序、改名與換封面 | [album-tracks.css](../ds-components/album-tracks.css) |
 | [VIP card](../ds-specs/vip-card.md) | 🟠 organism | ✓ App | 數位會員卡的卡面自訂區，左邊設定名稱與圖像，右邊即時預覽 | [vip-card.css](../ds-components/vip-card.css) |
