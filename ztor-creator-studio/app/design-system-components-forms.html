@@ -792,6 +792,38 @@ Letterpress cover, uncoated stock.</textarea></div>
   </div>
   </details>
 </section>
+<section class="sub" id="image-crop">
+  <div class="sub__head">
+    <h3 class="sub__title">4.15a Image crop</h3>
+    <span class="layer layer--molecule">🟠 molecule</span>
+  </div>
+  <p class="sub__desc" data-en>Pattern: <a href="design-system-pattern.html#pattern-modal">5.1.8 Modal types</a>, type 1 “Fill in and submit”. The shell is the Modal shell; this card covers the content only.</p>
+  <p class="sub__desc" data-zh>Pattern：<a href="design-system-pattern.html#pattern-modal">5.1.8 彈窗類型</a>第 1 類「填寫送出」。外殼是 Modal shell，本卡只管內容。</p>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Every time a creator picks or replaces an image in a portrait slot, this crop dialog opens first (2026-11-27 · D554). The frame is fixed at 2:3; the creator drags and zooms the image to choose what stays. “Crop and upload” hands the cropped image to the upload tile; Cancel leaves the tile as it was. The dashed lines mark the area square spots will show.</p>
+  <p class="sub__desc" data-zh>直式圖片槽每次選圖或替換圖片，都先開這個裁切彈窗（2026-11-27 · D554）。裁切框固定 2:3，創作者拖動與縮放圖片，決定留哪一塊；按「裁切並上傳」把裁好的圖交給上傳格，按取消則格子維持原狀。中間兩條虛線之間是方形版位會顯示的範圍。</p>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo"><div class="payout-dialog" style="position:relative;max-width:420px;margin:0 auto">
+    <div class="payout-dialog__head"><h2 class="payout-dialog__title"><span data-en>Crop image</span><span data-zh>裁切圖片</span></h2><button class="btn btn--icon" type="button" aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button></div>
+    <div class="payout-dialog__body"><div class="image-crop">
+      <div class="image-crop__stage" style="max-width:220px"><img class="image-crop__img" src="images/ip/a-lin.webp" alt="" style="width:100%;height:100%;object-fit:cover"><span class="image-crop__guide"></span></div>
+      <div class="image-crop__zoom" style="max-width:220px"><button class="btn btn--icon btn--sm" type="button" aria-label="Zoom out"><i data-lucide="minus" class="ztor-icon"></i></button><input class="image-crop__range" type="range" min="0" max="1000" value="250" aria-label="Zoom"><button class="btn btn--icon btn--sm" type="button" aria-label="Zoom in"><i data-lucide="plus" class="ztor-icon"></i></button></div>
+      <p class="image-crop__hint"><span data-en>Drag to choose what stays in the frame. Square spots show only the area between the dashed lines.</span><span data-zh>拖動圖片，決定框內留哪一塊。方形版位只會顯示虛線之間的範圍。</span></p>
+    </div></div>
+    <div class="payout-dialog__foot"><button class="btn btn--outline" type="button"><span data-en>Cancel</span><span data-zh>取消</span></button><button class="btn btn--primary" type="button"><span data-en>Crop and upload</span><span data-zh>裁切並上傳</span></button></div>
+  </div></div>
+  <p class="field-label" data-en>Too small</p><p class="field-label" data-zh>圖片太小</p>
+  <div class="demo"><div class="image-crop"><p class="image-crop__error"><span data-en>This image is too small. It needs to be at least 750 × 1125px.</span><span data-zh>這張圖片太小，至少要 750 × 1125px。</span></p></div></div>
+  <p class="field-label" data-en>Do / Don't</p><p class="field-label" data-zh>該做與別做</p>
+  <ul class="sub__desc" data-en><li>Do keep the frame at 2:3; only the image moves and zooms.</li><li>Don't open it for video, content files or images inside an event description.</li></ul>
+  <ul class="sub__desc" data-zh><li>該做：裁切框固定 2:3，只移動與縮放圖片。</li><li>別做：影片、內容檔格、活動描述裡的圖片不開裁切。</li></ul>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <p class="field-label" data-en>Behaviour details</p><p class="field-label" data-zh>行為細節</p>
+  <p class="field-text" data-en>Opened by <code>window.ztorImageCrop.open(file, { minWidth })</code> (end of <code>partials/upload-tile.js</code>) when a <code>.upload-tile--portrait[data-upload]</code> gets an image and S151 is on. Minimum width: <code>data-upload-min</code>, else 750 for the first tile in its row and 600 for the rest (§7.10). Max zoom keeps the crop at least that wide. Drag, pinch, wheel, slider, ± buttons; arrow keys and +/− when the frame has focus; Esc cancels. Output via canvas, max 1500px wide.</p>
+  <p class="field-text" data-zh>由 <code>window.ztorImageCrop.open(file, { minWidth })</code>（<code>partials/upload-tile.js</code> 檔尾）開啟：<code>.upload-tile--portrait[data-upload]</code> 選到圖片且 S151 開啟時。最小寬度：<code>data-upload-min</code>，沒有時同一列第一格 750、其餘 600（§7.10）。縮放上限讓裁切範圍不小於最小寬度。拖動、雙指、滾輪、滑桿、加減鈕；框聚焦時方向鍵移動、+／− 縮放；Esc 取消。用 canvas 輸出，寬度上限 1500px。</p>
+  <p class="field-text"><code>ds-components/image-crop.css</code> · <code>ds-specs/image-crop.md</code></p>
+  </details>
+</section>
 <section class="sub" id="bundle-editor">
   <div class="sub__head">
     <h3 class="sub__title">4.15b Bundle editor</h3>

@@ -1,0 +1,89 @@
+/* ----------------------------------------------------------------
+   Image crop — 上傳圖片時的裁切工具（2026-11-27，D554，規格 §7.10「上傳圖片時的裁切」）
+
+   外殼是全站共用的 Modal shell（payout-modal.css 的 .payout-modal／.payout-dialog，
+   pattern 5.1.8 第 1 類「填寫送出」）；本檔只管彈窗內容：
+     .image-crop            內容欄（裁切框＋縮放列＋說明）
+     .image-crop__stage     固定直式 2:3 的裁切框，圖片在框內拖動；框外的部分裁掉
+     .image-crop__img       框內的圖片（位置與大小由 partials/upload-tile.js 用 transform 設定）
+     .image-crop__guide     框中央的方形虛線：方形版位只會留下這一塊（§7.10 置中裁切）
+     .image-crop__zoom      縮放列：減號鈕、滑桿、加號鈕
+     .image-crop__error     圖片太小時的錯誤訊息（此時沒有裁切框可操作）
+   由 partials/upload-tile.js 的 ztorImageCrop.open() 產生；頁面要同時連 payout-modal.css 與本檔。
+   ---------------------------------------------------------------- */
+
+.image-crop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-16);
+}
+
+.image-crop__stage {
+  position: relative;
+  width: min(300px, 100%);
+  aspect-ratio: var(--img-portrait, 2 / 3);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--layer-2-surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+  cursor: grab;
+  touch-action: none;          /* 拖動與雙指縮放交給程式，不讓頁面跟著捲 */
+  user-select: none;
+}
+.image-crop__stage.is-dragging { cursor: grabbing; }
+.image-crop__stage:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+.image-crop__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  transform-origin: 0 0;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* 方形版位會留下的中間那一塊：寬度等於框寬、置中。只是提示，不能拖。 */
+.image-crop__guide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  aspect-ratio: 1 / 1;
+  transform: translateY(-50%);
+  border-top: 1px dashed var(--on-media);
+  border-bottom: 1px dashed var(--on-media);
+  opacity: .7;
+  pointer-events: none;
+}
+
+.image-crop__zoom {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  width: min(300px, 100%);
+}
+.image-crop__range {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--primary);
+}
+
+.image-crop__hint {
+  margin: 0;
+  max-width: 360px;
+  text-align: center;
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+
+.image-crop__error {
+  margin: 0;
+  font-size: var(--fs-14);
+  color: var(--destructive);
+}
+.image-crop__error[hidden],
+.image-crop__stage[hidden],
+.image-crop__zoom[hidden],
+.image-crop__hint[hidden] { display: none; }
