@@ -36,7 +36,7 @@
 - 5.4 Data Visualization
 - 5.5 Workflow patterns
 
-## Pillar 4 速查 · 元件（ds-components/，共 137 支；主 class 前 5 個 ｜ 用途 ｜ 規格檔）
+## Pillar 4 速查 · 元件（ds-components/，共 138 支；主 class 前 5 個 ｜ 用途 ｜ 規格檔）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Collapsible sections (chevron-rotate, height transition) ｜ 規格 `ds-specs/4.14-accordion.md`
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--fluid, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb ｜ Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列 ｜ 規格 `ds-specs/admin-ip-bank-table.md`
@@ -96,6 +96,7 @@
 - `form-steps.css` — .form-steps ｜ 把同一張表單分成多步顯示，用於建立商品與建立組合包 ｜ 規格 `ds-specs/4.241-form-steps.md`
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ 所有頁面共用的 64px 頂部導覽列，含下拉選單與動作群 ｜ 規格 `ds-specs/4.20-header.md`
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ 全站按鈕、導覽、提示與資料列共用的圖示集（Tabler） ｜ 規格 `ds-specs/4.9-icon.md`
+- `image-crop.css` — .image-crop, .image-crop__stage, .image-crop__img, .image-crop__guide, .image-crop__zoom ｜ 上傳圖片時的裁切彈窗，創作者拖動與縮放、框出直式 2:3 的範圍 ｜ 規格 `ds-specs/image-crop.md`
 - `info-banner.css` — .info-banner, .info-banner__text, .info-banner__title, .info-banner__desc, .info-banner__action ｜ Contextual explanations (timing, region note, legal hint) ｜ 規格 `ds-specs/4.7-info-banner.md`
 - `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Wizard fields, settings forms, search ｜ 規格 `ds-specs/4.8-input.md`
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ 圖表下單行自動洞察（無洞察隱藏） ｜ 規格 `ds-specs/4.22k-insight-row.md`

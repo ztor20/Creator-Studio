@@ -1,5 +1,21 @@
 > **2026-10-27 序號改名（D484）**：本檔 2026-10-27 以前的條目保留當時寫法。換算：release2.3＝現 release2.2（E-Shop）、release2.4＝現 release2.3（活動）、release2.5＝現 release2.4（粉絲管理＋媒體庫）。
 
+## UIA-347 · D554 上傳圖片時的裁切工具的原型假設（2026-11-27；UI-CHANGES 五百六十）— 呈現假設 ＋ 產品待確認
+
+`partials/upload-tile.js`（`ztorImageCrop`）、`ds-components/image-crop.css`。
+
+### 呈現假設
+
+1. **哪些格子開裁切**〔呈現假設〕：凡 `.upload-tile--portrait` 的展示格（2:3 形狀）都開，不逐頁列名單；活動描述的內文圖不是直式格，自然不開。規格列的格子（主圖、封面、主視覺、附圖、圖庫、選項組合商品圖、封面照）都是這個形狀；粉絲活動（create-campaign）的直式圖片格也跟著開。
+2. **主要與次要展示素材怎麼分**〔呈現假設〕：同一列的第一格當主要（最小寬 750），其餘當次要（600）；格子可用 `data-upload-min` 覆寫。相簿把別格「設為主視覺」換到第一格時，不會回頭重新檢查尺寸。
+3. **方形範圍提示**〔呈現假設〕：裁切框中央兩條虛線標出方形版位會顯示的範圍；規格只說方形版位從 2:3 素材中央裁切，沒要求畫出來。
+4. **輸出解析度**〔呈現假設〕：原型用 canvas 輸出框內範圍、寬度上限 1500px；真實產品存多大、要不要保留原圖，交工程決定。
+
+### 產品待確認
+
+- 已上傳的圖之後能不能重新調整裁切（D554 決定六）；目前只在上傳與替換時裁切。
+- 影片比例與 2:3 不符時怎麼處理（D554 決定七）。
+
 ## UIA-346 · D550 索取收貨地址與 D551 鎖定庫存收起的原型假設（2026-11-26；UI-CHANGES 五百五十七、五百五十八）— 呈現假設 ＋ 產品缺口
 
 `create-event.html`（`#ce-ship-addr`）、`event-detail.html`（`#ed-pub-addr`、門票彈窗與票種表）、`js/events-store.js`（`stripLocks`、`lockFeatOn`）、`js/bundle-editor.js`、`create-bundle.html`、`bundle-detail.html`、`js/devtools.js`。
