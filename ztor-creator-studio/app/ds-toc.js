@@ -50,6 +50,7 @@ document.write(String.raw`  <aside class="toc">
     <a class="toc__link toc__link--sub" href="design-system-components-forms.html#field-pill">Field pill</a>
     <a class="toc__link toc__link--sub" href="design-system-components-forms.html#search-collapse">Search collapse</a>
     <a class="toc__link toc__link--sub" href="design-system-components-forms.html#upload-tile">Upload tile</a>
+    <a class="toc__link toc__link--sub" href="design-system-components-forms.html#image-crop">Image crop</a>
     <a class="toc__link toc__link--sub" href="design-system-components-forms.html#bundle-editor">Bundle editor</a>
     <a class="toc__link toc__link--sub" href="design-system-components-forms.html#album-tracks">Album tracks</a>
     <a class="toc__link toc__link--sub" href="design-system-components-forms.html#vip-card">VIP card</a>

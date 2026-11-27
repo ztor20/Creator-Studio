@@ -277,7 +277,31 @@
       new MutationObserver(syncA11y).observe(tile, { attributes: true, attributeFilter: ['class'] });
     }
 
-    input.addEventListener('change', function () { if (input.files && input.files[0]) startUpload(input.files[0]); });
+    /* 上傳圖片時先裁切（2026-11-27 · D554，§7.10「上傳圖片時的裁切」，功能表 S151）：
+       直式圖片槽（.upload-tile--portrait）選到圖片時，先開裁切工具框出 2:3，確認後才走原本的上傳過場；
+       取消就什麼都不做，格子維持原狀（替換時舊圖也還在）。影片、內容檔格、非直式格（活動描述的內文圖）不裁。
+       最小尺寸（§7.10）：主要展示素材 750px 寬、次要 600px 寬——同一列的第一格當主要（主圖／主視覺／封面），
+       其餘當次要；格子自己掛 data-upload-min="<寬>" 時以它為準。 */
+    function cropOn() { var d = window.ztorDevState; return !d || !d.featOn || d.featOn('S151'); }
+    function wantsCrop(file) {
+      return !content && tile.classList.contains('upload-tile--portrait') && !tile.hasAttribute('data-upload-nocrop') &&
+        /^image\//.test(file.type || '') && window.ztorImageCrop && cropOn();
+    }
+    function minWidth() {
+      var own = parseInt(tile.getAttribute('data-upload-min'), 10); if (own > 0) return own;
+      var first = tile.parentElement && tile.parentElement.querySelector('.upload-tile[data-upload]');
+      return (!first || first === tile) ? 750 : 600;
+    }
+    input.addEventListener('change', function () {
+      var file = input.files && input.files[0];
+      input.value = '';   // 同一個檔取消後再選一次也要觸發 change
+      if (!file) return;
+      if (!wantsCrop(file)) { startUpload(file); return; }
+      window.ztorImageCrop.open(file, { minWidth: minWidth() }).then(function (cropped) {
+        if (cropped) startUpload(cropped);
+        else if (tile.isConnected) { var t = tile.classList.contains('is-empty') ? tile : actions.querySelector('[data-upload-replace]'); if (t && kbd) t.focus(); }
+      });
+    });
     tile.addEventListener('click', function (e) {
       if (e.target.closest('[data-upload-play],[data-upload-replace],[data-upload-optimize],[data-upload-remove],[data-upload-reset] .upload-tile__act')) return;
       if (tile.classList.contains('is-empty')) { pickAccept(); input.click(); }
@@ -373,4 +397,216 @@
   }
   if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
   window.ztorUploadTile = { enhance: enhance, init: init, initReveal: initReveal, initGalleryKv: initGalleryKv };
+})();
+
+/* ============================================================
+   ztorImageCrop — 上傳圖片時的裁切工具（2026-11-27 · D554，§7.10「上傳圖片時的裁切」）
+   ztorImageCrop.open(file, { minWidth }) → Promise<File|null>
+     · 固定直式 2:3 的裁切框；拖動移動、滑桿／加減鈕／滾輪／雙指縮放；框內方形虛線＝方形版位會留下的範圍。
+     · 鍵盤：裁切框聚焦時方向鍵移動、+／- 縮放；Esc 取消；Tab 留在彈窗內。
+     · 縮放上限：框在原圖上的寬度不得小於 minWidth（§7.10 最小尺寸）；原圖連最大的 2:3 範圍都不到
+       minWidth 寬時不收，只顯示錯誤訊息與「取消」（D554 決定四）。
+     · 確認後用 canvas 輸出框內範圍（寬度上限 1500px，原型示範用），回傳新的 File；取消回 null。
+   外殼：Modal shell（payout-modal.css，pattern 5.1.8 第 1 類「填寫送出」，從別的彈窗裡開也在最上層）；
+   內容樣式：ds-components/image-crop.css。
+   ============================================================ */
+(function () {
+  'use strict';
+  function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb; }
+  var MAX_OUT = 1500, seq = 0;
+
+  function open(file, opt) {
+    opt = opt || {};
+    var minW = opt.minWidth || 600;
+    return new Promise(function (resolve) {
+      var id = 'ztor-crop-' + (++seq);
+      var back = document.activeElement;
+      var url = URL.createObjectURL(file);
+      var wrap = document.createElement('div');
+      wrap.className = 'payout-modal payout-modal--top';
+      wrap.innerHTML =
+        '<section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="' + id + '">' +
+          '<div class="payout-dialog__head">' +
+            '<h2 class="payout-dialog__title" id="' + id + '" data-i18n="crop.title">' + T('crop.title', 'Crop image') + '</h2>' +
+            '<button class="btn btn--icon" type="button" data-crop-cancel aria-label="' + T('dlg.close', 'Close') + '" data-i18n-aria-label="dlg.close"><i data-lucide="x" class="ztor-icon"></i></button>' +
+          '</div>' +
+          '<div class="payout-dialog__body">' +
+            '<div class="image-crop">' +
+              '<div class="image-crop__stage" tabindex="0" role="application" aria-label="' + T('crop.stage', 'Crop area') + '" data-i18n-aria-label="crop.stage" hidden>' +
+                '<img class="image-crop__img" alt="" draggable="false">' +
+                '<span class="image-crop__guide" aria-hidden="true"></span>' +
+              '</div>' +
+              '<div class="image-crop__zoom" hidden>' +
+                '<button class="btn btn--icon btn--sm" type="button" data-crop-out aria-label="' + T('crop.zoom-out', 'Zoom out') + '" data-i18n-aria-label="crop.zoom-out"><i data-lucide="minus" class="ztor-icon"></i></button>' +
+                '<input class="image-crop__range" type="range" min="0" max="1000" value="0" aria-label="' + T('crop.zoom', 'Zoom') + '" data-i18n-aria-label="crop.zoom">' +
+                '<button class="btn btn--icon btn--sm" type="button" data-crop-in aria-label="' + T('crop.zoom-in', 'Zoom in') + '" data-i18n-aria-label="crop.zoom-in"><i data-lucide="plus" class="ztor-icon"></i></button>' +
+              '</div>' +
+              '<p class="image-crop__hint" data-i18n="crop.hint" hidden>' + T('crop.hint', '') + '</p>' +
+              '<p class="image-crop__error" role="alert" hidden></p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="payout-dialog__foot">' +
+            '<button class="btn btn--outline" type="button" data-crop-cancel data-i18n="dlg.cancel">' + T('dlg.cancel', 'Cancel') + '</button>' +
+            '<button class="btn btn--primary" type="button" data-crop-ok data-i18n="crop.apply" disabled>' + T('crop.apply', 'Crop and upload') + '</button>' +
+          '</div>' +
+        '</section>';
+      var hadLock = document.body.classList.contains('is-modal-open');   // 從別的彈窗裡開時，關掉不能順手解掉它的捲動鎖
+      document.body.appendChild(wrap);
+      document.body.classList.add('is-modal-open');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(wrap);
+
+      var stage = wrap.querySelector('.image-crop__stage');
+      var img = wrap.querySelector('.image-crop__img');
+      var zoomRow = wrap.querySelector('.image-crop__zoom');
+      var range = wrap.querySelector('.image-crop__range');
+      var hint = wrap.querySelector('.image-crop__hint');
+      var err = wrap.querySelector('.image-crop__error');
+      var okBtn = wrap.querySelector('[data-crop-ok]');
+      var nw = 0, nh = 0, W = 0, H = 0, s0 = 1, zMax = 1, z = 1, tx = 0, ty = 0, ready = false;
+
+      function scale() { return s0 * z; }
+      function clamp() {
+        var s = scale();
+        tx = Math.min(0, Math.max(W - nw * s, tx));
+        ty = Math.min(0, Math.max(H - nh * s, ty));
+      }
+      function paint() {
+        clamp();
+        img.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale() + ')';
+        range.value = zMax > 1 ? Math.round((z - 1) / (zMax - 1) * 1000) : 0;
+      }
+      /* 以框內某一點（cx, cy）為中心縮放，那一點在畫面上的位置不動。 */
+      function zoomTo(nz, cx, cy) {
+        nz = Math.min(zMax, Math.max(1, nz));
+        if (cx == null) { cx = W / 2; cy = H / 2; }
+        var s = scale(), ns = s0 * nz;
+        tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s;
+        z = nz; paint();
+      }
+      function measure() {
+        var r = stage.getBoundingClientRect();
+        var oldS = scale(), oldW = W;
+        W = r.width; H = r.height;
+        s0 = Math.max(W / nw, H / nh);
+        zMax = Math.max(1, W / (minW * s0));
+        if (oldW) { var ratio = W / oldW; tx *= ratio; ty *= ratio; }
+        else { tx = (W - nw * scale()) / 2; ty = (H - nh * scale()) / 2; }
+        paint();
+      }
+
+      img.onload = function () {
+        nw = img.naturalWidth; nh = img.naturalHeight;
+        var regionW = Math.min(nw, nh * 2 / 3);   // 原圖裡能框出的最大 2:3 範圍的寬
+        if (regionW < minW - 0.5) {
+          err.textContent = T('crop.small', 'This image is too small. It needs to be at least {w} × {h}px.')
+            .replace('{w}', minW).replace('{h}', Math.round(minW * 1.5));
+          err.hidden = false; okBtn.hidden = true;
+          wrap.querySelector('.payout-dialog__foot [data-crop-cancel]').focus();
+          return;
+        }
+        stage.hidden = false; zoomRow.hidden = false; hint.hidden = false;
+        measure(); ready = true; okBtn.disabled = false;
+        stage.focus();
+      };
+      img.onerror = function () {
+        err.textContent = T('crop.unreadable', "This image can't be opened. Try another file.");
+        err.hidden = false; okBtn.hidden = true;
+      };
+      img.src = url;
+
+      /* 拖動與雙指縮放（Pointer Events；觸控板與滑鼠滾輪另外接 wheel）。 */
+      var pts = {}, last = null, pinch = null;
+      function local(e) { var r = stage.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+      stage.addEventListener('pointerdown', function (e) {
+        if (!ready) return;
+        stage.setPointerCapture(e.pointerId); pts[e.pointerId] = local(e);
+        var ids = Object.keys(pts);
+        if (ids.length === 1) { last = pts[e.pointerId]; stage.classList.add('is-dragging'); }
+        if (ids.length === 2) {
+          var a = pts[ids[0]], b = pts[ids[1]];
+          pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: z };
+        }
+      });
+      stage.addEventListener('pointermove', function (e) {
+        if (!pts[e.pointerId]) return;
+        var p = local(e); pts[e.pointerId] = p;
+        var ids = Object.keys(pts);
+        if (ids.length >= 2 && pinch) {
+          var a = pts[ids[0]], b = pts[ids[1]];
+          zoomTo(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / (pinch.d || 1), (a.x + b.x) / 2, (a.y + b.y) / 2);
+        } else if (last) {
+          tx += p.x - last.x; ty += p.y - last.y; last = p; paint();
+        }
+      });
+      function up(e) {
+        delete pts[e.pointerId];
+        var ids = Object.keys(pts);
+        if (ids.length < 2) pinch = null;
+        last = ids.length === 1 ? pts[ids[0]] : null;
+        if (!ids.length) stage.classList.remove('is-dragging');
+      }
+      stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+      stage.addEventListener('wheel', function (e) {
+        if (!ready) return; e.preventDefault();
+        var p = local(e); zoomTo(z * Math.exp(-e.deltaY * 0.0015), p.x, p.y);
+      }, { passive: false });
+      stage.addEventListener('keydown', function (e) {
+        if (!ready) return;
+        var step = e.shiftKey ? 40 : 10, k = e.key;
+        if (k === 'ArrowLeft') tx += step; else if (k === 'ArrowRight') tx -= step;
+        else if (k === 'ArrowUp') ty += step; else if (k === 'ArrowDown') ty -= step;
+        else if (k === '+' || k === '=') { zoomTo(z * 1.1); e.preventDefault(); return; }
+        else if (k === '-' || k === '_') { zoomTo(z / 1.1); e.preventDefault(); return; }
+        else return;
+        e.preventDefault(); paint();
+      });
+      range.addEventListener('input', function () { zoomTo(1 + (zMax - 1) * range.value / 1000); });
+      wrap.querySelector('[data-crop-in]').addEventListener('click', function () { zoomTo(z * 1.15); });
+      wrap.querySelector('[data-crop-out]').addEventListener('click', function () { zoomTo(z / 1.15); });
+      var onResize = function () { if (ready) measure(); };
+      window.addEventListener('resize', onResize);
+
+      var closed = false;
+      function finish(result) {
+        if (closed) return; closed = true;   // 輸出中按 Esc 等情況只收一次
+        document.removeEventListener('keydown', onKey, true);
+        window.removeEventListener('resize', onResize);
+        wrap.remove();
+        if (!hadLock && !document.querySelector('.payout-modal:not([hidden])')) document.body.classList.remove('is-modal-open');
+        URL.revokeObjectURL(url);
+        if (back && back.focus && document.contains(back) && !result) back.focus();
+        resolve(result);
+      }
+      function crop() {
+        var s = scale();
+        var sx = -tx / s, sy = -ty / s, sw = W / s, sh = H / s;
+        var ow = Math.round(Math.min(sw, MAX_OUT)), oh = Math.round(ow * 1.5);
+        var c = document.createElement('canvas'); c.width = ow; c.height = oh;
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, ow, oh);
+        var type = /png|webp/.test(file.type) ? file.type : 'image/jpeg';
+        okBtn.disabled = true;
+        c.toBlob(function (blob) {
+          if (!blob) { finish(null); return; }
+          var name = (file.name || 'image').replace(/\.[^.]+$/, '') + (type === 'image/png' ? '.png' : type === 'image/webp' ? '.webp' : '.jpg');
+          var out;
+          try { out = new File([blob], name, { type: type }); } catch (x) { out = blob; out.name = name; }
+          finish(out);
+        }, type, 0.92);
+      }
+      okBtn.addEventListener('click', function () { if (ready) crop(); });
+      wrap.querySelectorAll('[data-crop-cancel]').forEach(function (b) { b.addEventListener('click', function () { finish(null); }); });
+      function onKey(e) {
+        if (e.key === 'Escape') { e.stopPropagation(); finish(null); }
+        if (e.key === 'Tab') {
+          var f = Array.prototype.filter.call(wrap.querySelectorAll('button:not([disabled]):not([hidden]),input,[tabindex="0"]:not([hidden])'), function (n) { return n.offsetParent !== null; });
+          if (!f.length) return;
+          var first = f[0], lastEl = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); lastEl.focus(); }
+          else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); first.focus(); }
+        }
+      }
+      document.addEventListener('keydown', onKey, true);
+    });
+  }
+  window.ztorImageCrop = { open: open };
 })();

@@ -81,6 +81,7 @@ document.write(String.raw`<script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/image-crop.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/album-tracks.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vip-card.css?v=r2.2">
